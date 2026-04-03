@@ -30,6 +30,8 @@ export const pagesTable = pgTable("pages", {
   slug: text("slug").notNull(),
   content: text("content").notNull().default(""),
   order: integer("order").notNull().default(0),
+  metaTitle: text("meta_title"),
+  metaDescription: text("meta_description"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -42,3 +44,14 @@ export const insertPageSchema = createInsertSchema(pagesTable).omit({
 
 export type InsertPage = z.infer<typeof insertPageSchema>;
 export type Page = typeof pagesTable.$inferSelect;
+
+export const pageRevisionsTable = pgTable("page_revisions", {
+  id: serial("id").primaryKey(),
+  pageId: integer("page_id")
+    .notNull()
+    .references(() => pagesTable.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export type PageRevision = typeof pageRevisionsTable.$inferSelect;

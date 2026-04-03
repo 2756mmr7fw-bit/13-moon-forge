@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { projectsTable, pagesTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { projectsTable, pagesTable, pageRevisionsTable } from "@workspace/db";
+import { eq, and } from "drizzle-orm";
 import { openai } from "@workspace/integrations-openai-ai-server";
 
 const router = Router();
@@ -74,26 +74,27 @@ You design at the level of Linear, Stripe, Vercel, and Notion. Your sites have:
 All pages in a project share the same header and footer design. Use the provided page list to build real navigation links. Since these are standalone HTML files, link slugs like this: if page slug is "about", the href is "#" (since we're in preview mode, not a real server).
 
 ## Page-Specific Excellence
-- **Home**: Make it sing. This is the first impression. Bold hero, clear value prop, social proof, feature highlights, strong CTA section
-- **About**: Story-driven. Founder narrative, mission statement, team grid, values/principles, timeline if relevant
-- **Services/Work/Portfolio**: Visual cards with hover effects, filters or categories if multiple items, case study previews
+- **Home**: Make it sing. Bold hero, clear value prop, social proof, feature highlights, strong CTA section
+- **About**: Story-driven. Founder narrative, mission statement, team grid, values/principles
+- **Services/Work/Portfolio**: Visual cards with hover effects, case study previews
 - **Pricing**: Conversion-optimized. Clear value differentiation, FAQ accordion (JS), guarantee badge
-- **Contact**: Clean form with validation feedback, map placeholder, multiple contact methods
-- **Blog/Articles**: List view with featured image placeholders (CSS-drawn), metadata, pagination
+- **Contact**: Clean form with validation feedback, multiple contact methods
+- **Blog/Articles**: List view with metadata, pagination
 
 ## SVG Icons
-Use inline SVGs for icons — never Unicode characters or emoji for UI icons. Draw simple, clean paths for common icons (arrow, check, star, social, etc.) or use geometric shapes.`;
+Use inline SVGs for icons — never Unicode characters or emoji for UI icons.`;
 
-const getPageUserMessage = (
+const buildUserMessage = (
   project: { name: string; template: string; description: string | null },
   page: { title: string; slug: string },
   allPages: { title: string; slug: string }[],
-  prompt: string
+  prompt: string,
+  refinementInstructions?: string
 ) => {
-  const navLinks = allPages.map(p => `<a href="#">${p.title}</a>`).join(" | ");
   const pageList = allPages.map(p => `• ${p.title} (/${p.slug})`).join("\n");
+  const navLinks = allPages.map(p => `<a href="#">${p.title}</a>`).join(" | ");
 
-  return `## Project Brief
+  let msg = `## Project Brief
 **Name**: ${project.name}
 **Template**: ${project.template}
 **Description**: ${project.description || "Not provided"}
@@ -108,85 +109,128 @@ Navigation links for reference: ${navLinks}
 ## Your Task
 Generate the **${page.title}** page (/${page.slug}).
 
-This page must feel like it was crafted specifically for this project — not a generic template. The design, copy, color palette, and tone must all flow from the brief above. Every element must earn its place.
+This page must feel like it was crafted specifically for this project — not a generic template. Aim for the quality of a $20,000 agency build. Make it exceptional.`;
 
-Aim for the quality of a $20,000 agency build. Make it exceptional.`;
+  if (refinementInstructions) {
+    msg += `\n\n## Refinement Instructions\nThe client has reviewed the previous version and wants these changes:\n${refinementInstructions}\n\nApply these changes while keeping everything else excellent.`;
+  }
+
+  return msg;
 };
 
+const cleanHtml = (raw: string) =>
+  raw.replace(/^```html\s*/i, "").replace(/^```\s*/, "").replace(/\s*```$/, "").trim();
+
+// ─── Generate all pages ────────────────────────────────────────────────────────
 router.post("/forge/generate", async (req, res) => {
   const { projectId, prompt } = req.body as { projectId: number; prompt: string };
-
-  if (!projectId || !prompt) {
-    return res.status(400).json({ error: "projectId and prompt are required" });
-  }
+  if (!projectId || !prompt) return res.status(400).json({ error: "projectId and prompt are required" });
 
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Connection", "keep-alive");
 
-  const sendEvent = (data: object) => {
-    res.write(`data: ${JSON.stringify(data)}\n\n`);
-  };
+  const send = (data: object) => res.write(`data: ${JSON.stringify(data)}\n\n`);
 
   try {
     const [project] = await db.select().from(projectsTable).where(eq(projectsTable.id, projectId));
-    if (!project) {
-      sendEvent({ type: "error", message: "Project not found" });
-      return res.end();
-    }
+    if (!project) { send({ type: "error", message: "Project not found" }); return res.end(); }
 
-    const pages = await db
-      .select()
-      .from(pagesTable)
-      .where(eq(pagesTable.projectId, projectId))
-      .orderBy(pagesTable.order);
+    const pages = await db.select().from(pagesTable).where(eq(pagesTable.projectId, projectId)).orderBy(pagesTable.order);
+    if (pages.length === 0) { send({ type: "error", message: "No pages found. Add at least one page first." }); return res.end(); }
 
-    if (pages.length === 0) {
-      sendEvent({ type: "error", message: "No pages found. Add at least one page first." });
-      return res.end();
-    }
-
-    sendEvent({
-      type: "thinking",
-      content: `Studying the brief for "${project.name}"... ${pages.length} page${pages.length === 1 ? "" : "s"} to craft.`,
-    });
+    send({ type: "thinking", content: `Studying the brief for "${project.name}"... ${pages.length} page${pages.length === 1 ? "" : "s"} to craft.` });
 
     for (const page of pages) {
-      sendEvent({ type: "page_start", pageId: page.id, pageTitle: page.title });
-
-      const userMessage = getPageUserMessage(project, page, pages, prompt);
+      send({ type: "page_start", pageId: page.id, pageTitle: page.title });
 
       const completion = await openai.chat.completions.create({
         model: "gpt-5.2",
         max_completion_tokens: 16000,
         messages: [
           { role: "system", content: FORGE_SYSTEM_PROMPT },
-          { role: "user", content: userMessage },
+          { role: "user", content: buildUserMessage(project, page, pages, prompt) },
         ],
       });
 
-      const raw = completion.choices[0]?.message?.content ?? "";
+      const html = cleanHtml(completion.choices[0]?.message?.content ?? "");
 
-      const cleanHtml = raw
-        .replace(/^```html\s*/i, "")
-        .replace(/^```\s*/, "")
-        .replace(/\s*```$/, "")
-        .trim();
+      // Save revision of old content
+      if (page.content) {
+        await db.insert(pageRevisionsTable).values({ pageId: page.id, content: page.content });
+      }
 
-      await db
-        .update(pagesTable)
-        .set({ content: cleanHtml, updatedAt: new Date() })
-        .where(eq(pagesTable.id, page.id));
-
-      sendEvent({ type: "page_done", pageId: page.id, pageTitle: page.title });
+      await db.update(pagesTable).set({ content: html, updatedAt: new Date() }).where(eq(pagesTable.id, page.id));
+      send({ type: "page_done", pageId: page.id, pageTitle: page.title });
     }
 
-    sendEvent({ type: "thinking", content: "The forge has cooled. Your site is ready." });
-    sendEvent({ type: "done" });
+    send({ type: "thinking", content: "The forge has cooled. Your site is ready." });
+    send({ type: "done" });
     res.end();
   } catch (err) {
     req.log.error({ err }, "Forge generation failed");
-    sendEvent({ type: "error", message: "Forge encountered an error. Try again." });
+    send({ type: "error", message: "Forge encountered an error. Try again." });
+    res.end();
+  }
+});
+
+// ─── Regenerate single page ────────────────────────────────────────────────────
+router.post("/forge/regenerate-page", async (req, res) => {
+  const { projectId, pageId, prompt, instructions } = req.body as {
+    projectId: number;
+    pageId: number;
+    prompt: string;
+    instructions?: string;
+  };
+
+  if (!projectId || !pageId || !prompt) {
+    return res.status(400).json({ error: "projectId, pageId, and prompt are required" });
+  }
+
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+
+  const send = (data: object) => res.write(`data: ${JSON.stringify(data)}\n\n`);
+
+  try {
+    const [project] = await db.select().from(projectsTable).where(eq(projectsTable.id, projectId));
+    if (!project) { send({ type: "error", message: "Project not found" }); return res.end(); }
+
+    const [page] = await db.select().from(pagesTable).where(
+      and(eq(pagesTable.id, pageId), eq(pagesTable.projectId, projectId))
+    );
+    if (!page) { send({ type: "error", message: "Page not found" }); return res.end(); }
+
+    const allPages = await db.select().from(pagesTable).where(eq(pagesTable.projectId, projectId)).orderBy(pagesTable.order);
+
+    send({ type: "thinking", content: instructions ? `Applying your notes to "${page.title}"...` : `Reforging "${page.title}"...` });
+    send({ type: "page_start", pageId: page.id, pageTitle: page.title });
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-5.2",
+      max_completion_tokens: 16000,
+      messages: [
+        { role: "system", content: FORGE_SYSTEM_PROMPT },
+        { role: "user", content: buildUserMessage(project, page, allPages, prompt, instructions) },
+      ],
+    });
+
+    const html = cleanHtml(completion.choices[0]?.message?.content ?? "");
+
+    // Save revision
+    if (page.content) {
+      await db.insert(pageRevisionsTable).values({ pageId: page.id, content: page.content });
+    }
+
+    await db.update(pagesTable).set({ content: html, updatedAt: new Date() }).where(eq(pagesTable.id, page.id));
+
+    send({ type: "page_done", pageId: page.id, pageTitle: page.title });
+    send({ type: "done", html });
+    res.end();
+  } catch (err) {
+    req.log.error({ err }, "Forge regen-page failed");
+    send({ type: "error", message: "Forge encountered an error. Try again." });
     res.end();
   }
 });

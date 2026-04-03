@@ -13,6 +13,7 @@ import {
   getListProjectsQueryKey,
   getGetDashboardSummaryQueryKey
 } from "@workspace/api-client-react";
+import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -29,7 +30,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { 
   Loader2, ArrowLeft, Settings, Trash2, Plus, FileText, 
-  MoreVertical, Edit3, Globe, Archive, Clock, Flame, CheckCircle2, AlertCircle
+  MoreVertical, Edit3, Globe, Archive, Clock, Flame, CheckCircle2, AlertCircle,
+  Download, Copy
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -144,6 +146,21 @@ export default function ProjectDetail() {
   const deleteProject = useDeleteProject();
   const createPage = useCreatePage();
   const deletePage = useDeletePage();
+
+  const duplicateProject = useMutation({
+    mutationFn: async () => {
+      const res = await fetch(`/api/projects/${projectId}/duplicate`, { method: "POST" });
+      if (!res.ok) throw new Error("Duplicate failed");
+      return res.json() as Promise<{ id: number; name: string }>;
+    },
+    onSuccess: (newProject) => {
+      queryClient.invalidateQueries({ queryKey: getListProjectsQueryKey() });
+      queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() });
+      toast({ title: "Project duplicated", description: `"${newProject.name}" is ready.` });
+      setLocation(`/projects/${newProject.id}`);
+    },
+    onError: () => toast({ variant: "destructive", title: "Could not duplicate project" }),
+  });
 
   const forge = useForgeGenerate(projectId, () => {
     queryClient.invalidateQueries({ queryKey: getListPagesQueryKey(projectId) });
@@ -274,6 +291,20 @@ export default function ProjectDetail() {
               <SelectItem value="archived"><div className="flex items-center"><Archive className="w-4 h-4 mr-2 text-muted-foreground" /> Archive</div></SelectItem>
             </SelectContent>
           </Select>
+          <a href={`/api/projects/${projectId}/export`} download>
+            <Button variant="outline" className="bg-background" disabled={!pages || pages.length === 0}>
+              <Download className="w-4 h-4 mr-2" /> Export ZIP
+            </Button>
+          </a>
+          <Button 
+            variant="outline" 
+            className="bg-background"
+            onClick={() => duplicateProject.mutate()}
+            disabled={duplicateProject.isPending}
+          >
+            {duplicateProject.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Copy className="w-4 h-4 mr-2" />}
+            Duplicate
+          </Button>
           <Button variant="outline" onClick={handleOpenSettings} className="bg-background">
             <Settings className="w-4 h-4 mr-2" /> Settings
           </Button>
