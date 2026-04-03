@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Flame, FolderKanban, PlusCircle, Settings, LogOut, CodeXml } from "lucide-react";
+import { Flame, FolderKanban, PlusCircle, CodeXml, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -9,6 +9,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/", label: "The Anvil", icon: Flame },
     { href: "/projects", label: "My Projects", icon: FolderKanban },
     { href: "/projects/new", label: "New Creation", icon: PlusCircle },
+    { href: "/pricing", label: "Upgrade", icon: CreditCard },
   ];
 
   return (

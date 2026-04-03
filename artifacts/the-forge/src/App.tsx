@@ -9,6 +9,8 @@ import Projects from "@/pages/projects";
 import NewProject from "@/pages/new-project";
 import ProjectDetail from "@/pages/project-detail";
 import PageEditor from "@/pages/page-editor";
+import Pricing from "@/pages/pricing";
+import PaymentSuccess from "@/pages/payment-success";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,6 +30,8 @@ function Router() {
         <Route path="/projects/new" component={NewProject} />
         <Route path="/projects/:id" component={ProjectDetail} />
         <Route path="/projects/:id/editor" component={PageEditor} />
+        <Route path="/pricing" component={Pricing} />
+        <Route path="/payment/success" component={PaymentSuccess} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
