@@ -1,3 +1,18 @@
+# The Forge — Website Builder
+
+## Product
+AI-powered website builder run by the character "Forge" (one of the 13 Moons). Users create projects, add pages, describe their site to Forge, and get complete HTML generated for every page. Built to eventually connect to the real Forge AI personality (coming April 7th).
+
+## Features
+- Project management (create/edit/delete with templates)
+- Page management per project
+- **Generate with Forge** — AI generates complete HTML/CSS for all pages from a description (streaming SSE)
+- **Live preview** — Edit/Preview toggle in page editor renders HTML in iframe
+- Dashboard with summary stats and recent projects
+
+## AI Integration
+Uses Replit AI Integrations (OpenAI, no user API key needed). Endpoint: `POST /api/forge/generate`. Streams SSE events back to client. Forge's personality lives in the system prompt in `artifacts/api-server/src/routes/forge.ts` — swap for real Forge AI on April 7th.
+
 # Workspace
 
 ## Overview
