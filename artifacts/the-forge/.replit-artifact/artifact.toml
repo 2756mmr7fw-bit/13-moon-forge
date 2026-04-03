@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "The Forge"
+version = "1.0.0"
+id = "artifacts/the-forge"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25654
+
+[services.development]
+run = "pnpm --filter @workspace/the-forge run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/the-forge", "run", "build" ]
+publicDir = "artifacts/the-forge/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25654"
+BASE_PATH = "/"
