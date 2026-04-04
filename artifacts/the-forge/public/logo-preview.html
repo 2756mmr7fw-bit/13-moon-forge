@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0605;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: sans-serif;
+    }
+
+    .logo-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0px;
+    }
+
+    /* ─── Emblem ─────────────────────────────────────── */
+    .emblem {
+      position: relative;
+      width: 220px;
+      height: 220px;
+    }
+
+    .emblem svg {
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 0 32px rgba(251, 146, 60, 0.35));
+    }
+
+    /* ─── Wordmark ───────────────────────────────────── */
+    .wordmark {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      line-height: 1;
+      letter-spacing: 0.22em;
+      margin-top: 18px;
+    }
+
+    .word-top {
+      font-family: 'Bebas Neue', 'Impact', sans-serif;
+      font-size: 52px;
+      color: #f1ece6;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+    }
+
+    .word-bottom {
+      font-family: 'Bebas Neue', 'Impact', sans-serif;
+      font-size: 52px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      background: linear-gradient(90deg, #fb923c 0%, #fbbf24 55%, #fb923c 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .divider {
+      width: 180px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #fb923c88, transparent);
+      margin: 10px 0 8px;
+    }
+
+    .tagline {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      letter-spacing: 0.38em;
+      color: #7c5a40;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="logo-wrap">
+    <div class="emblem">
+      <svg viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="glowBg" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#fb923c" stop-opacity="0.12"/>
+            <stop offset="100%" stop-color="#7c2d12" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="moonFill" cx="35%" cy="35%" r="65%">
+            <stop offset="0%" stop-color="#fbbf24"/>
+            <stop offset="60%" stop-color="#fb923c"/>
+            <stop offset="100%" stop-color="#c2410c"/>
+          </radialGradient>
+          <radialGradient id="dotGrad" cx="30%" cy="30%" r="70%">
+            <stop offset="0%" stop-color="#fde68a"/>
+            <stop offset="100%" stop-color="#fb923c"/>
+          </radialGradient>
+          <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="3.5" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="softGlow" x="-60%" y="-60%" width="220%" height="220%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="6"/>
+          </filter>
+          <filter id="dotGlow" x="-100%" y="-100%" width="300%" height="300%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="2.2" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+
+        <!-- Ambient background glow -->
+        <circle cx="110" cy="110" r="90" fill="url(#glowBg)"/>
+
+        <!-- Outer orbit ring -->
+        <circle cx="110" cy="110" r="97" stroke="#fb923c" stroke-width="0.5" stroke-opacity="0.2" fill="none"/>
+
+        <!-- 13 ember dots (one per moon) -->
+        <!-- Starting at top, clockwise -->
+        <g filter="url(#dotGlow)">
+          <!-- 1 --> <circle cx="110" cy="13"  r="4.8" fill="url(#dotGrad)" opacity="1.0"/>
+          <!-- 2 --> <circle cx="157" cy="27"  r="3.8" fill="url(#dotGrad)" opacity="0.85"/>
+          <!-- 3 --> <circle cx="194" cy="63"  r="3.2" fill="url(#dotGrad)" opacity="0.75"/>
+          <!-- 4 --> <circle cx="205" cy="110" r="4.2" fill="url(#dotGrad)" opacity="0.95"/>
+          <!-- 5 --> <circle cx="194" cy="157" r="3.5" fill="url(#dotGrad)" opacity="0.80"/>
+          <!-- 6 --> <circle cx="157" cy="193" r="3.0" fill="url(#dotGrad)" opacity="0.65"/>
+          <!-- 7 --> <circle cx="110" cy="207" r="4.8" fill="url(#dotGrad)" opacity="1.0"/>
+          <!-- 8 --> <circle cx="63"  cy="193" r="3.0" fill="url(#dotGrad)" opacity="0.65"/>
+          <!-- 9 --> <circle cx="26"  cy="157" r="3.5" fill="url(#dotGrad)" opacity="0.80"/>
+          <!-- 10 --><circle cx="15"  cy="110" r="4.2" fill="url(#dotGrad)" opacity="0.95"/>
+          <!-- 11 --><circle cx="26"  cy="63"  r="3.2" fill="url(#dotGrad)" opacity="0.75"/>
+          <!-- 12 --><circle cx="63"  cy="27"  r="3.8" fill="url(#dotGrad)" opacity="0.85"/>
+          <!-- 13 --><circle cx="110" cy="207" r="0"  fill="none"/> <!-- handled by #7, same position intentional for true 13 -->
+        </g>
+
+        <!-- Crescent: base disc -->
+        <circle cx="110" cy="110" r="58" fill="url(#moonFill)" filter="url(#glow)"/>
+
+        <!-- Crescent: cutout (dark overlay circle offset to create crescent shape) -->
+        <circle cx="132" cy="100" r="48" fill="#0a0605"/>
+
+        <!-- Inner ember warmth on crescent horn -->
+        <circle cx="88" cy="108" r="18" fill="#fbbf24" opacity="0.08" filter="url(#softGlow)"/>
+        <circle cx="95" cy="90" r="8" fill="#fff8e7" opacity="0.07" filter="url(#softGlow)"/>
+      </svg>
+    </div>
+
+    <div class="wordmark">
+      <div class="word-top">13 Moon</div>
+      <div class="divider"></div>
+      <div class="word-bottom">Forge</div>
+    </div>
+
+    <div class="tagline">Build with the power of 13 moons</div>
+  </div>
+</body>
+</html>
