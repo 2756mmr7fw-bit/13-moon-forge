@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "wXoHGU6WaasEbgayl77BB"
+uri = "file://screenshots/13moonforge-home.jpg"
+type = "image"
+title = "13 Moon Forge — Homepage Screenshot"
