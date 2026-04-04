@@ -17,7 +17,7 @@ const plans = [
     features: [
       "Unlimited projects",
       "Unlimited Forge generations",
-      "Publish to theforge.ai subdomain",
+      "Publish to 13moonforge.ai subdomain",
       "Export site as ZIP",
       "SEO controls",
       "Revision history",

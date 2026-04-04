@@ -414,7 +414,7 @@ export default function PageEditor() {
                       <div className="bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground">
                         <p className="font-medium text-foreground mb-1">Preview</p>
                         <p className="text-blue-400 font-medium truncate">{metaTitle || title || "Page Title"}</p>
-                        <p className="text-green-600 text-xs">theforge.ai/{activePage.slug}</p>
+                        <p className="text-green-600 text-xs">13moonforge.ai/{activePage.slug}</p>
                         <p className="mt-0.5 truncate">{metaDescription || "No description set."}</p>
                       </div>
                     </div>
