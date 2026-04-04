@@ -6,3 +6,9 @@ id = "wXoHGU6WaasEbgayl77BB"
 uri = "file://screenshots/13moonforge-home.jpg"
 type = "image"
 title = "13 Moon Forge — Homepage Screenshot"
+
+[[outputs]]
+id = "YVVrhdpjhgpIKZ5WHQlO5"
+uri = "file://screenshots/13moonforge-logo.jpg"
+type = "image"
+title = "13 Moon Forge — Logo"
