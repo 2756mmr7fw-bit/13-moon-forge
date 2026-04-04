@@ -1,6 +1,7 @@
 import { Link, useLocation } from "wouter";
-import { Flame, FolderKanban, PlusCircle, CodeXml, CreditCard } from "lucide-react";
+import { Flame, FolderKanban, PlusCircle, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { LogoMark, LogoWordmark } from "@/components/logo";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
@@ -16,16 +17,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen bg-background text-foreground">
       {/* Sidebar */}
       <aside className="w-64 border-r border-border bg-sidebar flex flex-col hidden md:flex shrink-0">
-        <div className="p-6">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="bg-primary/20 p-2 rounded-lg text-primary">
-              <CodeXml size={24} />
-            </div>
-            <span className="font-bold text-xl tracking-tight text-sidebar-foreground">The Forge</span>
+        <div className="p-5 pb-4">
+          <Link href="/">
+            <LogoWordmark size={38} />
           </Link>
         </div>
 
-        <nav className="flex-1 px-4 space-y-2">
+        <nav className="flex-1 px-4 space-y-1 pt-2">
           {navItems.map((item) => {
             const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
             return (
@@ -63,12 +61,20 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <main className="flex-1 flex flex-col min-w-0">
         {/* Mobile Header */}
         <header className="md:hidden border-b border-border bg-sidebar p-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="text-primary">
-              <CodeXml size={20} />
-            </div>
-            <span className="font-bold text-lg tracking-tight">The Forge</span>
+          <Link href="/">
+            <LogoMark size={32} />
           </Link>
+          <span
+            className="font-black uppercase tracking-widest text-sm"
+            style={{
+              background: "linear-gradient(90deg, #fb923c, #fbbf24)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}
+          >
+            13 Moon Forge
+          </span>
         </header>
 
         <div className="flex-1 overflow-auto p-4 md:p-8 lg:p-10">
