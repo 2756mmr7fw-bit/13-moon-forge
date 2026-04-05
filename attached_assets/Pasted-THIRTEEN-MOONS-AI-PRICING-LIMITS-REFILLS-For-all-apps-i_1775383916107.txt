@@ -1,0 +1,70 @@
+THIRTEEN MOONS AI — PRICING, LIMITS & REFILLS
+
+For all apps in the Sovereign Digital LLC ecosystem
+
+SUBSCRIPTION OPTIONS:
+
+Individual Moon subscriptions (on/off switches — pick only what you need):
+
+Moon	Role	Price
+Road Dog	The Guide	$3/mo
+Hawk	The Finder	$3/mo
+Forge	The Builder	$3/mo
+Ledger	The Accountant	$4/mo
+Quill	The Artist	$4/mo
+Herald	The Amplifier	$4/mo
+Aegis	The Shield	$1/mo
+Scout	The Deal Hunter	$1/mo
+Vigil	The Watchman	$3/mo
+Creed	The Rights Advisor	$2/mo
+Grit	The Coach	$1/mo
+Flint	The Spark	$2/mo
+Sage	The Teacher	$3/mo
+All 13 individually: $35/mo
+Full Team Bundle: $25/mo (save $10)
+First month trial: $20 (try all 13, keep what you love, shut off the rest)
+
+MONTHLY MESSAGE LIMITS:
+
+Individual Moon subscription: 100 messages per Moon per month
+Full Team Bundle ($25/mo): 500 messages per month shared across all 13 Moons
+First month trial ($20): 500 messages
+Free users (no subscription): 5 messages total to try it out
+
+REFILL PACKS (when monthly limit is reached):
+
+Pack	Price
+50 messages	$2.99
+150 messages	$6.99
+500 messages	$14.99
+Messages reset on the 1st of every month. Refill packs do not expire — unused purchased messages carry over.
+
+WHICH MOONS LIVE IN WHICH APP:
+
+App	Moon Characters
+13 Moon Antivirus (13moonantivirus.com)	Aegis
+13 Moon Call Guardian (13mooncallguardian.com)	Vigil
+EZ Quill (ezquill.ai)	Quill
+13 Moon Film Editor (13moonfilmeditor.ai)	Quill + Flint
+13 Moon Forge (13moonforge.ai)	Forge + Flint
+Town Square Press (townsquarepress.com)	Quill + Flint
+Town Square Press TV (townsquarepresstv.com)	Quill + Flint
+Town Square TV (townsqtv.com)	Quill + Flint
+The People's Town Square (thepeoplestownsq.com)	All 13 Moons
+IMPORTANT NOTES FOR EACH APP:
+
+Only show pricing for the Moons that live in YOUR app
+If your app has one Moon, show the individual price for that Moon
+If your app has two Moons, show both individual prices and mention the Full Team Bundle is available on the Town Square
+All subscriptions are managed through the Town Square (thepeoplestownsq.com) — users subscribe there, access works across all apps
+Free trial messages (5) work across all apps — one shared pool
+Refill packs purchased on any app work across all apps
+COMPETITOR COMPARISON (use where relevant):
+
+ChatGPT Plus: $20/mo for 1 general AI
+ChatGPT Pro: $200/mo for 1 general AI (unlimited)
+Sintra AI: $39/mo for 1 assistant, $97/mo for all 12 (250 credits)
+Grammarly Premium: $30/mo (reads everything you type)
+Norton Antivirus: $50-100/yr (harvests your data)
+Truecaller Premium: $3-5/mo (sells your contacts)
+Us: $25/mo for all 13. More assistants. More messages. No data harvesting.
