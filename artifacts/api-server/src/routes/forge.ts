@@ -3,6 +3,7 @@ import { db } from "@workspace/db";
 import { projectsTable, pagesTable, pageRevisionsTable } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
 import { openai } from "@workspace/integrations-openai-ai-server";
+import { checkForgeAccess, deductMoonMessage } from "../lib/moonApi";
 
 const router = Router();
 
@@ -150,6 +151,13 @@ router.post("/forge/generate", async (req, res) => {
 
   const send = (data: object) => res.write(`data: ${JSON.stringify(data)}\n\n`);
 
+  // ─── Moon subscription check ───────────────────────────────────────────────
+  const access = await checkForgeAccess(req.userId);
+  if (!access.allowed) {
+    send({ type: "subscription_required", error: access.error, subscribeUrl: access.subscribeUrl });
+    return res.end();
+  }
+
   try {
     const [project] = await db.select().from(projectsTable).where(eq(projectsTable.id, projectId));
     if (!project) { send({ type: "error", message: "Project not found" }); return res.end(); }
@@ -180,6 +188,9 @@ router.post("/forge/generate", async (req, res) => {
 
       await db.update(pagesTable).set({ content: html, updatedAt: new Date() }).where(eq(pagesTable.id, page.id));
       send({ type: "page_done", pageId: page.id, pageTitle: page.title });
+
+      // Deduct one message per page generated
+      void deductMoonMessage(req.userId, access.moon ?? "forge");
     }
 
     send({ type: "thinking", content: "The forge has cooled. Your site is ready." });
@@ -210,6 +221,13 @@ router.post("/forge/regenerate-page", async (req, res) => {
   res.setHeader("Connection", "keep-alive");
 
   const send = (data: object) => res.write(`data: ${JSON.stringify(data)}\n\n`);
+
+  // ─── Moon subscription check ───────────────────────────────────────────────
+  const access = await checkForgeAccess(req.userId);
+  if (!access.allowed) {
+    send({ type: "subscription_required", error: access.error, subscribeUrl: access.subscribeUrl });
+    return res.end();
+  }
 
   try {
     const [project] = await db.select().from(projectsTable).where(eq(projectsTable.id, projectId));
@@ -245,6 +263,10 @@ router.post("/forge/regenerate-page", async (req, res) => {
 
     send({ type: "page_done", pageId: page.id, pageTitle: page.title });
     send({ type: "done", html });
+
+    // Deduct one message for the regen
+    void deductMoonMessage(req.userId, access.moon ?? "forge");
+
     res.end();
   } catch (err) {
     req.log.error({ err }, "Forge regen-page failed");

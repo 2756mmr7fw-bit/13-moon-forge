@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
+import { getUserId } from "@/lib/userId";
 import { useRoute, Link, useSearch } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -45,7 +46,7 @@ function useRegenPage(projectId: number, pageId: number | undefined, onDone: (ht
     try {
       const res = await fetch("/api/forge/regenerate-page", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-user-id": getUserId() },
         body: JSON.stringify({ projectId, pageId, prompt, instructions: instructions || undefined }),
         signal: abortRef.current.signal,
       });
@@ -66,7 +67,13 @@ function useRegenPage(projectId: number, pageId: number | undefined, onDone: (ht
           if (!line.startsWith("data: ")) continue;
           try {
             const event = JSON.parse(line.slice(6));
-            if (event.type === "thinking") setLog(prev => [...prev, event.content]);
+            if (event.type === "subscription_required") {
+              const msg = event.error ?? "You need an active Forge subscription.";
+              const url = event.subscribeUrl ?? "https://thepeoplestownsq.com/ai-education";
+              setLog(prev => [...prev, `🔒 ${msg} → ${url}`]);
+              setStatus("error");
+              return;
+            } else if (event.type === "thinking") setLog(prev => [...prev, event.content]);
             else if (event.type === "done" && event.html) { setStatus("done"); onDone(event.html); return; }
             else if (event.type === "error") { setLog(prev => [...prev, event.message]); setStatus("error"); return; }
           } catch { /* ignore */ }
