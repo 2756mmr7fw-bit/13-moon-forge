@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { openai } from "@workspace/integrations-openai-ai-server";
+import { checkFlintAccess, deductMoonMessage } from "../lib/moonApi";
 
 const router = Router();
 
@@ -56,7 +57,12 @@ router.post("/flint/chat", async (req, res) => {
 
   const send = (data: object) => res.write(`data: ${JSON.stringify(data)}\n\n`);
 
-  const systemPrompt = FLINT_SYSTEM_PROMPT;
+  // ─── Moon subscription check ───────────────────────────────────────────────
+  const access = await checkFlintAccess(req.userId);
+  if (!access.allowed) {
+    send({ type: "subscription_required", error: access.error, subscribeUrl: access.subscribeUrl });
+    return res.end();
+  }
 
   try {
     const stream = await openai.chat.completions.create({
@@ -64,7 +70,7 @@ router.post("/flint/chat", async (req, res) => {
       max_tokens: 1024,
       stream: true,
       messages: [
-        { role: "system", content: systemPrompt },
+        { role: "system", content: FLINT_SYSTEM_PROMPT },
         ...messages,
       ],
     });
@@ -75,6 +81,10 @@ router.post("/flint/chat", async (req, res) => {
     }
 
     send({ type: "done" });
+
+    // Deduct one message after successful response
+    void deductMoonMessage(req.userId, access.moon ?? "flint");
+
     res.end();
   } catch (err) {
     req.log.error({ err }, "Flint chat failed");

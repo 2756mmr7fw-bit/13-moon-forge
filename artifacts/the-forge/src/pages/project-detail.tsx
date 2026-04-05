@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { getUserId } from "@/lib/userId";
 import { useRoute, Link, useLocation } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import { 
@@ -37,9 +38,11 @@ import { cn } from "@/lib/utils";
 
 type GenerateStatus = "idle" | "generating" | "done" | "error";
 interface GenerateEvent {
-  type: "thinking" | "page_start" | "page_done" | "done" | "error";
+  type: "thinking" | "page_start" | "page_done" | "done" | "error" | "subscription_required";
   content?: string;
   message?: string;
+  error?: string;
+  subscribeUrl?: string;
   pageId?: number;
   pageTitle?: string;
 }
@@ -58,7 +61,7 @@ function useForgeGenerate(projectId: number, onDone: () => void) {
     try {
       const res = await fetch("/api/forge/generate", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-user-id": getUserId() },
         body: JSON.stringify({ projectId, prompt }),
         signal: abortRef.current.signal,
       });
@@ -80,7 +83,13 @@ function useForgeGenerate(projectId: number, onDone: () => void) {
           if (!line.startsWith("data: ")) continue;
           try {
             const event: GenerateEvent = JSON.parse(line.slice(6));
-            if (event.type === "thinking" && event.content) {
+            if (event.type === "subscription_required") {
+              const msg = event.error ?? "You need an active Forge subscription.";
+              const url = event.subscribeUrl ?? "https://thepeoplestownsq.com/ai-education";
+              setLog(prev => [...prev, `🔒 ${msg} → ${url}`]);
+              setStatus("error");
+              return;
+            } else if (event.type === "thinking" && event.content) {
               setLog(prev => [...prev, event.content!]);
             } else if (event.type === "page_start" && event.pageTitle) {
               setLog(prev => [...prev, `Forging "${event.pageTitle}"...`]);

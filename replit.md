@@ -11,7 +11,22 @@ AI-powered website builder run by the character "Forge" (one of the 13 Moons). U
 - Dashboard with summary stats and recent projects
 
 ## AI Integration
-Uses Replit AI Integrations (OpenAI, no user API key needed). Endpoint: `POST /api/forge/generate`. Streams SSE events back to client. Forge's personality lives in the system prompt in `artifacts/api-server/src/routes/forge.ts` — swap for real Forge AI on April 7th.
+Uses Replit AI Integrations (OpenAI, no user API key needed). Endpoints: `POST /api/forge/generate`, `POST /api/forge/regenerate-page`, `POST /api/flint/chat`. All stream SSE events back to client. Both AI characters have full system prompts in their respective route files.
+
+## Subscription / Moon API
+All AI routes are gated by the Thirteen Moons subscription system at thepeoplestownsq.com.
+- **Verify**: `GET https://thepeoplestownsq.com/api/moon/verify?userId={userId}&moon=forge|flint` with `x-moon-api-key` header
+- **Deduct**: `POST https://thepeoplestownsq.com/api/moon/deduct` with `{userId, moonName, count: 1}`
+- Service layer: `artifacts/api-server/src/lib/moonApi.ts`
+- User identity: anonymous persistent UUID stored in `localStorage` (`13moonforge_user_id`), sent as `x-user-id` request header
+- Middleware: `artifacts/api-server/src/middlewares/userId.ts` populates `req.userId`
+- Subscribe URL: `https://thepeoplestownsq.com/ai-education`
+- SSE event `subscription_required` triggers UI gate with subscribe link
+
+## Secrets Required
+- `MOON_API_KEY` — Thirteen Moons API key (from thepeoplestownsq.com)
+- `SESSION_SECRET` — session secret
+- `SQUARE_API_KEY` — Square payments
 
 # Workspace
 

@@ -1,13 +1,16 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Sparkles, RotateCcw } from "lucide-react";
+import { Send, Sparkles, RotateCcw, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { getUserId } from "@/lib/userId";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
   streaming?: boolean;
+  subscriptionRequired?: boolean;
+  subscribeUrl?: string;
 }
 
 const FLINT_INTRO: Message = {
@@ -33,7 +36,7 @@ export default function Brainstorm() {
     if (!text || loading) return;
 
     const userMsg: Message = { role: "user", content: text };
-    const history = [...messages.filter(m => !m.streaming), userMsg];
+    const history = [...messages.filter(m => !m.streaming && !m.subscriptionRequired), userMsg];
     setMessages([...history, { role: "assistant", content: "", streaming: true }]);
     setInput("");
     setLoading(true);
@@ -41,7 +44,10 @@ export default function Brainstorm() {
     try {
       const res = await fetch(`${API_BASE}/api/flint/chat`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-id": getUserId(),
+        },
         body: JSON.stringify({
           messages: history.map(m => ({ role: m.role, content: m.content })),
         }),
@@ -59,7 +65,18 @@ export default function Brainstorm() {
           if (!line.startsWith("data: ")) continue;
           try {
             const parsed = JSON.parse(line.slice(6));
-            if (parsed.type === "chunk") {
+            if (parsed.type === "subscription_required") {
+              setMessages(prev => {
+                const next = [...prev];
+                next[next.length - 1] = {
+                  role: "assistant",
+                  content: parsed.error ?? "You need an active subscription to chat with Flint.",
+                  subscriptionRequired: true,
+                  subscribeUrl: parsed.subscribeUrl,
+                };
+                return next;
+              });
+            } else if (parsed.type === "chunk") {
               accumulated += parsed.content;
               setMessages(prev => {
                 const next = [...prev];
@@ -158,7 +175,9 @@ export default function Brainstorm() {
                 "max-w-[78%] rounded-2xl px-4 py-3 text-sm leading-relaxed",
                 msg.role === "user"
                   ? "bg-primary text-primary-foreground rounded-br-sm"
-                  : "bg-muted text-foreground rounded-bl-sm"
+                  : msg.subscriptionRequired
+                    ? "bg-amber-950/40 border border-amber-800/50 text-foreground rounded-bl-sm"
+                    : "bg-muted text-foreground rounded-bl-sm"
               )}
             >
               {msg.content.split("\n").map((line, j) => (
@@ -169,6 +188,19 @@ export default function Brainstorm() {
               ))}
               {msg.streaming && (
                 <span className="inline-block w-1.5 h-4 bg-amber-400 ml-0.5 animate-pulse rounded-sm" />
+              )}
+              {msg.subscriptionRequired && msg.subscribeUrl && (
+                <div className="mt-3">
+                  <a
+                    href={msg.subscribeUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-400 text-black text-xs font-bold hover:bg-amber-300 transition-colors"
+                  >
+                    Subscribe on the Town Square
+                    <ExternalLink size={11} />
+                  </a>
+                </div>
               )}
             </div>
           </div>
