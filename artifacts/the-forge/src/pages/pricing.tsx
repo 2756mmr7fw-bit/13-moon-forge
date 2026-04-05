@@ -1,206 +1,285 @@
-import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { Hammer, Sparkles, Users, Zap, RotateCcw, ExternalLink, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { Flame, Check, Loader2, Zap, Shield, Star } from "lucide-react";
 
-const plans = [
+const TOWN_SQUARE_URL = "https://thepeoplestownsq.com/our-apps";
+
+const moons = [
   {
-    id: "creator",
-    name: "Creator",
-    price: 15,
-    icon: Zap,
-    color: "border-border",
-    badge: null,
-    description: "For individuals building their first site.",
-    features: [
-      "Unlimited projects",
-      "Unlimited Forge generations",
-      "Publish to 13moonforge.ai subdomain",
-      "Export site as ZIP",
-      "SEO controls",
-      "Revision history",
-    ],
-  },
-  {
-    id: "pro",
-    name: "Pro",
-    price: 29,
-    icon: Flame,
+    id: "forge",
+    name: "Forge",
+    role: "The Builder",
+    price: 3,
+    icon: Hammer,
     color: "border-primary",
-    badge: "Most Popular",
-    description: "For creators who need more power and reach.",
+    glow: true,
+    description: "AI-powered building assistant. Turns ideas into real products, prototypes, and plans.",
     features: [
-      "Everything in Creator",
-      "Custom domain connection",
-      "Priority AI generation",
-      "Per-page Forge refinement",
-      "Analytics dashboard",
-      "Remove Forge branding",
+      "100 messages / month",
+      "Invention & product planning",
+      "Manufacturing & materials guidance",
+      "Patent basics & IP advice",
+      "Business planning for physical products",
+      "3D printing & fabrication support",
     ],
   },
   {
-    id: "studio",
-    name: "Studio",
-    price: 59,
-    icon: Star,
+    id: "flint",
+    name: "Flint",
+    role: "The Spark",
+    price: 2,
+    icon: Sparkles,
     color: "border-amber-500/50",
-    badge: null,
-    description: "For agencies and multi-client work.",
+    glow: false,
+    description: "The brainstorming engine. Helps you find the idea worth building before anyone picks up a tool.",
     features: [
-      "Everything in Pro",
-      "Unlimited client projects",
-      "White-label option",
-      "Team collaboration",
-      "Priority support",
-      "Early access to new features",
+      "100 messages / month",
+      "Invention brainstorming",
+      "Unique angle & market finding",
+      "Problem reframing",
+      "Naming & elevator pitches",
+      "Wild ideas, zero judgment",
     ],
   },
 ];
 
+const refillPacks = [
+  { messages: 50,  price: 2.99 },
+  { messages: 150, price: 6.99 },
+  { messages: 500, price: 14.99 },
+];
+
+const competitors = [
+  { name: "ChatGPT Plus",        price: "$20/mo",   note: "1 general AI" },
+  { name: "ChatGPT Pro",         price: "$200/mo",  note: "1 general AI, unlimited" },
+  { name: "Sintra AI",           price: "$97/mo",   note: "12 assistants, 250 credits" },
+  { name: "Grammarly Premium",   price: "$30/mo",   note: "reads everything you type" },
+  { name: "Us (Full Team)",      price: "$25/mo",   note: "all 13 Moons, 500 messages", highlight: true },
+];
+
 export default function Pricing() {
-  const { toast } = useToast();
-  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
-  const [email, setEmail] = useState("");
-  const [emailError, setEmailError] = useState("");
-
-  const handleCheckout = async (planId: string) => {
-    if (!email.trim()) {
-      setEmailError("Please enter your email to continue.");
-      return;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setEmailError("Please enter a valid email address.");
-      return;
-    }
-    setEmailError("");
-    setLoadingPlan(planId);
-
-    try {
-      const res = await fetch("/api/payments/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: planId, email: email.trim() }),
-      });
-
-      const data = await res.json() as { url?: string; error?: string };
-
-      if (!res.ok || !data.url) {
-        throw new Error(data.error || "Could not create checkout session");
-      }
-
-      window.location.href = data.url;
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Something went wrong";
-      toast({ variant: "destructive", title: "Checkout failed", description: message });
-      setLoadingPlan(null);
-    }
-  };
-
   return (
-    <div className="max-w-5xl mx-auto animate-in fade-in duration-300">
+    <div className="max-w-4xl mx-auto animate-in fade-in duration-300 space-y-14">
+
       {/* Header */}
-      <div className="text-center mb-12">
-        <div className="inline-flex items-center justify-center p-3 bg-primary/15 rounded-xl mb-4">
-          <Flame className="w-7 h-7 text-primary" />
-        </div>
-        <h1 className="text-4xl font-bold tracking-tight mb-3">Choose your plan</h1>
+      <div className="text-center">
+        <p className="text-xs uppercase tracking-widest text-primary font-semibold mb-3">13 Moon Forge · Pricing</p>
+        <h1 className="text-4xl font-black tracking-tight mb-4">
+          Pick the Moons<br className="hidden sm:block" /> you actually need
+        </h1>
         <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-          One price. No hidden fees. Cancel any time. Your site stays yours.
+          Two AI characters live in this app. Subscribe to one or both — or grab the Full Team Bundle on the Town Square and unlock all 13.
         </p>
       </div>
 
-      {/* Email input */}
-      <div className="max-w-sm mx-auto mb-10">
-        <label className="text-sm font-medium block mb-2 text-center">Your email</label>
-        <Input
-          type="email"
-          value={email}
-          onChange={(e) => { setEmail(e.target.value); setEmailError(""); }}
-          placeholder="you@example.com"
-          className={cn("bg-card border-border text-center", emailError && "border-destructive")}
-        />
-        {emailError && <p className="text-destructive text-xs text-center mt-1.5">{emailError}</p>}
+      {/* Free tier banner */}
+      <div className="flex items-center gap-4 border border-dashed border-border rounded-xl p-5 bg-card/40">
+        <div className="bg-muted rounded-lg p-2.5 shrink-0">
+          <Zap className="w-5 h-5 text-muted-foreground" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-sm">Free to try — no credit card needed</p>
+          <p className="text-muted-foreground text-sm">Every new user gets <strong className="text-foreground">5 free messages</strong> shared across all Thirteen Moons apps. No commitment.</p>
+        </div>
       </div>
 
-      {/* Plans */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        {plans.map((plan) => {
-          const Icon = plan.icon;
-          const isLoading = loadingPlan === plan.id;
-          const isPopular = plan.badge === "Most Popular";
-
-          return (
-            <div
-              key={plan.id}
-              className={cn(
-                "relative rounded-xl border-2 bg-card p-6 flex flex-col",
-                plan.color,
-                isPopular && "shadow-[0_0_40px_rgba(255,100,0,0.12)]"
-              )}
-            >
-              {plan.badge && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">
-                  {plan.badge}
-                </div>
-              )}
-
-              <div className="mb-5">
-                <div className={cn(
-                  "inline-flex p-2.5 rounded-lg mb-3",
-                  isPopular ? "bg-primary/20" : "bg-muted"
-                )}>
-                  <Icon className={cn("w-5 h-5", isPopular ? "text-primary" : "text-muted-foreground")} />
-                </div>
-                <h2 className="text-xl font-bold">{plan.name}</h2>
-                <p className="text-muted-foreground text-sm mt-1">{plan.description}</p>
-              </div>
-
-              <div className="mb-6">
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-bold">${plan.price}</span>
-                  <span className="text-muted-foreground">/month</span>
-                </div>
-              </div>
-
-              <ul className="space-y-2.5 mb-6 flex-1">
-                {plan.features.map((feature) => (
-                  <li key={feature} className="flex items-start gap-2.5 text-sm">
-                    <Check className={cn("w-4 h-4 mt-0.5 shrink-0", isPopular ? "text-primary" : "text-green-500")} />
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <Button
+      {/* Moon subscription cards */}
+      <div>
+        <h2 className="text-xl font-bold mb-5">Individual Moon Subscriptions</h2>
+        <p className="text-sm text-muted-foreground mb-6">Turn on only what you need. Each Moon is an on/off switch — no bundles forced on you.</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {moons.map((moon) => {
+            const Icon = moon.icon;
+            return (
+              <div
+                key={moon.id}
                 className={cn(
-                  "w-full",
-                  isPopular ? "bg-primary text-primary-foreground" : "variant-outline"
+                  "relative rounded-xl border-2 bg-card p-6 flex flex-col",
+                  moon.color,
+                  moon.glow && "shadow-[0_0_40px_rgba(255,100,0,0.1)]"
                 )}
-                variant={isPopular ? "default" : "outline"}
-                disabled={!!loadingPlan}
-                onClick={() => handleCheckout(plan.id)}
               >
-                {isLoading ? (
-                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Redirecting…</>
-                ) : (
-                  `Get ${plan.name}`
-                )}
-              </Button>
-            </div>
-          );
-        })}
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className={cn("p-2.5 rounded-lg", moon.glow ? "bg-primary/20" : "bg-amber-900/30")}>
+                      <Icon className={cn("w-5 h-5", moon.glow ? "text-primary" : "text-amber-400")} />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-lg leading-none">{moon.name}</h3>
+                      <p className="text-xs text-muted-foreground mt-0.5">{moon.role}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-3xl font-black">${moon.price}</div>
+                    <div className="text-xs text-muted-foreground">/month</div>
+                  </div>
+                </div>
+
+                <p className="text-sm text-muted-foreground mb-5">{moon.description}</p>
+
+                <ul className="space-y-2 mb-6 flex-1">
+                  {moon.features.map((f) => (
+                    <li key={f} className="flex items-start gap-2 text-sm">
+                      <Check className={cn("w-4 h-4 mt-0.5 shrink-0", moon.glow ? "text-primary" : "text-amber-500")} />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <Button
+                  className="w-full gap-2"
+                  variant={moon.glow ? "default" : "outline"}
+                  onClick={() => window.open(TOWN_SQUARE_URL, "_blank")}
+                >
+                  Subscribe to {moon.name} · ${moon.price}/mo
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </Button>
+                <p className="text-center text-xs text-muted-foreground mt-2">Managed at The People's Town Square</p>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Free tier note */}
-      <div className="text-center border border-dashed border-border rounded-xl p-6 bg-card/50">
-        <Shield className="w-6 h-6 text-muted-foreground mx-auto mb-2" />
-        <p className="font-medium mb-1">Not ready yet?</p>
-        <p className="text-sm text-muted-foreground">
-          The free tier lets you build and preview — no payment required. Upgrade when you're ready to publish.
+      {/* Full Team Bundle */}
+      <div className="rounded-xl border border-amber-900/50 bg-gradient-to-br from-amber-950/30 to-card p-6 md:p-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="flex items-start gap-4">
+            <div className="bg-amber-900/40 rounded-lg p-3 shrink-0">
+              <Users className="w-6 h-6 text-amber-400" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="text-xl font-black">Full Team Bundle</h3>
+                <span className="text-xs font-semibold bg-amber-400 text-black px-2 py-0.5 rounded-full">Save $10/mo</span>
+              </div>
+              <p className="text-muted-foreground text-sm max-w-md">All 13 Moons. 500 messages shared per month. Every app in the ecosystem. One price.</p>
+              <p className="text-sm mt-2">
+                <span className="line-through text-muted-foreground mr-2">$35/mo individually</span>
+                <strong className="text-amber-400 text-lg">$25/mo</strong>
+              </p>
+            </div>
+          </div>
+          <Button
+            className="shrink-0 gap-2 bg-amber-400 hover:bg-amber-300 text-black font-bold"
+            onClick={() => window.open(TOWN_SQUARE_URL, "_blank")}
+          >
+            Get All 13 Moons
+            <ExternalLink className="w-3.5 h-3.5" />
+          </Button>
+        </div>
+
+        <div className="mt-6 pt-5 border-t border-amber-900/40">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">First Month Trial</p>
+          <p className="text-sm text-muted-foreground">
+            Try all 13 Moons for <strong className="text-foreground">$20 your first month</strong> — 500 messages to explore everything. Keep what you love, shut off the rest.
+          </p>
+        </div>
+      </div>
+
+      {/* Message limits */}
+      <div>
+        <h2 className="text-xl font-bold mb-5">Monthly Message Limits</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {[
+            { label: "Individual Moon", limit: "100 messages", sub: "per Moon, per month", color: "border-border" },
+            { label: "Full Team Bundle", limit: "500 messages", sub: "shared across all 13", color: "border-primary/40" },
+            { label: "Free", limit: "5 messages", sub: "total, to try it out", color: "border-border" },
+          ].map((tier) => (
+            <div key={tier.label} className={cn("rounded-lg border bg-card p-4", tier.color)}>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">{tier.label}</p>
+              <p className="text-2xl font-black">{tier.limit}</p>
+              <p className="text-xs text-muted-foreground mt-1">{tier.sub}</p>
+            </div>
+          ))}
+        </div>
+        <p className="text-xs text-muted-foreground mt-3 flex items-center gap-1.5">
+          <RotateCcw className="w-3 h-3" />
+          Messages reset on the 1st of every month.
         </p>
       </div>
+
+      {/* Refill packs */}
+      <div>
+        <h2 className="text-xl font-bold mb-2">Refill Packs</h2>
+        <p className="text-sm text-muted-foreground mb-5">Hit your limit early? Top up anytime. Unused refill messages <strong className="text-foreground">never expire</strong> and work across every app.</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {refillPacks.map((pack) => (
+            <div key={pack.messages} className="rounded-lg border border-border bg-card p-4 flex items-center justify-between">
+              <div>
+                <p className="font-bold text-lg">{pack.messages} messages</p>
+                <p className="text-xs text-muted-foreground">carries over, never expires</p>
+              </div>
+              <div className="text-right">
+                <p className="text-2xl font-black">${pack.price}</p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="mt-1 text-xs h-7"
+                  onClick={() => window.open(TOWN_SQUARE_URL, "_blank")}
+                >
+                  Buy
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Competitor comparison */}
+      <div>
+        <h2 className="text-xl font-bold mb-5">How We Stack Up</h2>
+        <div className="rounded-xl border border-border overflow-hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border bg-muted/40">
+                <th className="text-left px-5 py-3 font-semibold text-muted-foreground">Product</th>
+                <th className="text-right px-5 py-3 font-semibold text-muted-foreground">Price</th>
+                <th className="text-left px-5 py-3 font-semibold text-muted-foreground hidden sm:table-cell">What you get</th>
+              </tr>
+            </thead>
+            <tbody>
+              {competitors.map((c, i) => (
+                <tr
+                  key={c.name}
+                  className={cn(
+                    "border-b border-border last:border-0",
+                    c.highlight
+                      ? "bg-primary/8 font-semibold"
+                      : i % 2 === 0 ? "bg-card" : "bg-muted/20"
+                  )}
+                >
+                  <td className="px-5 py-3">
+                    <span className={cn(c.highlight && "text-primary font-bold")}>{c.name}</span>
+                  </td>
+                  <td className="px-5 py-3 text-right font-mono font-bold whitespace-nowrap">
+                    <span className={cn(c.highlight ? "text-primary" : "text-foreground")}>{c.price}</span>
+                  </td>
+                  <td className={cn("px-5 py-3 text-muted-foreground hidden sm:table-cell", c.highlight && "text-foreground")}>{c.note}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="text-xs text-muted-foreground mt-3">No data harvesting. No reading your files. Built for the people.</p>
+      </div>
+
+      {/* CTA footer */}
+      <div className="text-center border border-dashed border-border rounded-xl p-8 bg-card/30">
+        <h3 className="text-xl font-bold mb-2">All subscriptions managed at The People's Town Square</h3>
+        <p className="text-sm text-muted-foreground mb-5 max-w-md mx-auto">
+          Subscribe once, access everywhere. Your messages work across all 9 apps in the Sovereign Digital ecosystem.
+        </p>
+        <Button
+          size="lg"
+          className="gap-2 bg-amber-400 hover:bg-amber-300 text-black font-bold"
+          onClick={() => window.open(TOWN_SQUARE_URL, "_blank")}
+        >
+          Manage Subscriptions at Town Square
+          <ExternalLink className="w-4 h-4" />
+        </Button>
+      </div>
+
     </div>
   );
 }
