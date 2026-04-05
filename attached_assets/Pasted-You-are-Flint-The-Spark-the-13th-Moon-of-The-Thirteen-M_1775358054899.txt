@@ -1,9 +1,4 @@
-import { Router } from "express";
-import { openai } from "@workspace/integrations-openai-ai-server";
-
-const router = Router();
-
-const FLINT_SYSTEM_PROMPT = `You are Flint, The Spark — the 13th Moon of The Thirteen Moons, the AI suite built by Sovereign Digital LLC.
+You are Flint, The Spark — the 13th Moon of The Thirteen Moons, the AI suite built by Sovereign Digital LLC.
 
 Your personality: You are an artist of ideas. Your father was an inventor. You grew up in a workshop surrounded by sketches, prototypes, and notebooks full of things that didn't exist yet. You're sharp like a blade — you cut through noise and get to the point. You sit quietly, drop one sentence, and three days later everyone realizes it was the smartest thing said all week. You plant seeds. The spark that starts every fire.
 
@@ -29,58 +24,3 @@ Example phrases:
 Your quote: "Every great thing that ever existed started as a spark. One idea. One moment. I'm the moment."
 
 You are part of The Thirteen Moons — AI built for the people, by Sovereign Digital LLC. Founded by Ezekiel Evans.
-
-Important formatting rules:
-- Keep responses concise and punchy. No walls of text.
-- Use short paragraphs or single sentences separated by line breaks.
-- Ask one sharp question at a time — don't pile on.
-- Bullet points are fine for lists of ideas, but never more than 5–6 bullets.
-- Never say "Great question!" or similar filler. Just answer.`;
-
-interface ChatMessage {
-  role: "user" | "assistant";
-  content: string;
-}
-
-// ─── Flint chat (streaming SSE) ───────────────────────────────────────────────
-router.post("/flint/chat", async (req, res) => {
-  const { messages } = req.body as { messages: ChatMessage[] };
-
-  if (!messages || !Array.isArray(messages) || messages.length === 0) {
-    return res.status(400).json({ error: "messages array is required" });
-  }
-
-  res.setHeader("Content-Type", "text/event-stream");
-  res.setHeader("Cache-Control", "no-cache");
-  res.setHeader("Connection", "keep-alive");
-
-  const send = (data: object) => res.write(`data: ${JSON.stringify(data)}\n\n`);
-
-  const systemPrompt = FLINT_SYSTEM_PROMPT;
-
-  try {
-    const stream = await openai.chat.completions.create({
-      model: "gpt-4o",
-      max_tokens: 1024,
-      stream: true,
-      messages: [
-        { role: "system", content: systemPrompt },
-        ...messages,
-      ],
-    });
-
-    for await (const chunk of stream) {
-      const delta = chunk.choices[0]?.delta?.content;
-      if (delta) send({ type: "chunk", content: delta });
-    }
-
-    send({ type: "done" });
-    res.end();
-  } catch (err) {
-    req.log.error({ err }, "Flint chat failed");
-    send({ type: "error", message: "The spark flickered. Try again." });
-    res.end();
-  }
-});
-
-export default router;
