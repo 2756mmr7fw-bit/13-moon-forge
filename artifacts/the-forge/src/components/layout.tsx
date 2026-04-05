@@ -63,9 +63,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <Flame size={64} />
             </div>
             <p className="text-sm font-medium text-accent-foreground relative z-10 italic mb-2">
-              "Every great site begins with a single strike of the hammer."
+              "Ideas are free. Building is where the work starts. Let's get to work."
             </p>
-            <p className="text-xs text-muted-foreground relative z-10">— Forge</p>
+            <p className="text-xs text-muted-foreground relative z-10">— Forge, Moon #5</p>
           </div>
         </div>
       </aside>
