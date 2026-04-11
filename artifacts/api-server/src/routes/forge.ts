@@ -343,4 +343,177 @@ ${code.slice(0, 4000)}
   }
 });
 
+// ─── Helper: streaming SSE tool endpoint ───────────────────────────────────────
+function makeStreamRoute(
+  path: string,
+  systemPrompt: string,
+  buildUserMessage: (body: Record<string, string>) => string,
+  requiredFields: string[],
+) {
+  router.post(path, async (req, res) => {
+    const body = req.body as Record<string, string>;
+    const missing = requiredFields.find(f => !body[f]?.trim());
+    if (missing) return res.status(400).json({ error: `${missing} is required` });
+
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+    const send = (data: object) => res.write(`data: ${JSON.stringify(data)}\n\n`);
+
+    const access = await checkForgeAccess(req.userId);
+    if (!access.allowed) {
+      send({ type: "subscription_required", error: access.error, subscribeUrl: access.subscribeUrl });
+      return res.end();
+    }
+
+    try {
+      const stream = await openai.chat.completions.create({
+        model: "gpt-4o",
+        max_tokens: 2048,
+        stream: true,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: buildUserMessage(body) },
+        ],
+      });
+
+      for await (const chunk of stream) {
+        const delta = chunk.choices[0]?.delta?.content;
+        if (delta) send({ type: "chunk", content: delta });
+      }
+
+      send({ type: "done" });
+      void deductMoonMessage(req.userId, access.moon ?? "forge");
+      res.end();
+    } catch (err) {
+      req.log.error({ err }, `${path} failed`);
+      send({ type: "error", message: "Forge hit a snag. Try again." });
+      res.end();
+    }
+  });
+}
+
+// ─── Error Decoder ─────────────────────────────────────────────────────────────
+makeStreamRoute(
+  "/forge/decode-error",
+  `You are Forge, The Builder. You are an expert developer and debugger who can read any error message, crash log, or stack trace and instantly understand what went wrong and exactly how to fix it.
+
+Your response format:
+1. **What Broke** — plain English explanation of what the error means (1-2 sentences, no jargon)
+2. **Why It Happened** — what caused this (brief, practical)
+3. **How to Fix It** — numbered steps the user can follow right now
+4. **Quick Check** — one thing to verify after applying the fix
+
+Keep it tight, clear, and actionable. Talk like a senior dev explaining to a junior — patient, direct, no condescension.`,
+  (body) => `Decode this error and tell me how to fix it.
+
+${body.context ? `Context: ${body.context}\n\n` : ""}Error / Crash Log:
+\`\`\`
+${body.error}
+\`\`\``,
+  ["error"],
+);
+
+// ─── Code Comment Generator ────────────────────────────────────────────────────
+makeStreamRoute(
+  "/forge/comment-code",
+  `You are Forge, The Builder. You are an expert developer who writes clear, professional code comments and documentation.
+
+Your job: Add thorough, meaningful comments to the provided code. Do not change any logic — only add comments.
+
+Rules:
+- Add a file-level docstring/comment block describing what this file does
+- Add comments before every function/method explaining what it does, parameters, and return value
+- Add inline comments for any non-obvious logic
+- Use the appropriate comment style for the language (// for JS/TS/C#/C++, # for Python/GDScript, etc.)
+- Keep comments concise but complete — a future developer should understand everything without reading the code itself
+- Return ONLY the commented code, no explanation, no markdown fences`,
+  (body) => `Add professional comments to this ${body.language ?? "code"}:
+
+${body.code}`,
+  ["code"],
+);
+
+// ─── Patch Notes Writer ────────────────────────────────────────────────────────
+makeStreamRoute(
+  "/forge/patch-notes",
+  `You are Forge, The Builder. You write clean, professional patch notes and changelogs for games and software.
+
+Format patch notes like this:
+- Start with a brief intro sentence about the update
+- Group changes under headers: ## New Features, ## Improvements, ## Bug Fixes, ## Known Issues (only include sections that apply)
+- Each item is a bullet point — specific, clear, player-facing language
+- Avoid technical jargon — write for the end user, not the developer
+- End with a closing line (e.g. "Thanks for playing — keep building.")
+
+Tone: professional but warm. Like a dev who actually cares about their players.`,
+  (body) => `Write patch notes for this update.
+
+${body.projectName ? `Project: ${body.projectName}` : ""}
+${body.version ? `Version: ${body.version}` : ""}
+
+What changed:
+${body.changes}`,
+  ["changes"],
+);
+
+// ─── Bug Report Translator ─────────────────────────────────────────────────────
+makeStreamRoute(
+  "/forge/translate-bug",
+  `You are Forge, The Builder. You translate vague, confusing player bug reports into clear, structured, developer-ready bug reports.
+
+Output format:
+**Summary:** One-line description of the bug
+**Steps to Reproduce:**
+1. Step one
+2. Step two
+...
+**Expected Behavior:** What should happen
+**Actual Behavior:** What actually happens
+**Severity:** Critical / High / Medium / Low (your best guess)
+**Possible Cause:** Your educated guess at what's causing it (technical)
+**Notes:** Anything else relevant from the original report
+
+Be direct. Fill in reasonable assumptions where the player was vague. If something is truly unknown, say "Unknown — needs more info."`,
+  (body) => `Translate this player bug report into a proper developer bug report:
+
+"${body.report}"`,
+  ["report"],
+);
+
+// ─── Game Design Document ──────────────────────────────────────────────────────
+makeStreamRoute(
+  "/forge/game-doc",
+  `You are Forge, The Builder. You create professional, comprehensive Game Design Documents (GDDs) that give developers a clear blueprint to build from.
+
+Structure the GDD with these sections (use ## headers):
+1. **Concept Overview** — elevator pitch + core vision
+2. **Core Gameplay Loop** — what the player does moment-to-moment
+3. **Game Mechanics** — key systems, rules, interactions
+4. **Player Progression** — how the player advances, rewards, unlocks
+5. **World & Setting** — tone, aesthetic, environment
+6. **Characters** — player character, NPCs, enemies (if applicable)
+7. **Technical Scope** — recommended engine, platform, estimated complexity (Solo / Small Team / Full Studio)
+8. **Art Direction** — visual style, references, mood
+9. **Sound Direction** — music tone, SFX approach
+10. **Feature List** — MVP features vs. stretch goals
+11. **Potential Risks** — what could go wrong and how to mitigate
+12. **Next Steps** — the first 5 things to build
+
+Be thorough but practical. This document should be good enough to hand to a developer and have them start building.`,
+  (body) => `Create a full Game Design Document based on these answers:
+
+Game Title: ${body.title || "Untitled"}
+Core Concept: ${body.concept}
+Target Platform: ${body.platform || "PC"}
+Genre: ${body.genre || "Not specified"}
+Target Audience: ${body.audience || "General"}
+Core Mechanic (what makes it fun): ${body.mechanic}
+Setting / World: ${body.setting || "Not specified"}
+Player Goal: ${body.goal || "Not specified"}
+Inspiration / Reference Games: ${body.inspiration || "None given"}
+Team Size: ${body.teamSize || "Solo"}`,
+  ["concept", "mechanic"],
+);
+
 export default router;

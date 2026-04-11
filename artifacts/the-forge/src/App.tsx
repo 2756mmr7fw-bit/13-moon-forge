@@ -13,6 +13,9 @@ import Pricing from "@/pages/pricing";
 import PaymentSuccess from "@/pages/payment-success";
 import Brainstorm from "@/pages/brainstorm";
 import CodeForge from "@/pages/code-forge";
+import ForgeTools from "@/pages/forge-tools";
+import GameDoc from "@/pages/game-doc";
+import SnippetVault from "@/pages/snippet-vault";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -36,6 +39,9 @@ function Router() {
         <Route path="/payment/success" component={PaymentSuccess} />
         <Route path="/brainstorm" component={Brainstorm} />
         <Route path="/code-forge" component={CodeForge} />
+        <Route path="/tools" component={ForgeTools} />
+        <Route path="/game-doc" component={GameDoc} />
+        <Route path="/snippets" component={SnippetVault} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
