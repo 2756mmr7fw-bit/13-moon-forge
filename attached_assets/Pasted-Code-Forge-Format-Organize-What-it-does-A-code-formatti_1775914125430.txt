@@ -1,0 +1,57 @@
+Code Forge — Format & Organize
+What it does:
+A code formatting and project organizer tool powered by the Forge Moon. Users paste in code, pick a target platform/engine, and get properly formatted output. They can also organize multiple game code files into a structured project and download it all as a ZIP.
+
+Features
+1. Code Format Converter
+
+Paste raw code into an editor
+Select the target format from a dropdown:
+GitHub — wraps in proper markdown fenced blocks, adds language tags
+Godot (GDScript) — converts indentation to tabs, enforces GDScript naming conventions (snake_case functions, PascalCase classes), adds proper class structure
+Unity (C#) — enforces C# conventions (PascalCase methods, camelCase locals), adds using statements, MonoBehaviour structure
+Unreal (C++) — adds UE macros (UCLASS, UPROPERTY, UFUNCTION), enforces Epic naming (F-prefix structs, U-prefix objects, A-prefix actors)
+Python (PEP 8) — enforces 4-space indentation, snake_case, proper docstrings
+Plain / Clean — just normalizes whitespace and indentation
+Output appears side-by-side with the original
+Copy button on the formatted output
+2. Game Code Organizer
+
+Add multiple files — give each a filename and paste the code
+Assign each file to a project folder:
+/scripts — gameplay logic
+/scenes — scene definitions
+/ui — interface code
+/assets — asset loaders/references
+/autoload — singletons/globals
+/addons — plugins/extensions
+Or type a custom folder path
+Preview the folder tree before export
+Download the whole organized project as a ZIP with all files in their correct folders
+3. Format Rules Reference
+
+Quick-reference panel showing the conventions for each platform
+Example: "Godot uses tabs, snake_case for functions, PascalCase for class names, signals use past tense"
+Data Model
+No database tables needed — this is a fully client-side tool. Code stays in the browser, nothing gets stored on the server. The ZIP is generated client-side using JSZip.
+
+Tech Stack (Client-Side Only)
+JSZip — for building the ZIP in-browser
+file-saver — for triggering the download
+No login required — anyone can use it
+No backend calls — all formatting logic runs in the browser
+Page Structure
+Route: /code-forge
+Nav group: Creative Tools (or link from Forge Moon's card)
+Layout: Two-tab interface
+Tab 1: Format Code — input editor, platform selector, formatted output
+Tab 2: Organize Project — file list builder, folder assignment, tree preview, ZIP download
+Formatting Logic (per platform)
+Platform	Indentation	Naming	Structure
+GitHub	Preserves original	Preserves original	Wraps in ```language blocks
+Godot	Tabs	snake_case funcs, PascalCase classes	extends Node, signal declarations
+Unity C#	4 spaces	PascalCase methods, camelCase vars	using, namespace, MonoBehaviour
+Unreal C++	Tabs	F/U/A prefixes, PascalCase	UCLASS, UPROPERTY macros
+Python	4 spaces	snake_case	def, class, docstrings
+Plain	2 or 4 spaces (user picks)	No change	Just cleans whitespace
+That's the full blueprint. When you're ready to build it in Forge, just say the word and I'll code the whole thing out.
