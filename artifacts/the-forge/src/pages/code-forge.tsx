@@ -13,8 +13,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import {
   Code2, FolderTree as FolderTreeIcon, Copy, Check, Download, Plus, Trash2,
-  Flame, ChevronDown, ChevronRight, Info,
+  Flame, ChevronDown, ChevronRight, Info, Wand2, Loader2, ExternalLink,
 } from "lucide-react";
+import { getUserId } from "@/lib/userId";
+
+const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 // ─── Platform definitions ──────────────────────────────────────────────────────
 const PLATFORMS = [
@@ -482,16 +485,65 @@ function ProjectTree({ files }: { files: ProjectFile[] }) {
   );
 }
 
+interface AnalysisResult {
+  filename: string;
+  folder: string;
+  description: string;
+  engine: string;
+}
+
 function OrganizeTab() {
   const [files, setFiles] = useState<ProjectFile[]>([newFile()]);
   const [activeId, setActiveId] = useState<string>(files[0].id);
   const [downloading, setDownloading] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
+  const [analyzeError, setAnalyzeError] = useState<{ message: string; subscribeUrl?: string } | null>(null);
 
   const activeFile = files.find(f => f.id === activeId) ?? files[0];
 
   const updateFile = useCallback((id: string, patch: Partial<ProjectFile>) => {
     setFiles(prev => prev.map(f => f.id === id ? { ...f, ...patch } : f));
   }, []);
+
+  const analyzeWithForge = async () => {
+    if (!activeFile?.code.trim() || analyzing) return;
+    setAnalyzing(true);
+    setAnalysis(null);
+    setAnalyzeError(null);
+    try {
+      const res = await fetch(`${API_BASE}/api/forge/analyze-code`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-user-id": getUserId() },
+        body: JSON.stringify({ code: activeFile.code }),
+      });
+      const data = await res.json();
+      if (data.subscription_required) {
+        setAnalyzeError({ message: data.error ?? "Subscription required.", subscribeUrl: data.subscribeUrl });
+        return;
+      }
+      if (!res.ok) {
+        setAnalyzeError({ message: data.error ?? "Analysis failed." });
+        return;
+      }
+      setAnalysis(data as AnalysisResult);
+    } catch {
+      setAnalyzeError({ message: "Couldn't reach Forge. Try again." });
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
+  const applyAnalysis = () => {
+    if (!analysis || !activeFile) return;
+    const folderMatch = FOLDER_OPTIONS.includes(analysis.folder);
+    updateFile(activeFile.id, {
+      name: analysis.filename,
+      folder: folderMatch ? analysis.folder : "custom",
+      customFolder: folderMatch ? "" : analysis.folder,
+    });
+    setAnalysis(null);
+  };
 
   const addFile = () => {
     const f = newFile();
@@ -615,15 +667,82 @@ function OrganizeTab() {
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <Label className="text-xs text-muted-foreground">Code</Label>
-                {activeFile.code && <CopyButton text={activeFile.code} />}
+                <div className="flex items-center gap-2">
+                  {activeFile.code && <CopyButton text={activeFile.code} />}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={analyzeWithForge}
+                    disabled={!activeFile.code.trim() || analyzing}
+                    className="h-7 gap-1.5 text-xs border-primary/40 text-primary hover:bg-primary/10"
+                  >
+                    {analyzing
+                      ? <><Loader2 size={12} className="animate-spin" /> Analyzing…</>
+                      : <><Wand2 size={12} /> Analyze with Forge</>
+                    }
+                  </Button>
+                </div>
               </div>
               <Textarea
                 value={activeFile.code}
-                onChange={e => updateFile(activeFile.id, { code: e.target.value })}
-                placeholder="Paste your code here..."
-                className="h-[300px] font-mono text-[13px] resize-none bg-muted/20"
+                onChange={e => { updateFile(activeFile.id, { code: e.target.value }); setAnalysis(null); setAnalyzeError(null); }}
+                placeholder="Paste your code here — then hit 'Analyze with Forge' and Forge will name it, file it, and tell you what it does."
+                className="h-[280px] font-mono text-[13px] resize-none bg-muted/20"
               />
             </div>
+
+            {/* Forge analysis result */}
+            {analysis && (
+              <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Wand2 size={14} className="text-primary" />
+                  <p className="text-xs font-semibold text-primary">Forge's Read on This Code</p>
+                  <Badge variant="secondary" className="text-[10px] h-4 px-1.5 ml-auto">{analysis.engine}</Badge>
+                </div>
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <p className="text-muted-foreground mb-1">Suggested Filename</p>
+                    <p className="font-mono font-semibold text-foreground">{analysis.filename}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground mb-1">Suggested Folder</p>
+                    <p className="font-mono font-semibold text-foreground">{analysis.folder}</p>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground italic">"{analysis.description}"</p>
+                <div className="flex gap-2 pt-1">
+                  <Button size="sm" onClick={applyAnalysis} className="h-7 text-xs gap-1.5">
+                    <Check size={12} />
+                    Apply Suggestion
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => setAnalysis(null)} className="h-7 text-xs text-muted-foreground">
+                    Dismiss
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Subscription / error message */}
+            {analyzeError && (
+              <div className="rounded-lg border border-amber-800/40 bg-amber-950/20 p-3 flex items-start gap-3">
+                <Flame size={14} className="text-amber-400 shrink-0 mt-0.5" />
+                <div className="flex-1 space-y-2">
+                  <p className="text-xs text-amber-200">{analyzeError.message}</p>
+                  {analyzeError.subscribeUrl && (
+                    <a
+                      href={analyzeError.subscribeUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-400 text-black text-xs font-bold hover:bg-amber-300 transition-colors"
+                    >
+                      Subscribe on the Town Square
+                      <ExternalLink size={11} />
+                    </a>
+                  )}
+                </div>
+                <button onClick={() => setAnalyzeError(null)} className="text-muted-foreground hover:text-foreground text-xs">×</button>
+              </div>
+            )}
 
             <div className="flex justify-end">
               {files.length > 1 && (
