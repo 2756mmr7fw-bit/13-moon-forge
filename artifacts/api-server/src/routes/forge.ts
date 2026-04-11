@@ -275,4 +275,72 @@ router.post("/forge/regenerate-page", async (req, res) => {
   }
 });
 
+// ─── Analyze code with Forge AI ───────────────────────────────────────────────
+router.post("/forge/analyze-code", async (req, res) => {
+  const { code } = req.body as { code?: string };
+  if (!code || !code.trim()) {
+    return res.status(400).json({ error: "code is required" });
+  }
+
+  const access = await checkForgeAccess(req.userId);
+  if (!access.allowed) {
+    return res.status(402).json({
+      error: access.error,
+      subscribeUrl: access.subscribeUrl,
+      subscription_required: true,
+    });
+  }
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o",
+      max_tokens: 256,
+      messages: [
+        {
+          role: "system",
+          content: `You are Forge, The Builder. You are an expert game developer who can read any code and instantly know what it does, what engine it targets, and how it should be organized in a project.
+
+Respond ONLY with a valid JSON object. No markdown, no explanation, just JSON.`,
+        },
+        {
+          role: "user",
+          content: `Analyze this code and return a JSON object with exactly these fields:
+- "filename": the ideal filename including extension (e.g. "player_controller.gd", "EnemyAI.cs", "GameManager.cpp")
+- "folder": one of: "/scripts", "/scenes", "/ui", "/assets", "/autoload", "/addons", or a custom path if none fit
+- "description": one sentence describing what this code does (plain English, no jargon)
+- "engine": the game engine this targets ("Godot", "Unity", "Unreal", "GameMaker", "Pygame", "Generic", or best guess)
+
+Code to analyze:
+\`\`\`
+${code.slice(0, 4000)}
+\`\`\``,
+        },
+      ],
+    });
+
+    const raw = completion.choices[0]?.message?.content ?? "{}";
+
+    let parsed: { filename?: string; folder?: string; description?: string; engine?: string };
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      // Try to extract JSON from response if it has surrounding text
+      const match = raw.match(/\{[\s\S]*\}/);
+      parsed = match ? JSON.parse(match[0]) : {};
+    }
+
+    void deductMoonMessage(req.userId, access.moon ?? "forge");
+
+    return res.json({
+      filename: parsed.filename ?? "script.txt",
+      folder: parsed.folder ?? "/scripts",
+      description: parsed.description ?? "No description available.",
+      engine: parsed.engine ?? "Generic",
+    });
+  } catch (err) {
+    req.log.error({ err }, "Code analysis failed");
+    return res.status(500).json({ error: "Forge couldn't analyze the code. Try again." });
+  }
+});
+
 export default router;
