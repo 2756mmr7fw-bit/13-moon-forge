@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Flame, FolderKanban, PlusCircle, CreditCard, ExternalLink, Sparkles } from "lucide-react";
+import { Flame, FolderKanban, PlusCircle, CreditCard, ExternalLink, Sparkles, Code2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LogoMark, LogoWordmark } from "@/components/logo";
 
@@ -13,6 +13,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/projects", label: "My Projects", icon: FolderKanban },
     { href: "/projects/new", label: "New Creation", icon: PlusCircle },
     { href: "/brainstorm", label: "Brainstorm", icon: Sparkles },
+    { href: "/code-forge", label: "Code Forge", icon: Code2 },
     { href: "/pricing", label: "Upgrade", icon: CreditCard },
   ];
 
