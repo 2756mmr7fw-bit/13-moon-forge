@@ -1,5 +1,8 @@
 import { Link, useLocation } from "wouter";
-import { Flame, FolderKanban, PlusCircle, CreditCard, ExternalLink, Sparkles, Code2 } from "lucide-react";
+import {
+  Flame, FolderKanban, PlusCircle, CreditCard, ExternalLink,
+  Sparkles, Code2, Wrench, BookOpen, Archive,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LogoMark, LogoWordmark } from "@/components/logo";
 
@@ -8,14 +11,37 @@ const OUR_APPS_URL = "https://thepeoplestownsq.com/our-apps";
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
 
-  const navItems = [
+  const builderItems = [
     { href: "/", label: "The Anvil", icon: Flame },
     { href: "/projects", label: "My Projects", icon: FolderKanban },
     { href: "/projects/new", label: "New Creation", icon: PlusCircle },
     { href: "/brainstorm", label: "Brainstorm", icon: Sparkles },
-    { href: "/code-forge", label: "Code Forge", icon: Code2 },
-    { href: "/pricing", label: "Upgrade", icon: CreditCard },
   ];
+
+  const toolItems = [
+    { href: "/tools", label: "Forge Tools", icon: Wrench },
+    { href: "/code-forge", label: "Code Forge", icon: Code2 },
+    { href: "/game-doc", label: "Game Doc Builder", icon: BookOpen },
+    { href: "/snippets", label: "Snippet Vault", icon: Archive },
+  ];
+
+  const isActive = (href: string) =>
+    location === href || (href !== "/" && location.startsWith(href));
+
+  const NavLink = ({ href, label, icon: Icon }: { href: string; label: string; icon: React.ComponentType<{ size: number }> }) => (
+    <Link
+      href={href}
+      className={cn(
+        "flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200",
+        isActive(href)
+          ? "bg-primary/10 text-primary font-medium"
+          : "text-muted-foreground hover:text-foreground hover:bg-muted"
+      )}
+    >
+      <Icon size={18} />
+      {label}
+    </Link>
+  );
 
   return (
     <div className="flex min-h-screen bg-background text-foreground">
@@ -27,35 +53,30 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </Link>
         </div>
 
-        <nav className="flex-1 px-4 space-y-1 pt-2">
-          {navItems.map((item) => {
-            const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200",
-                  isActive
-                    ? "bg-primary/10 text-primary font-medium"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                )}
-              >
-                <item.icon size={18} />
-                {item.label}
-              </Link>
-            );
-          })}
+        <nav className="flex-1 px-4 pt-2 overflow-y-auto">
+          <div className="space-y-1">
+            {builderItems.map(item => <NavLink key={item.href} {...item} />)}
+          </div>
 
-          <a
-            href={OUR_APPS_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 text-muted-foreground hover:text-foreground hover:bg-muted"
-          >
-            <ExternalLink size={18} />
-            Our Apps
-          </a>
+          <div className="mt-4 mb-2 px-3">
+            <p className="text-[10px] font-bold tracking-widest text-muted-foreground/60 uppercase">Creator Tools</p>
+          </div>
+          <div className="space-y-1">
+            {toolItems.map(item => <NavLink key={item.href} {...item} />)}
+          </div>
+
+          <div className="mt-4 space-y-1">
+            <NavLink href="/pricing" label="Upgrade" icon={CreditCard} />
+            <a
+              href={OUR_APPS_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 text-muted-foreground hover:text-foreground hover:bg-muted"
+            >
+              <ExternalLink size={18} />
+              Our Apps
+            </a>
+          </div>
         </nav>
 
         <div className="p-4 mt-auto">
