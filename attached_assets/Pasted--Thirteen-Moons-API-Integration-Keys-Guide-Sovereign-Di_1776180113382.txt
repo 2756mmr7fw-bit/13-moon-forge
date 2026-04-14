@@ -1,0 +1,282 @@
+# Thirteen Moons API — Integration Keys & Guide
+## Sovereign Digital LLC — Confidential
+
+---
+
+## API Keys Per App
+
+| App | Domain | Moon(s) Used | API Key |
+|-----|--------|-------------|---------|
+| **13 Moon AI** | thepeoplestownsq.com | All 13 (hub app) | `moon_cef264fdec0710fb09fb33e6de1b32fc22cf86f5b958f74c09a2a221fc12955d` |
+| **The Peoples Town Square** | thepeoplestownsq.com | All 13 (platform) | `moon_b3ab2e25f275b1dfc144617c7540118557bc8d6a3549c14f225129ece56391e6` |
+| **Town Square Press** | townsquarepress.tv | `quill` | `moon_cd86319442b8bcfdbae7d88873247fb33ecb4e616288bc2ad5bcbeff1ee864db` |
+| **Forge Builder** | thepeoplestownsq.com | `forge` | `moon_db1670268065eed9f14b5f12ca89232ab43ba9f52dec00afd20adb21c13338aa` |
+| **Credit Ledger** | thepeoplestownsq.com | `ledger` | `moon_bc8eb8e2e5f219297b4f6e8909415646566568aac54e2a293484ab074e33ccb5` |
+| **13 Moon Film Editor** | thepeoplestownsq.com | `flint` | `moon_c6b316b52e12f7d37e765fb37ff24783888b706770983f608cf568aa8201cb8e` |
+| **Town Square TV** | townsquarepresstv.com | `herald` | `moon_12705e8df7b5719ba802dda44b90bdc8566c0641332a14f343191b587e873dd0` |
+| **EzQuill** | thepeoplestownsq.com | `quill` | `moon_a0b0907e04e1c7a4794e4ad966029d2a98f7b61bd8d6b5f15fef84a2648799f2` |
+| **13 Moon AI Call Guardian** | thepeoplestownsq.com | `vigil` | `moon_3e07793e069c2ddac4bc4cbc3dbb6364e84d60bf3bc6f7b6037762af25ba2365` |
+| **Town Square Press TV** | townsquarepresstv.com | `herald` | `moon_308b55c3af42352e05973652a04b528f358279f5e4ae0d286ab54e0398982564` |
+
+---
+
+## Important: Users Can Subscribe to Individual Moons
+
+A user might have Forge but NOT Quill. They might have the full bundle (all 13) or just one.
+
+**Your app must check for the specific Moon it uses — not just "are they subscribed."**
+
+For example:
+- Forge Builder checks for `forge` — if the user doesn't have Forge, they can't use it
+- EzQuill checks for `quill` — Forge access doesn't help them here
+- A bundle subscriber gets all 13, so they pass every check
+
+Each Moon has its own message quota. Using Forge does NOT eat into Quill's messages. They're independent.
+
+---
+
+## Base URL
+
+All API calls go to:
+```
+https://thepeoplestownsq.com
+```
+
+---
+
+## Authentication
+
+Every request must include the API key in the header:
+```
+x-moon-api-key: YOUR_APP_KEY_FROM_TABLE_ABOVE
+```
+
+---
+
+## Security Layers (Built In)
+
+1. **Domain Lock** — Each key only works from its registered domain. Wrong domain = rejected.
+2. **IP Allowlist** — If IPs are set, only those server IPs can use the key. Wrong IP = rejected.
+3. **Rate Limiting** — Default 60 requests/minute. Exceeding 3x the limit auto-locks the key.
+4. **Auto-Lock** — Suspicious activity locks the key. Only admin can unlock via /moon-api-admin.
+
+If a key is stolen, the thief cannot use it from a different domain or IP. It's useless to them.
+
+---
+
+## Endpoints
+
+### 1. Check If User Has Moon Access
+
+```
+GET /api/moon/verify?userId=USER_ID&moon=MOON_NAME
+Header: x-moon-api-key: YOUR_KEY
+```
+
+**Response:**
+```json
+{
+  "active": true,
+  "isBundle": false,
+  "moonName": "forge",
+  "messagesRemaining": 87,
+  "expiresAt": "2026-05-14T00:00:00.000Z",
+  "isFreeUser": false
+}
+```
+
+### 2. Get All Subscriptions for a User
+
+```
+GET /api/moon/subscriptions?userId=USER_ID
+Header: x-moon-api-key: YOUR_KEY
+```
+
+**Response:**
+```json
+{
+  "userId": "abc123",
+  "isBundle": true,
+  "activeMoons": ["road_dog", "hawk", "forge", "ledger", ...],
+  "messagesRemaining": { "road_dog": 450, "hawk": 480, ... },
+  "subscriptions": [
+    {
+      "moonName": "bundle",
+      "isBundle": true,
+      "expiresAt": "2026-05-14T00:00:00.000Z",
+      "createdAt": "2026-04-14T00:00:00.000Z"
+    }
+  ]
+}
+```
+
+### 3. Deduct a Message (After AI Responds)
+
+```
+POST /api/moon/deduct
+Header: x-moon-api-key: YOUR_KEY
+Content-Type: application/json
+
+Body:
+{
+  "userId": "abc123",
+  "moonName": "forge",
+  "count": 1
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "messagesRemaining": 86,
+  "moonName": "forge",
+  "appSource": "Forge Builder"
+}
+```
+
+### 4. Full User Status (All Moons at Once)
+
+```
+GET /api/moon/user/USER_ID/status
+Header: x-moon-api-key: YOUR_KEY
+```
+
+**Response:**
+```json
+{
+  "userId": "abc123",
+  "hasSubscription": true,
+  "isBundle": true,
+  "activeMoons": ["road_dog", "hawk", "forge", ...],
+  "usage": {
+    "forge": { "used": 14, "limit": 500, "remaining": 486 },
+    "hawk": { "used": 3, "limit": 500, "remaining": 497 }
+  },
+  "isFreeUser": false,
+  "freeMessagesTotal": 5
+}
+```
+
+### 5. Add Bonus Messages
+
+```
+POST /api/moon/add-messages
+Header: x-moon-api-key: YOUR_KEY
+Content-Type: application/json
+
+Body:
+{
+  "userId": "abc123",
+  "moonName": "forge",
+  "count": 50
+}
+```
+
+---
+
+## Moon Names (Use These Exact Strings)
+
+| Moon | String |
+|------|--------|
+| Road Dog | `road_dog` |
+| Hawk | `hawk` |
+| Forge | `forge` |
+| Ledger | `ledger` |
+| Quill | `quill` |
+| Herald | `herald` |
+| Aegis | `aegis` |
+| Scout | `scout` |
+| Vigil | `vigil` |
+| Creed | `creed` |
+| Grit | `grit` |
+| Flint | `flint` |
+| Sage | `sage` |
+
+---
+
+## How It Works for Your App
+
+**Step 1: User opens your app** (they already have a Town Square account)
+
+**Step 2: Check for the SPECIFIC Moon your app uses**
+```
+GET /api/moon/verify?userId=USER_ID&moon=forge
+```
+This returns `"active": true` or `"active": false`.
+
+- If the user has that Moon individually OR has the full bundle → active = true
+- If the user has other Moons but NOT this one → active = false
+- If the user is on free trial → they get 5 free messages, then it's done
+
+**Step 3: If active, let them use the AI**
+After the AI responds, deduct from THAT Moon's quota:
+```
+POST /api/moon/deduct
+Body: { "userId": "...", "moonName": "forge", "count": 1 }
+```
+
+**Step 4: If not active, send them to subscribe**
+Link: `https://thepeoplestownsq.com/ai-education`
+They can buy just the Moon they need ($1-$4/month) or the full bundle ($25/month).
+
+### Example: Forge Builder App Flow
+```
+1. User opens Forge Builder
+2. App calls: GET /api/moon/verify?userId=abc123&moon=forge
+3. Response: { "active": true, "messagesRemaining": 87 }
+4. User writes code with Forge AI → Forge responds
+5. App calls: POST /api/moon/deduct { userId: "abc123", moonName: "forge", count: 1 }
+6. Next time: messagesRemaining = 86
+```
+
+### Example: User Has Quill But NOT Forge
+```
+1. User opens Forge Builder
+2. App calls: GET /api/moon/verify?userId=abc123&moon=forge
+3. Response: { "active": false, "messagesRemaining": 0 }
+4. App shows: "You need a Forge subscription. Subscribe at thepeoplestownsq.com/ai-education"
+   (Their Quill subscription is irrelevant here — each Moon is independent)
+```
+
+### Example: Bundle Subscriber
+```
+1. User opens ANY app (Forge, Quill, Call Guardian, etc.)
+2. App calls: GET /api/moon/verify?userId=abc123&moon=forge (or any moon)
+3. Response: { "active": true, "isBundle": true, "messagesRemaining": 486 }
+4. Bundle subscribers pass every Moon check. 500 messages/month per Moon.
+```
+
+### Pricing Reference
+
+- **Individual Moon**: $1 to $4/month (100 messages/month)
+- **Full Bundle (all 13)**: $25/month, $20 first month (500 messages/month per Moon)
+- **Free Trial**: 5 messages per Moon for new users
+
+---
+
+## Error Responses
+
+| Code | Meaning |
+|------|---------|
+| 401 | Missing or invalid API key |
+| 403 | Domain not authorized, IP not authorized, key locked, or no messages remaining |
+| 429 | Rate limit exceeded (wait and retry) |
+| 400 | Bad request (missing fields, invalid moon name) |
+
+---
+
+## Key Management
+
+Admin panel: `https://thepeoplestownsq.com/moon-api-admin`
+
+From there you can:
+- Rotate keys (old key dies instantly)
+- Add/remove allowed domains and IPs
+- Unlock auto-locked keys
+- Deactivate compromised keys
+- See usage stats and last activity
+
+---
+
+**KEEP THESE KEYS PRIVATE. Store them as environment variables, never in client-side code.**
