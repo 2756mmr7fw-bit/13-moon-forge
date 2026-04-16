@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import {
   Flame, FolderKanban, PlusCircle, CreditCard, ExternalLink,
-  Sparkles, Code2, Wrench, BookOpen, Archive,
+  Sparkles, Code2, Wrench, BookOpen, Archive, Gamepad2, Rocket, Scale,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LogoMark, LogoWordmark } from "@/components/logo";
@@ -19,10 +19,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
   ];
 
   const toolItems = [
-    { href: "/tools", label: "Forge Tools", icon: Wrench },
-    { href: "/code-forge", label: "Code Forge", icon: Code2 },
-    { href: "/game-doc", label: "Game Doc Builder", icon: BookOpen },
-    { href: "/snippets", label: "Snippet Vault", icon: Archive },
+    { href: "/tools",       label: "Forge Tools",       icon: Wrench },
+    { href: "/code-forge",  label: "Code Forge",        icon: Code2 },
+    { href: "/game-doc",    label: "Game Doc Builder",  icon: BookOpen },
+    { href: "/game-tools",  label: "Game Design Tools", icon: Gamepad2 },
+    { href: "/launch",      label: "Launch Kit",        icon: Rocket },
+    { href: "/legal",       label: "Legal Decoder",     icon: Scale },
+    { href: "/snippets",    label: "Snippet Vault",     icon: Archive },
   ];
 
   const isActive = (href: string) =>
