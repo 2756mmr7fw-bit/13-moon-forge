@@ -16,6 +16,9 @@ import CodeForge from "@/pages/code-forge";
 import ForgeTools from "@/pages/forge-tools";
 import GameDoc from "@/pages/game-doc";
 import SnippetVault from "@/pages/snippet-vault";
+import GameDesignTools from "@/pages/game-design-tools";
+import LaunchKit from "@/pages/launch-kit";
+import LegalDecoder from "@/pages/legal-decoder";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -42,6 +45,9 @@ function Router() {
         <Route path="/tools" component={ForgeTools} />
         <Route path="/game-doc" component={GameDoc} />
         <Route path="/snippets" component={SnippetVault} />
+        <Route path="/game-tools" component={GameDesignTools} />
+        <Route path="/launch" component={LaunchKit} />
+        <Route path="/legal" component={LegalDecoder} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
