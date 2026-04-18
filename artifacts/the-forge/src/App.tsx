@@ -19,6 +19,8 @@ import SnippetVault from "@/pages/snippet-vault";
 import GameDesignTools from "@/pages/game-design-tools";
 import LaunchKit from "@/pages/launch-kit";
 import LegalDecoder from "@/pages/legal-decoder";
+import LearnWithSage from "@/pages/learn-sage";
+import AskHawk from "@/pages/ask-hawk";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -48,6 +50,8 @@ function Router() {
         <Route path="/game-tools" component={GameDesignTools} />
         <Route path="/launch" component={LaunchKit} />
         <Route path="/legal" component={LegalDecoder} />
+        <Route path="/sage" component={LearnWithSage} />
+        <Route path="/hawk" component={AskHawk} />
         <Route component={NotFound} />
       </Switch>
     </Layout>

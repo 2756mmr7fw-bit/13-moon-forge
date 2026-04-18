@@ -2,6 +2,7 @@ import { Link, useLocation } from "wouter";
 import {
   Flame, FolderKanban, PlusCircle, CreditCard, ExternalLink,
   Sparkles, Code2, Wrench, BookOpen, Archive, Gamepad2, Rocket, Scale,
+  GraduationCap, Crosshair,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LogoMark, LogoWordmark } from "@/components/logo";
@@ -19,6 +20,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
   ];
 
   const toolItems = [
+    { href: "/sage",        label: "Learn with Sage",   icon: GraduationCap },
+    { href: "/hawk",        label: "Ask Hawk",          icon: Crosshair },
     { href: "/tools",       label: "Forge Tools",       icon: Wrench },
     { href: "/code-forge",  label: "Code Forge",        icon: Code2 },
     { href: "/game-doc",    label: "Game Doc Builder",  icon: BookOpen },

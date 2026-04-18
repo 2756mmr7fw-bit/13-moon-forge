@@ -142,7 +142,7 @@ export default function SnippetVault() {
           <div>
             <h1 className="text-2xl font-black tracking-tight flex items-center gap-3">
               Snippet Vault
-              <Badge variant="secondary" className="text-[10px] font-bold tracking-wider">LOCAL · NO LOGIN</Badge>
+              <Badge variant="secondary" className="text-[10px] font-bold tracking-wider">LOCAL · NO MOON NEEDED</Badge>
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
               Your personal code library. Save reusable blocks, find them fast, paste and go.
