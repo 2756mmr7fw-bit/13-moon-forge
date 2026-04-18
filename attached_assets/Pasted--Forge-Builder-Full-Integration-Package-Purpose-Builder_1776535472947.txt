@@ -1,0 +1,76 @@
+🔨 Forge Builder — Full Integration Package
+Purpose: Builder's hub for makers, inventors, and creators
+Domains: forge-builder.replit.app AND 13moonforge.ai
+Authorized Moons: Forge (#3), Sage (#7), Quill (#5), Hawk (#2), Creed (#6) — full builder powerhouse
+Rate limit: 120 requests/minute
+Key ID: 23
+
+⚙️ Step 1 — Add the secrets to Forge Builder
+In that app's Secrets panel, add both:
+
+Key	Value
+TSQ_MOON_API_KEY	moon_d84854caf26b98934a6f6969ef3475d03637218aa94ba76406aa66def52dbbdf
+TSQ_BASE_URL	https://thepeoplestownsq.com
+📋 Step 2 — Add this server route to Forge Builder
+// POST /api/moon-chat — proxy to Town Square Moons (builder powerhouse)
+app.post("/api/moon-chat", async (req, res) => {
+  try {
+    const { userId, moon, messages } = req.body;
+    if (!userId || !moon || !Array.isArray(messages)) {
+      return res.status(400).json({ error: "userId, moon, messages required" });
+    }
+    // Only the five moons authorized for this app
+    if (!["forge", "sage", "quill", "hawk", "creed"].includes(moon)) {
+      return res.status(400).json({
+        error: "Forge Builder only supports Forge, Sage, Quill, Hawk, and Creed"
+      });
+    }
+    const response = await fetch(`${process.env.TSQ_BASE_URL}/api/moon/chat`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-moon-api-key": process.env.TSQ_MOON_API_KEY,
+      },
+      body: JSON.stringify({ userId, moonName: moon, messages }),
+    });
+    const data = await response.json();
+    res.status(response.status).json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+🎨 Step 3 — Call it from the frontend
+const res = await fetch("/api/moon-chat", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    userId: currentUser.id,
+    moon: "forge",   // or "sage" / "quill" / "hawk" / "creed"
+    messages: [
+      { role: "user", content: "Help me design a workbench for a small garage." }
+    ],
+  }),
+});
+const data = await res.json();
+console.log(data.reply);
+console.log(data.messagesRemaining);
+🌙 What each Moon does for builders
+Moon	Use it for
+Forge (#3 The Builder)	Plans, blueprints, assembly steps, materials lists, build sequences
+Sage (#7 The Teacher)	Explains why — physics, structural choices, technique tutorials, troubleshooting
+Quill (#5 The Artist)	Project specs, READMEs, instructions, marketing copy, brand voice
+Hawk (#2 The Finder)	"Find me a 12V actuator under $40" — sources tools, parts, libraries, suppliers
+Creed (#6 The Rights Advisor)	IP protection, patents, software licenses, copyright on designs, NDAs
+✅ Endpoints available
+POST /api/moon/chat → AI reply + auto-deduct quota (main one)
+GET /api/moon/system-prompt?moon=forge → fetch a Moon's prompt
+GET /api/moon/verify?userId=X&moon=forge → check user access
+POST /api/moon/deduct → manual quota deduct
+POST /api/moon/add-messages → grant bonus messages
+GET /api/moon/user/:userId/status → full subscription status
+🔒 Same rules apply
+Personality/prompt updates on Town Square push instantly to Forge Builder
+Quota is shared across all apps — same user, same monthly limit, no matter where they chat
+Free users get a small trial; bundle holders get the highest tier
+Admin user IDs (54504320, 54489134) bypass quota deduction
+Both forge-builder.replit.app and 13moonforge.ai are pre-authorized — no key change needed when you switch over

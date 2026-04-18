@@ -3,7 +3,10 @@ import { db } from "@workspace/db";
 import { projectsTable, pagesTable, pageRevisionsTable } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
 import { openai } from "@workspace/integrations-openai-ai-server";
-import { checkForgeAccess, deductMoonMessage } from "../lib/moonApi";
+import {
+  checkForgeAccess, checkQuillAccess, checkCreedAccess, checkSageAccess,
+  checkHawkAccess, deductMoonMessage, moonChat,
+} from "../lib/moonApi";
 
 const router = Router();
 
@@ -344,11 +347,14 @@ ${code.slice(0, 4000)}
 });
 
 // ─── Helper: streaming SSE tool endpoint ───────────────────────────────────────
+type AccessChecker = (userId: string) => Promise<{ allowed: boolean; moon: string | null; error?: string; subscribeUrl: string }>;
+
 function makeStreamRoute(
   path: string,
   systemPrompt: string,
   buildUserMessage: (body: Record<string, string>) => string,
   requiredFields: string[],
+  checkAccess: AccessChecker = checkForgeAccess,
 ) {
   router.post(path, async (req, res) => {
     const body = req.body as Record<string, string>;
@@ -360,7 +366,7 @@ function makeStreamRoute(
     res.setHeader("Connection", "keep-alive");
     const send = (data: object) => res.write(`data: ${JSON.stringify(data)}\n\n`);
 
-    const access = await checkForgeAccess(req.userId);
+    const access = await checkAccess(req.userId);
     if (!access.allowed) {
       send({ type: "subscription_required", error: access.error, subscribeUrl: access.subscribeUrl });
       return res.end();
@@ -434,7 +440,7 @@ ${body.code}`,
   ["code"],
 );
 
-// ─── Patch Notes Writer ────────────────────────────────────────────────────────
+// ─── Patch Notes Writer (Quill #5) ────────────────────────────────────────────
 makeStreamRoute(
   "/forge/patch-notes",
   `You are Forge, The Builder. You write clean, professional patch notes and changelogs for games and software.
@@ -455,6 +461,7 @@ ${body.version ? `Version: ${body.version}` : ""}
 What changed:
 ${body.changes}`,
   ["changes"],
+  checkQuillAccess,
 );
 
 // ─── Bug Report Translator ─────────────────────────────────────────────────────
@@ -516,7 +523,7 @@ Team Size: ${body.teamSize || "Solo"}`,
   ["concept", "mechanic"],
 );
 
-// ─── Readme Writer ────────────────────────────────────────────────────────────
+// ─── Readme Writer (Quill #5) ─────────────────────────────────────────────────
 makeStreamRoute(
   "/forge/readme-writer",
   `You are Forge, The Builder. You write clean, professional README files for GitHub and project pages.
@@ -558,6 +565,7 @@ License: ${body.license || "MIT"}
 Author/Team: ${body.author || "Not specified"}
 Extra Notes: ${body.notes || "None"}`,
   ["description"],
+  checkQuillAccess,
 );
 
 // ─── Playtest Feedback Analyzer ───────────────────────────────────────────────
@@ -773,7 +781,7 @@ The Ask: ${body.ask || "Not specified"}`,
   ["concept"],
 );
 
-// ─── Store Description Writer ─────────────────────────────────────────────────
+// ─── Store Description Writer (Quill #5) ──────────────────────────────────────
 makeStreamRoute(
   "/forge/store-description",
   `You are Forge, The Builder. You write high-converting store descriptions for games and apps — the kind that make people click "Buy" or "Download."
@@ -805,9 +813,10 @@ Target Audience: ${body.audience || "General gamers"}
 Key Features: ${body.features || "Not specified"}
 Tone/Vibe: ${body.tone || "Not specified"}`,
   ["description"],
+  checkQuillAccess,
 );
 
-// ─── Legal Plain-English Decoder ──────────────────────────────────────────────
+// ─── Pitch Builder (Quill #5) ─────────────────────────────────────────────────
 makeStreamRoute(
   "/forge/legal-decoder",
   `You are Forge, The Builder. You translate dense legal language into plain English that anyone can understand.
@@ -847,6 +856,133 @@ Context (optional): ${body.context || "General legal document"}
 Legal Text:
 ${body.legalText}`,
   ["legalText"],
+  checkCreedAccess,
 );
+
+// ─── Sage: Explain Any Concept (#7 The Teacher) ───────────────────────────────
+makeStreamRoute(
+  "/forge/explain",
+  `You are Sage, The Teacher — one of The Thirteen Moons, the AI suite built by Sovereign Digital LLC.
+
+Your personality: You are the teacher who never makes anyone feel dumb. Patient, thorough, gifted at finding the perfect analogy. You've spent your life turning complicated things into clear things — not by dumbing them down, but by building up. You meet people where they are. You know that understanding is earned one layer at a time, and you're happy to peel back every layer until the light comes on.
+
+Your job: Explain concepts, techniques, and principles to makers, builders, and creators. Make things click. Use examples, analogies, step-by-step breakdowns, and real-world context. When someone leaves you, they should understand not just the "how" but the "why."
+
+Format guidelines:
+- Start with a plain-language summary (1-2 sentences) — what is this, fundamentally?
+- Then go deeper: how it works, why it works this way, what it connects to
+- Use ## headers to organize long explanations
+- Include examples relevant to the user's context
+- End with "The bottom line:" — one sentence that captures the core insight
+- If there's a common mistake or misconception, call it out explicitly`,
+  (body) => `Explain this to me — I want to actually understand it.
+
+Topic: ${body.topic}
+My Background: ${body.background || "Not specified"}
+Why I'm Asking: ${body.context || "General understanding"}
+How Deep Should You Go: ${body.depth || "Moderate — enough to actually understand it"}`,
+  ["topic"],
+  checkSageAccess,
+);
+
+// ─── Sage: Skill Tutorial (#7 The Teacher) ────────────────────────────────────
+makeStreamRoute(
+  "/forge/tutorial",
+  `You are Sage, The Teacher — one of The Thirteen Moons, the AI suite built by Sovereign Digital LLC.
+
+Your personality: Patient, thorough, gifted at clear instruction. You build skills layer by layer, never skipping steps.
+
+Your job: Write a complete, practical tutorial that teaches a skill or technique. Structure it so someone can follow it and actually succeed — not just read it and feel like they understand.
+
+Tutorial format:
+## What You'll Learn
+One sentence — the skill and the outcome.
+
+## What You'll Need
+Prerequisites, tools, or setup required.
+
+## The Tutorial
+Numbered steps. Each step: what to do, how to do it, and why (briefly). Code, measurements, or specific values where needed.
+
+## Common Mistakes to Avoid
+2-4 specific pitfalls beginners hit.
+
+## What to Do Next
+One or two things to try after finishing this tutorial to build on what they learned.
+
+Be specific. Generic tutorials fail. Forge-level specificity wins.`,
+  (body) => `Write a tutorial that teaches this skill.
+
+Skill to Learn: ${body.skill}
+My Current Level: ${body.level || "Beginner"}
+Tools / Environment: ${body.tools || "Not specified"}
+Goal / Why I'm Learning This: ${body.goal || "General competency"}`,
+  ["skill"],
+  checkSageAccess,
+);
+
+// ─── Hawk: Find Anything (#2 The Finder) ──────────────────────────────────────
+makeStreamRoute(
+  "/forge/find",
+  `You are Hawk, The Finder — one of The Thirteen Moons, the AI suite built by Sovereign Digital LLC.
+
+Your personality: You have the eyes of a predator and the patience of a hunter. You can find anything — the right part, the right tool, the right library, the right supplier, the right price. You don't waste time on bad leads. You zero in. You know every corner of the market, every niche supplier, every open-source alternative, every budget hack.
+
+Your job: Help makers and builders find exactly what they need — parts, tools, software, libraries, APIs, materials, suppliers, resources. Specific. Sourced. Priced. Practical.
+
+Your output format:
+## What You're Looking For (Restated)
+Quick confirmation of the search to make sure Hawk understood.
+
+## Best Options
+For each option (3-5):
+**[Product/Service/Resource Name]**
+- What it is: One sentence
+- Why it fits: How this matches the requirements
+- Where to find it: Specific URL, platform, or vendor
+- Approximate cost: Real price range if known
+- ⚡ Best for: The specific use case this is strongest at
+
+## Hawk's Pick
+The single best option given the stated requirements and constraints. Direct recommendation with a reason.
+
+## Also Worth Knowing
+Alternatives, caveats, or tips for buying/sourcing smarter.
+
+Be specific. Give real names, real sources, real prices where possible. "Try Amazon" is not useful. "This specific actuator from this specific vendor at this price point" is.`,
+  (body) => `Find this for me.
+
+What I Need: ${body.query}
+Budget: ${body.budget || "Not specified"}
+Project Type: ${body.projectType || "Not specified"}
+Location / Shipping: ${body.location || "US"}
+Constraints: ${body.constraints || "None"}
+I've Already Tried: ${body.alreadyTried || "Nothing yet"}`,
+  ["query"],
+  checkHawkAccess,
+);
+
+// ─── Moon Chat Proxy ───────────────────────────────────────────────────────────
+const AUTHORIZED_MOONS = new Set(["forge", "sage", "quill", "hawk", "creed"]);
+
+router.post("/moon-chat", async (req, res) => {
+  try {
+    const { moon, messages } = req.body as { moon: string; messages: unknown[] };
+    if (!moon || !Array.isArray(messages)) {
+      return res.status(400).json({ error: "moon and messages are required" });
+    }
+    if (!AUTHORIZED_MOONS.has(moon)) {
+      return res.status(400).json({
+        error: "Forge Builder only supports: forge, sage, quill, hawk, creed",
+      });
+    }
+    const result = await moonChat(req.userId, moon, messages as { role: string; content: string }[]);
+    res.json(result);
+  } catch (err: unknown) {
+    req.log.error({ err }, "/moon-chat proxy failed");
+    const msg = err instanceof Error ? err.message : "Moon chat failed";
+    res.status(500).json({ error: msg });
+  }
+});
 
 export default router;

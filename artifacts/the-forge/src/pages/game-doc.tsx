@@ -134,7 +134,7 @@ export default function GameDoc() {
         <div>
           <h1 className="text-2xl font-black tracking-tight flex items-center gap-3">
             Game Doc Builder
-            <Badge variant="secondary" className="text-[10px] font-bold tracking-wider">MOON #5 · FORGE</Badge>
+            <Badge variant="secondary" className="text-[10px] font-bold tracking-wider">MOON #3 · FORGE</Badge>
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
             Answer 10 questions about your game. Forge builds you a complete Game Design Document — ready to hand to a developer.

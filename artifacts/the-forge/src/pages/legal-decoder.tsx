@@ -74,7 +74,7 @@ export default function LegalDecoder() {
         <div>
           <h1 className="text-2xl font-black tracking-tight flex items-center gap-3">
             Legal Decoder
-            <Badge variant="secondary" className="text-[10px] font-bold tracking-wider">MOON #5 · FORGE</Badge>
+            <Badge className="text-[10px] font-bold tracking-wider bg-slate-600 text-white border-0">MOON #6 · CREED</Badge>
           </h1>
           <p className="text-sm text-muted-foreground mt-1">Paste any license, EULA, contract clause, or legal wall of text. Forge translates it into plain English — what you can do, what you can't, and what to watch out for.</p>
         </div>
