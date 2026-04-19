@@ -1,14 +1,21 @@
-// Supports both old (MOON_API_KEY) and new (TSQ_MOON_API_KEY) secret names
-const MOON_API_KEY = process.env.TSQ_MOON_API_KEY ?? process.env.MOON_API_KEY ?? "";
+// TPTS Moon API integration
+// Outbound key: TPTS_MOON_API_KEY (sent as x-api-key to thepeoplestownsq.com)
+// Inbound key:  TPTS_INBOUND_KEY  (TPTS sends this as x-api-key on webhooks to us)
+const MOON_API_KEY = process.env.TPTS_MOON_API_KEY ?? process.env.TSQ_MOON_API_KEY ?? process.env.MOON_API_KEY ?? "";
 const TSQ_BASE = process.env.TSQ_BASE_URL ?? "https://thepeoplestownsq.com";
 const MOON_BASE = `${TSQ_BASE}/api/moon`;
-const SUBSCRIBE_URL = "https://thepeoplestownsq.com/ai-education";
+
+export const TPTS_INBOUND_KEY = process.env.TPTS_INBOUND_KEY ?? "";
 
 // Admin user IDs bypass quota deduction
 const ADMIN_USER_IDS = new Set(["54504320", "54489134"]);
 
+// Moons available in Forge Builder (per TPTS integration package)
+export const FORGE_MOONS = ["forge", "flint"] as const;
+
 export interface MoonVerifyResult {
   active: boolean;
+  isBundle: boolean;
   messagesRemaining: number;
   moon: string;
 }
@@ -16,9 +23,18 @@ export interface MoonVerifyResult {
 export interface MoonAccess {
   allowed: boolean;
   moon: string | null;
+  isBundle: boolean;
   messagesRemaining: number;
   subscribeUrl: string;
   error?: string;
+}
+
+/**
+ * Build the subscribe deep-link URL for a moon, optionally with a return_to.
+ */
+export function getMoonSubscribeUrl(moon: string, returnTo?: string): string {
+  const base = `${TSQ_BASE}/moons/${moon}?ref=${moon}`;
+  return returnTo ? `${base}&return_to=${encodeURIComponent(returnTo)}` : base;
 }
 
 /**
@@ -29,21 +45,31 @@ async function verifyMoon(userId: string, moon: string): Promise<MoonVerifyResul
     const res = await fetch(
       `${MOON_BASE}/verify?userId=${encodeURIComponent(userId)}&moon=${moon}`,
       {
-        headers: { "x-moon-api-key": MOON_API_KEY },
+        headers: { "x-api-key": MOON_API_KEY },
         signal: AbortSignal.timeout(5000),
       }
     );
 
-    if (!res.ok) return { active: false, messagesRemaining: 0, moon };
+    if (!res.ok) return { active: false, isBundle: false, messagesRemaining: 0, moon };
 
-    const data = (await res.json()) as { active?: boolean; messagesRemaining?: number };
-    return {
-      active: data.active === true,
-      messagesRemaining: typeof data.messagesRemaining === "number" ? data.messagesRemaining : 0,
-      moon,
+    const data = (await res.json()) as {
+      active?: boolean;
+      isBundle?: boolean;
+      messagesRemaining?: number;
     };
+
+    // Bundle holders share a pool — treat isBundle: true as always active
+    const isBundle = data.isBundle === true;
+    const active = data.active === true || isBundle;
+    const messagesRemaining = isBundle
+      ? 9999
+      : typeof data.messagesRemaining === "number"
+        ? data.messagesRemaining
+        : 0;
+
+    return { active, isBundle, messagesRemaining, moon };
   } catch {
-    return { active: false, messagesRemaining: 0, moon };
+    return { active: false, isBundle: false, messagesRemaining: 0, moon };
   }
 }
 
@@ -55,9 +81,11 @@ async function checkMoonAccess(
   primary: string,
   fallback: string,
 ): Promise<MoonAccess> {
+  const subscribeUrl = getMoonSubscribeUrl(primary);
+
   if (!MOON_API_KEY) {
     // No key configured — allow (dev mode)
-    return { allowed: true, moon: primary, messagesRemaining: 999, subscribeUrl: SUBSCRIBE_URL };
+    return { allowed: true, moon: primary, isBundle: false, messagesRemaining: 999, subscribeUrl };
   }
 
   const [primaryResult, fallbackResult] = await Promise.all([
@@ -75,8 +103,9 @@ async function checkMoonAccess(
     return {
       allowed: false,
       moon: null,
+      isBundle: false,
       messagesRemaining: 0,
-      subscribeUrl: SUBSCRIBE_URL,
+      subscribeUrl,
       error: outOfMessages
         ? "You've used all your messages this month."
         : "You need an active subscription to use this AI feature.",
@@ -86,16 +115,17 @@ async function checkMoonAccess(
   return {
     allowed: true,
     moon: active.moon,
+    isBundle: active.isBundle,
     messagesRemaining: active.messagesRemaining,
-    subscribeUrl: SUBSCRIBE_URL,
+    subscribeUrl,
   };
 }
 
 // ─── Moon-specific access checks ───────────────────────────────────────────────
 
-/** Forge (#3) — Builder. Fallback: Sage (#7) */
+/** Forge (#3) — Builder. Fallback: Flint (bundle partner) */
 export async function checkForgeAccess(userId: string): Promise<MoonAccess> {
-  return checkMoonAccess(userId, "forge", "sage");
+  return checkMoonAccess(userId, "forge", "flint");
 }
 
 /** Quill (#5) — Writing & copy. Fallback: Forge (#3) */
@@ -125,18 +155,18 @@ export async function checkFlintAccess(userId: string): Promise<MoonAccess> {
 
 /**
  * Deduct one message from a Moon subscription.
- * Admin users bypass deduction.
+ * Admin users and bundle holders bypass deduction (TPTS handles bundle math).
  */
 export async function deductMoonMessage(userId: string, moonName: string): Promise<void> {
   if (!MOON_API_KEY) return;
-  if (ADMIN_USER_IDS.has(userId)) return; // admins bypass quota
+  if (ADMIN_USER_IDS.has(userId)) return;
 
   try {
     await fetch(`${MOON_BASE}/deduct`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-moon-api-key": MOON_API_KEY,
+        "x-api-key": MOON_API_KEY,
       },
       body: JSON.stringify({ userId, moonName, count: 1 }),
       signal: AbortSignal.timeout(5000),
@@ -147,40 +177,19 @@ export async function deductMoonMessage(userId: string, moonName: string): Promi
 }
 
 /**
- * Proxy a full chat request to Town Square's /api/moon/chat.
- * Returns { reply, messagesRemaining } or throws.
+ * List all moons a user owns.
+ * GET /api/moon/subscriptions?userId=<id>
  */
-export async function moonChat(
-  userId: string,
-  moon: string,
-  messages: { role: string; content: string }[],
-): Promise<{ reply: string; messagesRemaining: number }> {
-  const res = await fetch(`${TSQ_BASE}/api/moon/chat`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-moon-api-key": MOON_API_KEY,
-    },
-    body: JSON.stringify({ userId, moonName: moon, messages }),
-    signal: AbortSignal.timeout(30000),
-  });
-
-  if (!res.ok) {
-    const err = (await res.json().catch(() => ({}))) as { error?: string };
-    throw new Error(err.error ?? `Moon chat failed: ${res.status}`);
-  }
-
-  return res.json() as Promise<{ reply: string; messagesRemaining: number }>;
-}
-
-/** Get full subscription status for a user. */
-export async function getUserMoonStatus(userId: string) {
+export async function getUserSubscriptions(userId: string): Promise<unknown> {
   if (!MOON_API_KEY) return null;
   try {
-    const res = await fetch(`${MOON_BASE}/user/${encodeURIComponent(userId)}/status`, {
-      headers: { "x-moon-api-key": MOON_API_KEY },
-      signal: AbortSignal.timeout(5000),
-    });
+    const res = await fetch(
+      `${MOON_BASE}/subscriptions?userId=${encodeURIComponent(userId)}`,
+      {
+        headers: { "x-api-key": MOON_API_KEY },
+        signal: AbortSignal.timeout(5000),
+      }
+    );
     if (!res.ok) return null;
     return res.json();
   } catch {

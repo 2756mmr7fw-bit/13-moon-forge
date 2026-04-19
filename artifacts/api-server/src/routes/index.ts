@@ -6,6 +6,7 @@ import forgeRouter from "./forge";
 import extrasRouter from "./extras";
 import paymentsRouter from "./payments";
 import flintRouter from "./flint";
+import moonIntegrationRouter from "./moonIntegration";
 
 const router: IRouter = Router();
 
@@ -16,5 +17,6 @@ router.use(forgeRouter);
 router.use(extrasRouter);
 router.use(paymentsRouter);
 router.use(flintRouter);
+router.use(moonIntegrationRouter);
 
 export default router;

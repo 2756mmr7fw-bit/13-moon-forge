@@ -5,7 +5,7 @@ import { eq, and } from "drizzle-orm";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import {
   checkForgeAccess, checkQuillAccess, checkCreedAccess, checkSageAccess,
-  checkHawkAccess, deductMoonMessage, moonChat,
+  checkHawkAccess, deductMoonMessage,
 } from "../lib/moonApi";
 
 const router = Router();
@@ -962,27 +962,5 @@ I've Already Tried: ${body.alreadyTried || "Nothing yet"}`,
   checkHawkAccess,
 );
 
-// ─── Moon Chat Proxy ───────────────────────────────────────────────────────────
-const AUTHORIZED_MOONS = new Set(["forge", "sage", "quill", "hawk", "creed"]);
-
-router.post("/moon-chat", async (req, res) => {
-  try {
-    const { moon, messages } = req.body as { moon: string; messages: unknown[] };
-    if (!moon || !Array.isArray(messages)) {
-      return res.status(400).json({ error: "moon and messages are required" });
-    }
-    if (!AUTHORIZED_MOONS.has(moon)) {
-      return res.status(400).json({
-        error: "Forge Builder only supports: forge, sage, quill, hawk, creed",
-      });
-    }
-    const result = await moonChat(req.userId, moon, messages as { role: string; content: string }[]);
-    res.json(result);
-  } catch (err: unknown) {
-    req.log.error({ err }, "/moon-chat proxy failed");
-    const msg = err instanceof Error ? err.message : "Moon chat failed";
-    res.status(500).json({ error: msg });
-  }
-});
 
 export default router;
