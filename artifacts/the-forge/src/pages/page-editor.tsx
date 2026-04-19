@@ -69,7 +69,7 @@ function useRegenPage(projectId: number, pageId: number | undefined, onDone: (ht
             const event = JSON.parse(line.slice(6));
             if (event.type === "subscription_required") {
               const msg = event.error ?? "You need an active Forge subscription.";
-              const url = event.subscribeUrl ?? "https://thepeoplestownsq.com/ai-education";
+              const url = event.subscribeUrl ?? "https://thepeoplestownsq.com/moons/forge?ref=forge";
               setLog(prev => [...prev, `🔒 ${msg} → ${url}`]);
               setStatus("error");
               return;

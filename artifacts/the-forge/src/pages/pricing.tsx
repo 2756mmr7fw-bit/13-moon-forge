@@ -2,7 +2,8 @@ import { Hammer, Sparkles, Users, Zap, RotateCcw, ExternalLink, Check } from "lu
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-const TOWN_SQUARE_URL = "https://thepeoplestownsq.com/our-apps";
+const TOWN_SQUARE_BASE = "https://thepeoplestownsq.com";
+const BUNDLE_URL = `${TOWN_SQUARE_BASE}/our-apps`;
 
 const moons = [
   {
@@ -129,7 +130,7 @@ export default function Pricing() {
                 <Button
                   className="w-full gap-2"
                   variant={moon.glow ? "default" : "outline"}
-                  onClick={() => window.open(TOWN_SQUARE_URL, "_blank")}
+                  onClick={() => window.open(`${TOWN_SQUARE_BASE}/moons/${moon.id}?ref=${moon.id}`, "_blank")}
                 >
                   Subscribe to {moon.name} · ${moon.price}/mo
                   <ExternalLink className="w-3.5 h-3.5" />
@@ -162,7 +163,7 @@ export default function Pricing() {
           </div>
           <Button
             className="shrink-0 gap-2 bg-amber-400 hover:bg-amber-300 text-black font-bold"
-            onClick={() => window.open(TOWN_SQUARE_URL, "_blank")}
+            onClick={() => window.open(BUNDLE_URL, "_blank")}
           >
             Get All 13 Moons
             <ExternalLink className="w-3.5 h-3.5" />
@@ -216,7 +217,7 @@ export default function Pricing() {
                   size="sm"
                   variant="outline"
                   className="mt-1 text-xs h-7"
-                  onClick={() => window.open(TOWN_SQUARE_URL, "_blank")}
+                  onClick={() => window.open(BUNDLE_URL, "_blank")}
                 >
                   Buy
                 </Button>
@@ -273,7 +274,7 @@ export default function Pricing() {
         <Button
           size="lg"
           className="gap-2 bg-amber-400 hover:bg-amber-300 text-black font-bold"
-          onClick={() => window.open(TOWN_SQUARE_URL, "_blank")}
+          onClick={() => window.open(BUNDLE_URL, "_blank")}
         >
           Manage Subscriptions at Town Square
           <ExternalLink className="w-4 h-4" />
