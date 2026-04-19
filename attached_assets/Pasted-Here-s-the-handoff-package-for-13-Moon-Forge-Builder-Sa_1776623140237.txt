@@ -1,0 +1,77 @@
+Here's the handoff package for 13 Moon Forge Builder. Same template as Antivirus, with one extra section since Forge actually meters per-message usage.
+
+🔨 Moon Integration — Handoff to 13 Moon Forge Builder
+From: The People's Town Square (TPTS) — thepeoplestownsq.com
+To: 13 Moon Forge Builder (Sovereign Digital LLC)
+Status: Outbound side complete. We need your inbound side wired now.
+
+The flow in one sentence
+TPTS sells Moons. Your app verifies ownership by calling our API, decrements message quotas as users use Forge, and deep-links unlicensed users back to TPTS to buy.
+
+What you do in your app
+1. Verify on every gated action
+GET https://thepeoplestownsq.com/api/moon/verify?userId=<TPTS_USER_ID>&moon=forge
+Header: x-api-key: <your assigned TPTS key — see below>
+Response:
+
+{
+  "active": true,
+  "isBundle": false,
+  "moonName": "forge",
+  "messagesRemaining": 487,
+  "expiresAt": "2026-05-19T00:00:00.000Z",
+  "isFreeUser": false
+}
+active: true → let them use Forge
+active: false → block and deep-link them to:
+https://thepeoplestownsq.com/moons/forge?return_to=https://<your-domain>/<wherever>&ref=forge
+After purchase, TPTS sends them right back to your return_to URL.
+2. Decrement messages after each use
+POST https://thepeoplestownsq.com/api/moon/deduct
+Header: x-api-key: <your key>
+Body: { "userId": "<TPTS_USER_ID>", "moonName": "forge", "count": 1 }
+(Bundle holders share one big pool — TPTS handles the math, you just send the deduct.)
+
+3. List all moons a user owns (one call)
+GET https://thepeoplestownsq.com/api/moon/subscriptions?userId=<TPTS_USER_ID>
+Header: x-api-key: <your key>
+Moons that gate features in YOUR app
+Moon	Slug	Price	What it unlocks
+Forge — The Builder	forge	$3/mo	Code generation, app building, the core Forge experience
+Flint — The Spark	flint	shared	Brainstorming/ideation companion inside Forge Builder
+The Bundle ($25/mo) auto-unlocks both — your check just reads isBundle: true and lets them through.
+
+Your TPTS API key
+moon_db1670268065eed9f14b5f12ca89232ab43ba9f52dec00afd20adb21c13338aa
+Store as TPTS_MOON_API_KEY (or whatever you prefer). Send it as the x-api-key header on every request.
+
+What I need back from you (to complete the round-trip)
+So TPTS can fire purchased / cancelled / refilled / expired / granted / refunded webhooks when Moon ownership changes:
+
+Your production domain — what URL will Forge Builder live at? (e.g. 13moonforge.com, forge.thepeoplestownsq.com, etc.)
+Your inbound webhook URL — likely https://<your-domain>/api/moon/webhook
+Your /api/moon/integration-status endpoint — returns { ok, app, domain, authorizedMoons, callingApp, acceptsEvents } so I can probe and confirm green
+An API key for me to authenticate with — minted against your production database (not localhost — we hit that gotcha twice already this week, including with Antivirus). Send a forge_… or tpts_… prefixed value, sent in the x-api-key header.
+User-ID mapping confirmation — TPTS users have numeric IDs (e.g. 54504320). Are you keying off the same ID, or mapping TPTS user → internal user (like Antivirus does)?
+After saving the inbound key, please redeploy production so the env var is live (Antivirus forgot this step initially — saved hours of confusion last time).
+Webhook payload we'll send you:
+
+{
+  "event": "purchased",
+  "userId": "54504320",
+  "moon": "forge",
+  "isBundle": false,
+  "messagesRemaining": 500,
+  "expiresAt": "2026-05-19T00:00:00.000Z"
+}
+Events: purchased, granted, refilled, refunded, expired, cancelled.
+
+Progress on the suite
+✅ Done: 4 apps wired (TPTS itself + Town Square TV + Antivirus + 1 prior)
+🔧 In progress: You (Forge Builder) — 5th
+⏳ Remaining: 4 more after this one
+
+Once you ship the webhook + status endpoints, mint a production-DB key, send me your domain + key, and redeploy — I'll plug it in on TPTS, run the integration probe, fire a test purchase webhook, and we're green.
+
+— Ezekiel / Sovereign Digital LLC
+
