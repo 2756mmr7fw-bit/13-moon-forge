@@ -30,6 +30,7 @@ import Leaving from "@/pages/leaving";
 import SovereignStack from "@/pages/sovereign";
 import GitHubConnect from "@/pages/github-connect";
 import Registry from "@/pages/registry";
+import Account from "@/pages/account";
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
@@ -160,6 +161,7 @@ function Router() {
             <Route path="/sovereign" component={SovereignStack} />
             <Route path="/github" component={GitHubConnect} />
             <Route path="/registry" component={Registry} />
+            <Route path="/account" component={Account} />
             <Route component={NotFound} />
           </Switch>
         </Layout>
