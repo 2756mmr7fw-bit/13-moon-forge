@@ -18,7 +18,13 @@ type TrafficLevel = "normal" | "elevated" | "high" | "critical";
 type AppStatus    = "running" | "stopped" | "restarting" | "starting" | "error" | "unknown";
 type DeployStatus = "success" | "failed" | "running" | "queued" | "unknown";
 type AlertSev     = "critical" | "warning" | "info";
-type InfraCat     = "vps" | "vpn" | "cdn" | "dns" | "storage" | "database" | "email" | "monitoring" | "auth" | "payments" | "security";
+type QuotaRisk    = "critical" | "high" | "medium" | "low";
+type InfraCat     = "vps" | "vpn" | "cdn" | "dns" | "storage" | "database" | "email" | "monitoring" | "auth" | "payments" | "security" | "external_api";
+
+interface ApiQuota {
+  key: string; label: string; limit: string; period: string;
+  risk: QuotaRisk; riskReason: string; upgradeHint: string; upgradePrice?: string;
+}
 
 interface MonitorData {
   summary: {
@@ -41,6 +47,7 @@ interface MonitorData {
     startedAt: string | null; finishedAt: string | null;
   }[];
   detectedProviders: { label: string; category: InfraCat; key: string }[];
+  detectedApiQuotas: ApiQuota[];
   alerts: { id: string; severity: AlertSev; title: string; body: string }[];
   coolifyConnected: boolean;
   coolifyError: string | null;
@@ -59,7 +66,8 @@ const CAT_META: Record<InfraCat, { label: string; icon: React.ComponentType<{ si
   monitoring: { label: "Monitoring",        icon: Eye,       color: "text-pink-400"    },
   auth:       { label: "Auth / Identity",   icon: Key,       color: "text-indigo-400"  },
   payments:   { label: "Payments",          icon: CreditCard,color: "text-green-400"   },
-  security:   { label: "Security",          icon: Shield,    color: "text-red-400"     },
+  security:     { label: "Security",          icon: Shield,    color: "text-red-400"     },
+  external_api: { label: "Third-Party APIs",  icon: Activity,  color: "text-violet-400"  },
 };
 
 // Traffic level → capacity pressure message
@@ -309,6 +317,51 @@ function DeployRow({ d }: { d: MonitorData["deployments"][0] }) {
   );
 }
 
+// ─── Quota risk metadata ──────────────────────────────────────────────────────
+
+const QUOTA_RISK_META: Record<QuotaRisk, {
+  label: string; dot: string; bar: string; bg: string; border: string; text: string;
+}> = {
+  critical: { label: "Critical", dot: "bg-red-500",    bar: "bg-red-500",    bg: "bg-red-500/8",    border: "border-red-500/25",    text: "text-red-400"    },
+  high:     { label: "High",     dot: "bg-amber-500",  bar: "bg-amber-500",  bg: "bg-amber-500/8",  border: "border-amber-500/25",  text: "text-amber-400"  },
+  medium:   { label: "Medium",   dot: "bg-yellow-400", bar: "bg-yellow-400", bg: "bg-yellow-400/8", border: "border-yellow-400/25", text: "text-yellow-400" },
+  low:      { label: "Low",      dot: "bg-emerald-500",bar: "bg-emerald-500",bg: "bg-emerald-500/8",border: "border-emerald-500/25",text: "text-emerald-400"},
+};
+
+function QuotaCard({ quota }: { quota: ApiQuota }) {
+  const m = QUOTA_RISK_META[quota.risk];
+  return (
+    <div className={cn("rounded-xl border p-4 flex flex-col gap-3", m.border, m.bg)}>
+      <div className="flex items-start justify-between gap-2">
+        <p className="font-semibold text-sm">{quota.label}</p>
+        <span className={cn(
+          "flex items-center gap-1 shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full border",
+          m.text, m.border, m.bg
+        )}>
+          <span className={cn("w-1.5 h-1.5 rounded-full", m.dot)} />
+          {m.label} risk
+        </span>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <Clock size={11} className="text-muted-foreground shrink-0" />
+        <span className="text-xs font-mono font-bold">{quota.limit}</span>
+        <span className="text-[10px] text-muted-foreground">free tier</span>
+      </div>
+
+      <p className="text-[11px] text-muted-foreground leading-relaxed">{quota.riskReason}</p>
+
+      <div className={cn("rounded-md border p-2.5 text-[11px]", m.border, "bg-black/20")}>
+        <span className="text-muted-foreground">Upgrade: </span>
+        <span className="text-foreground/80">{quota.upgradeHint}</span>
+        {quota.upgradePrice && (
+          <span className={cn("ml-1 font-semibold", m.text)}> · {quota.upgradePrice}</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 const ALERT_SEV = {
   critical: { bar: "bg-red-500",    bg: "bg-red-500/8",    border: "border-red-500/25",    icon: <XCircle size={14} className="text-red-400 shrink-0 mt-0.5" /> },
   warning:  { bar: "bg-amber-500",  bg: "bg-amber-500/8",  border: "border-amber-500/25",  icon: <AlertTriangle size={14} className="text-amber-400 shrink-0 mt-0.5" /> },
@@ -530,16 +583,55 @@ export default function Monitor() {
           )}
 
           {/* No infra detected */}
-          {Object.keys(providersByCategory).length === 0 && (
+          {Object.keys(providersByCategory).length === 0 && (data.detectedApiQuotas?.length ?? 0) === 0 && (
             <div className="rounded-xl border border-border bg-card/50 p-5 flex items-start gap-3">
               <Package size={15} className="text-muted-foreground mt-0.5 shrink-0" />
               <div>
                 <p className="text-sm font-semibold">No infrastructure providers detected</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Add your VPS, VPN, CDN, database, and email provider API keys to the <span className="text-primary">Secrets Vault</span>.
+                  Add your VPS, VPN, CDN, database, email, and third-party API keys to the <span className="text-primary">Secrets Vault</span>.
                   The monitor will automatically detect which services you use and show capacity alerts when it matters.
                 </p>
               </div>
+            </div>
+          )}
+
+          {/* Third-party API quota limits */}
+          {(data.detectedApiQuotas?.length ?? 0) > 0 && (
+            <div>
+              <h2 className="text-sm font-bold tracking-wide mb-1 flex items-center gap-2">
+                <Activity size={14} className="text-muted-foreground" />
+                Third-Party API Quotas
+                <span className="text-[10px] text-muted-foreground font-normal ml-1">— free-tier limits for detected services</span>
+              </h2>
+
+              {/* Risk summary strip */}
+              <div className="flex flex-wrap gap-2 mb-3">
+                {(["critical","high","medium","low"] as QuotaRisk[]).map(risk => {
+                  const count = data.detectedApiQuotas.filter(q => q.risk === risk).length;
+                  if (!count) return null;
+                  const m = QUOTA_RISK_META[risk];
+                  return (
+                    <span key={risk} className={cn(
+                      "flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full border",
+                      m.text, m.border, m.bg
+                    )}>
+                      <span className={cn("w-1.5 h-1.5 rounded-full", m.dot)} />
+                      {count} {m.label.toLowerCase()}
+                    </span>
+                  );
+                })}
+                <span className="text-[11px] text-muted-foreground self-center ml-1">
+                  — how quickly you'll hit the ceiling
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {data.detectedApiQuotas.map(q => <QuotaCard key={q.key} quota={q} />)}
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-3">
+                No real-time usage data yet — these are known free-tier limits. Add usage logging to your app to see actual consumption.
+              </p>
             </div>
           )}
 

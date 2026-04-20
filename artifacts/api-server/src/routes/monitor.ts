@@ -96,11 +96,144 @@ export const INFRA_PROVIDERS: Record<string, { category: InfraCategory; label: s
   "antivirus / security": { category: "security", label: "Security" },
   bitwarden:    { category: "security",  label: "Bitwarden"      },
   crowdsec:     { category: "security",  label: "CrowdSec"       },
+  // External / third-party APIs with known quota limits
+  virustotal:   { category: "external_api", label: "VirusTotal"           },
+  "virus total":{ category: "external_api", label: "VirusTotal"           },
+  abuseipdb:    { category: "external_api", label: "AbuseIPDB"            },
+  "abuse ipdb": { category: "external_api", label: "AbuseIPDB"            },
+  shodan:       { category: "external_api", label: "Shodan"               },
+  greynoise:    { category: "external_api", label: "GreyNoise"            },
+  "grey noise": { category: "external_api", label: "GreyNoise"            },
+  alienvault:   { category: "external_api", label: "AlienVault OTX"       },
+  "alien vault":{ category: "external_api", label: "AlienVault OTX"       },
+  otx:          { category: "external_api", label: "AlienVault OTX"       },
+  "google safe browsing": { category: "external_api", label: "Google Safe Browsing" },
+  "safe browsing":        { category: "external_api", label: "Google Safe Browsing" },
+  hibp:         { category: "external_api", label: "Have I Been Pwned"    },
+  "have i been pwned":    { category: "external_api", label: "Have I Been Pwned" },
+  "haveibeenpwned":       { category: "external_api", label: "Have I Been Pwned" },
+  "pwned":      { category: "external_api", label: "Have I Been Pwned"    },
+  ipinfo:       { category: "external_api", label: "IPInfo"               },
+  ipapi:        { category: "external_api", label: "IP-API"               },
+  maxmind:      { category: "external_api", label: "MaxMind"              },
+  openai:       { category: "external_api", label: "OpenAI"               },
+  anthropic:    { category: "external_api", label: "Anthropic"            },
+  gemini:       { category: "external_api", label: "Gemini"               },
+  groq:         { category: "external_api", label: "Groq"                 },
+  twitch:       { category: "external_api", label: "Twitch API"           },
+  github:       { category: "external_api", label: "GitHub API"           },
+  twitter:      { category: "external_api", label: "Twitter/X API"        },
+  "x api":      { category: "external_api", label: "Twitter/X API"        },
+};
+
+// ─── Third-party API quota catalogue ─────────────────────────────────────────
+// Known free-tier limits and risk ratings for external APIs.
+// Risk = how quickly you'll hit the ceiling under real traffic.
+
+export type QuotaRisk = "critical" | "high" | "medium" | "low";
+
+export interface QuotaInfo {
+  label:        string;
+  limit:        string;      // human-readable: "50/day"
+  period:       "minute" | "day" | "month" | "request";
+  limitValue:   number;      // numeric value for the primary limit
+  risk:         QuotaRisk;
+  riskReason:   string;
+  upgradeHint:  string;
+  upgradePrice?: string;
+}
+
+export const QUOTA_CATALOGUE: Record<string, QuotaInfo> = {
+  greynoise: {
+    label: "GreyNoise", limit: "50 req/day", period: "day", limitValue: 50,
+    risk: "critical",
+    riskReason: "First to throttle — only 50 requests/day on Community key",
+    upgradeHint: "Plus tier: 10,000/day",
+    upgradePrice: "~$25/mo",
+  },
+  sendgrid: {
+    label: "SendGrid", limit: "100 emails/day", period: "day", limitValue: 100,
+    risk: "high",
+    riskReason: "100 emails/day caps signups + breach alerts fast",
+    upgradeHint: "Essentials: 50,000 emails/day",
+    upgradePrice: "$19.95/mo",
+  },
+  abuseipdb: {
+    label: "AbuseIPDB", limit: "1,000 checks/day", period: "day", limitValue: 1000,
+    risk: "medium",
+    riskReason: "Batch IP scans will burn through 1,000/day quickly",
+    upgradeHint: "10,000 checks/day on paid tier",
+    upgradePrice: "$20/mo",
+  },
+  virustotal: {
+    label: "VirusTotal", limit: "500/day · 4/min", period: "day", limitValue: 500,
+    risk: "medium",
+    riskReason: "500/day easy to blow past if scan traffic spikes",
+    upgradeHint: "Premium API — large jump (starts ~$2,000/yr)",
+    upgradePrice: "~$2k/yr",
+  },
+  shodan: {
+    label: "Shodan", limit: "100 credits/mo", period: "month", limitValue: 100,
+    risk: "medium",
+    riskReason: "Credits-based, refill slowly — each complex query costs multiple credits",
+    upgradeHint: "Freelancer tier: 100 credits/mo + scans",
+    upgradePrice: "$69/mo",
+  },
+  hibp: {
+    label: "Have I Been Pwned", limit: "10 req/sec (subscribed)", period: "minute", limitValue: 600,
+    risk: "low",
+    riskReason: "Subscribed — 10 req/sec is generous for most workloads",
+    upgradeHint: "Pwned 2 or higher if user count scales",
+    upgradePrice: "$16/mo",
+  },
+  alienvault: {
+    label: "AlienVault OTX", limit: "~10,000 req/hr", period: "day", limitValue: 240000,
+    risk: "low",
+    riskReason: "Very generous free tier — rarely a problem",
+    upgradeHint: "No paid tier; be a good citizen with caching",
+  },
+  otx: {
+    label: "AlienVault OTX", limit: "~10,000 req/hr", period: "day", limitValue: 240000,
+    risk: "low",
+    riskReason: "Very generous free tier — rarely a problem",
+    upgradeHint: "No paid tier; be a good citizen with caching",
+  },
+  "google safe browsing": {
+    label: "Google Safe Browsing", limit: "10,000 req/day", period: "day", limitValue: 10000,
+    risk: "low",
+    riskReason: "10k/day is plenty of headroom for now",
+    upgradeHint: "Enterprise only — contact Google for higher limits",
+  },
+  "safe browsing": {
+    label: "Google Safe Browsing", limit: "10,000 req/day", period: "day", limitValue: 10000,
+    risk: "low",
+    riskReason: "10k/day is plenty of headroom for now",
+    upgradeHint: "Enterprise only — contact Google for higher limits",
+  },
+  openai: {
+    label: "OpenAI", limit: "Tier-based (token budget)", period: "minute", limitValue: 0,
+    risk: "medium",
+    riskReason: "Costs scale with usage — unexpected traffic = unexpected bill",
+    upgradeHint: "Set hard spend limits in OpenAI dashboard",
+  },
+  anthropic: {
+    label: "Anthropic", limit: "Tier-based (token budget)", period: "minute", limitValue: 0,
+    risk: "medium",
+    riskReason: "Token spend scales with traffic — set limits",
+    upgradeHint: "Set spend limits and monitor usage dashboard",
+  },
+  github: {
+    label: "GitHub API", limit: "5,000 req/hr (authenticated)", period: "minute", limitValue: 5000,
+    risk: "low",
+    riskReason: "5k/hr is generous for most app integrations",
+    upgradeHint: "GitHub Apps get higher limits per installation",
+  },
 };
 
 export type InfraCategory =
   | "vps" | "vpn" | "cdn" | "dns" | "storage"
-  | "database" | "email" | "monitoring" | "auth" | "payments" | "security";
+  | "database" | "email" | "monitoring" | "auth" | "payments" | "security"
+  | "external_api";
 
 // ─── Coolify helpers ──────────────────────────────────────────────────────────
 
@@ -325,6 +458,41 @@ router.get("/monitor/status", async (req, res) => {
       body: "Consider adding Sentry, BetterStack, Grafana, or Datadog to catch issues before your users do." });
   }
 
+  // ── Third-party API quota detection ────────────────────────────────────────
+  // Cross-reference secrets with the quota catalogue to surface limit warnings.
+  const detectedApiQuotas: (QuotaInfo & { key: string })[] = [];
+  const seenQuotas = new Set<string>();
+  for (const { serviceName } of secretRows) {
+    const lower = serviceName.toLowerCase();
+    for (const [key, info] of Object.entries(QUOTA_CATALOGUE)) {
+      if (lower.includes(key) && !seenQuotas.has(info.label)) {
+        seenQuotas.add(info.label);
+        detectedApiQuotas.push({ ...info, key });
+      }
+    }
+  }
+
+  // Sort: critical → high → medium → low
+  const riskRank: Record<QuotaRisk, number> = { critical: 0, high: 1, medium: 2, low: 3 };
+  detectedApiQuotas.sort((a, b) => riskRank[a.risk] - riskRank[b.risk]);
+
+  // Generate alerts for critical/high quota services
+  for (const q of detectedApiQuotas) {
+    if (q.risk === "critical") {
+      alerts.push({
+        id: `quota-critical-${q.key}`, severity: "warning",
+        title: `${q.label} — very low free limit (${q.limit})`,
+        body: `${q.riskReason}. Upgrade: ${q.upgradeHint}${q.upgradePrice ? ` (${q.upgradePrice})` : ""}.`,
+      });
+    } else if (q.risk === "high") {
+      alerts.push({
+        id: `quota-high-${q.key}`, severity: "info",
+        title: `${q.label} — watch this limit (${q.limit})`,
+        body: `${q.riskReason}. Upgrade: ${q.upgradeHint}${q.upgradePrice ? ` (${q.upgradePrice})` : ""}.`,
+      });
+    }
+  }
+
   return res.json({
     ok: true,
     summary: {
@@ -340,6 +508,7 @@ router.get("/monitor/status", async (req, res) => {
     apps,
     deployments:        deployments.slice(0, 10),
     detectedProviders,
+    detectedApiQuotas,
     alerts: alerts.sort((a, b) => {
       const rank = { critical: 0, warning: 1, info: 2 } as const;
       return rank[a.severity] - rank[b.severity];
