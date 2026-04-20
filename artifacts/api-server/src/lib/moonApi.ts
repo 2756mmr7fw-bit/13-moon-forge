@@ -1,5 +1,5 @@
 // TPTS Moon API integration
-// Outbound key: TPTS_MOON_API_KEY (sent as x-api-key to thepeoplestownsq.com)
+// Outbound key: TPTS_MOON_API_KEY (sent as x-moon-api-key to thepeoplestownsq.com)
 // Inbound key:  TPTS_INBOUND_KEY  (TPTS sends this as x-api-key on webhooks to us)
 const MOON_API_KEY = process.env.TPTS_MOON_API_KEY ?? process.env.TSQ_MOON_API_KEY ?? process.env.MOON_API_KEY ?? "";
 const TSQ_BASE = process.env.TSQ_BASE_URL ?? "https://thepeoplestownsq.com";
@@ -45,7 +45,7 @@ async function verifyMoon(userId: string, moon: string): Promise<MoonVerifyResul
     const res = await fetch(
       `${MOON_BASE}/verify?userId=${encodeURIComponent(userId)}&moon=${moon}`,
       {
-        headers: { "x-api-key": MOON_API_KEY },
+        headers: { "x-moon-api-key": MOON_API_KEY },
         signal: AbortSignal.timeout(5000),
       }
     );
@@ -166,7 +166,7 @@ export async function deductMoonMessage(userId: string, moonName: string): Promi
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": MOON_API_KEY,
+        "x-moon-api-key": MOON_API_KEY,
       },
       body: JSON.stringify({ userId, moonName, count: 1 }),
       signal: AbortSignal.timeout(5000),
@@ -186,7 +186,7 @@ export async function getUserSubscriptions(userId: string): Promise<unknown> {
     const res = await fetch(
       `${MOON_BASE}/subscriptions?userId=${encodeURIComponent(userId)}`,
       {
-        headers: { "x-api-key": MOON_API_KEY },
+        headers: { "x-moon-api-key": MOON_API_KEY },
         signal: AbortSignal.timeout(5000),
       }
     );
