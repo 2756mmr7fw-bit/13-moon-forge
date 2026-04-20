@@ -7,18 +7,16 @@ interface ThirteenMoonsBadgeProps {
 export function ThirteenMoonsBadge({ size = 48, tone = "dark", className }: ThirteenMoonsBadgeProps) {
   const isDark = tone === "dark";
 
-  const ringColor     = isDark ? "#1a1006" : "#ffffff";
-  const outerRing     = isDark ? "#f97316" : "rgba(255,255,255,0.9)";
-  const innerRing     = isDark ? "#7c3400" : "rgba(255,255,255,0.45)";
-  const textColor     = isDark ? "#f97316" : "#ffffff";
-  const accentColor   = isDark ? "#f97316" : "#fbbf24";
-  const moonFill      = isDark ? "#f97316" : "#ffffff";
-  const moonShadow    = isDark ? "#1a1006" : "rgba(255,180,60,0.55)";
-  const dotColor      = isDark ? "#f97316" : "rgba(255,255,255,0.7)";
-
-  const cx = 60;
-  const cy = 60;
-  const r  = 60;
+  // dark = oxblood/cream wax seal (for light backgrounds)
+  // light = cream/soft variant (for dark backgrounds)
+  const discFill      = isDark ? "#5c1a1a" : "#f5ede0";
+  const rimColor      = isDark ? "#8b3a3a" : "#c8a97e";
+  const rimInner      = isDark ? "#3d0f0f" : "#e8d5b7";
+  const textColor     = isDark ? "#f5ede0" : "#5c1a1a";
+  const MColor        = isDark ? "#f5ede0" : "#5c1a1a";
+  const XIIIColor     = isDark ? "#c8a97e" : "#8b3a3a";
+  const crescentFill  = isDark ? "#f5ede0" : "#5c1a1a";
+  const dotColor      = isDark ? "#c8a97e" : "#8b3a3a";
 
   return (
     <svg
@@ -28,69 +26,89 @@ export function ThirteenMoonsBadge({ size = 48, tone = "dark", className }: Thir
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={className}
-      aria-label="13 Moon Forge seal"
+      aria-label="Thirteen Moons Sovereign Seal"
     >
-      {/* Background disc */}
-      <circle cx={cx} cy={cy} r={r} fill={ringColor} />
-
-      {/* Outer border ring */}
-      <circle cx={cx} cy={cy} r={57} stroke={outerRing} strokeWidth="1.5" fill="none" />
-
-      {/* Inner decorative ring */}
-      <circle cx={cx} cy={cy} r={50} stroke={innerRing} strokeWidth="0.75" fill="none" strokeDasharray="2 3" />
-
-      {/* Circular text path — top arc: "THIRTEEN MOONS" */}
       <defs>
+        {/* Circular text path for rim label */}
         <path
-          id="topArc"
-          d={`M ${cx - 44},${cy} A 44,44 0 0,1 ${cx + 44},${cy}`}
-        />
-        <path
-          id="bottomArc"
-          d={`M ${cx - 40},${cy + 4} A 40,40 0 0,0 ${cx + 40},${cy + 4}`}
+          id="rimPath"
+          d="M 60,60 m -44,0 a 44,44 0 1,1 88,0 a 44,44 0 1,1 -88,0"
         />
       </defs>
 
-      <text fontSize="8.5" fontFamily="serif" fontWeight="700" letterSpacing="2.8" fill={textColor}>
-        <textPath href="#topArc" startOffset="50%" textAnchor="middle">
-          THIRTEEN MOONS
-        </textPath>
-      </text>
+      {/* Outer wax-seal disc */}
+      <circle cx="60" cy="60" r="58" fill={rimColor} />
 
-      <text fontSize="7" fontFamily="serif" fontWeight="600" letterSpacing="2.4" fill={textColor} opacity="0.85">
-        <textPath href="#bottomArc" startOffset="50%" textAnchor="middle">
-          SOVEREIGN DIGITAL
-        </textPath>
-      </text>
+      {/* Main disc */}
+      <circle cx="60" cy="60" r="54" fill={discFill} />
 
-      {/* Dot separators */}
-      {[0, 1, 2, 3].map((i) => {
-        const angle = (i * 90 - 45) * (Math.PI / 180);
-        const rx = cx + 44 * Math.cos(angle);
-        const ry = cy + 44 * Math.sin(angle);
-        return <circle key={i} cx={rx} cy={ry} r="1.2" fill={dotColor} />;
-      })}
+      {/* Inner rim ring */}
+      <circle cx="60" cy="60" r="49" stroke={rimInner} strokeWidth="1" fill="none" />
+      <circle cx="60" cy="60" r="46" stroke={rimColor} strokeWidth="0.5" fill="none" strokeDasharray="1.5 2.5" />
 
-      {/* Central crescent moon */}
-      <circle cx={cx} cy={cy - 4} r="14" fill={moonFill} />
-      <circle cx={cx + 6} cy={cy - 7} r="11" fill={moonShadow} />
-
-      {/* "13" numeral below moon */}
+      {/* Rim text: "THIRTEEN MOONS · SOVEREIGN DIGITAL" */}
       <text
-        x={cx}
-        y={cy + 20}
-        textAnchor="middle"
-        fontSize="10"
-        fontFamily="serif"
-        fontWeight="800"
-        fill={accentColor}
-        letterSpacing="1"
+        fontSize="7"
+        fontFamily="Georgia, 'Times New Roman', serif"
+        fontWeight="700"
+        letterSpacing="2.6"
+        fill={textColor}
       >
-        13
+        <textPath href="#rimPath" startOffset="4%">
+          THIRTEEN MOONS · SOVEREIGN DIGITAL ·
+        </textPath>
       </text>
 
-      {/* Small accent line under 13 */}
-      <line x1={cx - 8} y1={cy + 23} x2={cx + 8} y2={cy + 23} stroke={accentColor} strokeWidth="0.75" opacity="0.6" />
+      {/* Left crescent flank */}
+      <g transform="translate(18, 52)">
+        <circle cx="0" cy="8" r="6" fill={crescentFill} />
+        <circle cx="3" cy="6" r="4.8" fill={discFill} />
+      </g>
+
+      {/* Right crescent flank */}
+      <g transform="translate(102, 52) scale(-1,1)">
+        <circle cx="0" cy="8" r="6" fill={crescentFill} />
+        <circle cx="3" cy="6" r="4.8" fill={discFill} />
+      </g>
+
+      {/* Central serif M */}
+      <text
+        x="60"
+        y="67"
+        textAnchor="middle"
+        fontSize="38"
+        fontFamily="Georgia, 'Times New Roman', serif"
+        fontWeight="700"
+        fill={MColor}
+        letterSpacing="-1"
+      >
+        M
+      </text>
+
+      {/* XIII below M */}
+      <text
+        x="60"
+        y="81"
+        textAnchor="middle"
+        fontSize="9.5"
+        fontFamily="Georgia, 'Times New Roman', serif"
+        fontWeight="600"
+        fill={XIIIColor}
+        letterSpacing="3"
+      >
+        XIII
+      </text>
+
+      {/* Thin rule above M */}
+      <line x1="34" y1="34" x2="86" y2="34" stroke={dotColor} strokeWidth="0.75" opacity="0.7" />
+
+      {/* Dot accents on rule */}
+      <circle cx="60" cy="34" r="1.5" fill={dotColor} opacity="0.9" />
+      <circle cx="34" cy="34" r="1.2" fill={dotColor} opacity="0.6" />
+      <circle cx="86" cy="34" r="1.2" fill={dotColor} opacity="0.6" />
+
+      {/* Thin rule below XIII */}
+      <line x1="38" y1="86" x2="82" y2="86" stroke={dotColor} strokeWidth="0.75" opacity="0.7" />
     </svg>
   );
 }
