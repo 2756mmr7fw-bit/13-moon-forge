@@ -26,6 +26,7 @@ import AppHub from "@/pages/app-hub";
 import MigrationWizard from "@/pages/migration-wizard";
 import Leaving from "@/pages/leaving";
 import SovereignStack from "@/pages/sovereign";
+import GitHubConnect from "@/pages/github-connect";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -62,6 +63,7 @@ function Router() {
         <Route path="/wizard" component={MigrationWizard} />
         <Route path="/leaving" component={Leaving} />
         <Route path="/sovereign" component={SovereignStack} />
+        <Route path="/github" component={GitHubConnect} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
