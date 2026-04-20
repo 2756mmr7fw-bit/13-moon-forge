@@ -26,6 +26,25 @@ export const registryAppsTable = pgTable("registry_apps", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const gitlabConnectionsTable = pgTable("gitlab_connections", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull().unique(),
+  accessToken: text("access_token").notNull(),
+  username: text("username").notNull(),
+  avatarUrl: text("avatar_url"),
+  connectedAt: timestamp("connected_at").notNull().defaultNow(),
+});
+
+export const bitbucketConnectionsTable = pgTable("bitbucket_connections", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull().unique(),
+  bbUsername: text("bb_username").notNull(),
+  appPassword: text("app_password").notNull(),
+  displayName: text("display_name"),
+  avatarUrl: text("avatar_url"),
+  connectedAt: timestamp("connected_at").notNull().defaultNow(),
+});
+
 export const githubConnectionsTable = pgTable("github_connections", {
   id: serial("id").primaryKey(),
   userId: text("user_id").notNull().unique(),

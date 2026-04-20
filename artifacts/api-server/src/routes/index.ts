@@ -9,6 +9,8 @@ import flintRouter from "./flint";
 import moonIntegrationRouter from "./moonIntegration";
 import deployRouter from "./deploy";
 import githubRouter from "./github";
+import gitlabRouter from "./gitlab";
+import bitbucketRouter from "./bitbucket";
 
 const router: IRouter = Router();
 
@@ -22,5 +24,7 @@ router.use(flintRouter);
 router.use(moonIntegrationRouter);
 router.use(deployRouter);
 router.use(githubRouter);
+router.use(gitlabRouter);
+router.use(bitbucketRouter);
 
 export default router;
