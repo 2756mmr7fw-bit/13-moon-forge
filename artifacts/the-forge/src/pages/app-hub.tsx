@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import {
   Server, Layers, BookOpen, CheckCircle2, XCircle, RefreshCw, Unplug,
   ExternalLink, Loader2, AlertTriangle, Globe, Zap, Moon,
+  Activity, Play, Square, RotateCcw, Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -124,12 +125,13 @@ interface ServerInfo {
 
 // ─── Tabs ─────────────────────────────────────────────────────────────────────
 
-type Tab = "start" | "server" | "catalog";
+type Tab = "start" | "server" | "catalog" | "apps";
 
 const TABS: { id: Tab; label: string; icon: React.ComponentType<{ size: number }> }[] = [
   { id: "start",   label: "Get Started",  icon: BookOpen },
   { id: "server",  label: "My Server",    icon: Server },
   { id: "catalog", label: "App Catalog",  icon: Layers },
+  { id: "apps",    label: "Live Apps",    icon: Activity },
 ];
 
 // ─── Get Started Tab ──────────────────────────────────────────────────────────
@@ -507,6 +509,162 @@ function AppCatalogTab({ connected }: { connected: boolean }) {
   );
 }
 
+// ─── Live Apps Tab ────────────────────────────────────────────────────────────
+
+interface CoolifyApp {
+  id: string;
+  uuid: string;
+  name: string;
+  status: string;
+  fqdn?: string;
+  updated_at?: string;
+}
+
+function statusBadge(status: string) {
+  const s = (status ?? "").toLowerCase();
+  if (s.includes("running"))  return { color: "text-green-400 bg-green-900/20 border-green-800/40", label: "Running", dot: "bg-green-400" };
+  if (s.includes("stopped"))  return { color: "text-muted-foreground bg-muted/30 border-border", label: "Stopped", dot: "bg-muted-foreground" };
+  if (s.includes("error") || s.includes("fail")) return { color: "text-red-400 bg-red-900/20 border-red-800/40", label: "Error", dot: "bg-red-400" };
+  if (s.includes("build") || s.includes("deploy")) return { color: "text-amber-400 bg-amber-900/20 border-amber-800/40", label: "Building", dot: "bg-amber-400 animate-pulse" };
+  return { color: "text-muted-foreground bg-muted/30 border-border", label: status || "Unknown", dot: "bg-muted-foreground" };
+}
+
+function LiveAppsTab({ connected, serverInfo }: { connected: boolean; serverInfo: ServerInfo | null }) {
+  const [apps, setApps]         = useState<CoolifyApp[]>([]);
+  const [loading, setLoading]   = useState(false);
+  const [error, setError]       = useState("");
+  const [redeploying, setRedeploying] = useState<string | null>(null);
+  const [redeployMsg, setRedeployMsg] = useState<Record<string, string>>({});
+
+  const load = async () => {
+    setLoading(true); setError("");
+    try {
+      const r = await fetch(`${API_BASE}/api/deploy/apps`, { headers: headers() });
+      if (!r.ok) { setError("Failed to load apps from your Coolify server."); return; }
+      const data = await r.json();
+      setApps(Array.isArray(data) ? data : []);
+    } catch { setError("Could not reach your server."); }
+    finally   { setLoading(false); }
+  };
+
+  useEffect(() => { if (connected) load(); }, [connected]);
+
+  const redeploy = async (app: CoolifyApp) => {
+    setRedeploying(app.uuid);
+    setRedeployMsg(m => ({ ...m, [app.uuid]: "" }));
+    try {
+      const r = await fetch(`${API_BASE}/api/deploy/redeploy/${app.uuid}`, { method: "POST", headers: headers() });
+      const d = await r.json();
+      setRedeployMsg(m => ({ ...m, [app.uuid]: r.ok ? "Deploy triggered ✓" : (d.error ?? "Failed") }));
+    } finally { setRedeploying(null); }
+  };
+
+  if (!connected) {
+    return (
+      <div className="text-center py-12 space-y-3">
+        <Activity size={32} className="text-muted-foreground/20 mx-auto" />
+        <p className="font-semibold text-muted-foreground">No server connected</p>
+        <p className="text-sm text-muted-foreground">Connect your Coolify server first to see live app status.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-bold">Live Apps on {serverInfo?.name ?? "Your Server"}</h2>
+          <p className="text-sm text-muted-foreground">Apps running on your Coolify server. Redeploy or monitor from here.</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={load} disabled={loading} className="gap-1.5">
+          {loading ? <Loader2 size={13} className="animate-spin" /> : <RefreshCw size={13} />} Refresh
+        </Button>
+      </div>
+
+      {error && (
+        <div className="flex items-center gap-2 rounded-lg border border-red-800/40 bg-red-900/10 p-4 text-sm text-red-400">
+          <AlertTriangle size={14} className="shrink-0" /> {error}
+        </div>
+      )}
+
+      {loading && (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground py-6">
+          <Loader2 size={14} className="animate-spin" /> Loading apps from Coolify…
+        </div>
+      )}
+
+      {!loading && !error && apps.length === 0 && (
+        <div className="text-center py-12 space-y-3">
+          <Server size={32} className="text-muted-foreground/20 mx-auto" />
+          <p className="font-semibold text-muted-foreground">No apps deployed yet</p>
+          <p className="text-sm text-muted-foreground">Deploy an app from the App Catalog or create one directly in Coolify.</p>
+          <a href={serverInfo?.coolifyUrl ?? "#"} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline">
+            Open Coolify <ExternalLink size={11} />
+          </a>
+        </div>
+      )}
+
+      {!loading && apps.length > 0 && (
+        <div className="space-y-3">
+          {apps.map(app => {
+            const badge = statusBadge(app.status);
+            return (
+              <div key={app.uuid} className="rounded-xl border border-border bg-card p-5 flex items-center gap-4">
+                <div className={cn("shrink-0 w-2.5 h-2.5 rounded-full mt-0.5", badge.dot)} />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <p className="font-bold text-sm truncate">{app.name}</p>
+                    <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", badge.color)}>{badge.label}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                    {app.fqdn && (
+                      <a href={`https://${app.fqdn}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-primary transition-colors">
+                        <Globe size={10} />{app.fqdn}
+                      </a>
+                    )}
+                    {app.updated_at && (
+                      <span className="flex items-center gap-1"><Clock size={10} />{new Date(app.updated_at).toLocaleDateString()}</span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex flex-col items-end gap-1 shrink-0">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => redeploy(app)}
+                    disabled={redeploying === app.uuid}
+                    className="gap-1.5 h-8 text-xs"
+                  >
+                    {redeploying === app.uuid
+                      ? <Loader2 size={12} className="animate-spin" />
+                      : <RotateCcw size={12} />
+                    }
+                    Redeploy
+                  </Button>
+                  {redeployMsg[app.uuid] && (
+                    <span className={cn("text-[10px] font-medium", redeployMsg[app.uuid].includes("✓") ? "text-green-400" : "text-red-400")}>
+                      {redeployMsg[app.uuid]}
+                    </span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <div className="pt-4 border-t border-border flex items-center justify-between">
+        <p className="text-xs text-muted-foreground">
+          App status is live from your Coolify server. Refresh to update.
+        </p>
+        <a href={serverInfo?.coolifyUrl ?? "#"} target="_blank" rel="noopener noreferrer" className="text-xs text-primary flex items-center gap-1 hover:underline">
+          Open Coolify <ExternalLink size={10} />
+        </a>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function AppHub() {
@@ -586,6 +744,7 @@ export default function AppHub() {
           {activeTab === "start"   && <GetStartedTab onConnect={() => setActiveTab("server")} />}
           {activeTab === "server"  && <MyServerTab serverInfo={serverInfo} onSaved={handleSaved} />}
           {activeTab === "catalog" && <AppCatalogTab connected={!!serverInfo?.connected} />}
+          {activeTab === "apps"    && <LiveAppsTab connected={!!serverInfo?.connected} serverInfo={serverInfo} />}
         </>
       )}
     </div>

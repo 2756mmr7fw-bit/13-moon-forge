@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import {
   ArrowRightLeft, FileText, Copy, Download, RotateCcw, ExternalLink,
   AlertTriangle, Code2, Container, Globe, GitBranch, SlidersHorizontal, Database,
+  Upload, CheckCircle2, Loader2, Github,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -136,12 +137,75 @@ const TOOLS: ToolDef[] = [
 
 type Status = "idle" | "running" | "done" | "error";
 
+const CODE_TOOLS = ["rewrite", "docker", "nginx", "cicd", "env"];
+const TOOL_DEFAULTS: Record<string, string> = {
+  docker: "Dockerfile",
+  nginx:  "nginx.conf",
+  cicd:   ".github/workflows/deploy.yml",
+  env:    ".env.template",
+};
+
+function getUserIdHub() {
+  let id = localStorage.getItem("13moonforge_user_id");
+  if (!id) { id = crypto.randomUUID(); localStorage.setItem("13moonforge_user_id", id); }
+  return id;
+}
+
 function ToolPanel({ tool }: { tool: ToolDef }) {
   const [fields, setFields] = useState<Record<string, string>>({});
   const [output, setOutput]   = useState("");
   const [status, setStatus]   = useState<Status>("idle");
   const [subscribeUrl, setSubscribeUrl] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+
+  // Commit-back state
+  const [ghConnected, setGhConnected] = useState(false);
+  const [glConnected, setGlConnected] = useState(false);
+  const [showCommit, setShowCommit]   = useState(false);
+  const [commitPlatform, setCommitPlatform] = useState<"github" | "gitlab">("github");
+  const [commitRepo,   setCommitRepo]   = useState("");
+  const [commitBranch, setCommitBranch] = useState("main");
+  const [commitPath,   setCommitPath]   = useState("");
+  const [commitMsg,    setCommitMsg]    = useState("");
+  const [committing,   setCommitting]   = useState(false);
+  const [commitDone,   setCommitDone]   = useState(false);
+  const [commitError,  setCommitError]  = useState("");
+
+  useEffect(() => {
+    const uid = getUserIdHub();
+    const hdr = { "x-user-id": uid };
+    fetch(`${API_BASE}/api/github/status`, { headers: hdr }).then(r => r.json()).then(d => setGhConnected(d.connected)).catch(() => {});
+    fetch(`${API_BASE}/api/gitlab/status`, { headers: hdr }).then(r => r.json()).then(d => setGlConnected(d.connected)).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (status === "done" && CODE_TOOLS.includes(tool.id)) {
+      setCommitPath(TOOL_DEFAULTS[tool.id] ?? "");
+      setCommitMsg(`forge: add ${TOOL_DEFAULTS[tool.id] ?? tool.label.toLowerCase()} via 13 Moon Forge`);
+      setCommitDone(false);
+      setCommitError("");
+    }
+  }, [status, tool.id]);
+
+  const pushToGit = async () => {
+    if (!output.trim() || !commitRepo.trim() || !commitPath.trim() || !commitMsg.trim()) return;
+    setCommitting(true); setCommitError("");
+    try {
+      const r = await fetch(`${API_BASE}/api/${commitPlatform}/commit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-user-id": getUserIdHub() },
+        body: JSON.stringify({
+          repo:    commitRepo.trim(),
+          branch:  commitBranch.trim() || "main",
+          message: commitMsg.trim(),
+          files:   [{ path: commitPath.trim(), content: output }],
+        }),
+      });
+      const d = await r.json();
+      if (!r.ok || !d.ok) { setCommitError(d.error ?? "Commit failed"); }
+      else { setCommitDone(true); setShowCommit(false); }
+    } finally { setCommitting(false); }
+  };
 
   const set = (key: string, val: string) => setFields(f => ({ ...f, [key]: val }));
 
@@ -328,9 +392,86 @@ function ToolPanel({ tool }: { tool: ToolDef }) {
         )}
 
         {status === "done" && (
-          <p className="text-xs text-green-500 font-medium">
-            ✓ Done — copy or save the output above.
-          </p>
+          <div className="space-y-2">
+            <p className="text-xs text-green-500 font-medium">✓ Done — copy or save the output above.</p>
+
+            {/* Commit-back panel (only for code-producing tools) */}
+            {CODE_TOOLS.includes(tool.id) && (ghConnected || glConnected) && (
+              <div>
+                {commitDone ? (
+                  <p className="text-xs text-green-400 flex items-center gap-1.5 font-medium">
+                    <CheckCircle2 size={12} /> Committed successfully to {commitPlatform === "github" ? "GitHub" : "GitLab"}.
+                  </p>
+                ) : !showCommit ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => { setShowCommit(true); if (!ghConnected && glConnected) setCommitPlatform("gitlab"); }}
+                    className="gap-1.5 h-8 text-xs border-dashed"
+                  >
+                    <Upload size={12} /> Push to {ghConnected && glConnected ? "GitHub / GitLab" : ghConnected ? "GitHub" : "GitLab"}
+                  </Button>
+                ) : (
+                  <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-3 mt-1">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-bold flex items-center gap-1.5"><Upload size={12} /> Push to repository</p>
+                      <button onClick={() => setShowCommit(false)} className="text-muted-foreground hover:text-foreground text-xs">✕</button>
+                    </div>
+
+                    {/* Platform selector */}
+                    {ghConnected && glConnected && (
+                      <div className="flex gap-2">
+                        {(["github", "gitlab"] as const).map(p => (
+                          <button
+                            key={p}
+                            onClick={() => setCommitPlatform(p)}
+                            className={cn(
+                              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all",
+                              commitPlatform === p ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:text-foreground",
+                            )}
+                          >
+                            {p === "github" ? <Github size={11} /> : <span className="text-[10px]">🦊</span>}
+                            {p === "github" ? "GitHub" : "GitLab"}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <p className="text-[10px] font-semibold mb-1 text-muted-foreground uppercase tracking-wide">Repo (owner/name)</p>
+                        <Input value={commitRepo} onChange={e => setCommitRepo(e.target.value)} placeholder="you/my-app" className="h-8 text-xs font-mono bg-card" />
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-semibold mb-1 text-muted-foreground uppercase tracking-wide">Branch</p>
+                        <Input value={commitBranch} onChange={e => setCommitBranch(e.target.value)} placeholder="main" className="h-8 text-xs font-mono bg-card" />
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-semibold mb-1 text-muted-foreground uppercase tracking-wide">File path</p>
+                      <Input value={commitPath} onChange={e => setCommitPath(e.target.value)} placeholder="e.g. Dockerfile" className="h-8 text-xs font-mono bg-card" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-semibold mb-1 text-muted-foreground uppercase tracking-wide">Commit message</p>
+                      <Input value={commitMsg} onChange={e => setCommitMsg(e.target.value)} placeholder="forge: add Dockerfile" className="h-8 text-xs bg-card" />
+                    </div>
+
+                    {commitError && <p className="text-xs text-red-400 flex items-center gap-1.5"><AlertTriangle size={11} />{commitError}</p>}
+
+                    <Button
+                      size="sm"
+                      onClick={pushToGit}
+                      disabled={!commitRepo.trim() || !commitPath.trim() || !commitMsg.trim() || committing}
+                      className="gap-1.5 h-8 text-xs"
+                    >
+                      {committing ? <Loader2 size={11} className="animate-spin" /> : <Upload size={11} />}
+                      {committing ? "Committing…" : "Commit file"}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         )}
       </div>
     </div>

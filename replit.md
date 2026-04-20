@@ -27,11 +27,16 @@ AI-powered invention and building platform for Sovereign Digital LLC (13moonforg
 - **Snippet Vault** (`/snippets`) — Code snippet library
 
 ### Self-Host (sovereign infrastructure suite)
-- **Migration Wizard** (`/wizard`) — 5-step guided migration flow: platform selector → streaming audit → migration plan checklist → server check → done state. Works with all Migration Hub tools.
-- **Migration Hub** (`/migration`) — 7 streaming tools: Audit, Code Rewriter, Dockerfile, Nginx Config, CI/CD Pipeline, Env Fixer, DB Migration
+- **Code Sources** (`/github`) — Unified hub connecting GitHub, GitLab, Bitbucket. Platform tabs with connected indicators. Per-platform auth (PAT for GH/GL, username+app-password for BB). Browse repos, read file trees, auto-import key files into Migration Wizard via localStorage handoff.
+- **Migration Wizard** (`/wizard`) — 5-step guided migration flow: platform selector → streaming audit → migration plan checklist → server check → done state. Reads `wizard_import` from localStorage (set by Code Sources). Works with all Migration Hub tools.
+- **Migration Hub** (`/migration`) — 7 streaming AI tools: Audit, Code Rewriter, Dockerfile, Nginx Config, CI/CD Pipeline, Env Fixer, DB Migration. **Commit-back**: after any code-producing tool completes, a "Push to GitHub/GitLab" button appears — user picks repo/branch/filepath/message and commits generated output directly.
 - **Escape Routes** (`/leaving`) — Platform-specific guides for Replit, Heroku, Railway, Render — lock-in table + escape checklist + time/difficulty estimates
 - **The Sovereign Stack** (`/sovereign`) — 7-criteria standard for portable self-hosted apps with interactive self-assessment quiz and Sovereign Seal badge HTML
-- **App Hub** (`/app-hub`) — "Bring Your Own Server" model: Coolify setup guide, server connection form (validated live), Sovereign Digital app catalog, community registry placeholder
+- **App Hub** (`/app-hub`) — 4 tabs: Get Started, My Server (Coolify connection), App Catalog (6 Sovereign Digital apps), Live Apps (real-time Coolify app status + redeploy)
+- **App Registry** (`/registry`) — Community-submitted self-hostable open-source apps. Browse grid with stack badges + Docker pull commands. Submit form (name, tagline, description, stack, GitHub URL, Docker image). All submissions pending review before appearing publicly.
+
+### Onboarding
+- First-visit modal (`OnboardingModal` in `components/onboarding-modal.tsx`) — appears once (localStorage flag `13moonforge_onboarded`). Three paths: Migrate existing app → `/wizard`, Build something new → `/projects/new`, Explore tools → `/`.
 
 ---
 
@@ -62,7 +67,10 @@ Uses Replit AI Integrations (OpenAI-compatible, no user API key needed). All rou
 
 ## API Routes
 - `artifacts/api-server/src/routes/forge.ts` — all streaming AI routes (audit, rewrite, docker, nginx, cicd, env, pgdump, etc.)
-- `artifacts/api-server/src/routes/deploy.ts` — server connection, registry CRUD
+- `artifacts/api-server/src/routes/deploy.ts` — server connection, registry CRUD, Coolify live apps, redeploy
+- `artifacts/api-server/src/routes/github.ts` — status, connect, disconnect, repos, tree, file, commit
+- `artifacts/api-server/src/routes/gitlab.ts` — status, connect, disconnect, repos, tree, file, commit (full write)
+- `artifacts/api-server/src/routes/bitbucket.ts` — status, connect, disconnect, repos, tree, file (read-only)
 - `artifacts/api-server/src/routes/index.ts` — route registration
 
 **Frontend API base**: `import.meta.env.BASE_URL.replace(/\/$/, "")`  
@@ -82,6 +90,16 @@ Uses Replit AI Integrations (OpenAI-compatible, no user API key needed). All rou
 - Stored per-user in `serverConnectionsTable` (API key masked in responses)
 - Validated via `GET {coolifyUrl}/api/v1/healthcheck` before saving
 - Deploy routes use Coolify REST API for health check and (future) deployment
+
+---
+
+## Production Deployment (Self-Hosting Forge)
+Forge passes its own Sovereign Stack standard — it has a production Dockerfile:
+- `Dockerfile` — multi-stage: deps → web-build → api-build → runner. Copies frontend build into `dist/public` and serves via `express.static` (only in `NODE_ENV=production`).
+- `docker-compose.yml` — Forge API + Postgres 16. Maps env vars (DATABASE_URL, SESSION_SECRET, MOON_API_KEY).
+- `.dockerignore` — excludes node_modules, .env files, mockup-sandbox, dist artifacts.
+- **Build**: `docker compose up --build`
+- **API port**: 8080 (configurable via `PORT` env)
 
 ---
 
