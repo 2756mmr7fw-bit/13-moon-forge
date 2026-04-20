@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { serverConnectionsTable } from "@workspace/db";
-import { eq, and } from "drizzle-orm";
+import { serverConnectionsTable, registryAppsTable } from "@workspace/db";
+import { eq, and, desc } from "drizzle-orm";
 
 const router = Router();
 
@@ -162,6 +162,52 @@ router.post("/deploy/redeploy/:uuid", async (req, res) => {
   } catch (err) {
     req.log.error({ err }, "deploy/redeploy failed");
     return res.status(500).json({ error: "Failed to trigger redeploy" });
+  }
+});
+
+// ─── GET /api/registry ──────────────────────────────────────────────────────
+router.get("/registry", async (req, res) => {
+  try {
+    const apps = await db
+      .select()
+      .from(registryAppsTable)
+      .where(eq(registryAppsTable.status, "approved"))
+      .orderBy(desc(registryAppsTable.createdAt));
+    return res.json(apps);
+  } catch (err) {
+    req.log.error({ err }, "registry GET failed");
+    return res.status(500).json({ error: "Failed to load registry" });
+  }
+});
+
+// ─── POST /api/registry ─────────────────────────────────────────────────────
+router.post("/registry", async (req, res) => {
+  const { name, tagline, description, stack, githubUrl, dockerImage, submittedByName } =
+    req.body as Record<string, string>;
+
+  if (!name?.trim() || !tagline?.trim() || !description?.trim() || !stack?.trim()) {
+    return res.status(400).json({ error: "name, tagline, description and stack are required" });
+  }
+
+  try {
+    const [row] = await db
+      .insert(registryAppsTable)
+      .values({
+        name: name.trim(),
+        tagline: tagline.trim(),
+        description: description.trim(),
+        stack: stack.trim(),
+        githubUrl: githubUrl?.trim() || null,
+        dockerImage: dockerImage?.trim() || null,
+        submittedByUserId: req.userId,
+        submittedByName: submittedByName?.trim() || null,
+        status: "pending",
+      })
+      .returning();
+    return res.json({ ok: true, id: row.id });
+  } catch (err) {
+    req.log.error({ err }, "registry POST failed");
+    return res.status(500).json({ error: "Failed to submit app" });
   }
 });
 

@@ -131,7 +131,7 @@ export default function MigrationWizard() {
           if (!line.startsWith("data: ")) continue;
           try {
             const ev = JSON.parse(line.slice(6));
-            if (ev.type === "chunk") set("auditOutput", (prev) => prev + ev.content);
+            if (ev.type === "chunk") setState(s => ({ ...s, auditOutput: s.auditOutput + ev.content }));
             else if (ev.type === "done") { terminal = true; set("auditStatus", "done"); }
           } catch { /* ignore */ }
         }
@@ -141,15 +141,6 @@ export default function MigrationWizard() {
       if ((err as Error).name !== "AbortError") set("auditStatus", "error");
     }
   };
-
-  // hack to append to auditOutput since setState is stale inside loops
-  const auditOutputRef = useRef("");
-  useEffect(() => { auditOutputRef.current = state.auditOutput; }, [state.auditOutput]);
-  const appendAudit = (chunk: string) => {
-    auditOutputRef.current += chunk;
-    setState(s => ({ ...s, auditOutput: auditOutputRef.current }));
-  };
-  void appendAudit; // suppress unused warning — used via closure above
 
   const checkServer = async () => {
     try {
