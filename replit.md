@@ -32,7 +32,7 @@ AI-powered invention and building platform for Sovereign Digital LLC (13moonforg
 - **Migration Hub** (`/migration`) — 7 streaming AI tools: Audit, Code Rewriter, Dockerfile, Nginx Config, CI/CD Pipeline, Env Fixer, DB Migration. **Commit-back**: after any code-producing tool completes, a "Push to GitHub/GitLab" button appears — user picks repo/branch/filepath/message and commits generated output directly.
 - **Escape Routes** (`/leaving`) — Platform-specific guides for Replit, Heroku, Railway, Render — lock-in table + escape checklist + time/difficulty estimates
 - **The Sovereign Stack** (`/sovereign`) — 7-criteria standard for portable self-hosted apps with interactive self-assessment quiz and Sovereign Seal badge HTML
-- **App Hub** (`/app-hub`) — 4 tabs: Get Started, My Server (Coolify connection), App Catalog (6 Sovereign Digital apps), Live Apps (real-time Coolify app status + redeploy)
+- **App Hub** (`/app-hub`) — 4 tabs: Get Started, My Server (Coolify connection), App Catalog (6 Sovereign Digital apps w/ "Deploy" modal that provisions a Docker-image app directly in Coolify via `POST /api/deploy/provision`), Live Apps (real-time Coolify app status + redeploy). New API endpoints: `GET /api/deploy/servers-list`, `GET /api/deploy/projects-list`, `POST /api/deploy/provision`.
 - **App Registry** (`/registry`) — Community-submitted self-hostable open-source apps. Browse grid with stack badges + Docker pull commands. Submit form (name, tagline, description, stack, GitHub URL, Docker image). All submissions pending review before appearing publicly.
 
 ### Onboarding
@@ -49,7 +49,7 @@ Uses Replit AI Integrations (OpenAI-compatible, no user API key needed). All rou
 - Service layer: `artifacts/api-server/src/lib/moonApi.ts`
 - SSE event `subscription_required` triggers UI subscribe gate
 
-**User identity**: anonymous persistent UUID in `localStorage` (`13moonforge_user_id`), sent as `x-user-id` request header.
+**User identity**: Clerk-authenticated JWT (preferred, via `getAuth(req).userId` on the API) with `x-user-id` header fallback for anonymous / non-Clerk requests. `ClerkProvider` wraps the entire React tree; sign-in/sign-up routes (`/sign-in`, `/sign-up`) render outside the sidebar Layout.
 
 **Admin bypass user IDs**: 54504320, 54489134
 
@@ -58,6 +58,9 @@ Uses Replit AI Integrations (OpenAI-compatible, no user API key needed). All rou
 ## Secrets
 - `MOON_API_KEY` — Thirteen Moons API key
 - `TPTS_MOON_API_KEY` — TPTS Moon API key
+- `CLERK_SECRET_KEY` — Clerk backend secret (server-side only)
+- `CLERK_PUBLISHABLE_KEY` / `VITE_CLERK_PUBLISHABLE_KEY` — Clerk publishable key
+- `SESSION_SECRET` — Express session secret
 - `TSQ_MOON_API_KEY` — Town Square Moon API key
 - `TPTS_INBOUND_KEY` — TPTS inbound API key
 - `SESSION_SECRET` — session secret

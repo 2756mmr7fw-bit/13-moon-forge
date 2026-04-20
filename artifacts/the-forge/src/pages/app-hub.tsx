@@ -3,10 +3,17 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+} from "@/components/ui/dialog";
+import {
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+} from "@/components/ui/select";
 import {
   Server, Layers, BookOpen, CheckCircle2, XCircle, RefreshCw, Unplug,
   ExternalLink, Loader2, AlertTriangle, Globe, Zap, Moon,
-  Activity, Play, Square, RotateCcw, Clock,
+  Activity, Play, Square, RotateCcw, Clock, RocketIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -32,6 +39,7 @@ interface CatalogApp {
   description: string;
   minRam: number;
   tptsSlug: string;
+  dockerImage: string;
   status: "available" | "soon";
   color: string;
 }
@@ -45,6 +53,7 @@ const CATALOG: CatalogApp[] = [
     description: "The complete AI-powered workspace for inventors, founders, and builders. Projects, brainstorm, code, game docs, legal, launch kit — all in one place.",
     minRam: 4,
     tptsSlug: "forge",
+    dockerImage: "sovereigndigital/forge:latest",
     status: "available",
     color: "text-orange-400",
   },
@@ -56,6 +65,7 @@ const CATALOG: CatalogApp[] = [
     description: "Deep research, competitive analysis, market intelligence. Hawk digs through anything and surfaces what matters.",
     minRam: 2,
     tptsSlug: "hawk",
+    dockerImage: "sovereigndigital/hawk:latest",
     status: "available",
     color: "text-sky-400",
   },
@@ -67,6 +77,7 @@ const CATALOG: CatalogApp[] = [
     description: "Long-form writing, copywriting, content strategy, and editorial workflows powered by AI. Built for writers who ship.",
     minRam: 2,
     tptsSlug: "quill",
+    dockerImage: "sovereigndigital/quill:latest",
     status: "available",
     color: "text-emerald-400",
   },
@@ -78,6 +89,7 @@ const CATALOG: CatalogApp[] = [
     description: "Define your organization's core values, build your mission statement, and align your team around principles that last.",
     minRam: 2,
     tptsSlug: "creed",
+    dockerImage: "sovereigndigital/creed:latest",
     status: "available",
     color: "text-violet-400",
   },
@@ -89,6 +101,7 @@ const CATALOG: CatalogApp[] = [
     description: "AI-powered learning paths, knowledge summaries, and structured study sessions. Learn faster. Retain more.",
     minRam: 2,
     tptsSlug: "sage",
+    dockerImage: "sovereigndigital/sage:latest",
     status: "available",
     color: "text-amber-400",
   },
@@ -100,6 +113,7 @@ const CATALOG: CatalogApp[] = [
     description: "When you're stuck. Flint throws sparks — unexpected angles, contrarian takes, and creative provocations to unstick your thinking.",
     minRam: 2,
     tptsSlug: "flint",
+    dockerImage: "sovereigndigital/flint:latest",
     status: "available",
     color: "text-red-400",
   },
@@ -429,11 +443,171 @@ function MyServerTab({
   );
 }
 
+// ─── Provision Modal ──────────────────────────────────────────────────────────
+
+interface CoolifyServer { uuid: string; name: string; }
+interface CoolifyProject { uuid: string; name: string; }
+
+function ProvisionModal({ app, onClose }: { app: CatalogApp; onClose: () => void }) {
+  const [servers, setServers] = useState<CoolifyServer[]>([]);
+  const [projects, setProjects] = useState<CoolifyProject[]>([]);
+  const [serverUuid, setServerUuid] = useState("");
+  const [projectUuid, setProjectUuid] = useState("");
+  const [appName, setAppName] = useState(app.name.toLowerCase().replace(/\s+/g, "-"));
+  const [dockerImage, setDockerImage] = useState(app.dockerImage);
+  const [domain, setDomain] = useState("");
+  const [ports, setPorts] = useState("80");
+  const [envVars, setEnvVars] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<{ ok: boolean; message: string } | null>(null);
+
+  useEffect(() => {
+    const h = headers();
+    Promise.all([
+      fetch(`${API_BASE}/api/deploy/servers-list`, { headers: h }).then(r => r.json()).catch(() => []),
+      fetch(`${API_BASE}/api/deploy/projects-list`, { headers: h }).then(r => r.json()).catch(() => []),
+    ]).then(([svrs, prjs]) => {
+      setServers(Array.isArray(svrs) ? svrs : []);
+      setProjects(Array.isArray(prjs) ? prjs : []);
+      if (svrs[0]?.uuid) setServerUuid(svrs[0].uuid);
+      if (prjs[0]?.uuid) setProjectUuid(prjs[0].uuid);
+    });
+  }, []);
+
+  async function handleProvision() {
+    if (!serverUuid || !projectUuid) return;
+    setLoading(true);
+    setResult(null);
+    try {
+      const r = await fetch(`${API_BASE}/api/deploy/provision`, {
+        method: "POST",
+        headers: headers(),
+        body: JSON.stringify({ dockerImage, appName, serverUuid, projectUuid, domain, portsExposes: ports, envVars }),
+      });
+      const body = await r.json();
+      if (r.ok && body.ok !== false) {
+        setResult({ ok: true, message: `${app.name} provisioned! Coolify is pulling the image and starting the container.` });
+      } else {
+        setResult({ ok: false, message: body.error ?? "Provisioning failed." });
+      }
+    } catch {
+      setResult({ ok: false, message: "Network error — check your connection." });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <RocketIcon size={18} className="text-primary" />
+            Deploy {app.name}
+          </DialogTitle>
+          <DialogDescription>
+            Forge will create a Docker-image application in Coolify on your server. The app will start pulling the image immediately.
+          </DialogDescription>
+        </DialogHeader>
+
+        {result ? (
+          <div className={cn(
+            "rounded-lg p-4 text-sm flex items-start gap-3",
+            result.ok ? "bg-green-500/10 border border-green-500/30 text-green-400" : "bg-red-500/10 border border-red-500/30 text-red-400",
+          )}>
+            {result.ok ? <CheckCircle2 size={16} className="shrink-0 mt-0.5" /> : <XCircle size={16} className="shrink-0 mt-0.5" />}
+            <span>{result.message}</span>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Server</Label>
+                {servers.length === 0 ? (
+                  <p className="text-xs text-muted-foreground pt-1">Loading…</p>
+                ) : (
+                  <Select value={serverUuid} onValueChange={setServerUuid}>
+                    <SelectTrigger className="text-sm"><SelectValue placeholder="Pick server" /></SelectTrigger>
+                    <SelectContent>
+                      {servers.map(s => <SelectItem key={s.uuid} value={s.uuid}>{s.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+              <div className="space-y-1.5">
+                <Label>Project</Label>
+                {projects.length === 0 ? (
+                  <p className="text-xs text-muted-foreground pt-1">Loading…</p>
+                ) : (
+                  <Select value={projectUuid} onValueChange={setProjectUuid}>
+                    <SelectTrigger className="text-sm"><SelectValue placeholder="Pick project" /></SelectTrigger>
+                    <SelectContent>
+                      {projects.map(p => <SelectItem key={p.uuid} value={p.uuid}>{p.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>App Name <span className="text-muted-foreground font-normal">(in Coolify)</span></Label>
+              <Input value={appName} onChange={e => setAppName(e.target.value)} placeholder="my-forge-app" />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Docker Image</Label>
+              <Input value={dockerImage} onChange={e => setDockerImage(e.target.value)} placeholder="owner/image:tag" />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Domain <span className="text-muted-foreground font-normal">(optional)</span></Label>
+                <Input value={domain} onChange={e => setDomain(e.target.value)} placeholder="app.yourdomain.com" />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Port</Label>
+                <Input value={ports} onChange={e => setPorts(e.target.value)} placeholder="80" />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Env Variables <span className="text-muted-foreground font-normal">(optional — KEY=VALUE per line)</span></Label>
+              <Textarea
+                value={envVars}
+                onChange={e => setEnvVars(e.target.value)}
+                placeholder={"DATABASE_URL=postgres://...\nOPENAI_API_KEY=sk-..."}
+                className="font-mono text-xs min-h-[80px] resize-none"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-1">
+              <Button variant="outline" onClick={onClose}>Cancel</Button>
+              <Button onClick={handleProvision} disabled={loading || !serverUuid || !projectUuid}>
+                {loading ? <><Loader2 size={14} className="animate-spin mr-1.5" />Provisioning…</> : <><RocketIcon size={14} className="mr-1.5" />Deploy to Server</>}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {result?.ok && (
+          <div className="flex justify-end">
+            <Button variant="outline" onClick={onClose}>Close</Button>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // ─── App Catalog Tab ──────────────────────────────────────────────────────────
 
 function AppCatalogTab({ connected }: { connected: boolean }) {
+  const [provisionApp, setProvisionApp] = useState<CatalogApp | null>(null);
+
   return (
     <div className="space-y-6">
+      {provisionApp && <ProvisionModal app={provisionApp} onClose={() => setProvisionApp(null)} />}
+
       <div>
         <h2 className="text-lg font-bold mb-1">Sovereign Digital App Catalog</h2>
         <p className="text-sm text-muted-foreground">
@@ -485,13 +659,12 @@ function AppCatalogTab({ connected }: { connected: boolean }) {
                   Subscribe <ExternalLink size={10} />
                 </a>
                 {connected && app.status === "available" && (
-                  <a
-                    href="javascript:void(0)"
+                  <button
+                    onClick={() => setProvisionApp(app)}
                     className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors cursor-pointer"
-                    title="Coming soon — manage deployments directly from Forge"
                   >
-                    Deploy
-                  </a>
+                    <RocketIcon size={10} /> Deploy
+                  </button>
                 )}
               </div>
             </div>

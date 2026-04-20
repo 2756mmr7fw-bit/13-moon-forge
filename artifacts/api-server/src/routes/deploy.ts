@@ -165,6 +165,76 @@ router.post("/deploy/redeploy/:uuid", async (req, res) => {
   }
 });
 
+// ─── GET /api/deploy/servers-list ───────────────────────────────────────────
+router.get("/deploy/servers-list", async (req, res) => {
+  try {
+    const conn = await getConnection(req.userId);
+    if (!conn) return res.status(404).json({ error: "No server connected" });
+    const r = await coolifyFetch(conn.coolifyUrl, conn.coolifyApiKey, "/servers");
+    const body = await r.json().catch(() => ([]));
+    return res.json(Array.isArray(body) ? body : []);
+  } catch (err) {
+    req.log.error({ err }, "deploy/servers-list failed");
+    return res.status(500).json({ error: "Failed to fetch servers" });
+  }
+});
+
+// ─── GET /api/deploy/projects-list ──────────────────────────────────────────
+router.get("/deploy/projects-list", async (req, res) => {
+  try {
+    const conn = await getConnection(req.userId);
+    if (!conn) return res.status(404).json({ error: "No server connected" });
+    const r = await coolifyFetch(conn.coolifyUrl, conn.coolifyApiKey, "/projects");
+    const body = await r.json().catch(() => ([]));
+    return res.json(Array.isArray(body) ? body : []);
+  } catch (err) {
+    req.log.error({ err }, "deploy/projects-list failed");
+    return res.status(500).json({ error: "Failed to fetch projects" });
+  }
+});
+
+// ─── POST /api/deploy/provision ─────────────────────────────────────────────
+// Body: { dockerImage, appName, serverUuid, projectUuid, domain?, portsExposes?, envVars? }
+router.post("/deploy/provision", async (req, res) => {
+  const { dockerImage, appName, serverUuid, projectUuid, domain, portsExposes, envVars } =
+    req.body as Record<string, string>;
+
+  if (!dockerImage?.trim() || !appName?.trim() || !serverUuid?.trim() || !projectUuid?.trim()) {
+    return res.status(400).json({ error: "dockerImage, appName, serverUuid and projectUuid are required" });
+  }
+
+  try {
+    const conn = await getConnection(req.userId);
+    if (!conn) return res.status(404).json({ error: "No server connected" });
+
+    const payload: Record<string, unknown> = {
+      docker_image:       dockerImage.trim(),
+      name:               appName.trim(),
+      server_uuid:        serverUuid.trim(),
+      project_uuid:       projectUuid.trim(),
+      environment_name:   "production",
+      instant_deploy:     true,
+      ports_exposes:      portsExposes?.trim() || "80",
+    };
+    if (domain?.trim()) payload.domains = domain.startsWith("http") ? domain.trim() : `https://${domain.trim()}`;
+    if (envVars?.trim()) payload.environment_variables = envVars.trim();
+
+    const r = await coolifyFetch(conn.coolifyUrl, conn.coolifyApiKey, "/applications/dockerimage", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+
+    const body = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      return res.status(r.status).json({ ok: false, error: body.message ?? body.error ?? `Coolify returned ${r.status}` });
+    }
+    return res.json({ ok: true, ...body });
+  } catch (err) {
+    req.log.error({ err }, "deploy/provision failed");
+    return res.status(500).json({ error: "Failed to provision app" });
+  }
+});
+
 // ─── GET /api/registry ──────────────────────────────────────────────────────
 router.get("/registry", async (req, res) => {
   try {

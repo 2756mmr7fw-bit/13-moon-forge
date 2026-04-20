@@ -2,6 +2,8 @@ import express, { type Express } from "express";
 import cors from "cors";
 import path from "path";
 import pinoHttp from "pino-http";
+import { clerkMiddleware, getAuth } from "@clerk/express";
+import { CLERK_PROXY_PATH, clerkProxyMiddleware } from "./middlewares/clerkProxyMiddleware";
 import router from "./routes";
 import { logger } from "./lib/logger";
 import { userIdMiddleware } from "./middlewares/userId";
@@ -27,9 +29,15 @@ app.use(
     },
   }),
 );
-app.use(cors());
+
+// Clerk proxy must come before body parsers (streams raw bytes)
+app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
+
+app.use(cors({ credentials: true, origin: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use(clerkMiddleware());
 app.use(userIdMiddleware);
 
 app.use("/api", router);
