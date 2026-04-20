@@ -1,0 +1,22 @@
+Here's your full third-party API roster — what you're using, what the free-tier limit is, and where you'd hit a wall first:
+
+Service	Used for	Free tier	Watch for
+VirusTotal	File hash + URL scanning (FileScan, UrlScanner)	4 req/min, 500/day, 15.5k/mo	High-traffic days — easy to blow past 500/day if scans go viral. Paid starts ~$2k/yr (steep jump).
+AbuseIPDB	IP reputation lookups (IpScanner)	1,000 checks/day	Spikes from automated scans. $20/mo gets 10k/day.
+Shodan	Open ports / exposure data (ExposureScanner, IpScanner)	Membership $49 once → 100 query credits/mo	Credits-based, not requests — they refill slowly. Upgrade tier is $69/mo.
+GreyNoise	"Is this IP background scanner noise?" (IpScanner)	Community key: 50 req/day	First one to throttle. Paid Plus tier ~$25/mo for 10k/day.
+AlienVault OTX	Threat intel pulses (UrlScanner, IpScanner)	Free, generous (~10k/hr)	Rarely a problem. No paid tier — just be a good citizen.
+Google Safe Browsing	URL phishing/malware check (UrlScanner, BreachChecker)	10,000 req/day free	Plenty of headroom for now. Paid is enterprise-only.
+Have I Been Pwned (HIBP)	Email & password breach lookups (EmailBreach, BreachChecker, DarkWebScanner)	$3.95/mo subscription you've already paid (Pwned 1) → ~10 req/sec	If user count grows, may need Pwned 2 ($16/mo) or higher.
+SendGrid	Transactional email (alerts, password resets)	Free: 100 emails/day forever	This will be your first real bottleneck as users sign up. Essentials = $19.95/mo for 50k.
+Payment Gateway (Sovereign Digital)	Square checkout proxy	Internal — your own infra	Square's own fees apply downstream, no API limit.
+TPTS Moon API	Aegis/Vigil/Flint entitlement verify	Internal — your own infra	No limit, you own both ends.
+The four to watch closely (in order of how soon you'll hit them):
+
+GreyNoise — 50/day is tiny, will throttle first under any real traffic.
+SendGrid — 100 emails/day caps signups + breach alerts fast.
+AbuseIPDB — 1,000/day, fine until users start running batch IP scans.
+VirusTotal — 500/day, fine until a single user uploads a folder of files.
+The comfortable ones: Google Safe Browsing, AlienVault OTX, HIBP (since you've subscribed), Shodan (credits regenerate), and the two internal ones.
+
+Want me to add per-service usage logging to a small admin dashboard so you can actually see how close to each ceiling you're running? That'd give you 30 days of warning before any of them throttle in production.
