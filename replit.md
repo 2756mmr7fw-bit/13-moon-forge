@@ -1,57 +1,95 @@
-# The Forge — Website Builder
+# 13 Moon Forge
 
-## Product
-AI-powered website builder run by the character "Forge" (one of the 13 Moons). Users create projects, add pages, describe their site to Forge, and get complete HTML generated for every page. Built to eventually connect to the real Forge AI personality (coming April 7th).
+## Product Vision
+AI-powered invention and building platform for Sovereign Digital LLC (13moonforge.ai — domain not yet acquired). Integrates multiple Moons (AI characters) including Forge #3, Hawk #2, Quill #5, Creed #6, Sage #7, Flint #13. The definitive escape route for developers leaving Replit/Heroku/Railway/Render and self-hosting on their own infrastructure.
 
-## Features
-- Project management (create/edit/delete with templates)
-- Page management per project
-- **Generate with Forge** — AI generates complete HTML/CSS for all pages from a description (streaming SSE)
-- **Live preview** — Edit/Preview toggle in page editor renders HTML in iframe
-- Dashboard with summary stats and recent projects
+**Subscriptions**: Exclusively via thepeoplestownsq.com — no in-app payments.
+
+---
+
+## Features & Pages
+
+### Builder
+- **The Anvil** (`/`) — Dashboard with stats and recent projects
+- **My Projects** (`/projects`) — Project management with templates
+- **New Creation** (`/projects/new`) — Create new project
+- **Brainstorm** (`/brainstorm`) — AI idea generation
+
+### Creator Tools
+- **Learn with Sage** (`/sage`) — Sage Moon AI tutor
+- **Ask Hawk** (`/hawk`) — Hawk Moon AI assistant
+- **Forge Tools** (`/tools`) — General Forge AI tools
+- **Code Forge** (`/code-forge`) — Code generation and review
+- **Game Doc Builder** (`/game-doc`) — Game design documents
+- **Game Design Tools** (`/game-tools`) — Game mechanics and design
+- **Launch Kit** (`/launch`) — Product launch assets
+- **Legal Decoder** (`/legal`) — Legal document analysis
+- **Snippet Vault** (`/snippets`) — Code snippet library
+
+### Self-Host (sovereign infrastructure suite)
+- **Migration Wizard** (`/wizard`) — 5-step guided migration flow: platform selector → streaming audit → migration plan checklist → server check → done state. Works with all Migration Hub tools.
+- **Migration Hub** (`/migration`) — 7 streaming tools: Audit, Code Rewriter, Dockerfile, Nginx Config, CI/CD Pipeline, Env Fixer, DB Migration
+- **Escape Routes** (`/leaving`) — Platform-specific guides for Replit, Heroku, Railway, Render — lock-in table + escape checklist + time/difficulty estimates
+- **The Sovereign Stack** (`/sovereign`) — 7-criteria standard for portable self-hosted apps with interactive self-assessment quiz and Sovereign Seal badge HTML
+- **App Hub** (`/app-hub`) — "Bring Your Own Server" model: Coolify setup guide, server connection form (validated live), Sovereign Digital app catalog, community registry placeholder
+
+---
 
 ## AI Integration
-Uses Replit AI Integrations (OpenAI, no user API key needed). Endpoints: `POST /api/forge/generate`, `POST /api/forge/regenerate-page`, `POST /api/flint/chat`. All stream SSE events back to client. Both AI characters have full system prompts in their respective route files.
+Uses Replit AI Integrations (OpenAI-compatible, no user API key needed). All routes stream SSE events back to the client.
 
-## Subscription / Moon API
-All AI routes are gated by the Thirteen Moons subscription system at thepeoplestownsq.com.
-- **Verify**: `GET https://thepeoplestownsq.com/api/moon/verify?userId={userId}&moon=forge|flint` with `x-moon-api-key` header
+**Moon API** — Thirteen Moons subscription at thepeoplestownsq.com:
+- **Verify**: `GET https://thepeoplestownsq.com/api/moon/verify?userId={userId}&moon=forge|flint|hawk|...` with `x-moon-api-key` header
 - **Deduct**: `POST https://thepeoplestownsq.com/api/moon/deduct` with `{userId, moonName, count: 1}`
 - Service layer: `artifacts/api-server/src/lib/moonApi.ts`
-- User identity: anonymous persistent UUID stored in `localStorage` (`13moonforge_user_id`), sent as `x-user-id` request header
-- Middleware: `artifacts/api-server/src/middlewares/userId.ts` populates `req.userId`
-- Subscribe URL: `https://thepeoplestownsq.com/ai-education`
-- SSE event `subscription_required` triggers UI gate with subscribe link
+- SSE event `subscription_required` triggers UI subscribe gate
 
-## Secrets Required
-- `MOON_API_KEY` — Thirteen Moons API key (from thepeoplestownsq.com)
+**User identity**: anonymous persistent UUID in `localStorage` (`13moonforge_user_id`), sent as `x-user-id` request header.
+
+**Admin bypass user IDs**: 54504320, 54489134
+
+---
+
+## Secrets
+- `MOON_API_KEY` — Thirteen Moons API key
+- `TPTS_MOON_API_KEY` — TPTS Moon API key
+- `TSQ_MOON_API_KEY` — Town Square Moon API key
+- `TPTS_INBOUND_KEY` — TPTS inbound API key
 - `SESSION_SECRET` — session secret
-- `SQUARE_API_KEY` — Square payments
+- `SQUARE_API_KEY` — Square payments (future)
 
-# Workspace
+---
 
-## Overview
+## API Routes
+- `artifacts/api-server/src/routes/forge.ts` — all streaming AI routes (audit, rewrite, docker, nginx, cicd, env, pgdump, etc.)
+- `artifacts/api-server/src/routes/deploy.ts` — server connection, registry CRUD
+- `artifacts/api-server/src/routes/index.ts` — route registration
 
-pnpm workspace monorepo using TypeScript. Each package manages its own dependencies.
+**Frontend API base**: `import.meta.env.BASE_URL.replace(/\/$/, "")`  
+**NOT** `@/lib/api` — that file does not exist.
 
-## Stack
+---
 
-- **Monorepo tool**: pnpm workspaces
-- **Node.js version**: 24
-- **Package manager**: pnpm
-- **TypeScript version**: 5.9
-- **API framework**: Express 5
-- **Database**: PostgreSQL + Drizzle ORM
-- **Validation**: Zod (`zod/v4`), `drizzle-zod`
-- **API codegen**: Orval (from OpenAPI spec)
-- **Build**: esbuild (CJS bundle)
+## Database Schema
+- `lib/db/src/schema/` — Drizzle ORM schema files
+- `serverConnectionsTable` — Coolify server connections per user (in `deploy.ts`)
+- `registryAppsTable` — community app submissions (id, name, tagline, description, stack, githubUrl, dockerImage, submittedByUserId, status: pending/approved/rejected, sovereignCertified, minRam)
+- Push: `pnpm --filter @workspace/db run push-force`
 
-## Key Commands
+---
 
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- `pnpm --filter @workspace/api-server run dev` — run API server locally
+## Coolify Integration
+- Stored per-user in `serverConnectionsTable` (API key masked in responses)
+- Validated via `GET {coolifyUrl}/api/v1/healthcheck` before saving
+- Deploy routes use Coolify REST API for health check and (future) deployment
 
-See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details.
+---
+
+## Workspace
+pnpm workspace monorepo, TypeScript, Node.js 24.
+
+- **API server**: Express 5, port 8080, `artifacts/api-server/`
+- **Frontend**: React + Vite, `artifacts/the-forge/`
+- **DB**: `lib/db/` with Drizzle ORM + PostgreSQL
+- **Build**: `pnpm run build` | **Typecheck**: `pnpm run typecheck`
+- **DB push**: `pnpm --filter @workspace/db run push-force`

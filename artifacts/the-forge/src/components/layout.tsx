@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import {
   Flame, FolderKanban, PlusCircle, CreditCard, ExternalLink,
   Sparkles, Code2, Wrench, BookOpen, Archive, Gamepad2, Rocket, Scale,
-  GraduationCap, Crosshair, ArrowRightLeft, Layers,
+  GraduationCap, Crosshair, ArrowRightLeft, Layers, Wand2, LogOut, Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LogoMark, LogoWordmark } from "@/components/logo";
@@ -30,8 +30,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/launch",      label: "Launch Kit",        icon: Rocket },
     { href: "/legal",       label: "Legal Decoder",     icon: Scale },
     { href: "/snippets",    label: "Snippet Vault",     icon: Archive },
+  ];
+
+  const selfHostItems = [
+    { href: "/wizard",      label: "Migration Wizard",  icon: Wand2 },
     { href: "/migration",   label: "Migration Hub",     icon: ArrowRightLeft },
-    { href: "/app-hub",    label: "App Hub",            icon: Layers },
+    { href: "/leaving",     label: "Escape Routes",     icon: LogOut },
+    { href: "/sovereign",   label: "Sovereign Stack",   icon: Shield },
+    { href: "/app-hub",     label: "App Hub",           icon: Layers },
   ];
 
   const isActive = (href: string) =>
@@ -72,6 +78,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
           <div className="space-y-1">
             {toolItems.map(item => <NavLink key={item.href} {...item} />)}
+          </div>
+
+          <div className="mt-4 mb-2 px-3">
+            <p className="text-[10px] font-bold tracking-widest text-muted-foreground/60 uppercase">Self-Host</p>
+          </div>
+          <div className="space-y-1">
+            {selfHostItems.map(item => <NavLink key={item.href} {...item} />)}
           </div>
 
           <div className="mt-4 space-y-1">
