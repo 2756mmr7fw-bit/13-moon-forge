@@ -175,6 +175,35 @@ router.post("/secrets/import", async (req, res) => {
   }
 });
 
+// ─── POST /api/secrets/migrate ───────────────────────────────────────────────
+// Migrates secrets stored under a localStorage UUID to the authenticated Clerk userId.
+// Safe to call multiple times — only migrates secrets that don't conflict.
+router.post("/secrets/migrate", async (req, res) => {
+  const { anonUserId } = req.body as { anonUserId?: string };
+  if (!anonUserId?.trim()) return res.status(400).json({ error: "anonUserId required" });
+
+  const clerkUserId = req.userId;
+  // Guard: only migrate if the caller is a real Clerk user (not anon)
+  if (clerkUserId.startsWith("anon-") || clerkUserId === anonUserId) {
+    return res.status(403).json({ error: "Must be authenticated to migrate secrets" });
+  }
+
+  try {
+    // Re-attribute all secrets from the old anon ID to the Clerk user ID
+    const updated = await db
+      .update(appSecretsTable)
+      .set({ userId: clerkUserId })
+      .where(eq(appSecretsTable.userId, anonUserId.trim()))
+      .returning({ id: appSecretsTable.id });
+
+    req.log.info({ from: anonUserId, to: clerkUserId, count: updated.length }, "secrets migrated");
+    return res.json({ ok: true, migrated: updated.length });
+  } catch (err) {
+    req.log.error({ err }, "secrets migrate failed");
+    return res.status(500).json({ error: "Migration failed" });
+  }
+});
+
 // ─── GET /api/secrets/export ──────────────────────────────────────────────────
 // ?appName=xxx  — returns .env file content
 router.get("/secrets/export", async (req, res) => {

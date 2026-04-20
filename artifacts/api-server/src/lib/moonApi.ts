@@ -2,6 +2,22 @@
 // Outbound key: TPTS_MOON_API_KEY (sent as x-moon-api-key to thepeoplestownsq.com)
 // Inbound key:  TPTS_INBOUND_KEY  (TPTS sends this as x-api-key on webhooks to us)
 const MOON_API_KEY = process.env.TPTS_MOON_API_KEY ?? process.env.TSQ_MOON_API_KEY ?? process.env.MOON_API_KEY ?? "";
+
+// ─── Server-side Moon subscription cache ──────────────────────────────────────
+// Avoids hammering TPTS API on every page load. 5-min TTL per userId.
+const moonCache = new Map<string, { data: unknown; expiresAt: number }>();
+const MOON_CACHE_TTL_MS = 5 * 60 * 1000;
+
+function getMoonCache(userId: string): unknown | null {
+  const entry = moonCache.get(userId);
+  if (!entry) return null;
+  if (Date.now() > entry.expiresAt) { moonCache.delete(userId); return null; }
+  return entry.data;
+}
+
+function setMoonCache(userId: string, data: unknown): void {
+  moonCache.set(userId, { data, expiresAt: Date.now() + MOON_CACHE_TTL_MS });
+}
 const TSQ_BASE = process.env.TSQ_BASE_URL ?? "https://thepeoplestownsq.com";
 const MOON_BASE = `${TSQ_BASE}/api/moon`;
 
@@ -179,8 +195,13 @@ export async function deductMoonMessage(userId: string, moonName: string): Promi
 /**
  * List all moons a user owns.
  * GET /api/moon/subscriptions?userId=<id>
+ * Cached per userId for 5 minutes to avoid hammering TPTS on every page load.
  */
 export async function getUserSubscriptions(userId: string): Promise<unknown> {
+  // Check cache first
+  const cached = getMoonCache(userId);
+  if (cached !== null) return cached;
+
   if (!MOON_API_KEY) return null;
   try {
     const res = await fetch(
@@ -191,7 +212,9 @@ export async function getUserSubscriptions(userId: string): Promise<unknown> {
       }
     );
     if (!res.ok) return null;
-    return res.json();
+    const data = await res.json();
+    setMoonCache(userId, data);
+    return data;
   } catch {
     return null;
   }

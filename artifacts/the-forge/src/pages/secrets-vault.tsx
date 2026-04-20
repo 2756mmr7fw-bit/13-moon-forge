@@ -16,19 +16,25 @@ import {
   ChevronDown, ChevronRight, Copy, Check, ShieldCheck, Info, AlertTriangle, RotateCcw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useUser, Show } from "@clerk/react";
+import { useUser, useAuth, Show } from "@clerk/react";
 import { Link } from "wouter";
+import { getAuthToken } from "@workspace/api-client-react";
 
 const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
+const MIGRATION_KEY = "13moonforge_secrets_migrated";
 
-function getUserId() {
+function getAnonUserId() {
   let id = localStorage.getItem("13moonforge_user_id");
   if (!id) { id = crypto.randomUUID(); localStorage.setItem("13moonforge_user_id", id); }
   return id;
 }
 
-function headers(extra?: Record<string, string>) {
-  return { "Content-Type": "application/json", "x-user-id": getUserId(), ...extra };
+async function headers(extra?: Record<string, string>): Promise<Record<string, string>> {
+  const token = await getAuthToken();
+  if (token) {
+    return { "Content-Type": "application/json", "Authorization": `Bearer ${token}`, ...extra };
+  }
+  return { "Content-Type": "application/json", "x-user-id": getAnonUserId(), ...extra };
 }
 
 // ─── Common third-party service providers ─────────────────────────────────────
@@ -96,7 +102,7 @@ function AddSecretModal({ apps, onClose, onAdded }: {
     try {
       const r = await fetch(`${API_BASE}/api/secrets`, {
         method: "POST",
-        headers: headers(),
+        headers: await headers(),
         body: JSON.stringify({ appName: finalApp, serviceName: finalService, keyName, value, notes }),
       });
       const body = await r.json();
@@ -229,7 +235,7 @@ function ImportModal({ apps, onClose, onImported }: {
     try {
       const r = await fetch(`${API_BASE}/api/secrets/import`, {
         method: "POST",
-        headers: headers(),
+        headers: await headers(),
         body: JSON.stringify({ appName: finalApp, serviceName, envText }),
       });
       const body = await r.json();
@@ -331,7 +337,7 @@ function SecretRow({ secret, onDelete }: { secret: Secret; onDelete: (id: number
     if (revealed) { setRevealed(null); return; }
     setRevealing(true);
     try {
-      const r = await fetch(`${API_BASE}/api/secrets/${secret.id}/reveal`, { headers: headers() });
+      const r = await fetch(`${API_BASE}/api/secrets/${secret.id}/reveal`, { headers: await headers() });
       const body = await r.json();
       if (r.ok) setRevealed(body.value);
     } finally {
@@ -383,7 +389,7 @@ function SecretRow({ secret, onDelete }: { secret: Secret; onDelete: (id: number
             <AlertDialogAction
               className="bg-red-500 hover:bg-red-600"
               onClick={async () => {
-                await fetch(`${API_BASE}/api/secrets/${secret.id}`, { method: "DELETE", headers: headers() });
+                await fetch(`${API_BASE}/api/secrets/${secret.id}`, { method: "DELETE", headers: await headers() });
                 onDelete(secret.id);
               }}
             >
@@ -451,6 +457,7 @@ function AppGroup({ appName, secrets, onDelete, onExport }: {
 
 export default function SecretsVault() {
   const { isSignedIn } = useUser();
+  const { getToken } = useAuth();
   const [secrets, setSecrets] = useState<Secret[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
@@ -462,14 +469,37 @@ export default function SecretsVault() {
   const loadSecrets = async () => {
     setLoading(true);
     try {
-      const r = await fetch(`${API_BASE}/api/secrets`, { headers: headers() });
+      const r = await fetch(`${API_BASE}/api/secrets`, { headers: await headers() });
       if (r.ok) setSecrets(await r.json());
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { loadSecrets(); }, []);
+  useEffect(() => {
+    async function init() {
+      // Migrate localStorage-UUID secrets to Clerk userId on first sign-in
+      if (isSignedIn) {
+        const token = await getToken();
+        const anonId = localStorage.getItem("13moonforge_user_id");
+        const migrationDone = localStorage.getItem(MIGRATION_KEY);
+        if (token && anonId && !migrationDone) {
+          try {
+            await fetch(`${API_BASE}/api/secrets/migrate`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+              body: JSON.stringify({ anonUserId: anonId }),
+            });
+            localStorage.setItem(MIGRATION_KEY, "done");
+          } catch {
+            // best-effort — don't block loading
+          }
+        }
+      }
+      await loadSecrets();
+    }
+    init();
+  }, [isSignedIn]);
 
   function handleDelete(id: number) {
     setSecrets(prev => prev.filter(s => s.id !== id));
@@ -481,7 +511,7 @@ export default function SecretsVault() {
 
   async function handleExport(appName: string) {
     const url = `${API_BASE}/api/secrets/export?appName=${encodeURIComponent(appName)}`;
-    const r = await fetch(url, { headers: headers() });
+    const r = await fetch(url, { headers: await headers() });
     const text = await r.text();
     const blob = new Blob([text], { type: "text/plain" });
     const a = document.createElement("a");
