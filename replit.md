@@ -58,7 +58,10 @@ Uses Replit AI Integrations (OpenAI-compatible, no user API key needed). All rou
 
 **Route guards**: `ProtectedRoute` component (`components/protected-route.tsx`) wraps all pages except `/pricing` and `/payment/success`. Unauthenticated users are redirected to `/sign-in?redirect_url=<current_path>` with a spinner shown while Clerk loads.
 
-**Admin access**: Set `ADMIN_USER_IDS=user_xxx,user_yyy` (comma-separated Clerk user IDs) to grant admin access. Find your Clerk user ID in the Clerk dashboard or via the API response headers. The `/api/admin/check` endpoint returns `{ isAdmin: true/false }` for the current user.
+**Admin access**: Two supported env vars (both comma-separated, both optional):
+- `ADMIN_EMAILS=Ezekiel@thepeoplestownsq.com` — matches by email address via Clerk backend lookup (set and active)
+- `ADMIN_USER_IDS=user_xxx,user_yyy` — matches by raw Clerk user ID (faster, no API call)
+Email check uses `createClerkClient` with `CLERK_SECRET_KEY`; results cached per-user for 10 minutes. The `/api/admin/check` endpoint returns `{ isAdmin: true/false }` for the current signed-in user.
 
 ---
 

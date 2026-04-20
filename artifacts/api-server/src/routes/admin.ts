@@ -1,35 +1,76 @@
 import { Router } from "express";
+import { createClerkClient } from "@clerk/express";
 import { db, registryAppsTable } from "@workspace/db";
 import { eq, desc } from "drizzle-orm";
 
 export const router = Router();
 
+// ─── Admin identity sets ──────────────────────────────────────────────────────
+
 const ADMIN_IDS = new Set(
   (process.env.ADMIN_USER_IDS ?? "")
     .split(",")
-    .map((s) => s.trim())
+    .map((s) => s.trim().toLowerCase())
     .filter(Boolean)
 );
 
-function isAdmin(userId: string): boolean {
-  if (ADMIN_IDS.size > 0 && ADMIN_IDS.has(userId)) return true;
-  return false;
+const ADMIN_EMAILS = new Set(
+  (process.env.ADMIN_EMAILS ?? "")
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean)
+);
+
+// ─── Clerk client (only needed when ADMIN_EMAILS is set) ─────────────────────
+
+const clerkClient = createClerkClient({
+  secretKey: process.env.CLERK_SECRET_KEY ?? "",
+});
+
+// ─── Per-user admin cache (userId → { result, expiresAt }) ───────────────────
+
+const adminCache = new Map<string, { result: boolean; expiresAt: number }>();
+const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
+async function isAdmin(userId: string): Promise<boolean> {
+  if (!userId || userId.startsWith("anon-")) return false;
+
+  // Fast path: check by ID
+  if (ADMIN_IDS.has(userId.toLowerCase())) return true;
+
+  // No email list configured — skip the Clerk lookup
+  if (ADMIN_EMAILS.size === 0) return false;
+
+  // Check cache
+  const cached = adminCache.get(userId);
+  if (cached && cached.expiresAt > Date.now()) return cached.result;
+
+  // Resolve email via Clerk backend API
+  try {
+    const user = await clerkClient.users.getUser(userId);
+    const emails = (user.emailAddresses ?? []).map((e) => e.emailAddress.toLowerCase());
+    const result = emails.some((email) => ADMIN_EMAILS.has(email));
+    adminCache.set(userId, { result, expiresAt: Date.now() + CACHE_TTL_MS });
+    return result;
+  } catch {
+    // Clerk lookup failed (user not found, network issue, etc.) — deny
+    return false;
+  }
 }
 
-function requireAdmin(req: any, res: any, next: any) {
-  if (!isAdmin(req.userId)) {
-    return res.status(403).json({ error: "Forbidden" });
-  }
+async function requireAdmin(req: any, res: any, next: any) {
+  const ok = await isAdmin(req.userId);
+  if (!ok) return res.status(403).json({ error: "Forbidden" });
   next();
 }
 
 // ─── GET /api/admin/check ────────────────────────────────────────────────────
-router.get("/admin/check", (req, res) => {
-  return res.json({ isAdmin: isAdmin(req.userId) });
+router.get("/admin/check", async (req, res) => {
+  const ok = await isAdmin(req.userId);
+  return res.json({ isAdmin: ok });
 });
 
 // ─── GET /api/admin/registry ─────────────────────────────────────────────────
-// Returns ALL apps (pending, approved, rejected) for admin review
 router.get("/admin/registry", requireAdmin, async (req, res) => {
   try {
     const apps = await db
@@ -89,9 +130,7 @@ router.delete("/admin/registry/:id", requireAdmin, async (req, res) => {
   if (isNaN(id)) return res.status(400).json({ error: "Invalid id" });
 
   try {
-    await db
-      .delete(registryAppsTable)
-      .where(eq(registryAppsTable.id, id));
+    await db.delete(registryAppsTable).where(eq(registryAppsTable.id, id));
     return res.json({ ok: true });
   } catch (err) {
     req.log.error({ err }, "admin/registry DELETE failed");
@@ -100,7 +139,6 @@ router.delete("/admin/registry/:id", requireAdmin, async (req, res) => {
 });
 
 // ─── PATCH /api/admin/registry/:id ──────────────────────────────────────────
-// Update sovereign certified flag or other fields
 router.patch("/admin/registry/:id", requireAdmin, async (req, res) => {
   const id = parseInt(req.params.id, 10);
   if (isNaN(id)) return res.status(400).json({ error: "Invalid id" });
