@@ -4,7 +4,7 @@ import {
   Flame, FolderKanban, PlusCircle, CreditCard, ExternalLink,
   Sparkles, Code2, Wrench, BookOpen, Archive, Gamepad2, Rocket, Scale,
   GraduationCap, Crosshair, ArrowRightLeft, Layers, Wand2, LogOut, Shield, Github, Package,
-  User, LogIn, Menu, X, Settings, KeyRound, ShieldAlert, PlugZap,
+  User, LogIn, Menu, X, Settings, KeyRound, ShieldAlert, PlugZap, Activity,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LogoMark, LogoWordmark } from "@/components/logo";
@@ -111,6 +111,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/app-hub",     label: "App Hub",           icon: Layers },
     { href: "/registry",    label: "App Registry",      icon: Package },
     { href: "/secrets",     label: "Secrets Vault",     icon: KeyRound },
+    { href: "/monitor",     label: "App Monitor",        icon: Activity },
     { href: "/connections", label: "Connections",        icon: PlugZap },
   ];
 

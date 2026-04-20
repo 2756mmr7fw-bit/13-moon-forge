@@ -8,6 +8,7 @@ import router from "./routes";
 import { logger } from "./lib/logger";
 import { userIdMiddleware } from "./middlewares/userId";
 import { rateLimit } from "express-rate-limit";
+import { trackRequest, trackRlHit } from "./lib/trafficTracker";
 
 const app: Express = express();
 
@@ -78,6 +79,19 @@ const authLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many attempts. Please wait 5 minutes." },
+});
+
+// ─── Request tracking (feeds /api/monitor/status) ───────────────────────────
+const AI_GROUPS = new Set(["forge", "flint", "sage", "hawk", "ai", "moon"]);
+app.use("/api", (req, res, next) => {
+  const seg = req.path.split("/")[1] ?? "other";
+  const group = AI_GROUPS.has(seg) ? "ai" :
+    seg === "secrets" ? "secrets" :
+    ["deploy", "registry", "coolify"].includes(seg) ? "deploy" :
+    seg === "monitor" ? "monitor" : "other";
+  trackRequest(group);
+  res.on("finish", () => { if (res.statusCode === 429) trackRlHit(); });
+  next();
 });
 
 app.use("/api", globalLimiter);

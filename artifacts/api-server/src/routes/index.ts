@@ -15,6 +15,7 @@ import { router as secretsRouter } from "./secrets";
 import { router as adminRouter } from "./admin";
 import connectionsRouter from "./connections";
 import coolifyRouter from "./coolify";
+import monitorRouter from "./monitor";
 
 const router: IRouter = Router();
 
@@ -34,5 +35,6 @@ router.use(secretsRouter);
 router.use(adminRouter);
 router.use(connectionsRouter);
 router.use(coolifyRouter);
+router.use(monitorRouter);
 
 export default router;
