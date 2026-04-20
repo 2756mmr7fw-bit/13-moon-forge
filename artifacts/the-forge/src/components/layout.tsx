@@ -2,11 +2,12 @@ import { Link, useLocation } from "wouter";
 import {
   Flame, FolderKanban, PlusCircle, CreditCard, ExternalLink,
   Sparkles, Code2, Wrench, BookOpen, Archive, Gamepad2, Rocket, Scale,
-  GraduationCap, Crosshair, ArrowRightLeft, Layers, Wand2, LogOut, Shield, Github,
+  GraduationCap, Crosshair, ArrowRightLeft, Layers, Wand2, LogOut, Shield, Github, Package,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LogoMark, LogoWordmark } from "@/components/logo";
 import { ThirteenMoonsBadge } from "@/components/ThirteenMoonsBadge";
+import { OnboardingModal } from "@/components/onboarding-modal";
 
 const OUR_APPS_URL = "https://thepeoplestownsq.com/our-apps";
 
@@ -39,6 +40,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/leaving",     label: "Escape Routes",     icon: LogOut },
     { href: "/sovereign",   label: "Sovereign Stack",   icon: Shield },
     { href: "/app-hub",     label: "App Hub",           icon: Layers },
+    { href: "/registry",    label: "App Registry",      icon: Package },
   ];
 
   const isActive = (href: string) =>
@@ -61,6 +63,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen bg-background text-foreground">
+      <OnboardingModal />
       {/* Sidebar */}
       <aside className="w-64 border-r border-border bg-sidebar flex flex-col hidden md:flex shrink-0">
         <div className="p-5 pb-4">
