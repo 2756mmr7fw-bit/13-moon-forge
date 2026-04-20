@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import {
   Flame, FolderKanban, PlusCircle, CreditCard, ExternalLink,
   Sparkles, Code2, Wrench, BookOpen, Archive, Gamepad2, Rocket, Scale,
-  GraduationCap, Crosshair, ArrowRightLeft,
+  GraduationCap, Crosshair, ArrowRightLeft, Layers,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LogoMark, LogoWordmark } from "@/components/logo";
@@ -31,6 +31,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/legal",       label: "Legal Decoder",     icon: Scale },
     { href: "/snippets",    label: "Snippet Vault",     icon: Archive },
     { href: "/migration",   label: "Migration Hub",     icon: ArrowRightLeft },
+    { href: "/app-hub",    label: "App Hub",            icon: Layers },
   ];
 
   const isActive = (href: string) =>
