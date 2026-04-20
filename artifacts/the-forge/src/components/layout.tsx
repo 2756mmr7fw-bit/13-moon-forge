@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LogoMark, LogoWordmark } from "@/components/logo";
+import { ThirteenMoonsBadge } from "@/components/ThirteenMoonsBadge";
 
 const OUR_APPS_URL = "https://thepeoplestownsq.com/our-apps";
 
@@ -93,7 +94,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <p className="text-sm font-medium text-accent-foreground relative z-10 italic mb-2">
               "Ideas are free. Building is where the work starts. Let's get to work."
             </p>
-            <p className="text-xs text-muted-foreground relative z-10">— Forge, Moon #5</p>
+            <p className="text-xs text-muted-foreground relative z-10">— Forge, Moon #3</p>
           </div>
         </div>
       </aside>
@@ -123,20 +124,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
 
           {/* Footer */}
-          <footer className="border-t border-border px-4 md:px-8 lg:px-10 py-4">
-            <div className="max-w-6xl mx-auto">
-              <p className="text-xs text-muted-foreground text-center">
-                Part of the{" "}
-                <a
-                  href={OUR_APPS_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:text-primary/80 underline underline-offset-2 transition-colors"
-                >
-                  Sovereign Digital ecosystem
-                </a>
-                {" "}— 9 apps built for the people.
-              </p>
+          <footer className="border-t border-border px-4 md:px-8 lg:px-10">
+            <div className="max-w-6xl mx-auto flex items-center gap-3 py-6 text-sm text-muted-foreground">
+              <a href="https://thepeoplestownsq.com" aria-label="13 Moons — Sovereign Digital">
+                <ThirteenMoonsBadge size={40} />
+              </a>
+              <div>
+                <div className="font-semibold tracking-wide">Sealed by 13 Moons</div>
+                <div className="text-xs opacity-70">Sovereign Digital LLC · Member of the 13 Moons Network</div>
+              </div>
             </div>
           </footer>
         </div>
