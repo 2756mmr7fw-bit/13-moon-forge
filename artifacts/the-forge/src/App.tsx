@@ -21,7 +21,7 @@ import LaunchKit from "@/pages/launch-kit";
 import LegalDecoder from "@/pages/legal-decoder";
 import LearnWithSage from "@/pages/learn-sage";
 import AskHawk from "@/pages/ask-hawk";
-import MigrationAudit from "@/pages/migration-audit";
+import MigrationHub from "@/pages/migration-hub";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -53,7 +53,7 @@ function Router() {
         <Route path="/legal" component={LegalDecoder} />
         <Route path="/sage" component={LearnWithSage} />
         <Route path="/hawk" component={AskHawk} />
-        <Route path="/migration" component={MigrationAudit} />
+        <Route path="/migration" component={MigrationHub} />
         <Route component={NotFound} />
       </Switch>
     </Layout>

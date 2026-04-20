@@ -355,6 +355,7 @@ function makeStreamRoute(
   buildUserMessage: (body: Record<string, string>) => string,
   requiredFields: string[],
   checkAccess: AccessChecker = checkForgeAccess,
+  maxTokens = 2048,
 ) {
   router.post(path, async (req, res) => {
     const body = req.body as Record<string, string>;
@@ -375,7 +376,7 @@ function makeStreamRoute(
     try {
       const stream = await openai.chat.completions.create({
         model: "gpt-4o",
-        max_tokens: 2048,
+        max_tokens: maxTokens,
         stream: true,
         messages: [
           { role: "system", content: systemPrompt },
@@ -512,6 +513,236 @@ ${sourceFiles?.trim() ? `=== Source Files ===\n${sourceFiles}\n`    : ""}`;
     res.end();
   }
 });
+
+// ─── Code Rewriter ─────────────────────────────────────────────────────────────
+makeStreamRoute(
+  "/migration/rewrite",
+  `You are Forge, The Builder — a senior engineer specializing in porting Replit-hosted apps to self-hosted infrastructure.
+
+When given Replit-specific code, you:
+1. Identify every Replit-specific pattern: @replit/* imports, REPLIT_DOMAINS/REPL_ID/REPL_SLUG env vars, replitAuth(), @replit/object-storage, @replit/database, replit-specific headers or middleware
+2. Rewrite the COMPLETE file or function — never truncate, never use "..." or "// rest stays the same"
+3. Use these specific replacements:
+   - @replit/object-storage → AWS SDK v3 S3Client (Cloudflare R2-compatible) with presigned URLs
+   - @replit/database → ioredis (for key-value) or pg/drizzle (for structured data)
+   - REPLIT_DOMAINS → APP_DOMAIN env var
+   - REPL_ID / REPL_SLUG → APP_NAME env var or remove entirely
+   - replitAuth() / Replit OpenID Connect → Clerk middleware (provide real Clerk SDK code)
+   - Any replit.dev / repl.co / replit.app hardcoded URL → process.env.APP_DOMAIN
+4. After the rewritten code, add a "## Changes Made" section — a numbered list of every replacement, one line each
+
+Always output the complete rewritten file ready to paste. Never truncate.`,
+  (body) => `Rewrite this code to remove all Replit dependencies and make it fully portable.
+
+${body.context ? `Context: ${body.context}\n\n` : ""}Code to rewrite:
+\`\`\`
+${body.code}
+\`\`\``,
+  ["code"],
+  checkForgeAccess,
+  3072,
+);
+
+// ─── Dockerfile Generator ───────────────────────────────────────────────────────
+makeStreamRoute(
+  "/migration/docker",
+  `You are Forge, The Builder — a Docker and DevOps expert who writes production-grade container configurations.
+
+Always produce all four of these, clearly separated by headers:
+
+## Dockerfile
+A multi-stage build (builder stage + production stage):
+- Use the correct Node version (detect from package.json engines field or default to node:20-alpine)
+- Stage 1 (builder): install all deps, run build command
+- Stage 2 (production): copy only built output + node_modules, run as non-root user (node), expose correct port
+- COPY package.json before source for layer caching
+- Set NODE_ENV=production in production stage
+- Include HEALTHCHECK
+
+## docker-compose.yml
+- App service with build context, env_file: .env, restart: unless-stopped
+- Postgres service (correct version) with named volume, health check
+- Redis service only if stack includes Redis
+- Correct port mapping
+- All services on shared network
+
+## .dockerignore
+Standard Node.js dockerignore content (node_modules, .git, dist, .env, *.log, etc.)
+
+## Setup Instructions
+4-6 lines: copy .env.template → .env, fill in vars, docker compose up -d, verify health check
+
+Be specific. Use the actual app name, build/start commands, and port provided.`,
+  (body) => `Generate Docker configuration for this app.
+
+App Name: ${body.appName || "my-app"}
+Stack: ${body.stack}
+Build Command: ${body.buildCommand || "npm run build"}
+Start Command: ${body.startCommand || "node dist/index.js"}
+${body.packageJson ? `\npackage.json:\n${body.packageJson}` : ""}`,
+  ["stack"],
+  checkForgeAccess,
+  3072,
+);
+
+// ─── Nginx Config Generator ─────────────────────────────────────────────────────
+makeStreamRoute(
+  "/migration/nginx",
+  `You are Forge, The Builder — a Linux sysadmin and nginx expert.
+
+Always produce a complete, production-ready nginx configuration with these sections:
+
+## nginx.conf (or /etc/nginx/sites-available/<domain>)
+Include:
+- HTTP (port 80) → HTTPS redirect
+- HTTPS (port 443) server block with:
+  - ssl_certificate / ssl_certificate_key pointing to Let's Encrypt paths
+  - Modern TLS settings (TLSv1.2 + TLSv1.3, strong cipher suite)
+  - Proxy to upstream Node.js with correct headers (Host, X-Real-IP, X-Forwarded-For, X-Forwarded-Proto)
+  - Gzip compression (gzip on, types, min_length)
+  - Security headers: X-Frame-Options DENY, X-Content-Type-Options nosniff, X-XSS-Protection, Referrer-Policy, Permissions-Policy
+  - client_max_body_size 50m (or larger if file uploads mentioned)
+  - WebSocket upgrade block if requested (Upgrade, Connection headers)
+  - Static file caching for /assets/* if SPA detected
+  - proxy_read_timeout / proxy_connect_timeout
+  - gzip_types covering js, css, json, html, svg
+
+## Certbot Command
+The exact certbot command to issue the SSL certificate.
+
+## Activation Steps
+3-4 commands to test config, enable site, reload nginx.
+
+Use the actual domain and port provided. Be complete — no placeholders except for the SSL cert paths which certbot fills in.`,
+  (body) => `Generate nginx config for this app.
+
+Domain: ${body.domain}
+Upstream Port: ${body.upstreamPort}
+App Type: ${body.appType || "Node.js app"}
+${body.extras ? `Special Requirements: ${body.extras}` : ""}`,
+  ["domain", "upstreamPort"],
+  checkForgeAccess,
+  2048,
+);
+
+// ─── CI/CD Pipeline Generator ───────────────────────────────────────────────────
+makeStreamRoute(
+  "/migration/cicd",
+  `You are Forge, The Builder — a DevOps engineer who writes GitHub Actions workflows.
+
+Always produce:
+
+## .github/workflows/deploy.yml
+A complete GitHub Actions workflow that:
+- Triggers on push to main (and optionally pull_request for tests)
+- Sets up Node.js with the correct version and pnpm/npm caching
+- Installs dependencies
+- Runs build step
+- Runs tests if a test script exists
+- Deploys via Coolify webhook by default (POST to COOLIFY_WEBHOOK_URL secret with bearer token)
+- If deploy method is SSH: uses appleboy/ssh-action to SSH into server, pull latest Docker image, and run docker compose up -d --no-build
+- Sends a simple deploy status notification (can be a GitHub Step Summary)
+
+## Required GitHub Secrets
+Table listing every secret needed and where to get the value.
+
+## Coolify Setup (if Coolify deploy method)
+3-4 steps: where to find the webhook URL in Coolify, how to add it as a GitHub secret.
+
+## SSH Setup (if SSH deploy method)
+Steps to generate deploy keypair, add public key to server, add private key as GitHub secret.
+
+Be complete and specific. The workflow file should be paste-ready.`,
+  (body) => `Generate a CI/CD pipeline for this app.
+
+Stack: ${body.stack}
+Deploy Method: ${body.deployMethod || "Coolify"}
+${body.extras ? `Special Steps: ${body.extras}` : ""}`,
+  ["stack"],
+  checkForgeAccess,
+  2048,
+);
+
+// ─── Env Canonicalizer ─────────────────────────────────────────────────────────
+makeStreamRoute(
+  "/migration/env",
+  `You are Forge, The Builder — an infrastructure engineer who cleans up environment variable files for migration to self-hosted infrastructure.
+
+Process every variable in the .env and produce:
+
+## Renamed Variables
+A table with three columns: Old Name | New Name | Reason
+Standard renames:
+- REPLIT_DOMAINS → APP_DOMAIN
+- REPL_ID → (remove)
+- REPL_SLUG → APP_NAME
+- REPL_OWNER → (remove)
+- Any other REPLIT_* or REPL_* vars → portable equivalent or remove
+
+## Removed Variables
+List every removed variable and a one-line explanation of why.
+
+## .env.template
+The complete portable .env.template file. Rules:
+- All values replaced with descriptive placeholders (e.g. DATABASE_URL=postgresql://user:password@localhost:5432/myapp)
+- Every var has a one-line comment above it explaining what it's for
+- Grouped logically: App Config, Database, Auth, External Services, etc.
+- Remove Replit-specific vars entirely
+- Add any standard vars that are typically needed but missing (PORT, NODE_ENV)
+
+## Migration Notes
+Any callouts: vars that need special attention, env vars that appear hardcoded in source (if visible), anything tricky.
+
+Output the .env.template in a proper code block so it can be copied directly.`,
+  (body) => `Clean and canonicalize this .env file for self-hosted deployment:\n\n${body.envContent}`,
+  ["envContent"],
+  checkForgeAccess,
+  2048,
+);
+
+// ─── Database Migration Planner ─────────────────────────────────────────────────
+makeStreamRoute(
+  "/migration/pgdump",
+  `You are Forge, The Builder — a PostgreSQL DBA who writes precise database migration plans.
+
+Always produce a complete migration plan with real, copy-pasteable commands:
+
+## Schema Export
+The exact pg_dump command to export schema only (--schema-only), using the database name provided and placeholders for host/user.
+
+## Full Data Export
+The exact pg_dump command for a complete dump (schema + data), with --no-owner --no-acl flags.
+
+## Compressed Export (Recommended)
+pg_dump with -Fc (custom format) for most efficient transfer.
+
+## Transfer to New Server
+Options in order of preference:
+1. Pipe directly: pg_dump ... | psql ...
+2. SCP the dump file
+3. pg_dump → file → upload → pg_restore
+
+## Import on Target Server
+pg_restore command (for custom format) or psql command (for plain SQL). Include how to create the target database first (createdb).
+
+## Post-Migration Verification
+5 SQL queries to run after restore to verify data integrity: row counts, check latest records, verify sequences, check foreign keys.
+
+## Rollback Plan
+How to revert if the migration fails — keeping the source database alive until verified.
+
+## Zero-Downtime Strategy
+Brief explanation of maintenance window approach vs. logical replication approach. Recommend which to use based on complexity.
+
+Use the actual database name provided. Mark all placeholder values clearly (e.g. <SOURCE_HOST>, <DB_USER>).`,
+  (body) => `Create a complete PostgreSQL migration plan.
+
+Database Name: ${body.dbName}
+${body.schemaFile ? `Schema:\n${body.schemaFile}\n` : ""}${body.extras ? `Special Requirements: ${body.extras}` : ""}`,
+  ["dbName"],
+  checkForgeAccess,
+  2048,
+);
 
 // ─── Error Decoder ─────────────────────────────────────────────────────────────
 makeStreamRoute(
