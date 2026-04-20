@@ -13,6 +13,7 @@ import gitlabRouter from "./gitlab";
 import bitbucketRouter from "./bitbucket";
 import { router as secretsRouter } from "./secrets";
 import { router as adminRouter } from "./admin";
+import connectionsRouter from "./connections";
 
 const router: IRouter = Router();
 
@@ -30,5 +31,6 @@ router.use(gitlabRouter);
 router.use(bitbucketRouter);
 router.use(secretsRouter);
 router.use(adminRouter);
+router.use(connectionsRouter);
 
 export default router;

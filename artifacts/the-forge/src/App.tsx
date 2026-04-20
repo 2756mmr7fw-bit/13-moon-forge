@@ -34,6 +34,7 @@ import Registry from "@/pages/registry";
 import Account from "@/pages/account";
 import SecretsVault from "@/pages/secrets-vault";
 import AdminPanel from "@/pages/admin";
+import Connections from "@/pages/connections";
 import { ProtectedRoute } from "@/components/protected-route";
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
@@ -187,6 +188,7 @@ function Router() {
                   <Route path="/registry" component={Registry} />
                   <Route path="/account" component={Account} />
                   <Route path="/secrets" component={SecretsVault} />
+                  <Route path="/connections" component={Connections} />
                   <Route path="/admin" component={AdminPanel} />
                   <Route component={NotFound} />
                 </Switch>
