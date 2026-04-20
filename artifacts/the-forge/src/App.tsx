@@ -33,6 +33,8 @@ import GitHubConnect from "@/pages/github-connect";
 import Registry from "@/pages/registry";
 import Account from "@/pages/account";
 import SecretsVault from "@/pages/secrets-vault";
+import AdminPanel from "@/pages/admin";
+import { ProtectedRoute } from "@/components/protected-route";
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
@@ -153,33 +155,43 @@ function Router() {
       <Route>
         <Layout>
           <Switch>
-            <Route path="/" component={Dashboard} />
-            <Route path="/projects" component={Projects} />
-            <Route path="/projects/new" component={NewProject} />
-            <Route path="/projects/:id" component={ProjectDetail} />
-            <Route path="/projects/:id/editor" component={PageEditor} />
+            {/* ── Public routes (no auth required) ── */}
             <Route path="/pricing" component={Pricing} />
             <Route path="/payment/success" component={PaymentSuccess} />
-            <Route path="/brainstorm" component={Brainstorm} />
-            <Route path="/code-forge" component={CodeForge} />
-            <Route path="/tools" component={ForgeTools} />
-            <Route path="/game-doc" component={GameDoc} />
-            <Route path="/snippets" component={SnippetVault} />
-            <Route path="/game-tools" component={GameDesignTools} />
-            <Route path="/launch" component={LaunchKit} />
-            <Route path="/legal" component={LegalDecoder} />
-            <Route path="/sage" component={LearnWithSage} />
-            <Route path="/hawk" component={AskHawk} />
-            <Route path="/migration" component={MigrationHub} />
-            <Route path="/app-hub" component={AppHub} />
-            <Route path="/wizard" component={MigrationWizard} />
-            <Route path="/leaving" component={Leaving} />
-            <Route path="/sovereign" component={SovereignStack} />
-            <Route path="/github" component={GitHubConnect} />
-            <Route path="/registry" component={Registry} />
-            <Route path="/account" component={Account} />
-            <Route path="/secrets" component={SecretsVault} />
-            <Route component={NotFound} />
+
+            {/* ── Protected routes (sign-in required) ── */}
+            <Route>
+              <ProtectedRoute>
+                <Switch>
+                  <Route path="/" component={Dashboard} />
+                  <Route path="/projects" component={Projects} />
+                  <Route path="/projects/new" component={NewProject} />
+                  <Route path="/projects/:id" component={ProjectDetail} />
+                  <Route path="/projects/:id/editor" component={PageEditor} />
+                  <Route path="/brainstorm" component={Brainstorm} />
+                  <Route path="/code-forge" component={CodeForge} />
+                  <Route path="/tools" component={ForgeTools} />
+                  <Route path="/game-doc" component={GameDoc} />
+                  <Route path="/snippets" component={SnippetVault} />
+                  <Route path="/game-tools" component={GameDesignTools} />
+                  <Route path="/launch" component={LaunchKit} />
+                  <Route path="/legal" component={LegalDecoder} />
+                  <Route path="/sage" component={LearnWithSage} />
+                  <Route path="/hawk" component={AskHawk} />
+                  <Route path="/migration" component={MigrationHub} />
+                  <Route path="/app-hub" component={AppHub} />
+                  <Route path="/wizard" component={MigrationWizard} />
+                  <Route path="/leaving" component={Leaving} />
+                  <Route path="/sovereign" component={SovereignStack} />
+                  <Route path="/github" component={GitHubConnect} />
+                  <Route path="/registry" component={Registry} />
+                  <Route path="/account" component={Account} />
+                  <Route path="/secrets" component={SecretsVault} />
+                  <Route path="/admin" component={AdminPanel} />
+                  <Route component={NotFound} />
+                </Switch>
+              </ProtectedRoute>
+            </Route>
           </Switch>
         </Layout>
       </Route>

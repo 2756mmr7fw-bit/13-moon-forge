@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { getAuthToken } from "@workspace/api-client-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,14 +20,12 @@ import { cn } from "@/lib/utils";
 
 const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-function getUserId() {
-  let id = localStorage.getItem("13moonforge_user_id");
-  if (!id) { id = crypto.randomUUID(); localStorage.setItem("13moonforge_user_id", id); }
-  return id;
-}
-
-function headers() {
-  return { "Content-Type": "application/json", "x-user-id": getUserId() };
+async function authHeaders(): Promise<Record<string, string>> {
+  const token = await getAuthToken();
+  return {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
 }
 
 // ─── App Catalog (static) ────────────────────────────────────────────────────
@@ -285,7 +284,7 @@ function MyServerTab({
 
   const checkHealth = async () => {
     setHealth({ ok: false, checking: true });
-    const res  = await fetch(`${API_BASE}/api/deploy/health`, { headers: headers() });
+    const res  = await fetch(`${API_BASE}/api/deploy/health`, { headers: await authHeaders() });
     const data = await res.json();
     setHealth({ ok: data.ok === true, checking: false });
   };
@@ -295,7 +294,7 @@ function MyServerTab({
     try {
       const res  = await fetch(`${API_BASE}/api/deploy/connect`, {
         method: "POST",
-        headers: headers(),
+        headers: await authHeaders(),
         body: JSON.stringify({ name, coolifyUrl: url, coolifyApiKey: apiKey }),
       });
       const data = await res.json();
@@ -312,7 +311,7 @@ function MyServerTab({
   const disconnect = async () => {
     if (!confirm("Disconnect your server? You can reconnect at any time.")) return;
     setDisconnecting(true);
-    await fetch(`${API_BASE}/api/deploy/server`, { method: "DELETE", headers: headers() });
+    await fetch(`${API_BASE}/api/deploy/server`, { method: "DELETE", headers: await authHeaders() });
     setDisconnecting(false);
     onSaved();
   };
@@ -462,8 +461,7 @@ function ProvisionModal({ app, onClose }: { app: CatalogApp; onClose: () => void
   const [result, setResult] = useState<{ ok: boolean; message: string } | null>(null);
 
   useEffect(() => {
-    const h = headers();
-    Promise.all([
+    authHeaders().then(h => Promise.all([
       fetch(`${API_BASE}/api/deploy/servers-list`, { headers: h }).then(r => r.json()).catch(() => []),
       fetch(`${API_BASE}/api/deploy/projects-list`, { headers: h }).then(r => r.json()).catch(() => []),
     ]).then(([svrs, prjs]) => {
@@ -471,7 +469,7 @@ function ProvisionModal({ app, onClose }: { app: CatalogApp; onClose: () => void
       setProjects(Array.isArray(prjs) ? prjs : []);
       if (svrs[0]?.uuid) setServerUuid(svrs[0].uuid);
       if (prjs[0]?.uuid) setProjectUuid(prjs[0].uuid);
-    });
+    }));
   }, []);
 
   async function handleProvision() {
@@ -481,7 +479,7 @@ function ProvisionModal({ app, onClose }: { app: CatalogApp; onClose: () => void
     try {
       const r = await fetch(`${API_BASE}/api/deploy/provision`, {
         method: "POST",
-        headers: headers(),
+        headers: await authHeaders(),
         body: JSON.stringify({ dockerImage, appName, serverUuid, projectUuid, domain, portsExposes: ports, envVars }),
       });
       const body = await r.json();
@@ -712,7 +710,7 @@ function LiveAppsTab({ connected, serverInfo }: { connected: boolean; serverInfo
   const load = async () => {
     setLoading(true); setError("");
     try {
-      const r = await fetch(`${API_BASE}/api/deploy/apps`, { headers: headers() });
+      const r = await fetch(`${API_BASE}/api/deploy/apps`, { headers: await authHeaders() });
       if (!r.ok) { setError("Failed to load apps from your Coolify server."); return; }
       const data = await r.json();
       setApps(Array.isArray(data) ? data : []);
@@ -726,7 +724,7 @@ function LiveAppsTab({ connected, serverInfo }: { connected: boolean; serverInfo
     setRedeploying(app.uuid);
     setRedeployMsg(m => ({ ...m, [app.uuid]: "" }));
     try {
-      const r = await fetch(`${API_BASE}/api/deploy/redeploy/${app.uuid}`, { method: "POST", headers: headers() });
+      const r = await fetch(`${API_BASE}/api/deploy/redeploy/${app.uuid}`, { method: "POST", headers: await authHeaders() });
       const d = await r.json();
       setRedeployMsg(m => ({ ...m, [app.uuid]: r.ok ? "Deploy triggered ✓" : (d.error ?? "Failed") }));
     } finally { setRedeploying(null); }
@@ -848,7 +846,7 @@ export default function AppHub() {
   const fetchServerInfo = async () => {
     setLoading(true);
     try {
-      const res  = await fetch(`${API_BASE}/api/deploy/server`, { headers: headers() });
+      const res  = await fetch(`${API_BASE}/api/deploy/server`, { headers: await authHeaders() });
       const data = await res.json();
       setServerInfo(data);
     } catch {

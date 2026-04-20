@@ -12,6 +12,7 @@ import githubRouter from "./github";
 import gitlabRouter from "./gitlab";
 import bitbucketRouter from "./bitbucket";
 import { router as secretsRouter } from "./secrets";
+import { router as adminRouter } from "./admin";
 
 const router: IRouter = Router();
 
@@ -28,5 +29,6 @@ router.use(githubRouter);
 router.use(gitlabRouter);
 router.use(bitbucketRouter);
 router.use(secretsRouter);
+router.use(adminRouter);
 
 export default router;

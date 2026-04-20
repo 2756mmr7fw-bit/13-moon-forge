@@ -4,14 +4,34 @@ import {
   Flame, FolderKanban, PlusCircle, CreditCard, ExternalLink,
   Sparkles, Code2, Wrench, BookOpen, Archive, Gamepad2, Rocket, Scale,
   GraduationCap, Crosshair, ArrowRightLeft, Layers, Wand2, LogOut, Shield, Github, Package,
-  User, LogIn, Menu, X, Settings, KeyRound,
+  User, LogIn, Menu, X, Settings, KeyRound, ShieldAlert,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LogoMark, LogoWordmark } from "@/components/logo";
 import { ThirteenMoonsBadge } from "@/components/ThirteenMoonsBadge";
 import { OnboardingModal } from "@/components/onboarding-modal";
-import { useUser, useClerk, Show } from "@clerk/react";
+import { useUser, useClerk, useAuth, Show } from "@clerk/react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useQuery } from "@tanstack/react-query";
+
+const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+function useIsAdmin() {
+  const { getToken, isSignedIn } = useAuth();
+  const { data } = useQuery<{ isAdmin: boolean }>({
+    queryKey: ["admin-check"],
+    enabled: !!isSignedIn,
+    staleTime: 5 * 60 * 1000,
+    queryFn: async () => {
+      const token = await getToken();
+      const r = await fetch(`${API_BASE}/api/admin/check`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      return r.json();
+    },
+  });
+  return data?.isAdmin ?? false;
+}
 
 const OUR_APPS_URL = "https://thepeoplestownsq.com/our-apps";
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -61,6 +81,7 @@ function UserPanel({ onNavigate }: { onNavigate?: () => void }) {
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const isAdmin = useIsAdmin();
 
   const builderItems = [
     { href: "/", label: "The Anvil", icon: Flame },
@@ -161,6 +182,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
               Sign In
             </Link>
           </Show>
+          {isAdmin && (
+            <NavLink href="/admin" label="Admin Panel" icon={ShieldAlert} onClick={onClose} />
+          )}
         </div>
       </nav>
 

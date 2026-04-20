@@ -34,6 +34,8 @@ AI-powered invention and building platform for Sovereign Digital LLC (13moonforg
 - **The Sovereign Stack** (`/sovereign`) — 7-criteria standard for portable self-hosted apps with interactive self-assessment quiz and Sovereign Seal badge HTML
 - **App Hub** (`/app-hub`) — 4 tabs: Get Started, My Server (Coolify connection), App Catalog (6 Sovereign Digital apps w/ "Deploy" modal that provisions a Docker-image app directly in Coolify via `POST /api/deploy/provision`), Live Apps (real-time Coolify app status + redeploy). New API endpoints: `GET /api/deploy/servers-list`, `GET /api/deploy/projects-list`, `POST /api/deploy/provision`.
 - **App Registry** (`/registry`) — Community-submitted self-hostable open-source apps. Browse grid with stack badges + Docker pull commands. Submit form (name, tagline, description, stack, GitHub URL, Docker image). All submissions pending review before appearing publicly.
+- **Secrets Vault** (`/secrets`) — AES-256-GCM encrypted API key storage. Add keys by provider (Cloudflare, AWS, Stripe, VPN, Antivirus, CDN, DNS, etc.), grouped by app. Reveal/copy/delete/export as .env. Import via .env paste or upload. Routes: `GET|POST /api/secrets`, `PATCH|DELETE /api/secrets/:id`, `GET /api/secrets/:id/reveal`, `POST /api/secrets/import`, `GET /api/secrets/export`.
+- **Admin Panel** (`/admin`) — Registry review dashboard. Only visible in sidebar for users listed in `ADMIN_USER_IDS` env var. Tabs: Pending / Approved / Rejected. Approve, reject, delete submissions. Routes: `GET /api/admin/check`, `GET /api/admin/registry`, `POST /api/admin/registry/:id/approve`, `POST /api/admin/registry/:id/reject`, `DELETE /api/admin/registry/:id`.
 
 ### Account
 - **Account** (`/account`) — Clerk UserProfile (profile, security, connected accounts) + quick-info card (name, email, member-since) + subscription card linking to Town Square + upgrade link. Shows sign-in prompt when logged out.
@@ -54,7 +56,9 @@ Uses Replit AI Integrations (OpenAI-compatible, no user API key needed). All rou
 
 **User identity**: Clerk-authenticated JWT (preferred, via `getAuth(req).userId` on the API) with `x-user-id` header fallback for anonymous / non-Clerk requests. `ClerkProvider` wraps the entire React tree; sign-in/sign-up routes (`/sign-in`, `/sign-up`) render outside the sidebar Layout.
 
-**Admin bypass user IDs**: 54504320, 54489134
+**Route guards**: `ProtectedRoute` component (`components/protected-route.tsx`) wraps all pages except `/pricing` and `/payment/success`. Unauthenticated users are redirected to `/sign-in?redirect_url=<current_path>` with a spinner shown while Clerk loads.
+
+**Admin access**: Set `ADMIN_USER_IDS=user_xxx,user_yyy` (comma-separated Clerk user IDs) to grant admin access. Find your Clerk user ID in the Clerk dashboard or via the API response headers. The `/api/admin/check` endpoint returns `{ isAdmin: true/false }` for the current user.
 
 ---
 
@@ -77,6 +81,8 @@ Uses Replit AI Integrations (OpenAI-compatible, no user API key needed). All rou
 - `artifacts/api-server/src/routes/github.ts` — status, connect, disconnect, repos, tree, file, commit
 - `artifacts/api-server/src/routes/gitlab.ts` — status, connect, disconnect, repos, tree, file, commit (full write)
 - `artifacts/api-server/src/routes/bitbucket.ts` — status, connect, disconnect, repos, tree, file (read-only)
+- `artifacts/api-server/src/routes/secrets.ts` — AES-256-GCM encrypted secrets vault CRUD
+- `artifacts/api-server/src/routes/admin.ts` — admin-only registry management (requireAdmin middleware checks ADMIN_USER_IDS env var)
 - `artifacts/api-server/src/routes/index.ts` — route registration
 
 **Frontend API base**: `import.meta.env.BASE_URL.replace(/\/$/, "")`  
@@ -106,6 +112,8 @@ Forge passes its own Sovereign Stack standard — it has a production Dockerfile
 - `.dockerignore` — excludes node_modules, .env files, mockup-sandbox, dist artifacts.
 - **Build**: `docker compose up --build`
 - **API port**: 8080 (configurable via `PORT` env)
+
+**Publishing Docker images** (for App Catalog): `.github/workflows/publish-images.yml` — triggered on `v*` tags or manually via workflow_dispatch. Builds and pushes `sovereigndigital/{forge,hawk,quill,creed,sage,flint}:latest` + versioned tags to Docker Hub (requires `DOCKERHUB_USERNAME` + `DOCKERHUB_TOKEN` GitHub secrets). Multi-arch: `linux/amd64` + `linux/arm64`. Individual app Dockerfiles are expected at `apps/{name}/Dockerfile`.
 
 ---
 
