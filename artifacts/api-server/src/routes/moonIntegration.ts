@@ -33,10 +33,21 @@ router.get("/moon/integration-status", (_req, res) => {
 // POST /api/moon/webhook
 // Header: x-api-key: <TPTS_INBOUND_KEY>
 router.post("/moon/webhook", (req, res) => {
-  const providedKey = req.headers["x-api-key"];
+  const providedKey = (typeof req.headers["x-api-key"] === "string"
+    ? req.headers["x-api-key"]
+    : ""
+  ).trim();
+
+  // Safe diagnostics — logs length + first 10 chars only, never the full key
+  req.log?.info({
+    envKeyLen: TPTS_INBOUND_KEY.length,
+    envKeyPrefix: TPTS_INBOUND_KEY.slice(0, 10),
+    providedKeyLen: providedKey.length,
+    providedKeyPrefix: providedKey.slice(0, 10),
+    match: providedKey === TPTS_INBOUND_KEY,
+  }, "webhook auth check");
 
   if (!TPTS_INBOUND_KEY) {
-    // Key not yet configured — log and accept (dev mode)
     req.log?.warn("TPTS_INBOUND_KEY not set — webhook accepted in dev mode");
   } else if (providedKey !== TPTS_INBOUND_KEY) {
     return res.status(401).json({ error: "Unauthorized" });
