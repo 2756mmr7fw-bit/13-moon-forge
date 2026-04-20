@@ -35,6 +35,9 @@ AI-powered invention and building platform for Sovereign Digital LLC (13moonforg
 - **App Hub** (`/app-hub`) — 4 tabs: Get Started, My Server (Coolify connection), App Catalog (6 Sovereign Digital apps w/ "Deploy" modal that provisions a Docker-image app directly in Coolify via `POST /api/deploy/provision`), Live Apps (real-time Coolify app status + redeploy). New API endpoints: `GET /api/deploy/servers-list`, `GET /api/deploy/projects-list`, `POST /api/deploy/provision`.
 - **App Registry** (`/registry`) — Community-submitted self-hostable open-source apps. Browse grid with stack badges + Docker pull commands. Submit form (name, tagline, description, stack, GitHub URL, Docker image). All submissions pending review before appearing publicly.
 
+### Account
+- **Account** (`/account`) — Clerk UserProfile (profile, security, connected accounts) + quick-info card (name, email, member-since) + subscription card linking to Town Square + upgrade link. Shows sign-in prompt when logged out.
+
 ### Onboarding
 - First-visit modal (`OnboardingModal` in `components/onboarding-modal.tsx`) — appears once (localStorage flag `13moonforge_onboarded`). Three paths: Migrate existing app → `/wizard`, Build something new → `/projects/new`, Explore tools → `/`.
 

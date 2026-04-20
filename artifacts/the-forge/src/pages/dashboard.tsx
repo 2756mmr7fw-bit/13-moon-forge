@@ -3,9 +3,14 @@ import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Anvil, FileCode, CheckCircle2, Archive, ArrowRight, Loader2 } from "lucide-react";
+import {
+  Anvil, FileCode, CheckCircle2, Archive, ArrowRight, Loader2,
+  Sparkles, Code2, Wand2, Layers, Scale, Crosshair,
+} from "lucide-react";
+import { useUser } from "@clerk/react";
 
 export default function Dashboard() {
+  const { user, isLoaded } = useUser();
   const { data: summary, isLoading: isLoadingSummary } = useGetDashboardSummary({
     query: { queryKey: getGetDashboardSummaryQueryKey() }
   });
@@ -14,12 +19,19 @@ export default function Dashboard() {
     query: { queryKey: getGetRecentProjectsQueryKey() }
   });
 
+  const greeting = (() => {
+    if (!isLoaded) return "Welcome back.";
+    const name = user?.firstName ?? user?.username;
+    if (name) return `Welcome back, ${name}.`;
+    return "Welcome back.";
+  })();
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-4xl font-bold tracking-tight text-foreground">The Anvil</h1>
-          <p className="text-muted-foreground mt-2 text-lg">Welcome back. The forge is hot and ready for your ideas.</p>
+          <p className="text-muted-foreground mt-2 text-lg">{greeting} The forge is hot and ready for your ideas.</p>
         </div>
         <Link href="/projects/new">
           <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 font-medium">
@@ -77,6 +89,28 @@ export default function Dashboard() {
             </Card>
           </>
         ) : null}
+      </div>
+
+      {/* Quick Actions */}
+      <div className="space-y-3">
+        <h2 className="text-lg font-bold tracking-tight text-muted-foreground uppercase text-xs tracking-widest">Quick Actions</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+          {[
+            { href: "/brainstorm",  label: "Brainstorm",       icon: Sparkles,  color: "text-violet-400" },
+            { href: "/code-forge",  label: "Code Forge",       icon: Code2,     color: "text-sky-400"    },
+            { href: "/hawk",        label: "Ask Hawk",         icon: Crosshair, color: "text-cyan-400"   },
+            { href: "/legal",       label: "Legal Decoder",    icon: Scale,     color: "text-amber-400"  },
+            { href: "/wizard",      label: "Migration Wizard", icon: Wand2,     color: "text-emerald-400"},
+            { href: "/app-hub",     label: "App Hub",          icon: Layers,    color: "text-orange-400" },
+          ].map(({ href, label, icon: Icon, color }) => (
+            <Link key={href} href={href}>
+              <div className="flex flex-col items-center gap-2 p-3 rounded-xl border border-border bg-card hover:border-primary/40 hover:bg-primary/5 transition-all cursor-pointer group text-center">
+                <Icon size={20} className={`${color} group-hover:scale-110 transition-transform`} />
+                <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground transition-colors leading-tight">{label}</span>
+              </div>
+            </Link>
+          ))}
+        </div>
       </div>
 
       <div className="space-y-4">
