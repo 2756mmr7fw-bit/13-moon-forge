@@ -30,7 +30,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/launch",      label: "Launch Kit",        icon: Rocket },
     { href: "/legal",       label: "Legal Decoder",     icon: Scale },
     { href: "/snippets",    label: "Snippet Vault",     icon: Archive },
-    { href: "/migration",   label: "Migration Audit",   icon: ArrowRightLeft },
+    { href: "/migration",   label: "Migration Hub",     icon: ArrowRightLeft },
   ];
 
   const isActive = (href: string) =>
