@@ -1,7 +1,8 @@
 import { useEffect, useRef } from "react";
 import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
-import { ClerkProvider, SignIn, SignUp, useClerk } from "@clerk/react";
+import { ClerkProvider, SignIn, SignUp, useClerk, useAuth } from "@clerk/react";
+import { setAuthTokenGetter } from "@workspace/api-client-react";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Layout } from "@/components/layout";
@@ -31,6 +32,7 @@ import SovereignStack from "@/pages/sovereign";
 import GitHubConnect from "@/pages/github-connect";
 import Registry from "@/pages/registry";
 import Account from "@/pages/account";
+import SecretsVault from "@/pages/secrets-vault";
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
@@ -109,6 +111,20 @@ function ClerkQueryClientCacheInvalidator() {
   return null;
 }
 
+function ClerkTokenInitializer() {
+  const { getToken, isSignedIn } = useAuth();
+
+  useEffect(() => {
+    if (isSignedIn) {
+      setAuthTokenGetter(() => getToken());
+    } else {
+      setAuthTokenGetter(null);
+    }
+  }, [isSignedIn, getToken]);
+
+  return null;
+}
+
 function SignInPage() {
   // To update login providers, app branding, or OAuth settings use the Auth
   // pane in the workspace toolbar. More information can be found in the Replit docs.
@@ -162,6 +178,7 @@ function Router() {
             <Route path="/github" component={GitHubConnect} />
             <Route path="/registry" component={Registry} />
             <Route path="/account" component={Account} />
+            <Route path="/secrets" component={SecretsVault} />
             <Route component={NotFound} />
           </Switch>
         </Layout>
@@ -197,6 +214,7 @@ function ClerkProviderWithRoutes() {
     >
       <QueryClientProvider client={queryClient}>
         <ClerkQueryClientCacheInvalidator />
+        <ClerkTokenInitializer />
         <TooltipProvider>
           <Router />
           <Toaster />

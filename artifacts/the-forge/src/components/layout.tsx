@@ -4,7 +4,7 @@ import {
   Flame, FolderKanban, PlusCircle, CreditCard, ExternalLink,
   Sparkles, Code2, Wrench, BookOpen, Archive, Gamepad2, Rocket, Scale,
   GraduationCap, Crosshair, ArrowRightLeft, Layers, Wand2, LogOut, Shield, Github, Package,
-  User, LogIn, Menu, X, Settings,
+  User, LogIn, Menu, X, Settings, KeyRound,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LogoMark, LogoWordmark } from "@/components/logo";
@@ -89,6 +89,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/sovereign",   label: "Sovereign Stack",   icon: Shield },
     { href: "/app-hub",     label: "App Hub",           icon: Layers },
     { href: "/registry",    label: "App Registry",      icon: Package },
+    { href: "/secrets",     label: "Secrets Vault",     icon: KeyRound },
   ];
 
   const isActive = (href: string) =>

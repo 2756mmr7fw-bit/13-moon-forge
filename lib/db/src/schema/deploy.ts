@@ -54,6 +54,19 @@ export const githubConnectionsTable = pgTable("github_connections", {
   connectedAt: timestamp("connected_at").notNull().defaultNow(),
 });
 
+export const appSecretsTable = pgTable("app_secrets", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  appName: text("app_name").notNull().default("Default"),
+  serviceName: text("service_name").notNull(),
+  keyName: text("key_name").notNull(),
+  encryptedValue: text("encrypted_value").notNull(),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 export type ServerConnection = typeof serverConnectionsTable.$inferSelect;
 export type RegistryApp = typeof registryAppsTable.$inferSelect;
 export type GithubConnection = typeof githubConnectionsTable.$inferSelect;
+export type AppSecret = typeof appSecretsTable.$inferSelect;

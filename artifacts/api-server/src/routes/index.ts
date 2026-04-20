@@ -11,6 +11,7 @@ import deployRouter from "./deploy";
 import githubRouter from "./github";
 import gitlabRouter from "./gitlab";
 import bitbucketRouter from "./bitbucket";
+import { router as secretsRouter } from "./secrets";
 
 const router: IRouter = Router();
 
@@ -26,5 +27,6 @@ router.use(deployRouter);
 router.use(githubRouter);
 router.use(gitlabRouter);
 router.use(bitbucketRouter);
+router.use(secretsRouter);
 
 export default router;
