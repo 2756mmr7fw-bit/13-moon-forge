@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { createClerkClient } from "@clerk/express";
-import { db, registryAppsTable } from "@workspace/db";
-import { eq, desc } from "drizzle-orm";
+import { db, registryAppsTable, paymentsTable } from "@workspace/db";
+import { eq, desc, sql } from "drizzle-orm";
 
 export const router = Router();
 
@@ -68,6 +68,52 @@ async function requireAdmin(req: any, res: any, next: any) {
 router.get("/admin/check", async (req, res) => {
   const ok = await isAdmin(req.userId);
   return res.json({ isAdmin: ok });
+});
+
+// ─── GET /api/admin/stats ─────────────────────────────────────────────────────
+router.get("/admin/stats", requireAdmin, async (req, res) => {
+  try {
+    const [planRows, registryRows] = await Promise.all([
+      db
+        .select({ plan: paymentsTable.plan, count: sql<number>`cast(count(*) as int)` })
+        .from(paymentsTable)
+        .where(eq(paymentsTable.paid, true))
+        .groupBy(paymentsTable.plan),
+      db
+        .select()
+        .from(registryAppsTable)
+        .orderBy(desc(registryAppsTable.createdAt)),
+    ]);
+
+    const planDistribution: Record<string, number> = {};
+    let totalPaid = 0;
+    for (const row of planRows) {
+      planDistribution[row.plan] = row.count;
+      totalPaid += row.count;
+    }
+
+    const pending = registryRows.filter(r => r.status === "pending");
+    const approved = registryRows.filter(r => r.status === "approved");
+    const oldest = pending.length > 0
+      ? pending.reduce((a, b) => new Date(a.createdAt) < new Date(b.createdAt) ? a : b)
+      : null;
+
+    const oldestDays = oldest
+      ? Math.floor((Date.now() - new Date(oldest.createdAt).getTime()) / 86_400_000)
+      : null;
+
+    return res.json({
+      planDistribution,
+      totalPaid,
+      pendingCount: pending.length,
+      approvedCount: approved.length,
+      oldestPendingDays: oldestDays,
+      oldestPendingName: oldest?.name ?? null,
+    });
+  } catch (err) {
+    req.log.error({ err }, "admin/stats GET failed");
+    return res.status(500).json({ error: "Failed to load admin stats" });
+  }
 });
 
 // ─── GET /api/admin/registry ─────────────────────────────────────────────────

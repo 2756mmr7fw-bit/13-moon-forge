@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   KeyRound, Plus, Trash2, Eye, EyeOff, Download, Upload, Loader2,
-  ChevronDown, ChevronRight, Copy, Check, ShieldCheck, Info,
+  ChevronDown, ChevronRight, Copy, Check, ShieldCheck, Info, AlertTriangle, RotateCcw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser, Show } from "@clerk/react";
@@ -520,6 +520,50 @@ export default function SecretsVault() {
           </Button>
         </div>
       </div>
+
+      {/* Rotation warnings */}
+      {(() => {
+        const now = Date.now();
+        const critical = secrets.filter(s => now - new Date(s.createdAt).getTime() > 90 * 86_400_000);
+        const warning  = secrets.filter(s => {
+          const age = now - new Date(s.createdAt).getTime();
+          return age > 60 * 86_400_000 && age <= 90 * 86_400_000;
+        });
+        if (critical.length === 0 && warning.length === 0) return null;
+        return (
+          <div className="space-y-2">
+            {critical.length > 0 && (
+              <div className="flex items-start gap-3 rounded-lg border border-red-500/30 bg-red-500/8 p-4">
+                <AlertTriangle size={15} className="text-red-400 mt-0.5 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-red-300">
+                    {critical.length} key{critical.length !== 1 ? "s" : ""} over 90 days old — rotation recommended
+                  </p>
+                  <p className="text-xs text-red-400/70 mt-0.5 truncate">
+                    {critical.slice(0, 4).map(s => `${s.serviceName} / ${s.keyName}`).join(" · ")}
+                    {critical.length > 4 ? ` · +${critical.length - 4} more` : ""}
+                  </p>
+                </div>
+                <RotateCcw size={13} className="text-red-400/60 shrink-0 mt-0.5" />
+              </div>
+            )}
+            {warning.length > 0 && (
+              <div className="flex items-start gap-3 rounded-lg border border-amber-500/25 bg-amber-500/5 p-4">
+                <AlertTriangle size={15} className="text-amber-400 mt-0.5 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-amber-300">
+                    {warning.length} key{warning.length !== 1 ? "s" : ""} between 60–90 days old — consider rotating
+                  </p>
+                  <p className="text-xs text-amber-400/70 mt-0.5 truncate">
+                    {warning.slice(0, 4).map(s => `${s.serviceName} / ${s.keyName}`).join(" · ")}
+                    {warning.length > 4 ? ` · +${warning.length - 4} more` : ""}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Security notice */}
       <div className="flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/5 p-4 text-sm">

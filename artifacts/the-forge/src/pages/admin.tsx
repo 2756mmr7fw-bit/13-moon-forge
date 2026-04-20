@@ -3,7 +3,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@clerk/react";
 import {
   CheckCircle2, XCircle, Trash2, ExternalLink, Loader2, Shield,
-  Clock, Package, RefreshCw, Github, Container,
+  Clock, Package, RefreshCw, Github, Container, Users, DollarSign,
+  AlertTriangle, TrendingUp, BarChart3,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +30,15 @@ type RegistryApp = {
 };
 
 type Tab = "pending" | "approved" | "rejected";
+
+interface AdminStats {
+  planDistribution: Record<string, number>;
+  totalPaid: number;
+  pendingCount: number;
+  approvedCount: number;
+  oldestPendingDays: number | null;
+  oldestPendingName: string | null;
+}
 
 function StatusBadge({ status }: { status: string }) {
   if (status === "approved") return <Badge className="bg-emerald-500/15 text-emerald-400 border-emerald-500/30">Approved</Badge>;
@@ -59,6 +69,18 @@ export default function AdminPanel() {
       if (!r.ok) throw new Error("Failed to load registry");
       return r.json();
     },
+    retry: false,
+  });
+
+  const { data: stats } = useQuery<AdminStats>({
+    queryKey: ["admin-stats"],
+    queryFn: async () => {
+      const headers = await authHeaders();
+      const r = await fetch(`${API_BASE}/api/admin/stats`, { headers });
+      if (!r.ok) throw new Error("Failed to load stats");
+      return r.json();
+    },
+    staleTime: 60_000,
     retry: false,
   });
 
@@ -161,7 +183,92 @@ export default function AdminPanel() {
         </Button>
       </div>
 
-      {/* Stats */}
+      {/* Platform stats */}
+      {stats && (
+        <div className="rounded-xl border border-border bg-card p-5 space-y-5">
+          <div className="flex items-center gap-2 mb-1">
+            <BarChart3 size={15} className="text-muted-foreground" />
+            <span className="text-sm font-bold">Platform Overview</span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <DollarSign size={11} /> Paying customers
+              </div>
+              <div className="text-2xl font-bold">{stats.totalPaid}</div>
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Package size={11} /> Awaiting review
+              </div>
+              <div className={cn("text-2xl font-bold", stats.pendingCount > 0 ? "text-amber-400" : "")}>
+                {stats.pendingCount}
+              </div>
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <CheckCircle2 size={11} /> Approved apps
+              </div>
+              <div className="text-2xl font-bold text-emerald-400">{stats.approvedCount}</div>
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <TrendingUp size={11} /> Active plans
+              </div>
+              <div className="text-2xl font-bold">{Object.keys(stats.planDistribution).length}</div>
+            </div>
+          </div>
+
+          {/* Plan distribution bars */}
+          {stats.totalPaid > 0 && (
+            <div className="space-y-2.5">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Revenue by Plan</p>
+              {[
+                { key: "creator", label: "Creator", color: "bg-sky-500" },
+                { key: "pro",     label: "Pro",     color: "bg-violet-500" },
+                { key: "studio",  label: "Studio",  color: "bg-orange-500" },
+              ].map(({ key, label, color }) => {
+                const count = stats.planDistribution[key] ?? 0;
+                const pct = stats.totalPaid > 0 ? Math.round((count / stats.totalPaid) * 100) : 0;
+                return (
+                  <div key={key} className="flex items-center gap-3">
+                    <div className="w-16 text-xs text-muted-foreground text-right shrink-0">{label}</div>
+                    <div className="flex-1 h-2 rounded-full bg-muted/40 overflow-hidden">
+                      <div className={cn("h-full rounded-full transition-all", color)} style={{ width: `${pct}%` }} />
+                    </div>
+                    <div className="w-12 text-xs text-right tabular-nums shrink-0">
+                      {count} <span className="text-muted-foreground/60">({pct}%)</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Oldest pending alert */}
+          {stats.oldestPendingDays !== null && stats.oldestPendingDays >= 3 && (
+            <div className={cn(
+              "flex items-start gap-3 rounded-lg border p-3 text-sm",
+              stats.oldestPendingDays >= 7
+                ? "border-red-500/30 bg-red-500/8"
+                : "border-amber-500/25 bg-amber-500/5"
+            )}>
+              <AlertTriangle size={14} className={cn("shrink-0 mt-0.5", stats.oldestPendingDays >= 7 ? "text-red-400" : "text-amber-400")} />
+              <div>
+                <p className={cn("font-medium", stats.oldestPendingDays >= 7 ? "text-red-300" : "text-amber-300")}>
+                  Oldest pending submission is {stats.oldestPendingDays} days old
+                </p>
+                {stats.oldestPendingName && (
+                  <p className="text-xs text-muted-foreground mt-0.5">"{stats.oldestPendingName}" is waiting for review</p>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Registry counts */}
       <div className="grid grid-cols-3 gap-4">
         <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 text-center">
           <div className="text-2xl font-bold text-amber-400">{counts.pending}</div>

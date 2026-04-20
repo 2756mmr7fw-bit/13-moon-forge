@@ -14,6 +14,7 @@ import bitbucketRouter from "./bitbucket";
 import { router as secretsRouter } from "./secrets";
 import { router as adminRouter } from "./admin";
 import connectionsRouter from "./connections";
+import coolifyRouter from "./coolify";
 
 const router: IRouter = Router();
 
@@ -32,5 +33,6 @@ router.use(bitbucketRouter);
 router.use(secretsRouter);
 router.use(adminRouter);
 router.use(connectionsRouter);
+router.use(coolifyRouter);
 
 export default router;

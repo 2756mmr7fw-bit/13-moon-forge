@@ -2,14 +2,13 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@clerk/react";
 import { Link } from "wouter";
 import {
-  RefreshCw, Loader2, CheckCircle2, XCircle, AlertCircle,
-  Server, Github, GitMerge, Cloud, CreditCard, KeyRound,
-  Zap, Moon, ExternalLink, Wifi, WifiOff, Shield,
+  RefreshCw, Loader2, CheckCircle2, XCircle, AlertCircle, AlertTriangle,
+  Server, Github, CreditCard, KeyRound, Zap, Moon, ExternalLink,
+  Wifi, WifiOff, Shield, Activity, GitBranch, Play, Square,
+  RotateCcw, Clock, Terminal,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { getAuthToken } from "@workspace/api-client-react";
 
 const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -17,7 +16,7 @@ const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 interface ConnectionsData {
   infrastructure: {
-    coolify: { connected: boolean; name?: string; url?: string; healthy?: boolean; connectedAt?: string };
+    coolify: { connected: boolean; name?: string; url?: string; healthy?: boolean };
   };
   codeSources: {
     github: { connected: boolean; username?: string; avatarUrl?: string | null };
@@ -33,18 +32,59 @@ interface ConnectionsData {
   secrets: { total: number; byService: Record<string, number> };
 }
 
+interface CoolifyApp {
+  id: string;
+  name: string;
+  kind: "app" | "service";
+  status: "running" | "stopped" | "restarting" | "starting" | "error" | "unknown";
+  url: string | null;
+  updatedAt: string | null;
+}
+
+interface Deployment {
+  id: string | number;
+  appName: string;
+  status: "success" | "failed" | "running" | "queued" | "cancelled" | "unknown";
+  commit: string | null;
+  commitMessage: string | null;
+  startedAt: string | null;
+  finishedAt: string | null;
+}
+
+// ─── Shared auth fetcher ──────────────────────────────────────────────────────
+
+function useApiFetch<T>(key: string[], path: string, enabled = true) {
+  const { getToken } = useAuth();
+  return useQuery<T>({
+    queryKey: key,
+    enabled,
+    staleTime: 60_000,
+    queryFn: async () => {
+      const token = await getToken();
+      const r = await fetch(`${API_BASE}${path}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!r.ok) throw new Error(`${r.status}`);
+      return r.json();
+    },
+  });
+}
+
 // ─── Status dot ──────────────────────────────────────────────────────────────
 
-function StatusDot({ connected, pulse = false }: { connected: boolean; pulse?: boolean }) {
+function StatusDot({ on, color = "emerald", pulse = false }: {
+  on: boolean; color?: "emerald" | "red" | "amber"; pulse?: boolean;
+}) {
+  const bg = on
+    ? color === "red" ? "bg-red-500" : color === "amber" ? "bg-amber-500" : "bg-emerald-500"
+    : "bg-muted-foreground/25";
+  const ping = on
+    ? color === "red" ? "bg-red-400" : color === "amber" ? "bg-amber-400" : "bg-emerald-400"
+    : "";
   return (
     <span className="relative flex h-2.5 w-2.5 shrink-0">
-      {connected && pulse && (
-        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-      )}
-      <span className={cn(
-        "relative inline-flex h-2.5 w-2.5 rounded-full",
-        connected ? "bg-emerald-500" : "bg-muted-foreground/30"
-      )} />
+      {on && pulse && <span className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-60 ${ping}`} />}
+      <span className={cn("relative inline-flex h-2.5 w-2.5 rounded-full", bg)} />
     </span>
   );
 }
@@ -53,8 +93,7 @@ function StatusDot({ connected, pulse = false }: { connected: boolean; pulse?: b
 
 function SectionHeader({ icon: Icon, title, subtitle }: {
   icon: React.ComponentType<{ size: number; className?: string }>;
-  title: string;
-  subtitle?: string;
+  title: string; subtitle?: string;
 }) {
   return (
     <div className="flex items-center gap-3 mb-4">
@@ -74,14 +113,9 @@ function SectionHeader({ icon: Icon, title, subtitle }: {
 function ConnCard({
   icon, name, connected, detail, sub, href, hrefLabel = "Connect", external = false,
 }: {
-  icon: React.ReactNode;
-  name: string;
-  connected: boolean;
-  detail?: string | null;
-  sub?: React.ReactNode;
-  href?: string;
-  hrefLabel?: string;
-  external?: boolean;
+  icon: React.ReactNode; name: string; connected: boolean;
+  detail?: string | null; sub?: React.ReactNode;
+  href?: string; hrefLabel?: string; external?: boolean;
 }) {
   return (
     <div className={cn(
@@ -98,7 +132,7 @@ function ConnCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-semibold text-sm">{name}</span>
-            <StatusDot connected={connected} pulse={connected} />
+            <StatusDot on={connected} pulse={connected} />
             <span className={cn("text-xs", connected ? "text-emerald-400" : "text-muted-foreground/60")}>
               {connected ? "Connected" : "Not connected"}
             </span>
@@ -124,17 +158,114 @@ function ConnCard({
   );
 }
 
-// ─── Moon card ────────────────────────────────────────────────────────────────
+// ─── Coolify app status card ──────────────────────────────────────────────────
 
-const MOON_META: Record<string, {
-  num: number; label: string; tagline: string; color: string; page?: string;
-}> = {
-  forge:  { num: 3,  label: "Forge",  tagline: "AI builder",      color: "text-orange-400", page: "/" },
-  hawk:   { num: 2,  label: "Hawk",   tagline: "Research",         color: "text-sky-400",    page: "/hawk" },
-  quill:  { num: 5,  label: "Quill",  tagline: "AI writing",       color: "text-emerald-400" },
-  creed:  { num: 6,  label: "Creed",  tagline: "Values & mission", color: "text-violet-400" },
-  sage:   { num: 7,  label: "Sage",   tagline: "Learning",         color: "text-amber-400",  page: "/sage" },
-  flint:  { num: 13, label: "Flint",  tagline: "Spark & brainstorm", color: "text-red-400",  page: "/brainstorm" },
+const APP_STATUS_META: Record<string, { color: "emerald" | "red" | "amber"; label: string; icon: React.ReactNode }> = {
+  running:    { color: "emerald", label: "Running",    icon: <Play size={11} className="text-emerald-400" /> },
+  stopped:    { color: "red",     label: "Stopped",    icon: <Square size={11} className="text-red-400" /> },
+  restarting: { color: "amber",   label: "Restarting", icon: <RotateCcw size={11} className="text-amber-400" /> },
+  starting:   { color: "amber",   label: "Starting",   icon: <Loader2 size={11} className="text-amber-400 animate-spin" /> },
+  error:      { color: "red",     label: "Error",      icon: <AlertCircle size={11} className="text-red-400" /> },
+  unknown:    { color: "amber",   label: "Unknown",    icon: <AlertCircle size={11} className="text-muted-foreground" /> },
+};
+
+function CoolifyAppCard({ app }: { app: CoolifyApp }) {
+  const meta = APP_STATUS_META[app.status] ?? APP_STATUS_META.unknown;
+  const isOk = app.status === "running";
+  return (
+    <div className={cn(
+      "rounded-xl border p-4 flex flex-col gap-2 transition-colors",
+      isOk ? "border-emerald-500/20 bg-emerald-500/5" :
+      app.status === "error" || app.status === "stopped" ? "border-red-500/20 bg-red-500/5" :
+      "border-amber-500/20 bg-amber-500/5"
+    )}>
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex-1 min-w-0">
+          <span className="font-semibold text-sm truncate block">{app.name}</span>
+          <span className="text-[10px] text-muted-foreground uppercase tracking-wide">{app.kind}</span>
+        </div>
+        <StatusDot on={isOk} color={meta.color} pulse={isOk} />
+      </div>
+      <div className="flex items-center gap-1.5 text-xs">
+        {meta.icon}
+        <span className={cn(
+          meta.color === "emerald" ? "text-emerald-400" :
+          meta.color === "red" ? "text-red-400" : "text-amber-400"
+        )}>{meta.label}</span>
+      </div>
+      {app.url && (
+        <a href={`https://${app.url}`} target="_blank" rel="noopener noreferrer"
+          className="text-[10px] text-muted-foreground hover:text-primary truncate flex items-center gap-1">
+          <ExternalLink size={9} /> {app.url}
+        </a>
+      )}
+      {app.updatedAt && (
+        <span className="text-[10px] text-muted-foreground/60">
+          Updated {new Date(app.updatedAt).toLocaleDateString()}
+        </span>
+      )}
+    </div>
+  );
+}
+
+// ─── Deployment row ───────────────────────────────────────────────────────────
+
+const DEPLOY_STATUS_META: Record<string, { color: string; icon: React.ReactNode; label: string }> = {
+  success:   { color: "text-emerald-400", icon: <CheckCircle2 size={13} className="text-emerald-400" />, label: "Deployed" },
+  failed:    { color: "text-red-400",     icon: <XCircle size={13} className="text-red-400" />,           label: "Failed" },
+  running:   { color: "text-sky-400",     icon: <Loader2 size={13} className="text-sky-400 animate-spin" />, label: "In progress" },
+  queued:    { color: "text-muted-foreground", icon: <Clock size={13} className="text-muted-foreground" />, label: "Queued" },
+  cancelled: { color: "text-muted-foreground", icon: <XCircle size={13} className="text-muted-foreground" />, label: "Cancelled" },
+  unknown:   { color: "text-muted-foreground", icon: <AlertCircle size={13} className="text-muted-foreground" />, label: "Unknown" },
+};
+
+function timeAgo(iso: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const secs = Math.floor((Date.now() - d.getTime()) / 1000);
+  if (secs < 60) return `${secs}s ago`;
+  if (secs < 3600) return `${Math.floor(secs / 60)}m ago`;
+  if (secs < 86400) return `${Math.floor(secs / 3600)}h ago`;
+  return `${Math.floor(secs / 86400)}d ago`;
+}
+
+function DeployRow({ d }: { d: Deployment }) {
+  const meta = DEPLOY_STATUS_META[d.status] ?? DEPLOY_STATUS_META.unknown;
+  return (
+    <div className="flex items-center gap-3 py-2.5 border-b border-border/40 last:border-0">
+      <div className="shrink-0">{meta.icon}</div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-sm font-medium truncate">{d.appName}</span>
+          {d.commit && (
+            <span className="font-mono text-[10px] bg-muted/60 border border-border/50 px-1.5 py-0.5 rounded text-muted-foreground flex items-center gap-1">
+              <GitBranch size={9} />{d.commit}
+            </span>
+          )}
+        </div>
+        {d.commitMessage && (
+          <p className="text-xs text-muted-foreground truncate mt-0.5">{d.commitMessage}</p>
+        )}
+      </div>
+      <div className="text-right shrink-0">
+        <div className={cn("text-xs font-medium", meta.color)}>{meta.label}</div>
+        {(d.finishedAt || d.startedAt) && (
+          <div className="text-[10px] text-muted-foreground/60">{timeAgo(d.finishedAt ?? d.startedAt)}</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Moon card with quota indicator ──────────────────────────────────────────
+
+const MOON_META: Record<string, { num: number; label: string; tagline: string; color: string; page?: string }> = {
+  forge:  { num: 3,  label: "Forge",  tagline: "AI builder",       color: "text-orange-400", page: "/" },
+  hawk:   { num: 2,  label: "Hawk",   tagline: "Research",          color: "text-sky-400",    page: "/hawk" },
+  quill:  { num: 5,  label: "Quill",  tagline: "AI writing",        color: "text-emerald-400" },
+  creed:  { num: 6,  label: "Creed",  tagline: "Values & mission",  color: "text-violet-400" },
+  sage:   { num: 7,  label: "Sage",   tagline: "Learning",          color: "text-amber-400",  page: "/sage" },
+  flint:  { num: 13, label: "Flint",  tagline: "Spark & brainstorm",color: "text-red-400",    page: "/brainstorm" },
 };
 
 const TSQ_BASE = "https://thepeoplestownsq.com";
@@ -146,48 +277,84 @@ function MoonCard({ slug, data }: {
   const meta = MOON_META[slug];
   if (!meta) return null;
 
-  const remaining = data.isBundle ? null : data.messagesRemaining;
+  const rem = data.messagesRemaining;
   const subscribeUrl = `${TSQ_BASE}/moons/${slug}?ref=${slug}`;
+
+  // Quota urgency tier
+  const tier =
+    !data.active ? "inactive" :
+    data.isBundle ? "bundle" :
+    rem === null || rem > 50 ? "good" :
+    rem > 10 ? "low" : "critical";
+
+  const quotaColors = {
+    bundle:   { bar: "bg-emerald-500", text: "text-emerald-400", label: "Unlimited (Bundle)" },
+    good:     { bar: "bg-emerald-500", text: "text-emerald-400", label: `${rem?.toLocaleString()} messages left` },
+    low:      { bar: "bg-amber-500",   text: "text-amber-400",   label: `${rem} left — running low` },
+    critical: { bar: "bg-red-500",     text: "text-red-400",     label: `${rem} left — nearly out!` },
+    inactive: { bar: "bg-muted/30",    text: "text-muted-foreground/60", label: "Not subscribed" },
+  }[tier];
+
+  // Approximate bar percentage (assume 500 is "full" for visual purposes)
+  const barPct = tier === "bundle" ? 100 : tier === "inactive" ? 0 : Math.min(100, Math.round(((rem ?? 0) / 500) * 100));
 
   return (
     <div className={cn(
-      "rounded-xl border p-4 flex flex-col gap-2 transition-colors",
-      data.active ? "border-emerald-500/20 bg-emerald-500/5" : "border-border bg-card"
+      "rounded-xl border p-4 flex flex-col gap-2.5 transition-colors",
+      tier === "critical" ? "border-red-500/25 bg-red-500/5" :
+      tier === "low" ? "border-amber-500/25 bg-amber-500/5" :
+      data.active ? "border-emerald-500/20 bg-emerald-500/5" :
+      "border-border bg-card"
     )}>
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <span className={cn("font-black text-xs tabular-nums", meta.color)}>#{meta.num}</span>
           <span className="font-bold text-sm">{meta.label}</span>
         </div>
-        <StatusDot connected={data.active} pulse={data.active} />
+        {tier === "critical" && <AlertTriangle size={13} className="text-red-400 shrink-0" />}
+        {tier === "low" && <AlertTriangle size={13} className="text-amber-400 shrink-0" />}
+        {(tier === "bundle" || tier === "good") && <StatusDot on={true} pulse={true} />}
+        {tier === "inactive" && <StatusDot on={false} />}
       </div>
 
       <p className="text-xs text-muted-foreground">{meta.tagline}</p>
 
-      <div className="mt-auto pt-1 flex items-center justify-between gap-2">
-        {data.active ? (
-          <span className="text-xs text-emerald-400 font-medium">
-            {data.isBundle
-              ? "Bundle — unlimited"
-              : remaining != null
-                ? `${remaining.toLocaleString()} msg left`
-                : "Active"}
-          </span>
-        ) : (
-          <span className="text-xs text-muted-foreground/60">Not subscribed</span>
-        )}
+      {/* Quota bar */}
+      <div className="space-y-1">
+        <div className="h-1.5 w-full rounded-full bg-muted/40 overflow-hidden">
+          <div
+            className={cn("h-full rounded-full transition-all", quotaColors.bar)}
+            style={{ width: `${barPct}%` }}
+          />
+        </div>
+        <p className={cn("text-[10px] font-medium", quotaColors.text)}>{quotaColors.label}</p>
+      </div>
+
+      <div className="flex items-center gap-2 mt-auto pt-0.5">
         {!data.active && (
-          <a href={subscribeUrl} target="_blank" rel="noopener noreferrer">
-            <Button size="sm" variant="outline" className="text-[10px] h-6 px-2">
+          <a href={subscribeUrl} target="_blank" rel="noopener noreferrer" className="flex-1">
+            <Button size="sm" variant="outline" className="w-full text-[10px] h-6">
               Subscribe <ExternalLink size={9} className="ml-1" />
             </Button>
           </a>
         )}
-        {data.active && meta.page && (
-          <Link href={meta.page}>
-            <Button size="sm" variant="ghost" className="text-[10px] h-6 px-2 text-primary">
-              Open →
+        {tier === "critical" && (
+          <a href={subscribeUrl} target="_blank" rel="noopener noreferrer" className="flex-1">
+            <Button size="sm" className="w-full text-[10px] h-6 bg-red-600 hover:bg-red-700 text-white">
+              Top up <ExternalLink size={9} className="ml-1" />
             </Button>
+          </a>
+        )}
+        {tier === "low" && (
+          <a href={subscribeUrl} target="_blank" rel="noopener noreferrer" className="flex-1">
+            <Button size="sm" variant="outline" className="w-full text-[10px] h-6 border-amber-500/40 text-amber-400">
+              Top up <ExternalLink size={9} className="ml-1" />
+            </Button>
+          </a>
+        )}
+        {data.active && meta.page && tier !== "critical" && tier !== "low" && (
+          <Link href={meta.page}>
+            <Button size="sm" variant="ghost" className="text-[10px] h-6 px-2 text-primary">Open →</Button>
           </Link>
         )}
       </div>
@@ -200,18 +367,19 @@ function MoonCard({ slug, data }: {
 export default function Connections() {
   const { getToken } = useAuth();
 
-  const { data, isLoading, isError, refetch, isFetching } = useQuery<ConnectionsData>({
-    queryKey: ["connections"],
-    staleTime: 60_000,
-    queryFn: async () => {
-      const token = await getToken();
-      const r = await fetch(`${API_BASE}/api/connections`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      if (!r.ok) throw new Error("Failed to load connections");
-      return r.json();
-    },
-  });
+  const { data, isLoading, isError, refetch, isFetching } = useApiFetch<ConnectionsData>(
+    ["connections"], "/api/connections"
+  );
+
+  const coolifyConnected = data?.infrastructure.coolify.connected ?? false;
+
+  const { data: appsData, isLoading: appsLoading } = useApiFetch<{
+    connected: boolean; apps: CoolifyApp[]; error?: string;
+  }>(["coolify-apps"], "/api/coolify/apps", coolifyConnected);
+
+  const { data: deploysData, isLoading: deploysLoading } = useApiFetch<{
+    connected: boolean; deployments: Deployment[]; error?: string;
+  }>(["coolify-deployments"], "/api/coolify/deployments", coolifyConnected);
 
   const anyConnected = data && (
     data.infrastructure.coolify.connected ||
@@ -221,6 +389,10 @@ export default function Connections() {
     Object.values(data.moons).some(m => m.active)
   );
 
+  const criticalMoons = data
+    ? Object.entries(data.moons).filter(([, m]) => m.active && !m.isBundle && m.messagesRemaining !== null && m.messagesRemaining <= 10)
+    : [];
+
   return (
     <div className="space-y-10">
       {/* Header */}
@@ -228,20 +400,33 @@ export default function Connections() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">System Connections</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Everything your workspace is wired into — live status, subscriptions, and payment gateways.
+            Every integration your workspace is wired into — live status, app health, and quota.
           </p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => refetch()}
-          disabled={isFetching}
-          className="shrink-0"
-        >
-          <RefreshCw size={13} className={cn("mr-1.5", isFetching && "animate-spin")} />
-          Refresh
+        <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching} className="shrink-0">
+          <RefreshCw size={13} className={cn("mr-1.5", isFetching && "animate-spin")} /> Refresh
         </Button>
       </div>
+
+      {/* Critical quota alert */}
+      {criticalMoons.length > 0 && (
+        <div className="rounded-xl border border-red-500/30 bg-red-500/8 p-4 flex items-start gap-3">
+          <AlertTriangle size={16} className="text-red-400 shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-red-300">
+              {criticalMoons.length === 1
+                ? `Moon ${criticalMoons[0][1].messagesRemaining === 0 ? "out of messages" : "nearly out of messages"}: ${MOON_META[criticalMoons[0][0]]?.label}`
+                : `${criticalMoons.length} Moons nearly out of messages`}
+            </p>
+            <p className="text-xs text-red-400/70 mt-0.5">Top up your subscription to avoid AI feature interruptions.</p>
+          </div>
+          <a href={TSQ_BASE} target="_blank" rel="noopener noreferrer">
+            <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white text-xs shrink-0">
+              Top up <ExternalLink size={10} className="ml-1" />
+            </Button>
+          </a>
+        </div>
+      )}
 
       {isLoading && (
         <div className="flex items-center justify-center py-20">
@@ -262,24 +447,19 @@ export default function Connections() {
 
           {/* ── Infrastructure ──────────────────────────────────────────────── */}
           <section>
-            <SectionHeader icon={Server} title="Infrastructure" subtitle="Your self-hosted stack" />
+            <SectionHeader icon={Server} title="Infrastructure" subtitle="Your self-hosted deployment server" />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               <ConnCard
                 icon={<Server size={16} className={data.infrastructure.coolify.connected ? "text-emerald-400" : "text-muted-foreground"} />}
                 name="Coolify"
                 connected={data.infrastructure.coolify.connected}
-                detail={
-                  data.infrastructure.coolify.connected
-                    ? `${data.infrastructure.coolify.name} · ${data.infrastructure.coolify.url}`
-                    : undefined
-                }
+                detail={data.infrastructure.coolify.connected
+                  ? `${data.infrastructure.coolify.name} · ${data.infrastructure.coolify.url}` : undefined}
                 sub={data.infrastructure.coolify.connected && (
                   <div className="flex items-center gap-1.5 text-xs">
-                    {data.infrastructure.coolify.healthy ? (
-                      <><Wifi size={10} className="text-emerald-400" /><span className="text-emerald-400">Reachable</span></>
-                    ) : (
-                      <><WifiOff size={10} className="text-amber-400" /><span className="text-amber-400">Unreachable</span></>
-                    )}
+                    {data.infrastructure.coolify.healthy
+                      ? <><Wifi size={10} className="text-emerald-400" /><span className="text-emerald-400">Reachable</span></>
+                      : <><WifiOff size={10} className="text-amber-400" /><span className="text-amber-400">Unreachable</span></>}
                   </div>
                 )}
                 href="/app-hub"
@@ -287,6 +467,53 @@ export default function Connections() {
               />
             </div>
           </section>
+
+          {/* ── Deployed Apps ────────────────────────────────────────────────── */}
+          {coolifyConnected && (
+            <section>
+              <SectionHeader icon={Activity} title="Deployed Apps" subtitle="Live status of every app and service on your Coolify server" />
+              {appsLoading ? (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground py-4">
+                  <Loader2 size={14} className="animate-spin" /> Checking app statuses…
+                </div>
+              ) : appsData?.apps.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-border p-8 text-center">
+                  <Server size={28} className="mx-auto text-muted-foreground/30 mb-2" />
+                  <p className="text-sm text-muted-foreground">No apps found on your Coolify server yet.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                  {(appsData?.apps ?? []).map(app => <CoolifyAppCard key={app.id} app={app} />)}
+                </div>
+              )}
+              {appsData?.error && (
+                <p className="text-xs text-amber-400 mt-2 flex items-center gap-1.5">
+                  <AlertCircle size={11} /> {appsData.error}
+                </p>
+              )}
+            </section>
+          )}
+
+          {/* ── Recent Deployments ──────────────────────────────────────────── */}
+          {coolifyConnected && (
+            <section>
+              <SectionHeader icon={Terminal} title="Build History" subtitle="Last 30 deployment runs across all apps" />
+              {deploysLoading ? (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground py-4">
+                  <Loader2 size={14} className="animate-spin" /> Loading deploy history…
+                </div>
+              ) : (deploysData?.deployments.length ?? 0) === 0 ? (
+                <div className="rounded-xl border border-dashed border-border p-8 text-center">
+                  <GitBranch size={28} className="mx-auto text-muted-foreground/30 mb-2" />
+                  <p className="text-sm text-muted-foreground">No deployment history found.</p>
+                </div>
+              ) : (
+                <div className="rounded-xl border border-border bg-card divide-y divide-border/0 px-4">
+                  {(deploysData?.deployments ?? []).map(d => <DeployRow key={d.id} d={d} />)}
+                </div>
+              )}
+            </section>
+          )}
 
           {/* ── Code Sources ─────────────────────────────────────────────────── */}
           <section>
@@ -297,11 +524,7 @@ export default function Connections() {
                 name="GitHub"
                 connected={data.codeSources.github.connected}
                 detail={data.codeSources.github.username ? `@${data.codeSources.github.username}` : undefined}
-                sub={data.codeSources.github.avatarUrl && (
-                  <img src={data.codeSources.github.avatarUrl} alt="" className="w-6 h-6 rounded-full" />
-                )}
-                href="/github"
-                hrefLabel="Connect GitHub"
+                href="/github" hrefLabel="Connect GitHub"
               />
               <ConnCard
                 icon={
@@ -312,8 +535,7 @@ export default function Connections() {
                 name="GitLab"
                 connected={data.codeSources.gitlab.connected}
                 detail={data.codeSources.gitlab.username ? `@${data.codeSources.gitlab.username}` : undefined}
-                href="/github"
-                hrefLabel="Connect GitLab"
+                href="/github" hrefLabel="Connect GitLab"
               />
               <ConnCard
                 icon={
@@ -323,26 +545,15 @@ export default function Connections() {
                 }
                 name="Bitbucket"
                 connected={data.codeSources.bitbucket.connected}
-                detail={
-                  data.codeSources.bitbucket.displayName
-                    ? data.codeSources.bitbucket.displayName
-                    : data.codeSources.bitbucket.username
-                      ? `@${data.codeSources.bitbucket.username}`
-                      : undefined
-                }
-                href="/github"
-                hrefLabel="Connect Bitbucket"
+                detail={data.codeSources.bitbucket.displayName ?? (data.codeSources.bitbucket.username ? `@${data.codeSources.bitbucket.username}` : undefined)}
+                href="/github" hrefLabel="Connect Bitbucket"
               />
             </div>
           </section>
 
           {/* ── 13 Moons ─────────────────────────────────────────────────────── */}
           <section>
-            <SectionHeader
-              icon={Moon}
-              title="13 Moons Subscriptions"
-              subtitle="AI features powered by the 13 Moons network via thepeoplestownsq.com"
-            />
+            <SectionHeader icon={Moon} title="13 Moons Subscriptions" subtitle="AI quota usage across all Moons — powered by thepeoplestownsq.com" />
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
               {Object.entries(data.moons).map(([slug, moonData]) => (
                 <MoonCard key={slug} slug={slug} data={moonData} />
@@ -354,11 +565,9 @@ export default function Connections() {
                 <div>
                   <p className="text-sm font-medium">No active Moon subscriptions</p>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Subscribe to a Moon at{" "}
-                    <a href={TSQ_BASE} target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-2">
-                      thepeoplestownsq.com
-                    </a>{" "}
-                    to unlock AI features in Forge.
+                    Subscribe at{" "}
+                    <a href={TSQ_BASE} target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-2">thepeoplestownsq.com</a>
+                    {" "}to unlock AI features.
                   </p>
                 </div>
               </div>
@@ -367,7 +576,7 @@ export default function Connections() {
 
           {/* ── Payment Gateways ─────────────────────────────────────────────── */}
           <section>
-            <SectionHeader icon={CreditCard} title="Payment Gateways" subtitle="Stripe, Square, and other payment connections" />
+            <SectionHeader icon={CreditCard} title="Payment Gateways" subtitle="Active payment processor connections" />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               <ConnCard
                 icon={
@@ -377,15 +586,10 @@ export default function Connections() {
                 }
                 name="Square"
                 connected={data.payments.square.configured}
-                detail={
-                  data.payments.square.configured
-                    ? data.payments.square.source === "platform"
-                      ? "Platform key configured"
-                      : "Key stored in Secrets Vault"
-                    : undefined
-                }
-                href="/secrets"
-                hrefLabel="Add Square Key"
+                detail={data.payments.square.configured
+                  ? data.payments.square.source === "platform" ? "Platform key active" : "Key in Secrets Vault"
+                  : undefined}
+                href="/secrets" hrefLabel="Add Square Key"
               />
               <ConnCard
                 icon={
@@ -395,18 +599,12 @@ export default function Connections() {
                 }
                 name="Stripe"
                 connected={data.payments.stripe.configured}
-                detail={data.payments.stripe.configured ? "Key stored in Secrets Vault" : undefined}
-                href="/secrets"
-                hrefLabel="Add Stripe Key"
+                detail={data.payments.stripe.configured ? "Key in Secrets Vault" : undefined}
+                href="/secrets" hrefLabel="Add Stripe Key"
               />
-              {data.payments.other.length > 0 && data.payments.other.map((p, i) => (
-                <ConnCard
-                  key={i}
-                  icon={<CreditCard size={16} className="text-emerald-400" />}
-                  name={p.service}
-                  connected={true}
-                  detail={p.keyName}
-                />
+              {data.payments.other.map((p, i) => (
+                <ConnCard key={i} icon={<CreditCard size={16} className="text-emerald-400" />}
+                  name={p.service} connected={true} detail={p.keyName} />
               ))}
             </div>
           </section>
@@ -414,24 +612,21 @@ export default function Connections() {
           {/* ── Secrets Vault Summary ─────────────────────────────────────────── */}
           {data.secrets.total > 0 && (
             <section>
-              <SectionHeader icon={KeyRound} title="Secrets Vault" subtitle={`${data.secrets.total} encrypted key${data.secrets.total !== 1 ? "s" : ""} stored`} />
+              <SectionHeader icon={KeyRound} title="Secrets Vault"
+                subtitle={`${data.secrets.total} encrypted key${data.secrets.total !== 1 ? "s" : ""} stored`} />
               <div className="rounded-xl border border-border bg-card p-5">
                 <div className="flex flex-wrap gap-2">
-                  {Object.entries(data.secrets.byService)
-                    .sort(([, a], [, b]) => b - a)
-                    .map(([service, count]) => (
-                      <div key={service} className="flex items-center gap-1.5 rounded-lg bg-muted/50 border border-border/60 px-3 py-1.5 text-xs">
-                        <StatusDot connected={true} />
-                        <span className="font-medium">{service}</span>
-                        <span className="text-muted-foreground">×{count}</span>
-                      </div>
-                    ))}
+                  {Object.entries(data.secrets.byService).sort(([, a], [, b]) => b - a).map(([svc, count]) => (
+                    <div key={svc} className="flex items-center gap-1.5 rounded-lg bg-muted/50 border border-border/60 px-3 py-1.5 text-xs">
+                      <StatusDot on={true} />
+                      <span className="font-medium">{svc}</span>
+                      <span className="text-muted-foreground">×{count}</span>
+                    </div>
+                  ))}
                 </div>
                 <div className="mt-4 flex justify-end">
                   <Link href="/secrets">
-                    <Button size="sm" variant="outline" className="text-xs">
-                      Manage Secrets →
-                    </Button>
+                    <Button size="sm" variant="outline" className="text-xs">Manage Secrets →</Button>
                   </Link>
                 </div>
               </div>
