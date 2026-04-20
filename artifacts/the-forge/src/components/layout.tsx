@@ -33,7 +33,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   ];
 
   const selfHostItems = [
-    { href: "/github",      label: "GitHub Connect",    icon: Github },
+    { href: "/github",      label: "Code Sources",      icon: Github },
     { href: "/wizard",      label: "Migration Wizard",  icon: Wand2 },
     { href: "/migration",   label: "Migration Hub",     icon: ArrowRightLeft },
     { href: "/leaving",     label: "Escape Routes",     icon: LogOut },
