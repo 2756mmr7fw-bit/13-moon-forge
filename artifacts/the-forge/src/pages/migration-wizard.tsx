@@ -68,18 +68,44 @@ interface WizardState {
 
 export default function MigrationWizard() {
   const [step, setStep] = useState(1);
-  const [state, setState] = useState<WizardState>({
-    platform: "replit",
-    appName: "",
-    packageJson: "",
-    envContent: "",
-    schemaFile: "",
-    sourceFiles: "",
-    auditOutput: "",
-    auditStatus: "idle",
-    checkedTools: new Set(),
-    serverConnected: false,
-    serverName: "",
+  const [state, setState] = useState<WizardState>(() => {
+    // Check for a GitHub import saved by the GitHub Connect page
+    try {
+      const raw = localStorage.getItem("wizard_import");
+      if (raw) {
+        const imp = JSON.parse(raw) as Record<string, string>;
+        // Only use imports less than 10 minutes old
+        if (Date.now() - Number(imp.importedAt ?? 0) < 10 * 60 * 1000) {
+          localStorage.removeItem("wizard_import");
+          return {
+            platform: imp.platform ?? "replit",
+            appName: imp.appName ?? "",
+            packageJson: imp.packageJson ?? "",
+            envContent: imp.envContent ?? "",
+            schemaFile: imp.schemaFile ?? "",
+            sourceFiles: imp.sourceFiles ?? "",
+            auditOutput: "",
+            auditStatus: "idle" as const,
+            checkedTools: new Set<string>(),
+            serverConnected: false,
+            serverName: "",
+          };
+        }
+      }
+    } catch { /* ignore */ }
+    return {
+      platform: "replit",
+      appName: "",
+      packageJson: "",
+      envContent: "",
+      schemaFile: "",
+      sourceFiles: "",
+      auditOutput: "",
+      auditStatus: "idle" as const,
+      checkedTools: new Set<string>(),
+      serverConnected: false,
+      serverName: "",
+    };
   });
   const abortRef = useRef<AbortController | null>(null);
 

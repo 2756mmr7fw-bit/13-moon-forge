@@ -8,6 +8,7 @@ import paymentsRouter from "./payments";
 import flintRouter from "./flint";
 import moonIntegrationRouter from "./moonIntegration";
 import deployRouter from "./deploy";
+import githubRouter from "./github";
 
 const router: IRouter = Router();
 
@@ -20,5 +21,6 @@ router.use(paymentsRouter);
 router.use(flintRouter);
 router.use(moonIntegrationRouter);
 router.use(deployRouter);
+router.use(githubRouter);
 
 export default router;

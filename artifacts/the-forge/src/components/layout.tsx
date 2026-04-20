@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import {
   Flame, FolderKanban, PlusCircle, CreditCard, ExternalLink,
   Sparkles, Code2, Wrench, BookOpen, Archive, Gamepad2, Rocket, Scale,
-  GraduationCap, Crosshair, ArrowRightLeft, Layers, Wand2, LogOut, Shield,
+  GraduationCap, Crosshair, ArrowRightLeft, Layers, Wand2, LogOut, Shield, Github,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LogoMark, LogoWordmark } from "@/components/logo";
@@ -33,6 +33,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   ];
 
   const selfHostItems = [
+    { href: "/github",      label: "GitHub Connect",    icon: Github },
     { href: "/wizard",      label: "Migration Wizard",  icon: Wand2 },
     { href: "/migration",   label: "Migration Hub",     icon: ArrowRightLeft },
     { href: "/leaving",     label: "Escape Routes",     icon: LogOut },
