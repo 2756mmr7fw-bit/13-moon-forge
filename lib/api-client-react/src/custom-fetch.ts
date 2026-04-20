@@ -44,6 +44,15 @@ export function setAuthTokenGetter(getter: AuthTokenGetter | null): void {
   _authTokenGetter = getter;
 }
 
+/**
+ * Resolves and returns the current auth token (or null if no getter is registered).
+ * Useful for pages that use native fetch() and need to include the auth header manually.
+ */
+export async function getAuthToken(): Promise<string | null> {
+  if (!_authTokenGetter) return null;
+  return _authTokenGetter();
+}
+
 function isRequest(input: RequestInfo | URL): input is Request {
   return typeof Request !== "undefined" && input instanceof Request;
 }
