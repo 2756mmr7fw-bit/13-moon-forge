@@ -5,7 +5,7 @@ const MOON_API_KEY = process.env.TPTS_MOON_API_KEY ?? process.env.TSQ_MOON_API_K
 const TSQ_BASE = process.env.TSQ_BASE_URL ?? "https://thepeoplestownsq.com";
 const MOON_BASE = `${TSQ_BASE}/api/moon`;
 
-export const TPTS_INBOUND_KEY = process.env.TPTS_INBOUND_KEY ?? "";
+export const TPTS_INBOUND_KEY = (process.env.TPTS_INBOUND_KEY ?? "").trim();
 
 // Admin user IDs bypass quota deduction
 const ADMIN_USER_IDS = new Set(["54504320", "54489134"]);
