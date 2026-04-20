@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import { randomUUID } from "crypto";
+import { getAuth } from "@clerk/express";
 
 declare global {
   namespace Express {
@@ -10,14 +11,18 @@ declare global {
 }
 
 /**
- * Extracts a userId from:
- * 1. x-user-id request header (set by the frontend from localStorage)
- * 2. Falls back to generating a short-lived one (not persisted — client should send it)
- *
- * This is a lightweight identity layer before full Replit Auth is added.
- * The userId is used only for Moon subscription verification.
+ * Sets req.userId from (in priority order):
+ * 1. Clerk session — the authenticated Clerk user ID (user_xxxxx)
+ * 2. x-user-id header — anonymous persistent UUID from localStorage
+ * 3. Generated anon UUID — short-lived fallback (not persisted)
  */
 export function userIdMiddleware(req: Request, _res: Response, next: NextFunction) {
+  const clerkAuth = getAuth(req);
+  if (clerkAuth?.userId) {
+    req.userId = clerkAuth.userId;
+    return next();
+  }
+
   const headerUserId = req.headers["x-user-id"];
   req.userId = typeof headerUserId === "string" && headerUserId.trim()
     ? headerUserId.trim()

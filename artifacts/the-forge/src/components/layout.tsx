@@ -3,13 +3,49 @@ import {
   Flame, FolderKanban, PlusCircle, CreditCard, ExternalLink,
   Sparkles, Code2, Wrench, BookOpen, Archive, Gamepad2, Rocket, Scale,
   GraduationCap, Crosshair, ArrowRightLeft, Layers, Wand2, LogOut, Shield, Github, Package,
+  User, LogIn,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LogoMark, LogoWordmark } from "@/components/logo";
 import { ThirteenMoonsBadge } from "@/components/ThirteenMoonsBadge";
 import { OnboardingModal } from "@/components/onboarding-modal";
+import { useUser, useClerk, Show } from "@clerk/react";
 
 const OUR_APPS_URL = "https://thepeoplestownsq.com/our-apps";
+
+const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+function UserPanel() {
+  const { user, isLoaded } = useUser();
+  const { signOut } = useClerk();
+
+  if (!isLoaded) return null;
+
+  return (
+    <Show when="signed-in">
+      <div className="flex items-center gap-2 px-3 py-2 rounded-md border border-border/50 bg-muted/20">
+        {user?.imageUrl ? (
+          <img src={user.imageUrl} alt={user.fullName ?? ""} className="w-7 h-7 rounded-full shrink-0" />
+        ) : (
+          <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+            <User size={13} className="text-primary" />
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-semibold truncate">{user?.firstName ?? user?.username ?? "Builder"}</p>
+          <p className="text-[10px] text-muted-foreground truncate">{user?.primaryEmailAddress?.emailAddress}</p>
+        </div>
+        <button
+          onClick={() => signOut({ redirectUrl: `${basePath}/` })}
+          title="Sign out"
+          className="text-muted-foreground hover:text-foreground transition-colors shrink-0"
+        >
+          <LogOut size={13} />
+        </button>
+      </div>
+    </Show>
+  );
+}
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
@@ -102,10 +138,23 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <ExternalLink size={18} />
               Our Apps
             </a>
+            <Show when="signed-out">
+              <Link
+                href="/sign-in"
+                className="flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 text-muted-foreground hover:text-foreground hover:bg-muted"
+              >
+                <LogIn size={18} />
+                Sign In
+              </Link>
+            </Show>
           </div>
         </nav>
 
-        <div className="p-4 mt-auto">
+        <div className="px-4 pb-2">
+          <UserPanel />
+        </div>
+
+        <div className="p-4">
           <div className="bg-accent/30 border border-accent/50 rounded-lg p-4 relative overflow-hidden">
             <div className="absolute -right-2 -bottom-2 text-primary/20">
               <Flame size={64} />
