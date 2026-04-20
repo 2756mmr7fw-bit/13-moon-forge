@@ -23,6 +23,9 @@ import LearnWithSage from "@/pages/learn-sage";
 import AskHawk from "@/pages/ask-hawk";
 import MigrationHub from "@/pages/migration-hub";
 import AppHub from "@/pages/app-hub";
+import MigrationWizard from "@/pages/migration-wizard";
+import Leaving from "@/pages/leaving";
+import SovereignStack from "@/pages/sovereign";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -56,6 +59,9 @@ function Router() {
         <Route path="/hawk" component={AskHawk} />
         <Route path="/migration" component={MigrationHub} />
         <Route path="/app-hub" component={AppHub} />
+        <Route path="/wizard" component={MigrationWizard} />
+        <Route path="/leaving" component={Leaving} />
+        <Route path="/sovereign" component={SovereignStack} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
