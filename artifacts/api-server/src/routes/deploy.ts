@@ -274,6 +274,38 @@ router.post("/registry", async (req, res) => {
         status: "pending",
       })
       .returning();
+
+    // ─── Webhook notification (Discord / Slack / custom) ──────────────────
+    const webhookUrl = process.env.ADMIN_WEBHOOK_URL;
+    if (webhookUrl) {
+      const by = submittedByName?.trim() || req.userId;
+      const payload = {
+        // Discord-compatible format; Slack ignores unknown fields
+        username: "13 Moon Forge",
+        content: null,
+        embeds: [{
+          title: `📦 New App Submission: ${name.trim()}`,
+          description: description.trim().slice(0, 300),
+          color: 0xE8580A, // brand orange
+          fields: [
+            { name: "Tagline",  value: tagline.trim(),        inline: false },
+            { name: "Stack",    value: stack.trim(),          inline: true  },
+            { name: "Submitted by", value: by,                inline: true  },
+            ...(githubUrl?.trim() ? [{ name: "GitHub", value: githubUrl.trim(), inline: false }] : []),
+          ],
+          footer: { text: `ID #${row.id} · status: pending` },
+          timestamp: new Date().toISOString(),
+        }],
+      };
+      // Fire-and-forget — don't block the response
+      fetch(webhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(4000),
+      }).catch((err) => req.log.warn({ err }, "registry webhook failed"));
+    }
+
     return res.json({ ok: true, id: row.id });
   } catch (err) {
     req.log.error({ err }, "registry POST failed");

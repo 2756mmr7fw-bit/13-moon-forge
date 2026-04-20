@@ -54,7 +54,17 @@ Uses Replit AI Integrations (OpenAI-compatible, no user API key needed). All rou
 - Service layer: `artifacts/api-server/src/lib/moonApi.ts`
 - SSE event `subscription_required` triggers UI subscribe gate
 
-**User identity**: Clerk-authenticated JWT (preferred, via `getAuth(req).userId` on the API) with `x-user-id` header fallback for anonymous / non-Clerk requests. `ClerkProvider` wraps the entire React tree; sign-in/sign-up routes (`/sign-in`, `/sign-up`) render outside the sidebar Layout.
+**User identity**: Clerk-authenticated JWT (preferred, via `getAuth(req).userId` on the API) with `x-user-id` header fallback for anonymous / non-Clerk requests. `ClerkProvider` wraps the entire React tree; sign-in/sign-up routes (`/sign-in`, `/sign-up`) render outside the sidebar Layout. `ClerkTokenInitializer` (in `App.tsx`) calls `setAuthTokenGetter` so `getAuthToken()` from `@workspace/api-client-react` returns the Clerk bearer token throughout the app.
+
+**Secrets migration**: On first sign-in, `SecretsVault` calls `POST /api/secrets/migrate` with the localStorage anon UUID to re-attribute any pre-login secrets to the Clerk userId. One-time only (flag stored in `localStorage["13moonforge_secrets_migrated"]`).
+
+**Rate limiting** (`artifacts/api-server/src/app.ts` via `express-rate-limit`):
+- Global: 300 req / 15 min per IP
+- AI routes (`/api/ai`, `/api/forge`, `/api/flint`, `/api/sage`, `/api/hawk`, `/api/moon`): 60 req / hour
+- Secrets writes (POST/DELETE on `/api/secrets`): 30 req / 15 min
+- Checkout: 10 req / 5 min
+
+**Moon subscription caching** (`artifacts/api-server/src/lib/moonApi.ts`): server-side in-memory Map with 5-min TTL per userId to avoid hammering TPTS on every page load.
 
 **Route guards**: `ProtectedRoute` component (`components/protected-route.tsx`) wraps all pages except `/pricing` and `/payment/success`. Unauthenticated users are redirected to `/sign-in?redirect_url=<current_path>` with a spinner shown while Clerk loads.
 
@@ -70,11 +80,11 @@ Email check uses `createClerkClient` with `CLERK_SECRET_KEY`; results cached per
 - `TPTS_MOON_API_KEY` — TPTS Moon API key
 - `CLERK_SECRET_KEY` — Clerk backend secret (server-side only)
 - `CLERK_PUBLISHABLE_KEY` / `VITE_CLERK_PUBLISHABLE_KEY` — Clerk publishable key
-- `SESSION_SECRET` — Express session secret
+- `SESSION_SECRET` — Express session secret + AES-256-GCM key derivation for Secrets Vault
 - `TSQ_MOON_API_KEY` — Town Square Moon API key
 - `TPTS_INBOUND_KEY` — TPTS inbound API key
-- `SESSION_SECRET` — session secret
 - `SQUARE_API_KEY` — Square payments (future)
+- `ADMIN_WEBHOOK_URL` — (optional) Discord/Slack/custom webhook URL; receives embed on each new registry submission
 
 ---
 
@@ -84,7 +94,7 @@ Email check uses `createClerkClient` with `CLERK_SECRET_KEY`; results cached per
 - `artifacts/api-server/src/routes/github.ts` — status, connect, disconnect, repos, tree, file, commit
 - `artifacts/api-server/src/routes/gitlab.ts` — status, connect, disconnect, repos, tree, file, commit (full write)
 - `artifacts/api-server/src/routes/bitbucket.ts` — status, connect, disconnect, repos, tree, file (read-only)
-- `artifacts/api-server/src/routes/secrets.ts` — AES-256-GCM encrypted secrets vault CRUD
+- `artifacts/api-server/src/routes/secrets.ts` — AES-256-GCM encrypted secrets vault CRUD (`GET|POST /api/secrets`, `PATCH|DELETE /api/secrets/:id`, `GET /api/secrets/:id/reveal`, `POST /api/secrets/import`, `GET /api/secrets/export`, `POST /api/secrets/migrate`)
 - `artifacts/api-server/src/routes/admin.ts` — admin-only registry management (requireAdmin middleware checks ADMIN_USER_IDS env var)
 - `artifacts/api-server/src/routes/index.ts` — route registration
 
