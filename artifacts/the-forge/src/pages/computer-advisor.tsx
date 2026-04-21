@@ -209,7 +209,10 @@ export default function ComputerAdvisor() {
   });
   const [autoDetected, setAutoDetected] = useState<ReturnType<typeof detectBrowserSpecs> | null>(null);
   const [showAllSoftware, setShowAllSoftware] = useState(false);
+  const [compareMode, setCompareMode] = useState(false);
+  const [specsB, setSpecsB] = useState({ os: "", cpu: "", gpu: "", ram: "", storage: "" });
   const { output, status, run, reset } = useStream();
+  const { output: outputB, status: statusB, run: runB, reset: resetB } = useStream();
 
   useEffect(() => {
     const d = detectBrowserSpecs();
@@ -348,6 +351,74 @@ export default function ComputerAdvisor() {
 
       {status === "error" && (
         <p className="text-sm text-destructive text-center">Something went wrong. Please try again.</p>
+      )}
+
+      {/* Compare with another PC */}
+      {status === "done" && (
+        <div className="space-y-4 pt-2 border-t border-border">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold">Compare with another PC</p>
+              <p className="text-xs text-muted-foreground">Enter a second machine's specs to see how they stack up side by side</p>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => { setCompareMode(v => !v); resetB(); }}>
+              {compareMode ? "Hide Comparison" : "Compare PCs"}
+            </Button>
+          </div>
+
+          {compareMode && (
+            <div className="space-y-4 p-4 rounded-lg border border-border bg-muted/10">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Second PC specs</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {([
+                  ["os",      "OS",           "e.g. Windows 10, macOS"],
+                  ["cpu",     "CPU",          "e.g. Intel i3-10100, Ryzen 3 3300X"],
+                  ["gpu",     "GPU",          "e.g. GTX 1650, RX 580"],
+                  ["ram",     "RAM",          "e.g. 8GB DDR4"],
+                  ["storage", "Storage",      "e.g. 256GB SSD"],
+                ] as [keyof typeof specsB, string, string][]).map(([key, label, ph]) => (
+                  <div key={key} className="space-y-1">
+                    <Label className="text-xs">{label}</Label>
+                    <Input placeholder={ph} value={specsB[key]} onChange={e => setSpecsB(p => ({ ...p, [key]: e.target.value }))} />
+                  </div>
+                ))}
+              </div>
+              <Button
+                size="sm" className="gap-1.5"
+                disabled={statusB === "running"}
+                onClick={() => runB({ specs: { ...specsB, screenRes: "", extras: "Compare this to another PC" }, goals })}>
+                {statusB === "running"
+                  ? <><Loader2 size={14} className="animate-spin" /> Analyzing…</>
+                  : <><Sparkles size={14} /> Analyze Second PC</>}
+              </Button>
+            </div>
+          )}
+
+          {/* Side-by-side output */}
+          {(outputB || statusB === "running") && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="rounded-lg border border-border bg-muted/20 overflow-hidden">
+                <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border bg-muted/40">
+                  <Sparkles size={14} className="text-primary" />
+                  <span className="text-sm font-semibold">PC One</span>
+                  <Badge variant="outline" className="text-[10px] text-green-400 border-green-400/30 ml-auto">Done</Badge>
+                </div>
+                <pre className="p-4 whitespace-pre-wrap text-xs text-foreground font-sans leading-relaxed max-h-96 overflow-y-auto">{output}</pre>
+              </div>
+              <div className="rounded-lg border border-border bg-muted/20 overflow-hidden">
+                <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border bg-muted/40">
+                  <Sparkles size={14} className="text-blue-400" />
+                  <span className="text-sm font-semibold">PC Two</span>
+                  {statusB === "done" && <Badge variant="outline" className="text-[10px] text-green-400 border-green-400/30 ml-auto">Done</Badge>}
+                  {statusB === "running" && <Badge variant="outline" className="text-[10px] text-primary border-primary/30 animate-pulse ml-auto">Analyzing…</Badge>}
+                </div>
+                <pre className="p-4 whitespace-pre-wrap text-xs text-foreground font-sans leading-relaxed max-h-96 overflow-y-auto">
+                  {outputB}{statusB === "running" && <span className="animate-pulse text-primary">▋</span>}
+                </pre>
+              </div>
+            </div>
+          )}
+        </div>
       )}
 
       {/* Software catalogue */}
