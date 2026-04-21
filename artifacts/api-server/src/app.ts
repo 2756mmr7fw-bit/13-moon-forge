@@ -97,7 +97,7 @@ app.use("/api", (req, res, next) => {
 
 // AI usage tracking — fire-and-forget increment on every POST to an AI route
 const AI_TRACKED_PATHS = ["/api/forge", "/api/flint", "/api/sage", "/api/hawk", "/api/moon",
-  "/api/screen-coach", "/api/computer-advisor/analyze"];
+  "/api/screen-coach", "/api/computer-advisor/analyze", "/api/site-forge/generate"];
 app.use(AI_TRACKED_PATHS, (req, _res, next) => {
   if (req.method === "POST") incrementUsage(req.userId).catch(() => {});
   next();
@@ -111,6 +111,7 @@ app.use("/api/sage", aiLimiter);
 app.use("/api/hawk", aiLimiter);
 app.use("/api/moon", aiLimiter);
 app.use("/api/screen-coach", aiLimiter);
+app.use("/api/site-forge", aiLimiter);
 app.use(["/api/secrets/import", "/api/secrets"], (req, res, next) => {
   if (req.method === "POST" || req.method === "DELETE") return secretsWriteLimiter(req, res, next);
   next();
