@@ -1,223 +1,241 @@
-import { Hammer, Sparkles, Users, Zap, RotateCcw, ExternalLink, Check } from "lucide-react";
+import { Flame, Zap, Rocket, Check, RotateCcw, ExternalLink, MonitorPlay, Monitor, Swords, Sparkles, Code2, GraduationCap, Scale, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { Link } from "wouter";
 
 const TOWN_SQUARE_BASE = "https://thepeoplestownsq.com";
-const BUNDLE_URL = `${TOWN_SQUARE_BASE}/our-apps`;
 
-const moons = [
+const tiers = [
   {
-    id: "forge",
-    name: "Forge",
-    role: "The Builder",
-    price: 3,
-    icon: Hammer,
-    color: "border-primary",
-    glow: true,
-    description: "AI-powered building assistant. Turns ideas into real products, prototypes, and plans.",
+    id: "free",
+    name: "Free",
+    tagline: "Try it out",
+    price: 0,
+    period: "forever",
+    icon: Zap,
+    color: "border-border",
+    iconBg: "bg-muted",
+    iconColor: "text-muted-foreground",
+    highlight: false,
+    cta: "Start for free",
+    ctaVariant: "outline" as const,
+    messages: "10 messages / month",
+    description: "Enough to run one real Screen Coach session and see what Forge can do. No credit card, no commitment.",
     features: [
-      "100 messages / month",
-      "Invention & product planning",
-      "Manufacturing & materials guidance",
-      "Patent basics & IP advice",
-      "Business planning for physical products",
-      "3D printing & fabrication support",
+      "10 AI messages per month",
+      "Screen Coach (1 session)",
+      "Computer Advisor",
+      "Ask Hawk",
+      "Resets every month",
     ],
+    note: null,
   },
   {
-    id: "flint",
-    name: "Flint",
-    role: "The Spark",
-    price: 2,
-    icon: Sparkles,
-    color: "border-amber-500/50",
-    glow: false,
-    description: "The brainstorming engine. Helps you find the idea worth building before anyone picks up a tool.",
+    id: "basic",
+    name: "Forge Basic",
+    tagline: "Personal tech assistant",
+    price: 7,
+    period: "/ month",
+    icon: Flame,
+    color: "border-primary/60",
+    iconBg: "bg-primary/20",
+    iconColor: "text-primary",
+    highlight: false,
+    cta: "Get Basic",
+    ctaVariant: "outline" as const,
+    messages: "150 messages / month",
+    description: "Everything you need to replace Geek Squad for good. One person, unlimited tool access.",
     features: [
-      "100 messages / month",
-      "Invention brainstorming",
-      "Unique angle & market finding",
-      "Problem reframing",
-      "Naming & elevator pitches",
-      "Wild ideas, zero judgment",
+      "150 AI messages per month",
+      "Screen Coach — screen share + voice",
+      "Computer Advisor + PC comparison",
+      "Game Studio + AI code help",
+      "Ask Hawk, Learn with Sage",
+      "Legal Decoder, Code Forge",
+      "Brainstorm + Project Builder",
+      "Resets every month",
     ],
+    note: null,
+  },
+  {
+    id: "pro",
+    name: "Forge Pro",
+    tagline: "Power users & families",
+    price: 17,
+    period: "/ month",
+    icon: Rocket,
+    color: "border-primary shadow-[0_0_50px_rgba(232,97,26,0.15)]",
+    iconBg: "bg-primary/20",
+    iconColor: "text-primary",
+    highlight: true,
+    cta: "Get Pro",
+    ctaVariant: "default" as const,
+    messages: "500 messages / month",
+    description: "Heavy users, families, and anyone who uses Forge as their daily driver. Never hits the wall.",
+    features: [
+      "500 AI messages per month",
+      "Everything in Basic",
+      "Priority access to new tools",
+      "Early access to beta features",
+      "Rollover unused messages (up to 200)",
+      "Resets every month",
+    ],
+    note: "Most popular",
   },
 ];
 
-const refillPacks = [
-  { messages: 50,  price: 2.99 },
-  { messages: 150, price: 6.99 },
-  { messages: 500, price: 14.99 },
+const tools = [
+  { icon: MonitorPlay, label: "Screen Coach",       color: "text-orange-400" },
+  { icon: Monitor,     label: "Computer Advisor",   color: "text-blue-400"   },
+  { icon: Swords,      label: "Game Studio",        color: "text-purple-400" },
+  { icon: Sparkles,    label: "Brainstorm",         color: "text-violet-400" },
+  { icon: Code2,       label: "Code Forge",         color: "text-sky-400"    },
+  { icon: GraduationCap, label: "Learn with Sage",  color: "text-green-400"  },
+  { icon: Scale,       label: "Legal Decoder",      color: "text-amber-400"  },
+  { icon: Zap,         label: "Ask Hawk",           color: "text-cyan-400"   },
 ];
 
 const competitors = [
-  { name: "ChatGPT Plus",        price: "$20/mo",   note: "1 general AI" },
-  { name: "ChatGPT Pro",         price: "$200/mo",  note: "1 general AI, unlimited" },
-  { name: "Sintra AI",           price: "$97/mo",   note: "12 assistants, 250 credits" },
-  { name: "Grammarly Premium",   price: "$30/mo",   note: "reads everything you type" },
-  { name: "Us (Full Team)",      price: "$25/mo",   note: "all 13 Moons, 500 messages", highlight: true },
+  { name: "Geek Squad (1 visit)",  price: "$100–200",  note: "one problem, one visit, no follow-up" },
+  { name: "ChatGPT Plus",          price: "$20/mo",    note: "1 general AI, no screen watching"     },
+  { name: "Sintra AI",             price: "$97/mo",    note: "12 assistants, 250 credits"           },
+  { name: "Forge Basic",           price: "$7/mo",     note: "all 8 tools, 150 messages/mo",   highlight: true },
+  { name: "Forge Pro",             price: "$17/mo",    note: "all 8 tools, 500 messages/mo",   highlight: true },
+];
+
+const refillPacks = [
+  { messages: 50,  price: "2.99" },
+  { messages: 150, price: "5.99" },
+  { messages: 500, price: "12.99" },
 ];
 
 export default function Pricing() {
   return (
-    <div className="max-w-4xl mx-auto animate-in fade-in duration-300 space-y-14">
+    <div className="max-w-4xl mx-auto animate-in fade-in duration-300 space-y-16">
 
       {/* Header */}
-      <div className="text-center">
-        <p className="text-xs uppercase tracking-widest text-primary font-semibold mb-3">13 Moon Forge · Pricing</p>
-        <h1 className="text-4xl font-black tracking-tight mb-4">
-          Pick the Moons<br className="hidden sm:block" /> you actually need
+      <div className="text-center space-y-4">
+        <p className="text-xs uppercase tracking-widest text-primary font-semibold">13 Moon Forge · Pricing</p>
+        <h1 className="text-4xl sm:text-5xl font-black tracking-tight">
+          Replace Geek Squad.<br className="hidden sm:block" />
+          <span className="text-primary">For $7 a month.</span>
         </h1>
-        <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-          Two AI characters live in this app. Subscribe to one or both — or grab the Full Team Bundle on the Town Square and unlock all 13.
+        <p className="text-muted-foreground text-lg max-w-xl mx-auto leading-relaxed">
+          Forge watches your screen, fixes your computer, builds your apps, and teaches you anything — right in your browser. No house calls. No hourly rates. No confusion.
         </p>
       </div>
 
-      {/* Free tier banner */}
-      <div className="flex items-center gap-4 border border-dashed border-border rounded-xl p-5 bg-card/40">
-        <div className="bg-muted rounded-lg p-2.5 shrink-0">
-          <Zap className="w-5 h-5 text-muted-foreground" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="font-semibold text-sm">Free to try — no credit card needed</p>
-          <p className="text-muted-foreground text-sm">Every new user gets <strong className="text-foreground">5 free messages</strong> shared across all Thirteen Moons apps. No commitment.</p>
-        </div>
-      </div>
-
-      {/* Moon subscription cards */}
-      <div>
-        <h2 className="text-xl font-bold mb-5">Individual Moon Subscriptions</h2>
-        <p className="text-sm text-muted-foreground mb-6">Turn on only what you need. Each Moon is an on/off switch — no bundles forced on you.</p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {moons.map((moon) => {
-            const Icon = moon.icon;
-            return (
-              <div
-                key={moon.id}
-                className={cn(
-                  "relative rounded-xl border-2 bg-card p-6 flex flex-col",
-                  moon.color,
-                  moon.glow && "shadow-[0_0_40px_rgba(255,100,0,0.1)]"
-                )}
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className={cn("p-2.5 rounded-lg", moon.glow ? "bg-primary/20" : "bg-amber-900/30")}>
-                      <Icon className={cn("w-5 h-5", moon.glow ? "text-primary" : "text-amber-400")} />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-lg leading-none">{moon.name}</h3>
-                      <p className="text-xs text-muted-foreground mt-0.5">{moon.role}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-3xl font-black">${moon.price}</div>
-                    <div className="text-xs text-muted-foreground">/month</div>
-                  </div>
+      {/* Pricing cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-start">
+        {tiers.map((tier) => {
+          const Icon = tier.icon;
+          return (
+            <div
+              key={tier.id}
+              className={cn(
+                "relative rounded-2xl border-2 bg-card p-6 flex flex-col",
+                tier.color,
+              )}
+            >
+              {tier.note && (
+                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
+                  <span className="bg-primary text-white text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider whitespace-nowrap">
+                    {tier.note}
+                  </span>
                 </div>
+              )}
 
-                <p className="text-sm text-muted-foreground mb-5">{moon.description}</p>
-
-                <ul className="space-y-2 mb-6 flex-1">
-                  {moon.features.map((f) => (
-                    <li key={f} className="flex items-start gap-2 text-sm">
-                      <Check className={cn("w-4 h-4 mt-0.5 shrink-0", moon.glow ? "text-primary" : "text-amber-500")} />
-                      <span>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <Button
-                  className="w-full gap-2"
-                  variant={moon.glow ? "default" : "outline"}
-                  onClick={() => window.open(`${TOWN_SQUARE_BASE}/moons/${moon.id}?ref=${moon.id}`, "_blank")}
-                >
-                  Subscribe to {moon.name} · ${moon.price}/mo
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </Button>
-                <p className="text-center text-xs text-muted-foreground mt-2">Managed at The People's Town Square</p>
+              <div className="flex items-center gap-3 mb-4">
+                <div className={cn("p-2.5 rounded-xl shrink-0", tier.iconBg)}>
+                  <Icon size={18} className={tier.iconColor} />
+                </div>
+                <div>
+                  <h3 className="font-black text-base leading-none">{tier.name}</h3>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">{tier.tagline}</p>
+                </div>
               </div>
-            );
-          })}
-        </div>
+
+              <div className="mb-4">
+                <div className="flex items-end gap-1">
+                  <span className="text-4xl font-black">${tier.price}</span>
+                  <span className="text-sm text-muted-foreground mb-1.5">{tier.period}</span>
+                </div>
+                <p className="text-xs text-primary font-semibold mt-1">{tier.messages}</p>
+              </div>
+
+              <p className="text-sm text-muted-foreground leading-relaxed mb-5">{tier.description}</p>
+
+              <ul className="space-y-2.5 mb-6 flex-1">
+                {tier.features.map((f) => (
+                  <li key={f} className="flex items-start gap-2 text-sm">
+                    <Check size={14} className="text-primary mt-0.5 shrink-0" />
+                    <span>{f}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <Button
+                className="w-full gap-2"
+                variant={tier.ctaVariant}
+                size="lg"
+                onClick={() =>
+                  tier.id === "free"
+                    ? window.location.href = "/sign-up"
+                    : window.open(`${TOWN_SQUARE_BASE}/checkout/${tier.id}?ref=forge`, "_blank")
+                }
+              >
+                {tier.cta}
+                <ArrowRight size={14} />
+              </Button>
+
+              {tier.id !== "free" && (
+                <p className="text-center text-[11px] text-muted-foreground mt-2">
+                  Billed monthly · Cancel anytime
+                </p>
+              )}
+            </div>
+          );
+        })}
       </div>
 
-      {/* Full Team Bundle */}
-      <div className="rounded-xl border border-amber-900/50 bg-gradient-to-br from-amber-950/30 to-card p-6 md:p-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="flex items-start gap-4">
-            <div className="bg-amber-900/40 rounded-lg p-3 shrink-0">
-              <Users className="w-6 h-6 text-amber-400" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <h3 className="text-xl font-black">Full Team Bundle</h3>
-                <span className="text-xs font-semibold bg-amber-400 text-black px-2 py-0.5 rounded-full">Save $10/mo</span>
-              </div>
-              <p className="text-muted-foreground text-sm max-w-md">All 13 Moons. 500 messages shared per month. Every app in the ecosystem. One price.</p>
-              <p className="text-sm mt-2">
-                <span className="line-through text-muted-foreground mr-2">$35/mo individually</span>
-                <strong className="text-amber-400 text-lg">$25/mo</strong>
-              </p>
-            </div>
-          </div>
-          <Button
-            className="shrink-0 gap-2 bg-amber-400 hover:bg-amber-300 text-black font-bold"
-            onClick={() => window.open(BUNDLE_URL, "_blank")}
-          >
-            Get All 13 Moons
-            <ExternalLink className="w-3.5 h-3.5" />
-          </Button>
+      {/* Everything included */}
+      <div className="space-y-5">
+        <div className="text-center">
+          <h2 className="text-xl font-bold">Every paid plan includes all 8 tools</h2>
+          <p className="text-sm text-muted-foreground mt-1">No tools locked behind higher tiers. Just more messages.</p>
         </div>
-
-        <div className="mt-6 pt-5 border-t border-amber-900/40">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">First Month Trial</p>
-          <p className="text-sm text-muted-foreground">
-            Try all 13 Moons for <strong className="text-foreground">$20 your first month</strong> — 500 messages to explore everything. Keep what you love, shut off the rest.
-          </p>
-        </div>
-      </div>
-
-      {/* Message limits */}
-      <div>
-        <h2 className="text-xl font-bold mb-5">Monthly Message Limits</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {[
-            { label: "Individual Moon", limit: "100 messages", sub: "per Moon, per month", color: "border-border" },
-            { label: "Full Team Bundle", limit: "500 messages", sub: "shared across all 13", color: "border-primary/40" },
-            { label: "Free", limit: "5 messages", sub: "total, to try it out", color: "border-border" },
-          ].map((tier) => (
-            <div key={tier.label} className={cn("rounded-lg border bg-card p-4", tier.color)}>
-              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">{tier.label}</p>
-              <p className="text-2xl font-black">{tier.limit}</p>
-              <p className="text-xs text-muted-foreground mt-1">{tier.sub}</p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {tools.map(({ icon: Icon, label, color }) => (
+            <div key={label} className="flex items-center gap-2.5 p-3 rounded-xl border border-border bg-card">
+              <Icon size={16} className={color} />
+              <span className="text-sm font-medium">{label}</span>
             </div>
           ))}
         </div>
-        <p className="text-xs text-muted-foreground mt-3 flex items-center gap-1.5">
-          <RotateCcw className="w-3 h-3" />
-          Messages reset on the 1st of every month.
-        </p>
       </div>
 
       {/* Refill packs */}
-      <div>
-        <h2 className="text-xl font-bold mb-2">Refill Packs</h2>
-        <p className="text-sm text-muted-foreground mb-5">Hit your limit early? Top up anytime. Unused refill messages <strong className="text-foreground">never expire</strong> and work across every app.</p>
+      <div className="space-y-4">
+        <div>
+          <h2 className="text-xl font-bold">Need more messages?</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Hit your limit before the month resets? Top up anytime. Refill messages <strong className="text-foreground">never expire</strong> and stack on top of your plan.
+          </p>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {refillPacks.map((pack) => (
-            <div key={pack.messages} className="rounded-lg border border-border bg-card p-4 flex items-center justify-between">
+            <div key={pack.messages} className="rounded-xl border border-border bg-card p-4 flex items-center justify-between">
               <div>
                 <p className="font-bold text-lg">{pack.messages} messages</p>
-                <p className="text-xs text-muted-foreground">carries over, never expires</p>
+                <p className="text-xs text-muted-foreground">never expires · stacks on your plan</p>
               </div>
               <div className="text-right">
                 <p className="text-2xl font-black">${pack.price}</p>
                 <Button
                   size="sm"
                   variant="outline"
-                  className="mt-1 text-xs h-7"
-                  onClick={() => window.open(BUNDLE_URL, "_blank")}
+                  className="mt-1.5 text-xs h-7"
+                  onClick={() => window.open(`${TOWN_SQUARE_BASE}/refills?ref=forge`, "_blank")}
                 >
                   Buy
                 </Button>
@@ -225,11 +243,15 @@ export default function Pricing() {
             </div>
           ))}
         </div>
+        <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+          <RotateCcw size={11} />
+          Plan messages reset on the 1st of every month. Refill packs do not reset.
+        </p>
       </div>
 
-      {/* Competitor comparison */}
-      <div>
-        <h2 className="text-xl font-bold mb-5">How We Stack Up</h2>
+      {/* Competitor table */}
+      <div className="space-y-4">
+        <h2 className="text-xl font-bold">How we stack up</h2>
         <div className="rounded-xl border border-border overflow-hidden">
           <table className="w-full text-sm">
             <thead>
@@ -256,29 +278,43 @@ export default function Pricing() {
                   <td className="px-5 py-3 text-right font-mono font-bold whitespace-nowrap">
                     <span className={cn(c.highlight ? "text-primary" : "text-foreground")}>{c.price}</span>
                   </td>
-                  <td className={cn("px-5 py-3 text-muted-foreground hidden sm:table-cell", c.highlight && "text-foreground")}>{c.note}</td>
+                  <td className={cn("px-5 py-3 text-muted-foreground hidden sm:table-cell", c.highlight && "text-foreground")}>
+                    {c.note}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        <p className="text-xs text-muted-foreground mt-3">No data harvesting. No reading your files. Built for the people.</p>
+        <p className="text-xs text-muted-foreground">No data harvesting. No reading your files. Built for the people, by Sovereign Digital LLC.</p>
       </div>
 
-      {/* CTA footer */}
-      <div className="text-center border border-dashed border-border rounded-xl p-8 bg-card/30">
-        <h3 className="text-xl font-bold mb-2">All subscriptions managed at The People's Town Square</h3>
-        <p className="text-sm text-muted-foreground mb-5 max-w-md mx-auto">
-          Subscribe once, access everywhere. Your messages work across all 9 apps in the Sovereign Digital ecosystem.
-        </p>
+      {/* Town Square note */}
+      <div className="rounded-xl border border-dashed border-border bg-card/30 p-6 flex flex-col sm:flex-row sm:items-center gap-5">
+        <div className="flex-1">
+          <h3 className="font-bold mb-1">Part of a bigger family</h3>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Forge is one app in the Sovereign Digital ecosystem. Visit The People's Town Square to manage all your subscriptions, access the other 12 Moons, and get the Full Team Bundle for everything at once.
+          </p>
+        </div>
         <Button
-          size="lg"
-          className="gap-2 bg-amber-400 hover:bg-amber-300 text-black font-bold"
-          onClick={() => window.open(BUNDLE_URL, "_blank")}
+          variant="outline"
+          className="gap-2 shrink-0"
+          onClick={() => window.open(TOWN_SQUARE_BASE, "_blank")}
         >
-          Manage Subscriptions at Town Square
-          <ExternalLink className="w-4 h-4" />
+          Visit Town Square <ExternalLink size={13} />
         </Button>
+      </div>
+
+      {/* Bottom CTA */}
+      <div className="text-center space-y-4 pb-4">
+        <h3 className="text-2xl font-black">Ready to ditch Geek Squad?</h3>
+        <p className="text-muted-foreground">Start free. No credit card. Upgrade when you're ready.</p>
+        <Link href="/sign-up">
+          <Button size="lg" className="gap-2 px-10">
+            Start for free <ArrowRight size={15} />
+          </Button>
+        </Link>
       </div>
 
     </div>

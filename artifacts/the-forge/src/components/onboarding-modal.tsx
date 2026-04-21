@@ -43,11 +43,13 @@ const PATHS = [
 
 export function OnboardingModal() {
   const [open, setOpen] = useState(false);
-  const [, navigate] = useLocation();
+  const [location, navigate] = useLocation();
+
+  const isPublicPage = ["/pricing", "/payment/success"].includes(location);
 
   useEffect(() => {
-    if (!localStorage.getItem(FLAG)) setOpen(true);
-  }, []);
+    if (!isPublicPage && !localStorage.getItem(FLAG)) setOpen(true);
+  }, [isPublicPage]);
 
   const dismiss = () => {
     localStorage.setItem(FLAG, "1");
