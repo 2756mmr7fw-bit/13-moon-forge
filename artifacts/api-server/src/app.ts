@@ -36,8 +36,8 @@ app.use(
 app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
 
 app.use(cors({ credentials: true, origin: true }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 app.use(clerkMiddleware());
 app.use(userIdMiddleware);
@@ -101,6 +101,7 @@ app.use("/api/flint", aiLimiter);
 app.use("/api/sage", aiLimiter);
 app.use("/api/hawk", aiLimiter);
 app.use("/api/moon", aiLimiter);
+app.use("/api/screen-coach", aiLimiter);
 app.use(["/api/secrets/import", "/api/secrets"], (req, res, next) => {
   if (req.method === "POST" || req.method === "DELETE") return secretsWriteLimiter(req, res, next);
   next();

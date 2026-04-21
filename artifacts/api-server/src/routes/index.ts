@@ -17,6 +17,7 @@ import connectionsRouter from "./connections";
 import coolifyRouter from "./coolify";
 import monitorRouter from "./monitor";
 import computerAdvisorRouter from "./computer-advisor";
+import screenCoachRouter from "./screen-coach";
 
 const router: IRouter = Router();
 
@@ -38,5 +39,6 @@ router.use(connectionsRouter);
 router.use(coolifyRouter);
 router.use(monitorRouter);
 router.use(computerAdvisorRouter);
+router.use(screenCoachRouter);
 
 export default router;
