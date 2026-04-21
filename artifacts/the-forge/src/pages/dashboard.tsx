@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   FileCode, CheckCircle2, Archive, ArrowRight, Loader2,
   Sparkles, Code2, Wand2, Layers, Scale, Crosshair,
-  PlusCircle, FolderOpen,
+  PlusCircle, FolderOpen, MonitorPlay, Monitor, Swords, GraduationCap,
 } from "lucide-react";
 import { useUser } from "@clerk/react";
 
@@ -62,21 +62,82 @@ export default function Dashboard() {
         ) : null}
       </div>
 
+      {/* Flagship: Get Help Tools */}
+      <div className="space-y-3">
+        <h2 className="text-xs font-bold tracking-widest text-muted-foreground uppercase">Get Tech Help</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {[
+            {
+              href: "/screen-coach",
+              label: "Screen Coach",
+              desc: "Share your screen and let Forge watch, listen, and talk you through any computer problem — step by step.",
+              icon: MonitorPlay,
+              color: "text-orange-400",
+              bg: "bg-orange-400/10",
+              border: "border-orange-400/20 hover:border-orange-400/50",
+              badge: "Most Popular",
+            },
+            {
+              href: "/computer-advisor",
+              label: "Computer Advisor",
+              desc: "Describe your computer and goals. Get a free software plan, upgrade costs, and side-by-side comparisons.",
+              icon: Monitor,
+              color: "text-blue-400",
+              bg: "bg-blue-400/10",
+              border: "border-blue-400/20 hover:border-blue-400/50",
+              badge: null,
+            },
+            {
+              href: "/game-studio",
+              label: "Game Studio",
+              desc: "Build a real video game in your browser. No downloads, no experience needed. Forge writes the code.",
+              icon: Swords,
+              color: "text-purple-400",
+              bg: "bg-purple-400/10",
+              border: "border-purple-400/20 hover:border-purple-400/50",
+              badge: null,
+            },
+          ].map(({ href, label, desc, icon: Icon, color, bg, border, badge }) => (
+            <Link key={href} href={href}>
+              <div className={`relative flex flex-col gap-3 p-4 rounded-xl border ${border} bg-card hover:bg-card/80 transition-all cursor-pointer group h-full`}>
+                {badge && (
+                  <span className="absolute top-3 right-3 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/30 uppercase tracking-wider">
+                    {badge}
+                  </span>
+                )}
+                <div className={`inline-flex items-center justify-center w-9 h-9 rounded-lg ${bg} shrink-0`}>
+                  <Icon size={18} className={color} />
+                </div>
+                <div>
+                  <p className="font-bold text-sm mb-1 group-hover:text-primary transition-colors">{label}</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
+                </div>
+                <div className={`flex items-center gap-1 text-xs font-semibold mt-auto pt-1 ${color}`}>
+                  Open <ArrowRight size={11} />
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+
       {/* Quick Actions */}
       <div className="space-y-3">
-        <h2 className="text-xs font-bold tracking-widest text-muted-foreground uppercase">Quick Actions</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+        <h2 className="text-xs font-bold tracking-widest text-muted-foreground uppercase">Build & Create</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
           {[
-            { href: "/brainstorm",  label: "Brainstorm",            desc: "Plan your idea",           icon: Sparkles,  color: "text-violet-400" },
-            { href: "/code-forge",  label: "Write Code",            desc: "Generate with AI",         icon: Code2,     color: "text-sky-400"    },
-            { href: "/hawk",        label: "Ask a Question",        desc: "Get a quick answer",       icon: Crosshair, color: "text-cyan-400"   },
-            { href: "/legal",       label: "Legal Explainer",       desc: "Plain-English legal",      icon: Scale,     color: "text-amber-400"  },
-            { href: "/wizard",      label: "Move My App",           desc: "Leave Replit/Heroku",      icon: Wand2,     color: "text-emerald-400"},
-            { href: "/app-hub",     label: "Deploy Apps",           desc: "Push to your server",      icon: Layers,    color: "text-orange-400" },
+            { href: "/brainstorm",  label: "Brainstorm",     desc: "Plan your idea",       icon: Sparkles,      color: "text-violet-400"  },
+            { href: "/code-forge",  label: "Write Code",     desc: "Generate with AI",     icon: Code2,         color: "text-sky-400"     },
+            { href: "/hawk",        label: "Ask Hawk",       desc: "Quick answers",        icon: Crosshair,     color: "text-cyan-400"    },
+            { href: "/sage",        label: "Learn",          desc: "AI tutor",             icon: GraduationCap, color: "text-green-400"   },
+            { href: "/legal",       label: "Legal",          desc: "Plain-English law",    icon: Scale,         color: "text-amber-400"   },
+            { href: "/wizard",      label: "Move My App",    desc: "Leave Replit/Heroku",  icon: Wand2,         color: "text-emerald-400" },
+            { href: "/app-hub",     label: "Deploy Apps",    desc: "Push to server",       icon: Layers,        color: "text-orange-400"  },
+            { href: "/game-tools",  label: "Game Design",    desc: "Build game docs",      icon: Swords,        color: "text-pink-400"    },
           ].map(({ href, label, desc, icon: Icon, color }) => (
             <Link key={href} href={href}>
               <div className="flex flex-col items-center gap-1.5 p-3 rounded-xl border border-border bg-card hover:border-primary/40 hover:bg-primary/5 transition-all cursor-pointer group text-center h-full">
-                <Icon size={20} className={`${color} group-hover:scale-110 transition-transform mt-1`} />
+                <Icon size={18} className={`${color} group-hover:scale-110 transition-transform mt-1`} />
                 <span className="text-[11px] font-semibold text-foreground/80 group-hover:text-foreground transition-colors leading-tight">{label}</span>
                 <span className="text-[10px] text-muted-foreground leading-tight">{desc}</span>
               </div>
