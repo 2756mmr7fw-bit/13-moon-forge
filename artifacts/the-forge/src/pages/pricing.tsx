@@ -1,4 +1,4 @@
-import { Flame, Zap, Rocket, Check, RotateCcw, ExternalLink, MonitorPlay, Monitor, Swords, Sparkles, Code2, GraduationCap, Scale, ArrowRight } from "lucide-react";
+import { Flame, Zap, Rocket, Check, RotateCcw, ExternalLink, MonitorPlay, Monitor, Swords, Sparkles, Code2, GraduationCap, Scale, ArrowRight, Server, GitBranch, Package, KeyRound, ArrowRightLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Link } from "wouter";
@@ -96,11 +96,12 @@ const tools = [
 ];
 
 const competitors = [
-  { name: "Geek Squad (1 visit)",  price: "$100–200",  note: "one problem, one visit, no follow-up" },
-  { name: "ChatGPT Plus",          price: "$20/mo",    note: "1 general AI, no screen watching"     },
-  { name: "Sintra AI",             price: "$97/mo",    note: "12 assistants, 250 credits"           },
-  { name: "Forge Basic",           price: "$7/mo",     note: "all 8 tools, 150 messages/mo",   highlight: true },
-  { name: "Forge Pro",             price: "$17/mo",    note: "all 8 tools, 500 messages/mo",   highlight: true },
+  { name: "Geek Squad (1 visit)",  price: "$100–200",  note: "one problem, one visit, no follow-up"        },
+  { name: "ChatGPT Plus",          price: "$20/mo",    note: "1 general AI, no screen watching"            },
+  { name: "Sintra AI",             price: "$97/mo",    note: "12 assistants, 250 credits"                  },
+  { name: "Forge Host",            price: "$5/mo",     note: "self-hosting tools, no AI messages needed", highlight: true },
+  { name: "Forge Basic",           price: "$7/mo",     note: "all 8 AI tools, 150 messages/mo",         highlight: true },
+  { name: "Forge Pro",             price: "$17/mo",    note: "all 8 AI tools, 500 messages/mo",         highlight: true },
 ];
 
 const refillPacks = [
@@ -196,6 +197,70 @@ export default function Pricing() {
             </div>
           );
         })}
+      </div>
+
+      {/* Hosting-only plan */}
+      <div className="rounded-2xl border-2 border-emerald-500/40 bg-emerald-950/20 p-6 md:p-8">
+        <div className="flex flex-col md:flex-row md:items-center gap-6">
+
+          {/* Left: info */}
+          <div className="flex-1 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-emerald-500/20 shrink-0">
+                <Server size={18} className="text-emerald-400" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-black text-lg leading-none">Forge Host</h3>
+                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 uppercase tracking-wider">
+                    No AI needed
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground mt-0.5">Just want to self-host your apps? This is your plan.</p>
+              </div>
+            </div>
+
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Full access to the Sovereign Stack tools — deploy apps, manage your registry, connect to your own server, and store secrets — without paying for AI credits you won't use.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {[
+                { icon: ArrowRightLeft, label: "Migration Wizard — leave Replit/Heroku" },
+                { icon: Package,        label: "App Hub — deploy to your own server"    },
+                { icon: GitBranch,      label: "GitHub & Registry integration"          },
+                { icon: KeyRound,       label: "Secrets Vault — encrypted key storage"  },
+                { icon: Server,         label: "Sovereign Stack full guide"             },
+                { icon: Monitor,        label: "App Health Monitor"                     },
+              ].map(({ icon: Icon, label }) => (
+                <div key={label} className="flex items-center gap-2 text-sm">
+                  <Icon size={13} className="text-emerald-400 shrink-0" />
+                  <span className="text-muted-foreground">{label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Right: price + CTA */}
+          <div className="flex flex-col items-center gap-4 md:min-w-[180px] text-center">
+            <div>
+              <div className="flex items-end justify-center gap-1">
+                <span className="text-5xl font-black text-emerald-400">$5</span>
+                <span className="text-sm text-muted-foreground mb-2">/ month</span>
+              </div>
+              <p className="text-xs text-emerald-400 font-semibold">No AI messages included</p>
+            </div>
+            <Button
+              className="w-full gap-2 border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/10"
+              variant="outline"
+              onClick={() => window.open(`${TOWN_SQUARE_BASE}/checkout/host?ref=forge`, "_blank")}
+            >
+              Get Forge Host <ArrowRight size={14} />
+            </Button>
+            <p className="text-[11px] text-muted-foreground">Billed monthly · Cancel anytime</p>
+          </div>
+
+        </div>
       </div>
 
       {/* Everything included */}
