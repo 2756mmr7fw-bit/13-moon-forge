@@ -17,7 +17,7 @@ export default function NotFound() {
         </p>
       </div>
 
-      <Link href="/">
+      <Link href="/dashboard">
         <Button size="lg" className="mt-4">
           <ArrowLeft className="w-4 h-4 mr-2" /> Return to the Anvil
         </Button>

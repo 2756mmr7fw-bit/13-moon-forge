@@ -1,0 +1,26 @@
+{
+  "name": "13 Moon Forge",
+  "short_name": "Forge",
+  "description": "Your personal AI tech team. Fix computers, build apps, learn anything — right in your browser.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1a1a",
+  "theme_color": "#e8611a",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["productivity", "utilities", "education"],
+  "lang": "en-US"
+}
