@@ -20,6 +20,8 @@ import computerAdvisorRouter from "./computer-advisor";
 import screenCoachRouter from "./screen-coach";
 import quotaRouter from "./quota";
 import siteForgeRouter from "./site-forge";
+import landingForgeRouter from "./landing-forge";
+import computerFixRouter from "./computer-fix";
 
 const router: IRouter = Router();
 
@@ -44,5 +46,7 @@ router.use(computerAdvisorRouter);
 router.use(screenCoachRouter);
 router.use(quotaRouter);
 router.use(siteForgeRouter);
+router.use(landingForgeRouter);
+router.use(computerFixRouter);
 
 export default router;

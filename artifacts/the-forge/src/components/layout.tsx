@@ -52,6 +52,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   ];
 
   const toolItems: NavItem[] = [
+    { href: "/fix",        label: "Computer Fix",         icon: Wrench,        tip: "Flint diagnoses your computer problem first — $19 one-time fix, no subscription" },
     { href: "/site-forge", label: "Site Forge",          icon: Globe,         tip: "Build a professional business website in 60 seconds — yours forever" },
     { href: "/sage",       label: "Learn with Sage",     icon: GraduationCap, tip: "Step-by-step AI tutor — learn anything at your pace" },
     { href: "/hawk",       label: "Ask Hawk",            icon: Crosshair,     tip: "Get quick answers about your project or code"         },
