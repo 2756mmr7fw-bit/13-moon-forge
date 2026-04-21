@@ -21,6 +21,7 @@ import GameDoc from "@/pages/game-doc";
 import SnippetVault from "@/pages/snippet-vault";
 import GameDesignTools from "@/pages/game-design-tools";
 import GameStudio from "@/pages/game-studio";
+import ComputerAdvisor from "@/pages/computer-advisor";
 import LaunchKit from "@/pages/launch-kit";
 import LegalDecoder from "@/pages/legal-decoder";
 import LearnWithSage from "@/pages/learn-sage";
@@ -178,6 +179,7 @@ function Router() {
                   <Route path="/snippets" component={SnippetVault} />
                   <Route path="/game-tools" component={GameDesignTools} />
                   <Route path="/game-studio" component={GameStudio} />
+                  <Route path="/computer-advisor" component={ComputerAdvisor} />
                   <Route path="/launch" component={LaunchKit} />
                   <Route path="/legal" component={LegalDecoder} />
                   <Route path="/sage" component={LearnWithSage} />

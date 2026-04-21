@@ -16,6 +16,7 @@ import { router as adminRouter } from "./admin";
 import connectionsRouter from "./connections";
 import coolifyRouter from "./coolify";
 import monitorRouter from "./monitor";
+import computerAdvisorRouter from "./computer-advisor";
 
 const router: IRouter = Router();
 
@@ -36,5 +37,6 @@ router.use(adminRouter);
 router.use(connectionsRouter);
 router.use(coolifyRouter);
 router.use(monitorRouter);
+router.use(computerAdvisorRouter);
 
 export default router;
