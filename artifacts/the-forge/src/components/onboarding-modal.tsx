@@ -36,7 +36,7 @@ const PATHS = [
     bg: "bg-sky-900/10 hover:bg-sky-900/20",
     title: "Explore the tools",
     body: "I want to see what Forge can do — legal decoder, code gen, game docs, sovereign stack, and more.",
-    cta: "Open the Anvil",
+    cta: "Take me to the dashboard",
     href: "/",
   },
 ];
