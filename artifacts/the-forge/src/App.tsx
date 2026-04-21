@@ -40,6 +40,7 @@ import AdminPanel from "@/pages/admin";
 import Connections from "@/pages/connections";
 import Monitor from "@/pages/monitor";
 import Landing from "@/pages/landing";
+import SiteForge from "@/pages/site-forge";
 import { ProtectedRoute } from "@/components/protected-route";
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
@@ -199,6 +200,7 @@ function Router() {
                   <Route path="/secrets" component={SecretsVault} />
                   <Route path="/connections" component={Connections} />
                   <Route path="/monitor" component={Monitor} />
+                  <Route path="/site-forge" component={SiteForge} />
                   <Route path="/admin" component={AdminPanel} />
                   <Route component={NotFound} />
                 </Switch>
