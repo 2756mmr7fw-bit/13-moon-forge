@@ -6,11 +6,137 @@ import { Label } from "@/components/ui/label";
 import {
   Globe, Download, Eye, Code2, CheckCircle2,
   ArrowRight, ExternalLink, Server, Zap,
-  ChevronDown, ChevronRight, Sparkles, Layers,
+  ChevronDown, ChevronRight, Sparkles, Layers, Tag,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@clerk/react";
 import { Link } from "wouter";
+
+const HOSTING_PROVIDERS = [
+  {
+    category: "Free Static Hosting",
+    subtitle: "Perfect for most business websites — no server, no bill",
+    color: "border-emerald-500/30 bg-emerald-950/10",
+    labelColor: "text-emerald-400 bg-emerald-400/10 border-emerald-400/30",
+    providers: [
+      {
+        name: "Cloudflare Pages",
+        price: "Free",
+        note: "Unlimited bandwidth · 500 deploys/mo · HTTPS included",
+        best: "Best overall",
+        url: "https://pages.cloudflare.com",
+      },
+      {
+        name: "Netlify",
+        price: "Free",
+        note: "100GB bandwidth/mo · Form submissions · Easy drag-and-drop upload",
+        best: "Great for forms",
+        url: "https://netlify.com",
+      },
+      {
+        name: "Vercel",
+        price: "Free",
+        note: "100GB bandwidth/mo · Instant deploys · Fast global CDN",
+        best: "Fastest CDN",
+        url: "https://vercel.com",
+      },
+    ],
+  },
+  {
+    category: "Budget VPS (You Control the Server)",
+    subtitle: "Need bookings, e-commerce, or a database? Start here.",
+    color: "border-blue-500/30 bg-blue-950/10",
+    labelColor: "text-blue-400 bg-blue-400/10 border-blue-400/30",
+    providers: [
+      {
+        name: "Hetzner",
+        price: "From $4/mo",
+        note: "CX11 — 2 vCPU, 2GB RAM, 20GB SSD · Best value on the market",
+        best: "Best value",
+        url: "https://hetzner.com/cloud",
+      },
+      {
+        name: "Vultr",
+        price: "From $2.50/mo",
+        note: "1 vCPU, 512MB RAM, 10GB SSD · Cheapest entry-level server",
+        best: "Cheapest VPS",
+        url: "https://vultr.com",
+      },
+      {
+        name: "DigitalOcean",
+        price: "From $6/mo",
+        note: "Droplets — 1 vCPU, 1GB RAM · Beginner-friendly dashboard",
+        best: "Easiest to use",
+        url: "https://digitalocean.com",
+      },
+      {
+        name: "Linode (Akamai)",
+        price: "From $5/mo",
+        note: "Nanode — 1 vCPU, 1GB RAM, 25GB SSD · Solid reliability",
+        best: "Reliable",
+        url: "https://linode.com",
+      },
+    ],
+  },
+  {
+    category: "Managed Shared Hosting",
+    subtitle: "They manage the server for you — easier but less control",
+    color: "border-amber-500/30 bg-amber-950/10",
+    labelColor: "text-amber-400 bg-amber-400/10 border-amber-400/30",
+    providers: [
+      {
+        name: "Namecheap Hosting",
+        price: "From $1.98/mo",
+        note: "Shared hosting with cPanel · Good for WordPress · First year promo price",
+        best: "Cheapest managed",
+        url: "https://namecheap.com/hosting/shared",
+      },
+      {
+        name: "SiteGround",
+        price: "From $2.99/mo",
+        note: "Fast shared hosting · Great WordPress support · Free SSL",
+        best: "WordPress friendly",
+        url: "https://siteground.com",
+      },
+      {
+        name: "GoDaddy",
+        price: "From $5.99/mo",
+        note: "Most recognized name · Easy setup · Watch for upsells at checkout",
+        best: "Most recognized",
+        url: "https://godaddy.com/hosting/web-hosting",
+      },
+    ],
+  },
+  {
+    category: "Domain Names (you need this too)",
+    subtitle: "Buy once a year — your address on the internet",
+    color: "border-violet-500/30 bg-violet-950/10",
+    labelColor: "text-violet-400 bg-violet-400/10 border-violet-400/30",
+    providers: [
+      {
+        name: "Namecheap",
+        price: "$8–12/yr",
+        note: ".com domains · Free WhoisGuard privacy · No aggressive upsells",
+        best: "Best for domains",
+        url: "https://namecheap.com",
+      },
+      {
+        name: "Cloudflare Registrar",
+        price: "$8–10/yr",
+        note: "At-cost pricing — no markup · Free privacy · Works with Cloudflare Pages",
+        best: "No markup",
+        url: "https://cloudflare.com/products/registrar",
+      },
+      {
+        name: "GoDaddy",
+        price: "$12–20/yr",
+        note: "Very well known · First year often cheap — renews higher · Watch upsells",
+        best: "Most popular",
+        url: "https://godaddy.com/domains",
+      },
+    ],
+  },
+];
 
 const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -216,9 +342,60 @@ export default function SiteForge() {
         )}
       </div>
 
+      {/* ─── HOSTING COMPARISON ───────────────────────────────────────────────── */}
+      {phase === "form" && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Tag size={15} className="text-muted-foreground" />
+            <h2 className="font-black text-base">Step 1 — Pick Your Host</h2>
+            <span className="text-xs text-muted-foreground">(open any link, sign up, come back and build your site)</span>
+          </div>
+
+          <div className="space-y-4">
+            {HOSTING_PROVIDERS.map((group) => (
+              <div key={group.category} className={cn("rounded-xl border p-4 space-y-3", group.color)}>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="font-bold text-sm">{group.category}</h3>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5">{group.subtitle}</p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                  {group.providers.map((p) => (
+                    <a
+                      key={p.name}
+                      href={p.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex flex-col gap-1.5 rounded-lg border border-border/50 bg-background/60 hover:bg-background p-3 transition-colors group"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <span className="font-semibold text-sm leading-tight">{p.name}</span>
+                        <ExternalLink size={11} className="text-muted-foreground shrink-0 mt-0.5 group-hover:text-foreground transition-colors" />
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-base font-black text-foreground">{p.price}</span>
+                        <span className={cn("text-[10px] font-bold px-1.5 py-0.5 rounded-full border", group.labelColor)}>
+                          {p.best}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground leading-snug">{p.note}</p>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* ─── FORM ──────────────────────────────────────────────────────────────── */}
       {phase === "form" && (
         <div className="space-y-6">
+          <div className="flex items-center gap-2">
+            <Globe size={15} className="text-muted-foreground" />
+            <h2 className="font-black text-base">Step 2 — Tell Us About Your Business</h2>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2 space-y-1.5">
               <Label htmlFor="bname" className="text-sm font-semibold">
