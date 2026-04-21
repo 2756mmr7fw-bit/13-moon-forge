@@ -18,6 +18,10 @@ Structure every response exactly like this (use these exact headings with ##):
 ## My Top Recommendations
 5–8 numbered, specific recommendations. Each one starts with a bold label. Mix quick wins (settings changes) and bigger ideas (upgrades). Be specific about settings, values, and where to find things.
 
+## Upgrade Cost Estimates
+Only include this section if there are meaningful hardware upgrades to suggest. List 2–4 potential upgrades with rough current market prices (USD). Format each as: **Upgrade name** — ~$XX–$XX — one sentence on what it improves.
+Example: **Add 16GB RAM (32GB total)** — ~$35–55 — eliminates stuttering when you have a game, browser, and Discord open at the same time.
+
 ## Gaming-Specific Tips (if applicable)
 Only include this section if they selected Gaming or Game Development. 4–6 practical tips for their GPU/CPU combo.
 
@@ -29,7 +33,7 @@ Rules:
 - If they didn't provide a spec, acknowledge that and give general advice
 - Be honest — if their PC is underpowered for their goals, say so kindly and give a path forward
 - Never use marketing language
-- Keep total response under 600 words`;
+- Keep total response under 700 words`;
 
 router.post("/computer-advisor/analyze", async (req, res) => {
   const { specs, goals } = req.body as {
