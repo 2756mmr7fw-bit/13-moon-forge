@@ -1,140 +1,133 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import {
   Flame, FolderKanban, PlusCircle, CreditCard, ExternalLink,
-  Sparkles, Code2, Wrench, BookOpen, Archive, Gamepad2, Rocket, Scale,
-  GraduationCap, Crosshair, ArrowRightLeft, Layers, Wand2, LogOut, Shield, Github, Package,
-  User, LogIn, Menu, X, Settings, KeyRound, ShieldAlert, PlugZap, Activity,
+  Sparkles, Code2, Wand2, Layers, Scale, Crosshair, Activity,
+  GraduationCap, ArrowRightLeft, Wrench, BookOpen, Archive, Gamepad2, Rocket, LogOut,
+  Shield, Github, Package, User, LogIn, Menu, X, Settings, KeyRound, ShieldAlert, PlugZap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LogoMark, LogoWordmark } from "@/components/logo";
-import { ThirteenMoonsBadge } from "@/components/ThirteenMoonsBadge";
 import { OnboardingModal } from "@/components/onboarding-modal";
 import { useUser, useClerk, useAuth, Show } from "@clerk/react";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { useQuery } from "@tanstack/react-query";
+
+const OUR_APPS_URL = "https://thepeoplestownsq.com";
+
+interface NavItem {
+  href: string;
+  label: string;
+  icon: React.ComponentType<{ size: number }>;
+  tip: string;
+}
 
 const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-function useIsAdmin() {
-  const { getToken, isSignedIn } = useAuth();
-  const { data } = useQuery<{ isAdmin: boolean }>({
-    queryKey: ["admin-check"],
-    enabled: !!isSignedIn,
-    staleTime: 5 * 60 * 1000,
-    queryFn: async () => {
-      const token = await getToken();
-      const r = await fetch(`${API_BASE}/api/admin/check`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      return r.json();
-    },
-  });
-  return data?.isAdmin ?? false;
-}
-
-const OUR_APPS_URL = "https://thepeoplestownsq.com/our-apps";
-const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
-
-function UserPanel({ onNavigate }: { onNavigate?: () => void }) {
-  const { user, isLoaded } = useUser();
-  const { signOut } = useClerk();
-
-  if (!isLoaded) return null;
-
-  return (
-    <Show when="signed-in">
-      <div className="flex items-center gap-2 px-3 py-2 rounded-md border border-border/50 bg-muted/20">
-        {user?.imageUrl ? (
-          <img src={user.imageUrl} alt={user.fullName ?? ""} className="w-7 h-7 rounded-full shrink-0" />
-        ) : (
-          <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-            <User size={13} className="text-primary" />
-          </div>
-        )}
-        <div className="flex-1 min-w-0">
-          <p className="text-xs font-semibold truncate">{user?.firstName ?? user?.username ?? "Builder"}</p>
-          <p className="text-[10px] text-muted-foreground truncate">{user?.primaryEmailAddress?.emailAddress}</p>
-        </div>
-        <div className="flex items-center gap-1 shrink-0">
-          <Link
-            href="/account"
-            onClick={onNavigate}
-            title="Account settings"
-            className="text-muted-foreground hover:text-foreground transition-colors p-0.5"
-          >
-            <Settings size={13} />
-          </Link>
-          <button
-            onClick={() => signOut({ redirectUrl: `${basePath}/` })}
-            title="Sign out"
-            className="text-muted-foreground hover:text-foreground transition-colors p-0.5"
-          >
-            <LogOut size={13} />
-          </button>
-        </div>
-      </div>
-    </Show>
-  );
-}
-
 export function Layout({ children }: { children: React.ReactNode }) {
-  const [location] = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const isAdmin = useIsAdmin();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const { user } = useUser();
+  const { signOut } = useClerk();
+  const { getToken } = useAuth();
+  const location = useLocation()[0];
 
-  const builderItems = [
-    { href: "/", label: "The Anvil", icon: Flame },
-    { href: "/projects", label: "My Projects", icon: FolderKanban },
-    { href: "/projects/new", label: "New Creation", icon: PlusCircle },
-    { href: "/brainstorm", label: "Brainstorm", icon: Sparkles },
+  useEffect(() => {
+    (async () => {
+      try {
+        const token = await getToken();
+        const r = await fetch(`${API_BASE}/api/admin/check`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (r.ok) { const d = await r.json() as { isAdmin: boolean }; setIsAdmin(d.isAdmin); }
+      } catch { /* not admin or not logged in */ }
+    })();
+  }, [getToken]);
+
+  // ── Navigation items ──────────────────────────────────────────────────────
+
+  const builderItems: NavItem[] = [
+    { href: "/",             label: "Home",             icon: Flame,        tip: "Your dashboard — projects, stats, quick actions" },
+    { href: "/projects",     label: "My Projects",      icon: FolderKanban, tip: "View and manage all your projects"              },
+    { href: "/projects/new", label: "New Project",      icon: PlusCircle,   tip: "Start a brand-new project from scratch"         },
+    { href: "/brainstorm",   label: "Brainstorm",        icon: Sparkles,     tip: "AI helps you flesh out and plan your idea"      },
   ];
 
-  const toolItems = [
-    { href: "/sage",        label: "Learn with Sage",   icon: GraduationCap },
-    { href: "/hawk",        label: "Ask Hawk",          icon: Crosshair },
-    { href: "/tools",       label: "Forge Tools",       icon: Wrench },
-    { href: "/code-forge",  label: "Code Forge",        icon: Code2 },
-    { href: "/game-doc",    label: "Game Doc Builder",  icon: BookOpen },
-    { href: "/game-tools",  label: "Game Design Tools", icon: Gamepad2 },
-    { href: "/launch",      label: "Launch Kit",        icon: Rocket },
-    { href: "/legal",       label: "Legal Decoder",     icon: Scale },
-    { href: "/snippets",    label: "Snippet Vault",     icon: Archive },
+  const toolItems: NavItem[] = [
+    { href: "/sage",       label: "Learn with Sage",     icon: GraduationCap, tip: "Step-by-step AI tutor — learn anything at your pace" },
+    { href: "/hawk",       label: "Ask Hawk",            icon: Crosshair,     tip: "Get quick answers about your project or code"         },
+    { href: "/tools",      label: "AI Tools",            icon: Wrench,        tip: "A collection of AI-powered builder utilities"         },
+    { href: "/code-forge", label: "Write Code",          icon: Code2,         tip: "Generate, explain, and improve code with AI"          },
+    { href: "/game-doc",   label: "Game Docs",           icon: BookOpen,      tip: "Build design documents for your game"                 },
+    { href: "/game-tools", label: "Game Design",         icon: Gamepad2,      tip: "AI tools for game mechanics, lore, and balance"       },
+    { href: "/launch",     label: "Launch Checklist",    icon: Rocket,        tip: "Make sure your app is ready to ship"                  },
+    { href: "/legal",      label: "Legal Explainer",     icon: Scale,         tip: "Translate legal terms into plain English"             },
+    { href: "/snippets",   label: "Saved Snippets",      icon: Archive,       tip: "Your personal library of reusable code pieces"        },
   ];
 
-  const selfHostItems = [
-    { href: "/github",      label: "Code Sources",      icon: Github },
-    { href: "/wizard",      label: "Migration Wizard",  icon: Wand2 },
-    { href: "/migration",   label: "Migration Hub",     icon: ArrowRightLeft },
-    { href: "/leaving",     label: "Escape Routes",     icon: LogOut },
-    { href: "/sovereign",   label: "Sovereign Stack",   icon: Shield },
-    { href: "/app-hub",     label: "App Hub",           icon: Layers },
-    { href: "/registry",    label: "App Registry",      icon: Package },
-    { href: "/secrets",     label: "Secrets Vault",     icon: KeyRound },
-    { href: "/monitor",     label: "App Monitor",        icon: Activity },
-    { href: "/connections", label: "Connections",        icon: PlugZap },
+  const selfHostItems: NavItem[] = [
+    { href: "/github",     label: "GitHub",              icon: Github,          tip: "Connect your GitHub repositories"                                  },
+    { href: "/wizard",     label: "Move My App",         icon: Wand2,           tip: "Step-by-step wizard to move your app off Replit, Heroku, or Render" },
+    { href: "/migration",  label: "Migration Status",    icon: ArrowRightLeft,  tip: "Check the progress of an ongoing migration"                        },
+    { href: "/leaving",    label: "Leaving Replit/Heroku",icon: LogOut,         tip: "Guides for escaping cloud platforms to your own server"            },
+    { href: "/sovereign",  label: "Self-Hosting Guide",  icon: Shield,          tip: "The 13-point standard for truly owning your stack"                 },
+    { href: "/app-hub",    label: "Deploy Apps",         icon: Layers,          tip: "Deploy apps to your Coolify server with one click"                 },
+    { href: "/registry",   label: "App Directory",       icon: Package,         tip: "Browse and submit self-hostable open-source apps"                  },
+    { href: "/secrets",    label: "API Keys",            icon: KeyRound,        tip: "Securely store passwords, API keys, and tokens"                    },
+    { href: "/monitor",    label: "App Health",          icon: Activity,        tip: "Live status of your running apps and infrastructure"               },
+    { href: "/connections",label: "Integrations",        icon: PlugZap,         tip: "Connect third-party services to the Forge"                        },
   ];
 
   const isActive = (href: string) =>
     location === href || (href !== "/" && location.startsWith(href));
 
-  const NavLink = ({
-    href, label, icon: Icon, onClick,
-  }: { href: string; label: string; icon: React.ComponentType<{ size: number }>; onClick?: () => void }) => (
+  const NavLink = ({ href, label, icon: Icon, tip, onClick }: NavItem & { onClick?: () => void }) => (
     <Link
       href={href}
       onClick={onClick}
+      title={tip}
       className={cn(
-        "flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200",
+        "flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 group",
         isActive(href)
           ? "bg-primary/10 text-primary font-medium"
           : "text-muted-foreground hover:text-foreground hover:bg-muted"
       )}
     >
       <Icon size={18} />
-      {label}
+      <span className="flex-1 text-sm leading-tight">{label}</span>
     </Link>
   );
+
+  // ── User panel ─────────────────────────────────────────────────────────────
+
+  const UserPanel = ({ onNavigate }: { onNavigate?: () => void }) => (
+    <Show when="signed-in">
+      <div className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted transition-colors">
+        {user?.imageUrl
+          ? <img src={user.imageUrl} alt="" className="w-8 h-8 rounded-full" />
+          : <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center"><User size={14} className="text-primary" /></div>
+        }
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-semibold truncate">{user?.firstName ?? user?.username ?? "My Account"}</p>
+          <p className="text-[10px] text-muted-foreground truncate">{user?.emailAddresses?.[0]?.emailAddress}</p>
+        </div>
+        <div className="flex items-center gap-1">
+          <Link href="/account" onClick={onNavigate} title="Account settings">
+            <button className="p-1.5 rounded hover:bg-muted-foreground/20 transition-colors">
+              <Settings size={13} className="text-muted-foreground" />
+            </button>
+          </Link>
+          <button
+            onClick={() => signOut()}
+            title="Sign out"
+            className="p-1.5 rounded hover:bg-muted-foreground/20 transition-colors"
+          >
+            <LogOut size={13} className="text-muted-foreground" />
+          </button>
+        </div>
+      </div>
+    </Show>
+  );
+
+  // ── Sidebar content ────────────────────────────────────────────────────────
 
   const SidebarContent = ({ onClose }: { onClose?: () => void }) => (
     <>
@@ -144,48 +137,54 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </Link>
       </div>
 
-      <nav className="flex-1 px-4 pt-2 overflow-y-auto">
-        <div className="space-y-1">
+      <nav className="flex-1 px-4 pt-2 overflow-y-auto space-y-1">
+
+        {/* Builder */}
+        <div className="space-y-0.5">
           {builderItems.map(item => <NavLink key={item.href} {...item} onClick={onClose} />)}
         </div>
 
-        <div className="mt-4 mb-2 px-3">
-          <p className="text-[10px] font-bold tracking-widest text-muted-foreground/60 uppercase">Creator Tools</p>
+        {/* AI Tools */}
+        <div className="pt-4 pb-1 px-3">
+          <p className="text-[10px] font-bold tracking-widest text-muted-foreground/50 uppercase">AI Tools</p>
         </div>
-        <div className="space-y-1">
+        <div className="space-y-0.5">
           {toolItems.map(item => <NavLink key={item.href} {...item} onClick={onClose} />)}
         </div>
 
-        <div className="mt-4 mb-2 px-3">
-          <p className="text-[10px] font-bold tracking-widest text-muted-foreground/60 uppercase">Self-Host</p>
+        {/* Own Your Apps */}
+        <div className="pt-4 pb-1 px-3">
+          <p className="text-[10px] font-bold tracking-widest text-muted-foreground/50 uppercase">Own Your Apps</p>
         </div>
-        <div className="space-y-1">
+        <div className="space-y-0.5">
           {selfHostItems.map(item => <NavLink key={item.href} {...item} onClick={onClose} />)}
         </div>
 
-        <div className="mt-4 space-y-1">
-          <NavLink href="/pricing" label="Upgrade" icon={CreditCard} onClick={onClose} />
+        {/* Bottom links */}
+        <div className="pt-4 space-y-0.5">
+          <NavLink href="/pricing" label="Upgrade Plan" icon={CreditCard} tip="See subscription options and upgrade" onClick={onClose} />
           <a
             href={OUR_APPS_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 text-muted-foreground hover:text-foreground hover:bg-muted"
+            title="Visit our other apps at thepeoplestownsq.com"
+            className="flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 text-muted-foreground hover:text-foreground hover:bg-muted text-sm"
           >
             <ExternalLink size={18} />
-            Our Apps
+            Our Other Apps
           </a>
-          <Show when="signed-out">
+          <Show>
             <Link
               href="/sign-in"
               onClick={onClose}
-              className="flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 text-muted-foreground hover:text-foreground hover:bg-muted"
+              className="flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 text-muted-foreground hover:text-foreground hover:bg-muted text-sm"
             >
               <LogIn size={18} />
               Sign In
             </Link>
           </Show>
           {isAdmin && (
-            <NavLink href="/admin" label="Admin Panel" icon={ShieldAlert} onClick={onClose} />
+            <NavLink href="/admin" label="Admin Panel" icon={ShieldAlert} tip="Review and manage app registry submissions" onClick={onClose} />
           )}
         </div>
       </nav>
@@ -200,7 +199,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <Flame size={64} />
           </div>
           <p className="text-sm font-medium text-accent-foreground relative z-10 italic mb-2">
-            "Ideas are free. Building is where the work starts. Let's get to work."
+            "Ideas are free. Building is where the work starts."
           </p>
           <p className="text-xs text-muted-foreground relative z-10">— Forge, Moon #3</p>
         </div>
@@ -217,80 +216,52 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <SidebarContent />
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col min-w-0">
-        {/* Mobile Header */}
-        <header className="md:hidden border-b border-border bg-sidebar px-4 py-3 flex items-center justify-between gap-3">
-          <Link href="/">
-            <LogoMark size={30} />
-          </Link>
+      {/* Mobile header */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 py-3 bg-background/95 backdrop-blur border-b border-border">
+        <Link href="/">
+          <LogoMark size={28} />
+        </Link>
+        <button
+          onClick={() => setMobileOpen(true)}
+          className="p-2 rounded-md hover:bg-muted transition-colors"
+          aria-label="Open menu"
+        >
+          <Menu size={20} />
+        </button>
+      </div>
 
-          <div className="flex items-center gap-2 ml-auto">
-            <Show when="signed-in">
-              <UserPanelMobile />
-            </Show>
-            <Show when="signed-out">
-              <Link
-                href="/sign-in"
-                className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
-              >
-                <LogIn size={14} /> Sign In
-              </Link>
-            </Show>
+      {/* Mobile drawer */}
+      {mobileOpen && (
+        <div
+          className="md:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+          onClick={() => setMobileOpen(false)}
+        >
+          <aside
+            className="absolute left-0 top-0 bottom-0 w-72 bg-sidebar border-r border-border flex flex-col overflow-y-auto"
+            onClick={e => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setMobileOpen(false)}
+              className="absolute top-4 right-4 p-2 rounded-md hover:bg-muted transition-colors"
+              aria-label="Close menu"
+            >
+              <X size={18} />
+            </button>
+            <SidebarContent onClose={() => setMobileOpen(false)} />
+          </aside>
+        </div>
+      )}
 
-            <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-              <SheetTrigger asChild>
-                <button
-                  className="p-2 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-                  aria-label="Open menu"
-                >
-                  {mobileOpen ? <X size={20} /> : <Menu size={20} />}
-                </button>
-              </SheetTrigger>
-              <SheetContent side="left" className="p-0 w-72 bg-sidebar border-border flex flex-col">
-                <SidebarContent onClose={() => setMobileOpen(false)} />
-              </SheetContent>
-            </Sheet>
-          </div>
-        </header>
-
-        <div className="flex-1 overflow-auto flex flex-col">
-          <div className="flex-1 p-4 md:p-8 lg:p-10">
+      {/* Main content */}
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-4 md:p-8 pt-16 md:pt-8">
             <div className="max-w-6xl mx-auto">
               {children}
             </div>
           </div>
-
-          {/* Footer */}
-          <footer className="border-t border-border px-4 md:px-8 lg:px-10">
-            <div className="max-w-6xl mx-auto flex items-center gap-3 py-6 text-sm text-muted-foreground">
-              <a href="https://thepeoplestownsq.com" aria-label="13 Moons — Sovereign Digital">
-                <ThirteenMoonsBadge size={40} />
-              </a>
-              <div>
-                <div className="font-semibold tracking-wide">Sealed by 13 Moons</div>
-                <div className="text-xs opacity-70">Sovereign Digital LLC · Member of the 13 Moons Network</div>
-              </div>
-            </div>
-          </footer>
         </div>
       </main>
     </div>
-  );
-}
-
-function UserPanelMobile() {
-  const { user } = useUser();
-  return (
-    <Link href="/account" className="flex items-center gap-1.5">
-      {user?.imageUrl ? (
-        <img src={user.imageUrl} alt="" className="w-6 h-6 rounded-full" />
-      ) : (
-        <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
-          <User size={12} className="text-primary" />
-        </div>
-      )}
-      <span className="text-xs font-medium truncate max-w-[80px]">{user?.firstName ?? "Account"}</span>
-    </Link>
   );
 }
