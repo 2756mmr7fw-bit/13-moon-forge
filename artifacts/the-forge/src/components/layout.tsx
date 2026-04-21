@@ -4,7 +4,7 @@ import {
   Flame, FolderKanban, PlusCircle, CreditCard, ExternalLink,
   Sparkles, Code2, Wand2, Layers, Scale, Crosshair, Activity,
   GraduationCap, ArrowRightLeft, Wrench, BookOpen, Archive, Gamepad2, Rocket, LogOut,
-  Shield, Github, Package, User, LogIn, Menu, X, Settings, KeyRound, ShieldAlert, PlugZap, Swords,
+  Shield, Github, Package, User, LogIn, Menu, X, Settings, KeyRound, ShieldAlert, PlugZap, Swords, Monitor,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LogoMark, LogoWordmark } from "@/components/logo";
@@ -58,7 +58,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/code-forge", label: "Write Code",          icon: Code2,         tip: "Generate, explain, and improve code with AI"          },
     { href: "/game-doc",    label: "Game Docs",           icon: BookOpen,      tip: "Build design documents for your game"                 },
     { href: "/game-tools",  label: "Game Design",        icon: Gamepad2,      tip: "AI tools for game mechanics, lore, and balance"       },
-    { href: "/game-studio", label: "Game Studio",        icon: Swords,        tip: "Build a real game in Godot — right in your browser, AI-assisted" },
+    { href: "/game-studio",       label: "Game Studio",        icon: Swords,   tip: "Build a real game in Godot — right in your browser, AI-assisted" },
+    { href: "/computer-advisor",  label: "Computer Advisor",   icon: Monitor,  tip: "Get personalized tips for your PC — gaming, speed, and free software" },
     { href: "/launch",     label: "Launch Checklist",    icon: Rocket,        tip: "Make sure your app is ready to ship"                  },
     { href: "/legal",      label: "Legal Explainer",     icon: Scale,         tip: "Translate legal terms into plain English"             },
     { href: "/snippets",   label: "Saved Snippets",      icon: Archive,       tip: "Your personal library of reusable code pieces"        },
