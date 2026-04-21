@@ -45,7 +45,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   // ── Navigation items ──────────────────────────────────────────────────────
 
   const builderItems: NavItem[] = [
-    { href: "/",             label: "Home",             icon: Flame,        tip: "Your dashboard — projects, stats, quick actions" },
+    { href: "/dashboard",    label: "Home",             icon: Flame,        tip: "Your dashboard — projects, stats, quick actions" },
     { href: "/projects",     label: "My Projects",      icon: FolderKanban, tip: "View and manage all your projects"              },
     { href: "/projects/new", label: "New Project",      icon: PlusCircle,   tip: "Start a brand-new project from scratch"         },
     { href: "/brainstorm",   label: "Brainstorm",        icon: Sparkles,     tip: "AI helps you flesh out and plan your idea"      },
@@ -80,7 +80,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   ];
 
   const isActive = (href: string) =>
-    location === href || (href !== "/" && location.startsWith(href));
+    location === href || (href !== "/" && href !== "/dashboard" && location.startsWith(href)) || (href === "/dashboard" && location === "/dashboard");
 
   const NavLink = ({ href, label, icon: Icon, tip, onClick }: NavItem & { onClick?: () => void }) => (
     <Link
@@ -135,7 +135,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const SidebarContent = ({ onClose }: { onClose?: () => void }) => (
     <>
       <div className="p-5 pb-4">
-        <Link href="/" onClick={onClose}>
+        <Link href="/dashboard" onClick={onClose}>
           <LogoWordmark size={38} />
         </Link>
       </div>
@@ -221,7 +221,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       {/* Mobile header */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 py-3 bg-background/95 backdrop-blur border-b border-border">
-        <Link href="/">
+        <Link href="/dashboard">
           <LogoMark size={28} />
         </Link>
         <button
