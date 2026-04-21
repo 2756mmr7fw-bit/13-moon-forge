@@ -39,6 +39,7 @@ import SecretsVault from "@/pages/secrets-vault";
 import AdminPanel from "@/pages/admin";
 import Connections from "@/pages/connections";
 import Monitor from "@/pages/monitor";
+import Landing from "@/pages/landing";
 import { ProtectedRoute } from "@/components/protected-route";
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
@@ -157,6 +158,7 @@ function Router() {
     <Switch>
       <Route path="/sign-in/*?" component={SignInPage} />
       <Route path="/sign-up/*?" component={SignUpPage} />
+      <Route path="/" component={Landing} />
       <Route>
         <Layout>
           <Switch>
@@ -168,7 +170,7 @@ function Router() {
             <Route>
               <ProtectedRoute>
                 <Switch>
-                  <Route path="/" component={Dashboard} />
+                  <Route path="/dashboard" component={Dashboard} />
                   <Route path="/projects" component={Projects} />
                   <Route path="/projects/new" component={NewProject} />
                   <Route path="/projects/:id" component={ProjectDetail} />
