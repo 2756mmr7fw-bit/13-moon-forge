@@ -9,6 +9,7 @@ import { logger } from "./lib/logger";
 import { userIdMiddleware } from "./middlewares/userId";
 import { rateLimit } from "express-rate-limit";
 import { trackRequest, trackRlHit } from "./lib/trafficTracker";
+import { incrementUsage } from "./routes/quota";
 
 const app: Express = express();
 
@@ -91,6 +92,14 @@ app.use("/api", (req, res, next) => {
     seg === "monitor" ? "monitor" : "other";
   trackRequest(group);
   res.on("finish", () => { if (res.statusCode === 429) trackRlHit(); });
+  next();
+});
+
+// AI usage tracking — fire-and-forget increment on every POST to an AI route
+const AI_TRACKED_PATHS = ["/api/forge", "/api/flint", "/api/sage", "/api/hawk", "/api/moon",
+  "/api/screen-coach", "/api/computer-advisor/analyze"];
+app.use(AI_TRACKED_PATHS, (req, _res, next) => {
+  if (req.method === "POST") incrementUsage(req.userId).catch(() => {});
   next();
 });
 

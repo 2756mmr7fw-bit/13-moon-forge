@@ -4,14 +4,47 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  FileCode, CheckCircle2, Archive, ArrowRight, Loader2,
+  FileCode, CheckCircle2, ArrowRight, Loader2,
   Sparkles, Code2, Wand2, Layers, Scale, Crosshair,
   PlusCircle, FolderOpen, MonitorPlay, Monitor, Swords, GraduationCap,
+  Zap, TrendingUp,
 } from "lucide-react";
-import { useUser } from "@clerk/react";
+import { useUser, useAuth } from "@clerk/react";
+import { useEffect, useState } from "react";
+
+const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+interface QuotaData {
+  used: number;
+  limit: number;
+  remaining: number;
+  percent: number;
+  plan: string;
+  resetDate: string;
+}
+
+function useQuota() {
+  const { getToken } = useAuth();
+  const [quota, setQuota] = useState<QuotaData | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const token = await getToken();
+        const res = await fetch(`${API_BASE}/api/quota`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (res.ok) setQuota(await res.json() as QuotaData);
+      } catch { /* silent */ }
+    })();
+  }, [getToken]);
+
+  return quota;
+}
 
 export default function Dashboard() {
   const { user, isLoaded } = useUser();
+  const quota = useQuota();
   const { data: summary, isLoading: isLoadingSummary } = useGetDashboardSummary({
     query: { queryKey: getGetDashboardSummaryQueryKey() }
   });
@@ -35,12 +68,15 @@ export default function Dashboard() {
             What would you like to build today?
           </p>
         </div>
-        <Link href="/projects/new">
-          <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold gap-2">
-            <PlusCircle className="h-5 w-5" />
-            Start New Project
-          </Button>
-        </Link>
+        <div className="flex items-center gap-3">
+          {quota && <QuotaWidget quota={quota} />}
+          <Link href="/projects/new">
+            <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold gap-2">
+              <PlusCircle className="h-5 w-5" />
+              Start New Project
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Stats */}
@@ -192,6 +228,47 @@ export default function Dashboard() {
           </div>
         ) : (
           <EmptyProjects />
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Quota widget ─────────────────────────────────────────────────────────────
+
+function QuotaWidget({ quota }: { quota: QuotaData }) {
+  const barColor =
+    quota.percent >= 90 ? "bg-red-500" :
+    quota.percent >= 70 ? "bg-amber-400" :
+    "bg-primary";
+
+  const textColor =
+    quota.percent >= 90 ? "text-red-400" :
+    quota.percent >= 70 ? "text-amber-400" :
+    "text-muted-foreground";
+
+  const reset = new Date(quota.resetDate).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+  return (
+    <div className="flex flex-col gap-1.5 min-w-[160px] px-3 py-2 rounded-xl border border-border bg-card">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-1.5">
+          <Zap size={12} className={quota.percent >= 70 ? (quota.percent >= 90 ? "text-red-400" : "text-amber-400") : "text-primary"} />
+          <span className="text-[11px] font-semibold text-foreground">AI Messages</span>
+        </div>
+        <span className={`text-[11px] font-bold ${textColor}`}>{quota.used}/{quota.limit}</span>
+      </div>
+      <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
+        <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${quota.percent}%` }} />
+      </div>
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] text-muted-foreground">{quota.remaining} left · resets {reset}</span>
+        {quota.percent >= 70 && (
+          <Link href="/pricing">
+            <span className="text-[10px] font-semibold text-primary hover:underline flex items-center gap-0.5">
+              Upgrade <TrendingUp size={9} />
+            </span>
+          </Link>
         )}
       </div>
     </div>
