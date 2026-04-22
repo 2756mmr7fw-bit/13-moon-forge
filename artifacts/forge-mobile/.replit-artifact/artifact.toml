@@ -1,0 +1,27 @@
+kind = "mobile"
+previewPath = "/forge-mobile/"
+title = "13 Moon Forge Mobile"
+version = "1.0.0"
+id = "artifacts/forge-mobile"
+router = "expo-domain"
+
+[[integratedSkills]]
+name = "expo"
+version = "1.0.0"
+
+[[services]]
+ensurePreviewReachable = "/status"
+name = "expo"
+paths = [ "/forge-mobile/" ]
+localPort = 21594
+
+[services.development]
+run = "pnpm --filter @workspace/forge-mobile run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/forge-mobile", "run", "build" ]
+run = [ "pnpm", "--filter", "@workspace/forge-mobile", "run", "serve" ]
+
+[services.env]
+PORT = "21594"
+BASE_PATH = "/forge-mobile/"
