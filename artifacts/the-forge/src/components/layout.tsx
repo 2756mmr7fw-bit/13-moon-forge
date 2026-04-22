@@ -4,7 +4,7 @@ import {
   Flame, FolderKanban, PlusCircle, CreditCard, ExternalLink,
   Sparkles, Code2, Wand2, Layers, Scale, Crosshair, Activity,
   GraduationCap, ArrowRightLeft, Wrench, BookOpen, Archive, Gamepad2, Rocket, LogOut,
-  Shield, Github, Package, User, LogIn, Menu, X, Settings, KeyRound, ShieldAlert, PlugZap, Swords, Monitor, MonitorPlay, Globe,
+  Shield, Github, Package, User, LogIn, Menu, X, Settings, KeyRound, ShieldAlert, PlugZap, Swords, Monitor, MonitorPlay, Globe, Download, Wifi,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LogoMark, LogoWordmark } from "@/components/logo";
@@ -53,6 +53,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   const toolItems: NavItem[] = [
     { href: "/fix",        label: "Computer Fix",         icon: Wrench,        tip: "Flint diagnoses your computer problem first — $19 one-time fix, no subscription" },
+    { href: "/download",   label: "Get the App",          icon: Download,      tip: "Install 13 Moon Forge on any device — or download the Forge Remote Agent" },
     { href: "/site-forge", label: "Site Forge",          icon: Globe,         tip: "Build a professional business website in 60 seconds — yours forever" },
     { href: "/sage",       label: "Learn with Sage",     icon: GraduationCap, tip: "Step-by-step AI tutor — learn anything at your pace" },
     { href: "/hawk",       label: "Ask Hawk",            icon: Crosshair,     tip: "Get quick answers about your project or code"         },

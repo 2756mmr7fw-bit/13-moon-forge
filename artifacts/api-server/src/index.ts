@@ -1,5 +1,7 @@
+import http from "http";
 import app from "./app";
 import { logger } from "./lib/logger";
+import { createRemoteWss } from "./routes/remote";
 
 const rawPort = process.env["PORT"];
 
@@ -15,11 +17,24 @@ if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
-app.listen(port, (err) => {
+const server = http.createServer(app);
+const remoteWss = createRemoteWss();
+
+server.on("upgrade", (req, socket, head) => {
+  const url = new URL(req.url ?? "/", "ws://localhost");
+  if (url.pathname.startsWith("/api/remote/ws/")) {
+    remoteWss.handleUpgrade(req, socket, head, (ws) => {
+      remoteWss.emit("connection", ws, req);
+    });
+  } else {
+    socket.destroy();
+  }
+});
+
+server.listen(port, (err?: Error) => {
   if (err) {
     logger.error({ err }, "Error listening on port");
     process.exit(1);
   }
-
   logger.info({ port }, "Server listening");
 });
