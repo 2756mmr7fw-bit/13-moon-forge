@@ -42,6 +42,8 @@ import Monitor from "@/pages/monitor";
 import Landing from "@/pages/landing";
 import SiteForge from "@/pages/site-forge";
 import ComputerFix from "@/pages/computer-fix";
+import Download from "@/pages/download";
+import RemoteViewer from "@/pages/remote-viewer";
 import { ProtectedRoute } from "@/components/protected-route";
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
@@ -167,6 +169,8 @@ function Router() {
             {/* ── Public routes (no auth required) ── */}
             <Route path="/pricing" component={Pricing} />
             <Route path="/payment/success" component={PaymentSuccess} />
+            <Route path="/download" component={Download} />
+            <Route path="/remote/:sessionId" component={RemoteViewer} />
 
             {/* ── Protected routes (sign-in required) ── */}
             <Route>

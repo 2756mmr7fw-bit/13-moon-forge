@@ -22,6 +22,7 @@ import quotaRouter from "./quota";
 import siteForgeRouter from "./site-forge";
 import landingForgeRouter from "./landing-forge";
 import computerFixRouter from "./computer-fix";
+import { remoteRouter } from "./remote";
 
 const router: IRouter = Router();
 
@@ -48,5 +49,6 @@ router.use(quotaRouter);
 router.use(siteForgeRouter);
 router.use(landingForgeRouter);
 router.use(computerFixRouter);
+router.use("/remote", remoteRouter);
 
 export default router;
