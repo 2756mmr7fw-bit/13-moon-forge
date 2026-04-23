@@ -204,4 +204,50 @@ router.delete("/projects/:id/pages/:pageId", async (req, res) => {
   }
 });
 
+// POST /api/forge/plan — extract a project plan from a freeform conversation
+router.post("/forge/plan", async (req, res) => {
+  const { conversation } = req.body as { conversation?: { role: string; content: string }[] };
+  if (!Array.isArray(conversation) || conversation.length === 0) {
+    return res.status(400).json({ error: "conversation required" });
+  }
+
+  try {
+    const { openai } = await import("@workspace/integrations-openai-ai-server");
+
+    const systemPrompt = `You are a project planning assistant. Given a conversation between a user and Forge (an AI builder), extract a project plan as JSON.
+
+Return ONLY valid JSON in this exact shape — no markdown, no explanation:
+{
+  "name": "Project name (3 words max, title-case)",
+  "template": "portfolio|business|blog|landing|ecommerce",
+  "pages": ["Home", "About", "Contact"],
+  "brief": "A vivid 2-3 sentence description of the site, its audience, style, and purpose",
+  "ready": true
+}
+
+Rules:
+- "template" must be one of: portfolio, business, blog, landing, ecommerce
+- "pages" should be 2-5 relevant page names
+- If the conversation doesn't have enough info yet, set "ready": false and fill in best guesses
+- Keep names short and clean — no punctuation in project name`;
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: systemPrompt },
+        ...conversation.map(m => ({ role: m.role as "user" | "assistant", content: m.content })),
+      ],
+      temperature: 0.3,
+      max_tokens: 400,
+    });
+
+    const raw = completion.choices[0]?.message?.content?.trim() ?? "{}";
+    const plan = JSON.parse(raw);
+    res.json(plan);
+  } catch (err) {
+    req.log.error({ err }, "Failed to extract project plan");
+    res.status(500).json({ error: "Failed to extract plan" });
+  }
+});
+
 export default router;

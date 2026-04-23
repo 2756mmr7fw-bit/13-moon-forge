@@ -1,95 +1,175 @@
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
 import { useCreateProject, useCreatePage, getListProjectsQueryKey, getGetDashboardSummaryQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Flame, Loader2, Hammer, Send, RotateCcw, CheckCircle2, Edit2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Anvil, Hammer, Briefcase, FileText, ShoppingCart, Rocket, Loader2, Plus, X, ArrowRight, ArrowLeft, Flame } from "lucide-react";
 
-const templates = [
-  { 
-    id: "portfolio", name: "Portfolio", icon: Briefcase,
-    description: "Showcase your work to the world.",
-    defaultPages: ["Home", "Work", "About", "Contact"]
-  },
-  { 
-    id: "business", name: "Business", icon: Hammer,
-    description: "A solid foundation for your company.",
-    defaultPages: ["Home", "Services", "About", "Contact"]
-  },
-  { 
-    id: "blog", name: "Blog", icon: FileText,
-    description: "Chronicle your thoughts and ideas.",
-    defaultPages: ["Home", "Articles", "About", "Contact"]
-  },
-  { 
-    id: "landing", name: "Landing Page", icon: Rocket,
-    description: "One powerful page. One clear goal.",
-    defaultPages: ["Home"]
-  },
-  { 
-    id: "ecommerce", name: "E-Commerce", icon: ShoppingCart,
-    description: "Sell your products to the world.",
-    defaultPages: ["Home", "Products", "About", "Contact"]
-  },
-];
+const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-const slugify = (text: string) =>
-  text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+const TEMPLATES = ["portfolio", "business", "blog", "landing", "ecommerce"] as const;
+type Template = typeof TEMPLATES[number];
 
-type Step = 1 | 2 | 3;
+interface Msg { role: "user" | "forge"; text: string }
+interface Plan {
+  name: string;
+  template: Template;
+  pages: string[];
+  brief: string;
+  ready: boolean;
+}
+
+const slugify = (t: string) =>
+  t.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+
+const FORGE_OPEN = `What are you building?
+
+Just describe it — the name, what kind of site, who it's for, what feel you want. Or just start talking and I'll figure out the rest.`;
 
 export default function NewProject() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const [step, setStep] = useState<Step>(1);
-  const [name, setName] = useState("");
-  const [template, setTemplate] = useState("portfolio");
-  const [pages, setPages] = useState<string[]>(["Home", "Work", "About", "Contact"]);
-  const [newPage, setNewPage] = useState("");
-  const [brief, setBrief] = useState("");
+  const [messages, setMessages] = useState<Msg[]>([{ role: "forge", text: FORGE_OPEN }]);
+  const [input, setInput] = useState("");
+  const [streaming, setStreaming] = useState(false);
+  const [plan, setPlan] = useState<Plan | null>(null);
+  const [extracting, setExtracting] = useState(false);
+  const [editingName, setEditingName] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [userTurns, setUserTurns] = useState(0);
 
+  const endRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const createProject = useCreateProject();
   const createPage = useCreatePage();
 
-  const selectedTemplate = templates.find(t => t.id === template)!;
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, streaming]);
 
-  const handleTemplateSelect = (id: string) => {
-    setTemplate(id);
-    const t = templates.find(t => t.id === id)!;
-    setPages([...t.defaultPages]);
-  };
+  const extractPlan = useCallback(async (msgs: Msg[]) => {
+    setExtracting(true);
+    try {
+      const conversation = msgs
+        .filter(m => m.text.trim())
+        .map(m => ({ role: m.role === "forge" ? "assistant" : "user", content: m.text }));
 
-  const handleAddPage = () => {
-    const trimmed = newPage.trim();
-    if (trimmed && !pages.includes(trimmed)) {
-      setPages([...pages, trimmed]);
-      setNewPage("");
+      const res = await fetch(`${API_BASE}/api/forge/plan`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ conversation }),
+      });
+      if (!res.ok) throw new Error("Failed");
+      const data = await res.json() as Plan;
+      setPlan(data);
+      setEditName(data.name);
+    } catch {
+      // silently fail — user can still proceed
+    } finally {
+      setExtracting(false);
     }
-  };
+  }, []);
 
-  const handleRemovePage = (page: string) => {
-    if (pages.length > 1) setPages(pages.filter(p => p !== page));
-  };
+  const send = useCallback(async () => {
+    const text = input.trim();
+    if (!text || streaming) return;
+    setInput("");
 
-  const handleSubmit = async () => {
-    if (!name.trim()) return;
+    const turns = userTurns + 1;
+    setUserTurns(turns);
+
+    const userMsg: Msg = { role: "user", text };
+    const forgeMsg: Msg = { role: "forge", text: "" };
+    const nextMsgs = [...messages, userMsg, forgeMsg];
+    setMessages(nextMsgs);
+    setStreaming(true);
+
+    const history = [...messages, userMsg].map(m => ({
+      role: m.role === "forge" ? "assistant" : "user",
+      content: m.text,
+    }));
+
+    const systemNote = turns === 1
+      ? " (The user is describing what they want to build. Ask one targeted follow-up to clarify the vibe or audience if still unclear, or say you have enough and you will set it up.)"
+      : " (You have enough info. Respond with a brief confirmation like 'Perfect — I have everything I need. Here is what I will build:' then a short 2-line summary. Be decisive.)";
+
+    try {
+      const res = await fetch(`${API_BASE}/api/landing-forge/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: text + systemNote,
+          history: history.slice(0, -1),
+          systemOverride: `You are Forge, the builder AI. You are helping a user start a new website project. Keep responses SHORT — 2-4 sentences max. No lists. Ask one question at a time. When you have: a project name, type (portfolio, business, blog, landing page, or store), and the general vibe — say so and stop asking questions.`,
+        }),
+      });
+
+      if (!res.ok || !res.body) throw new Error("failed");
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let accumulated = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const raw = decoder.decode(value, { stream: true });
+        for (const line of raw.split("\n\n")) {
+          if (!line.startsWith("data: ")) continue;
+          const d = line.slice(6).trim();
+          if (d === "[DONE]") break;
+          try {
+            const parsed = JSON.parse(d) as { choices?: { delta?: { content?: string } }[] };
+            const delta = parsed.choices?.[0]?.delta?.content ?? "";
+            if (delta) {
+              accumulated += delta;
+              setMessages(prev => {
+                const next = [...prev];
+                next[next.length - 1] = { role: "forge", text: accumulated };
+                return next;
+              });
+            }
+          } catch { /* partial */ }
+        }
+      }
+
+      const finalMsgs = [...messages, userMsg, { role: "forge" as const, text: accumulated }];
+
+      // Extract plan after 2nd user turn or if Forge seems done
+      if (turns >= 2 || /have what i need|set.*up|here.*what i.ll build|ready to build/i.test(accumulated)) {
+        await extractPlan(finalMsgs);
+      }
+    } catch {
+      setMessages(prev => {
+        const next = [...prev];
+        next[next.length - 1] = { role: "forge", text: "Something went wrong. Try again." };
+        return next;
+      });
+    } finally {
+      setStreaming(false);
+    }
+  }, [input, streaming, messages, userTurns, extractPlan]);
+
+  const buildProject = async () => {
+    if (!plan) return;
+    setCreating(true);
+    const finalName = editingName ? editName.trim() : plan.name;
+    if (!finalName) { setCreating(false); return; }
 
     try {
       const project = await new Promise<{ id: number }>((resolve, reject) => {
         createProject.mutate(
-          { data: { name: name.trim(), description: brief.trim() || undefined, template } },
+          { data: { name: finalName, description: plan.brief || undefined, template: plan.template } },
           { onSuccess: resolve, onError: reject }
         );
       });
 
       await Promise.all(
-        pages.map((title, i) =>
+        (plan.pages.length > 0 ? plan.pages : ["Home"]).map((title, i) =>
           new Promise<void>((resolve, reject) => {
             createPage.mutate(
               { id: project.id, data: { title, slug: slugify(title), content: "", order: i } },
@@ -102,222 +182,202 @@ export default function NewProject() {
       queryClient.invalidateQueries({ queryKey: getListProjectsQueryKey() });
       queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() });
 
-      toast({ title: "Project forged!", description: `${name} is ready. Now describe it to Forge.` });
+      toast({ title: "Project created!", description: `${finalName} is ready — Forge is standing by.` });
       setLocation(`/projects/${project.id}`);
     } catch {
       toast({ variant: "destructive", title: "Failed", description: "Something went wrong. Try again." });
+      setCreating(false);
     }
   };
 
-  const isSubmitting = createProject.isPending || createPage.isPending;
+  const reset = () => {
+    setMessages([{ role: "forge", text: FORGE_OPEN }]);
+    setInput("");
+    setPlan(null);
+    setUserTurns(0);
+    setTimeout(() => inputRef.current?.focus(), 100);
+  };
 
   return (
-    <div className="max-w-2xl mx-auto animate-in slide-in-from-bottom-4 duration-500">
+    <div className="max-w-2xl mx-auto animate-in slide-in-from-bottom-4 duration-500 flex flex-col" style={{ minHeight: "calc(100vh - 120px)" }}>
       {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
           <div className="p-2 bg-primary/15 rounded-lg">
-            <Anvil className="w-6 h-6 text-primary" />
+            <Flame className="w-5 h-5 text-primary" />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight">New Project</h1>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">New Project</h1>
+            <p className="text-sm text-muted-foreground">Tell Forge what you're building — he'll set it up.</p>
+          </div>
         </div>
-        <p className="text-muted-foreground ml-[52px]">
-          {step === 1 && "Name your creation and choose its form."}
-          {step === 2 && "What pages will your site contain?"}
-          {step === 3 && "Describe your vision — Forge will be waiting."}
-        </p>
+        {userTurns > 0 && (
+          <button onClick={reset} className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1.5 transition-colors">
+            <RotateCcw className="w-3.5 h-3.5" /> Start over
+          </button>
+        )}
       </div>
 
-      {/* Step indicator */}
-      <div className="flex items-center gap-2 mb-8">
-        {([1, 2, 3] as Step[]).map((s) => (
-          <div key={s} className="flex items-center gap-2">
-            <div className={cn(
-              "w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors",
-              step === s ? "bg-primary text-primary-foreground" :
-              step > s ? "bg-primary/30 text-primary" : "bg-muted text-muted-foreground"
+      {/* Chat */}
+      <div className="flex-1 bg-card border border-border rounded-2xl overflow-hidden flex flex-col">
+        <div className="flex-1 overflow-y-auto p-5 space-y-4 min-h-[260px] max-h-[400px]">
+          {messages.map((m, i) => (
+            <div key={i} className={cn(
+              "rounded-xl px-4 py-3 text-sm leading-relaxed max-w-[90%]",
+              m.role === "user"
+                ? "ml-auto bg-primary/20 border border-primary/20"
+                : "bg-background border border-border"
             )}>
-              {step > s ? "✓" : s}
+              {m.role === "forge" && (
+                <span className="text-[9px] font-bold uppercase tracking-widest text-primary block mb-1.5">Forge</span>
+              )}
+              <span className="whitespace-pre-wrap">{m.text}</span>
+              {m.role === "forge" && m.text === "" && streaming && (
+                <span className="inline-flex gap-0.5 ml-1">
+                  {[0, 1, 2].map(j => (
+                    <span key={j} className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: `${j * 120}ms` }} />
+                  ))}
+                </span>
+              )}
             </div>
-            {s < 3 && <div className={cn("h-px w-12 transition-colors", step > s ? "bg-primary/50" : "bg-border")} />}
+          ))}
+          <div ref={endRef} />
+        </div>
+
+        <div className="border-t border-border p-4 space-y-2.5">
+          <div className="flex gap-2">
+            <textarea
+              ref={inputRef}
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
+              }}
+              placeholder={userTurns === 0 ? "Describe what you want to build…" : "Reply to Forge…"}
+              rows={2}
+              className="flex-1 resize-none rounded-xl bg-background border border-border px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary/50 placeholder:text-muted-foreground"
+              disabled={streaming || creating}
+              autoFocus
+            />
+            <button
+              onClick={send}
+              disabled={!input.trim() || streaming || creating}
+              className="self-end p-3 rounded-xl bg-primary text-primary-foreground disabled:opacity-40 hover:opacity-90 transition-opacity"
+            >
+              <Send className="w-4 h-4" />
+            </button>
           </div>
-        ))}
-        <span className="ml-2 text-sm text-muted-foreground">
-          {step === 1 && "Template & Name"}
-          {step === 2 && "Pages"}
-          {step === 3 && "Site Brief"}
-        </span>
+        </div>
       </div>
 
-      {/* Step 1: Template + Name */}
-      {step === 1 && (
-        <div className="space-y-6 animate-in fade-in duration-300">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Project Name</label>
-            <Input
-              value={name}
-              onChange={e => setName(e.target.value)}
-              placeholder="e.g. Ember Studio, The Grand Emporium…"
-              className="text-lg py-6 bg-card border-border"
-              autoFocus
-              onKeyDown={e => e.key === "Enter" && name.trim().length >= 2 && setStep(2)}
-            />
-          </div>
-
-          <div className="space-y-3">
-            <label className="text-sm font-medium">Template</label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {templates.map((t) => (
-                <button
-                  key={t.id}
-                  onClick={() => handleTemplateSelect(t.id)}
-                  className={cn(
-                    "flex items-start gap-4 p-4 rounded-xl border-2 text-left transition-all",
-                    template === t.id
-                      ? "border-primary bg-primary/5 shadow-[0_0_20px_rgba(255,100,0,0.1)]"
-                      : "border-border bg-card hover:border-primary/40"
-                  )}
-                >
-                  <div className={cn(
-                    "p-2.5 rounded-lg shrink-0",
-                    template === t.id ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"
-                  )}>
-                    <t.icon className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="font-semibold">{t.name}</div>
-                    <div className="text-xs text-muted-foreground mt-0.5">{t.description}</div>
-                  </div>
-                </button>
-              ))}
+      {/* Project Plan Card */}
+      {(extracting || plan) && (
+        <div className={cn(
+          "mt-5 rounded-2xl border p-5 space-y-4 transition-all duration-500",
+          plan?.ready ? "border-primary/40 bg-primary/5" : "border-border bg-card"
+        )}>
+          {extracting ? (
+            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+              <Loader2 className="w-4 h-4 animate-spin text-primary" />
+              Forge is planning your project…
             </div>
-          </div>
-
-          <div className="flex justify-end pt-2">
-            <Button
-              onClick={() => setStep(2)}
-              disabled={name.trim().length < 2}
-              className="bg-primary text-primary-foreground"
-            >
-              Next <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Step 2: Pages */}
-      {step === 2 && (
-        <div className="space-y-6 animate-in fade-in duration-300">
-          <div className="bg-card border border-border rounded-xl p-5 space-y-3">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-sm font-medium text-muted-foreground">Pages for {name}</span>
-              <span className="text-xs text-muted-foreground">{pages.length} page{pages.length !== 1 ? "s" : ""}</span>
-            </div>
-            <div className="space-y-2">
-              {pages.map((page) => (
-                <div key={page} className="flex items-center justify-between bg-background rounded-lg px-3 py-2.5 border border-border group">
-                  <div className="flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-muted-foreground" />
-                    <span className="font-medium">{page}</span>
-                    <span className="text-xs text-muted-foreground font-mono">/{slugify(page)}</span>
-                  </div>
-                  <button
-                    onClick={() => handleRemovePage(page)}
-                    disabled={pages.length === 1}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive disabled:opacity-20 disabled:cursor-not-allowed"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
+          ) : plan ? (
+            <>
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
+                  <span className="font-semibold text-sm">Project plan ready</span>
                 </div>
-              ))}
-            </div>
-            <div className="flex gap-2 pt-1">
-              <Input
-                value={newPage}
-                onChange={e => setNewPage(e.target.value)}
-                placeholder="Add a page…"
-                className="bg-background border-border"
-                onKeyDown={e => e.key === "Enter" && handleAddPage()}
-              />
-              <Button variant="outline" size="icon" onClick={handleAddPage} disabled={!newPage.trim()}>
-                <Plus className="w-4 h-4" />
+                {!extracting && (
+                  <button
+                    onClick={() => extractPlan(messages)}
+                    className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
+                  >
+                    <RotateCcw className="w-3 h-3" /> Redo
+                  </button>
+                )}
+              </div>
+
+              <div className="space-y-3 text-sm">
+                {/* Name */}
+                <div className="flex items-center gap-3">
+                  <span className="text-muted-foreground w-16 shrink-0">Name</span>
+                  {editingName ? (
+                    <input
+                      value={editName}
+                      onChange={e => setEditName(e.target.value)}
+                      onBlur={() => setEditingName(false)}
+                      onKeyDown={e => e.key === "Enter" && setEditingName(false)}
+                      className="flex-1 bg-background border border-border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary/50"
+                      autoFocus
+                    />
+                  ) : (
+                    <button
+                      onClick={() => setEditingName(true)}
+                      className="font-semibold flex items-center gap-1.5 hover:text-primary transition-colors group"
+                    >
+                      {editName || plan.name}
+                      <Edit2 className="w-3 h-3 opacity-0 group-hover:opacity-60" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Type */}
+                <div className="flex items-center gap-3">
+                  <span className="text-muted-foreground w-16 shrink-0">Type</span>
+                  <div className="flex gap-1.5 flex-wrap">
+                    {TEMPLATES.map(t => (
+                      <button
+                        key={t}
+                        onClick={() => setPlan(p => p ? { ...p, template: t } : p)}
+                        className={cn(
+                          "px-2.5 py-1 rounded-md text-xs font-medium transition-colors capitalize",
+                          plan.template === t
+                            ? "bg-primary/20 text-primary border border-primary/30"
+                            : "bg-muted text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Pages */}
+                <div className="flex items-start gap-3">
+                  <span className="text-muted-foreground w-16 shrink-0 mt-0.5">Pages</span>
+                  <div className="flex gap-1.5 flex-wrap">
+                    {plan.pages.map(p => (
+                      <span key={p} className="px-2.5 py-1 rounded-md text-xs font-medium bg-muted text-muted-foreground">
+                        {p}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Brief */}
+                {plan.brief && (
+                  <div className="flex items-start gap-3">
+                    <span className="text-muted-foreground w-16 shrink-0 mt-0.5">Brief</span>
+                    <p className="text-muted-foreground leading-relaxed">{plan.brief}</p>
+                  </div>
+                )}
+              </div>
+
+              <Button
+                onClick={buildProject}
+                disabled={creating}
+                className="w-full bg-primary text-primary-foreground"
+                size="lg"
+              >
+                {creating ? (
+                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Creating project…</>
+                ) : (
+                  <><Hammer className="w-4 h-4 mr-2" /> Build It</>
+                )}
               </Button>
-            </div>
-          </div>
-
-          <p className="text-sm text-muted-foreground">
-            These pages will be created in your project. Forge will generate content for each one.
-          </p>
-
-          <div className="flex justify-between pt-2">
-            <Button variant="ghost" onClick={() => setStep(1)}>
-              <ArrowLeft className="w-4 h-4 mr-2" /> Back
-            </Button>
-            <Button onClick={() => setStep(3)} className="bg-primary text-primary-foreground">
-              Next <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Step 3: Brief */}
-      {step === 3 && (
-        <div className="space-y-6 animate-in fade-in duration-300">
-          <div className="rounded-xl border border-primary/30 bg-gradient-to-br from-primary/5 via-card to-card p-5">
-            <div className="flex items-start gap-3 mb-4">
-              <div className="p-2 bg-primary/15 rounded-lg shrink-0">
-                <Flame className="w-4 h-4 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-semibold">Site Brief for Forge</h3>
-                <p className="text-sm text-muted-foreground mt-0.5">
-                  Describe your site — purpose, audience, style, feel. The more vivid, the better Forge crafts it. You can also skip this and describe it on the project page.
-                </p>
-              </div>
-            </div>
-            <Textarea
-              value={brief}
-              onChange={e => setBrief(e.target.value)}
-              placeholder={`Describe your ${selectedTemplate.name.toLowerCase()} — what it's for, who it's for, what feel you want. E.g. "A bold, dark portfolio for a motion designer targeting Netflix and Apple. Minimal text, visuals first, brutalist grid layout, deep navy and electric orange palette."`}
-              className="min-h-[140px] bg-background/60 border-border resize-none"
-              autoFocus
-            />
-          </div>
-
-          <div className="bg-card border border-border rounded-xl p-4">
-            <h4 className="text-sm font-medium mb-3 text-muted-foreground">Summary</h4>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Name</span>
-                <span className="font-medium">{name}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Template</span>
-                <span className="font-medium capitalize">{template}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Pages</span>
-                <span className="font-medium">{pages.join(", ")}</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex justify-between pt-2">
-            <Button variant="ghost" onClick={() => setStep(2)}>
-              <ArrowLeft className="w-4 h-4 mr-2" /> Back
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              className="bg-primary text-primary-foreground min-w-[160px]"
-            >
-              {isSubmitting ? (
-                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Creating…</>
-              ) : (
-                <><Hammer className="w-4 h-4 mr-2" /> Create Project</>
-              )}
-            </Button>
-          </div>
+            </>
+          ) : null}
         </div>
       )}
     </div>
