@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { getUserId } from "@/lib/userId";
 import {
   Eye, EyeOff, Loader2, Send, MonitorPlay, Shield, Sparkles,
   StopCircle, RefreshCw, Volume2, VolumeX, Download, Zap,
@@ -108,25 +109,40 @@ function calcDiff(a: ImageData, b: ImageData): number {
   return diff / (a.data.length / 4 * 3);
 }
 
-// ── Text-to-Speech ────────────────────────────────────────────────────────────
-function speak(text: string) {
-  if (!window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
+// ── Text-to-Speech (ElevenLabs — Drew voice) ──────────────────────────────────
+let _scAudio: HTMLAudioElement | null = null;
+
+async function speak(text: string) {
+  if (_scAudio) { _scAudio.pause(); _scAudio = null; }
   const clean = text
     .replace(/#{1,6}\s*/g, "")
     .replace(/\*\*/g, "")
     .replace(/\*/g, "")
-    .replace(/`{1,3}/g, "")
+    .replace(/`{1,3}[a-z]*\n?/g, "")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
     .replace(/\n+/g, " ")
-    .trim();
-  const utt = new SpeechSynthesisUtterance(clean);
-  utt.rate = 1.05;
-  utt.pitch = 1.0;
-  window.speechSynthesis.speak(utt);
+    .trim()
+    .slice(0, 2500);
+  if (!clean) return;
+  try {
+    const res = await fetch(`${API_BASE}/api/tts`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-user-id": getUserId() },
+      body: JSON.stringify({ text: clean }),
+    });
+    if (!res.ok) return;
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const audio = new Audio(url);
+    _scAudio = audio;
+    audio.onended = () => { URL.revokeObjectURL(url); _scAudio = null; };
+    audio.onerror = () => { URL.revokeObjectURL(url); _scAudio = null; };
+    await audio.play();
+  } catch { /* silent fail */ }
 }
 
 function stopSpeaking() {
-  window.speechSynthesis?.cancel();
+  if (_scAudio) { _scAudio.pause(); _scAudio = null; }
 }
 
 // ── Pointer hint detector ─────────────────────────────────────────────────────

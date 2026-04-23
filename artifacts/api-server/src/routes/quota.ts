@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { db, messageUsageTable } from "@workspace/db";
 import { eq, and, sql } from "drizzle-orm";
+import { isAdmin } from "./admin";
 
 const router = Router();
 
@@ -28,6 +29,15 @@ router.get("/quota", async (req, res) => {
   try {
     const userId = req.userId;
     const month = currentMonth();
+
+    // Owners / admins get unlimited access
+    if (await isAdmin(userId)) {
+      return res.json({
+        used: 0, limit: 999999, remaining: 999999,
+        percent: 0, plan: "owner",
+        resetDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      });
+    }
 
     const [row] = await db
       .select()

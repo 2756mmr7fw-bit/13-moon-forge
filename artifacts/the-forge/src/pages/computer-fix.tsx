@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Send, Wrench, AlertTriangle, CheckCircle2, CreditCard, ArrowRight, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@clerk/react";
+import { SpeakButton } from "@/components/speak-button";
 
 const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -337,6 +338,11 @@ export default function ComputerFix() {
                   </span>
                 )}
                 {m.text}
+                {m.role === "flint" && m.text && !streaming && (
+                  <div className="mt-1.5 flex justify-end">
+                    <SpeakButton text={m.text} />
+                  </div>
+                )}
                 {m.role === "flint" && m.text === "" && streaming && (
                   <span className="inline-flex gap-0.5 ml-1">
                     {[0, 1, 2].map(i => (

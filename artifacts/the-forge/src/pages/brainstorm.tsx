@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { getUserId } from "@/lib/userId";
+import { SpeakButton } from "@/components/speak-button";
 
 interface Message {
   role: "user" | "assistant";
@@ -200,6 +201,11 @@ export default function Brainstorm() {
                     Subscribe on the Town Square
                     <ExternalLink size={11} />
                   </a>
+                </div>
+              )}
+              {msg.role === "assistant" && !msg.streaming && !msg.subscriptionRequired && msg.content.trim() && (
+                <div className="mt-2 flex justify-end">
+                  <SpeakButton text={msg.content} />
                 </div>
               )}
             </div>
