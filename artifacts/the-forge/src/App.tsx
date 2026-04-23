@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef } from "react";
+import { lazy, Suspense, useEffect, useRef, Component, type ReactNode, type ErrorInfo } from "react";
 import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { ClerkProvider, SignIn, SignUp, useClerk, useAuth } from "@clerk/react";
@@ -118,6 +118,41 @@ function PageLoader() {
   );
 }
 
+// Catches chunk-load failures and any other render errors — shows a simple
+// "tap to reload" screen instead of a blank black page.
+interface EBState { error: Error | null }
+class ErrorBoundary extends Component<{ children: ReactNode }, EBState> {
+  state: EBState = { error: null };
+
+  static getDerivedStateFromError(error: Error): EBState {
+    return { error };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error("[ErrorBoundary]", error, info);
+  }
+
+  render() {
+    if (this.state.error) {
+      return (
+        <div
+          className="flex flex-col items-center justify-center min-h-screen gap-4 px-6 text-center bg-background"
+          onClick={() => window.location.reload()}
+        >
+          <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
+            <span className="text-2xl">🔥</span>
+          </div>
+          <p className="font-bold text-lg">Something didn't load right.</p>
+          <p className="text-sm text-muted-foreground max-w-xs leading-relaxed">
+            Tap anywhere to reload. Your work is safe — nothing was lost.
+          </p>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function ClerkQueryClientCacheInvalidator() {
   const { addListener } = useClerk();
   const qc = useQueryClient();
@@ -154,7 +189,12 @@ function ClerkTokenInitializer() {
 function SignInPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} />
+      <SignIn
+        routing="path"
+        path={`${basePath}/sign-in`}
+        signUpUrl={`${basePath}/sign-up`}
+        fallbackRedirectUrl={`${basePath}/dashboard`}
+      />
     </div>
   );
 }
@@ -162,13 +202,19 @@ function SignInPage() {
 function SignUpPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} />
+      <SignUp
+        routing="path"
+        path={`${basePath}/sign-up`}
+        signInUrl={`${basePath}/sign-in`}
+        fallbackRedirectUrl={`${basePath}/dashboard`}
+      />
     </div>
   );
 }
 
 function Router() {
   return (
+    <ErrorBoundary>
     <Suspense fallback={<PageLoader />}>
       <Switch>
         <Route path="/sign-in/*?" component={SignInPage} />
@@ -229,6 +275,7 @@ function Router() {
         </Route>
       </Switch>
     </Suspense>
+    </ErrorBoundary>
   );
 }
 
