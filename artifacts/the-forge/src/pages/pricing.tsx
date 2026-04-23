@@ -19,10 +19,10 @@ const tiers = [
     highlight: false,
     cta: "Start free — no card needed",
     ctaVariant: "outline" as const,
-    messages: "10 messages / month",
+    messages: "30 messages / month",
     description: "Jump in, use the tools, save what you build, and take it with you whenever you want. No credit card. No commitment. Come back anytime.",
     features: [
-      "10 AI messages per month",
+      "30 AI messages per month",
       "Screen Coach (1 session)",
       "Computer Advisor",
       "Ask Hawk",

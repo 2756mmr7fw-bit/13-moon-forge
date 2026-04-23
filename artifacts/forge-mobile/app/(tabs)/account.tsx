@@ -20,7 +20,7 @@ const WHY_DESKTOP = [
 ];
 
 const PLANS = [
-  { label: "Free", price: "$0", msgs: "10 messages · basic features", badge: null },
+  { label: "Free", price: "$0", msgs: "30 messages · basic features", badge: null },
   { label: "Forge Basic", price: "$7/mo", msgs: "150 messages / month", badge: "Most popular" },
   { label: "Forge Pro", price: "$17/mo", msgs: "500 messages / month", badge: "Power builders" },
   { label: "Forge Host", price: "$5/mo", msgs: "Self-host only", badge: null },
