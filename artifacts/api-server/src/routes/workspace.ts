@@ -1,23 +1,41 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { workspaceItemsTable } from "@workspace/db";
-import { eq, and, desc } from "drizzle-orm";
+import { workspaceItemsTable, workspaceItemVersionsTable } from "@workspace/db";
+import { eq, and, desc, isNull, isNotNull } from "drizzle-orm";
 import { openai } from "@workspace/integrations-openai-ai-server";
 
 const router = Router();
 
-// GET /workspace — list all items for the current user
+const MAX_VERSIONS_PER_ITEM = 20;
+
+// GET /workspace — list all active (non-deleted) items for the current user
 router.get("/workspace", async (req, res) => {
   const userId = req.userId;
   try {
     const items = await db
       .select()
       .from(workspaceItemsTable)
-      .where(eq(workspaceItemsTable.userId, userId))
+      .where(and(eq(workspaceItemsTable.userId, userId), isNull(workspaceItemsTable.deletedAt)))
       .orderBy(workspaceItemsTable.order, workspaceItemsTable.createdAt);
     res.json(items);
   } catch (err) {
     req.log.error({ err }, "Failed to list workspace items");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// GET /workspace/trash — list soft-deleted items for the current user
+router.get("/workspace/trash", async (req, res) => {
+  const userId = req.userId;
+  try {
+    const items = await db
+      .select()
+      .from(workspaceItemsTable)
+      .where(and(eq(workspaceItemsTable.userId, userId), isNotNull(workspaceItemsTable.deletedAt)))
+      .orderBy(desc(workspaceItemsTable.deletedAt));
+    res.json(items);
+  } catch (err) {
+    req.log.error({ err }, "Failed to list trash");
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -53,7 +71,7 @@ router.post("/workspace", async (req, res) => {
   }
 });
 
-// PUT /workspace/:id — update an item
+// PUT /workspace/:id — update an item (auto-saves a version snapshot if content changes)
 router.put("/workspace/:id", async (req, res) => {
   const userId = req.userId;
   const id = Number(req.params.id);
@@ -68,6 +86,41 @@ router.put("/workspace/:id", async (req, res) => {
   };
 
   try {
+    // Fetch current version before overwriting so we can snapshot it
+    const [current] = await db
+      .select()
+      .from(workspaceItemsTable)
+      .where(and(eq(workspaceItemsTable.id, id), eq(workspaceItemsTable.userId, userId)))
+      .limit(1);
+
+    if (!current) return res.status(404).json({ error: "Not found" });
+
+    // Only snapshot when content actually changes (ignore whitespace-only saves)
+    const contentChanged = content !== undefined && content.trim() !== (current.content ?? "").trim();
+    if (contentChanged) {
+      // Save the OLD content as a version before overwriting
+      await db.insert(workspaceItemVersionsTable).values({
+        itemId: id,
+        userId,
+        name: current.name,
+        content: current.content ?? "",
+      });
+
+      // Prune old versions — keep only the most recent MAX_VERSIONS_PER_ITEM
+      const versions = await db
+        .select({ id: workspaceItemVersionsTable.id })
+        .from(workspaceItemVersionsTable)
+        .where(eq(workspaceItemVersionsTable.itemId, id))
+        .orderBy(desc(workspaceItemVersionsTable.savedAt));
+
+      if (versions.length > MAX_VERSIONS_PER_ITEM) {
+        const toDelete = versions.slice(MAX_VERSIONS_PER_ITEM).map(v => v.id);
+        for (const vId of toDelete) {
+          await db.delete(workspaceItemVersionsTable).where(eq(workspaceItemVersionsTable.id, vId));
+        }
+      }
+    }
+
     const [item] = await db
       .update(workspaceItemsTable)
       .set({
@@ -91,24 +144,132 @@ router.put("/workspace/:id", async (req, res) => {
   }
 });
 
-// DELETE /workspace/:id — delete an item (and children)
+// DELETE /workspace/:id — SOFT delete (moves to trash, never destroys data)
 router.delete("/workspace/:id", async (req, res) => {
   const userId = req.userId;
   const id = Number(req.params.id);
 
   try {
-    // Delete children first
+    const now = new Date();
+
+    // Soft-delete children first
     await db
-      .delete(workspaceItemsTable)
+      .update(workspaceItemsTable)
+      .set({ deletedAt: now })
       .where(and(eq(workspaceItemsTable.parentId, id), eq(workspaceItemsTable.userId, userId)));
 
-    await db
-      .delete(workspaceItemsTable)
-      .where(and(eq(workspaceItemsTable.id, id), eq(workspaceItemsTable.userId, userId)));
+    // Soft-delete the item itself
+    const [item] = await db
+      .update(workspaceItemsTable)
+      .set({ deletedAt: now })
+      .where(and(eq(workspaceItemsTable.id, id), eq(workspaceItemsTable.userId, userId)))
+      .returning();
 
+    if (!item) return res.status(404).json({ error: "Not found" });
     res.status(204).send();
   } catch (err) {
     req.log.error({ err }, "Failed to delete workspace item");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// POST /workspace/:id/restore — restore a soft-deleted item from trash
+router.post("/workspace/:id/restore", async (req, res) => {
+  const userId = req.userId;
+  const id = Number(req.params.id);
+
+  try {
+    const [item] = await db
+      .update(workspaceItemsTable)
+      .set({ deletedAt: null, updatedAt: new Date() })
+      .where(and(eq(workspaceItemsTable.id, id), eq(workspaceItemsTable.userId, userId)))
+      .returning();
+
+    if (!item) return res.status(404).json({ error: "Not found" });
+    res.json(item);
+  } catch (err) {
+    req.log.error({ err }, "Failed to restore workspace item");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// DELETE /workspace/:id/hard — permanently destroy (user-initiated only, requires confirmation)
+router.delete("/workspace/:id/hard", async (req, res) => {
+  const userId = req.userId;
+  const id = Number(req.params.id);
+  const { confirm } = req.body as { confirm?: string };
+
+  if (confirm !== "DELETE_FOREVER") {
+    return res.status(400).json({ error: "Send { confirm: 'DELETE_FOREVER' } to permanently delete" });
+  }
+
+  try {
+    // Delete versions
+    await db.delete(workspaceItemVersionsTable).where(
+      and(eq(workspaceItemVersionsTable.itemId, id), eq(workspaceItemVersionsTable.userId, userId))
+    );
+    // Delete children
+    await db.delete(workspaceItemsTable).where(
+      and(eq(workspaceItemsTable.parentId, id), eq(workspaceItemsTable.userId, userId))
+    );
+    // Delete item
+    await db.delete(workspaceItemsTable).where(
+      and(eq(workspaceItemsTable.id, id), eq(workspaceItemsTable.userId, userId))
+    );
+
+    res.status(204).send();
+  } catch (err) {
+    req.log.error({ err }, "Failed to permanently delete workspace item");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// GET /workspace/:id/versions — list version history for an item
+router.get("/workspace/:id/versions", async (req, res) => {
+  const userId = req.userId;
+  const id = Number(req.params.id);
+
+  try {
+    const versions = await db
+      .select()
+      .from(workspaceItemVersionsTable)
+      .where(and(eq(workspaceItemVersionsTable.itemId, id), eq(workspaceItemVersionsTable.userId, userId)))
+      .orderBy(desc(workspaceItemVersionsTable.savedAt));
+    res.json(versions);
+  } catch (err) {
+    req.log.error({ err }, "Failed to list versions");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// POST /workspace/:id/versions/:versionId/restore — restore a specific version
+router.post("/workspace/:id/versions/:versionId/restore", async (req, res) => {
+  const userId = req.userId;
+  const id = Number(req.params.id);
+  const versionId = Number(req.params.versionId);
+
+  try {
+    const [version] = await db
+      .select()
+      .from(workspaceItemVersionsTable)
+      .where(and(
+        eq(workspaceItemVersionsTable.id, versionId),
+        eq(workspaceItemVersionsTable.itemId, id),
+        eq(workspaceItemVersionsTable.userId, userId),
+      ))
+      .limit(1);
+
+    if (!version) return res.status(404).json({ error: "Version not found" });
+
+    const [item] = await db
+      .update(workspaceItemsTable)
+      .set({ content: version.content, name: version.name, updatedAt: new Date() })
+      .where(and(eq(workspaceItemsTable.id, id), eq(workspaceItemsTable.userId, userId)))
+      .returning();
+
+    res.json(item);
+  } catch (err) {
+    req.log.error({ err }, "Failed to restore version");
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -183,7 +344,8 @@ For folders: always return empty content string.`;
     };
 
     try {
-      parsed = JSON.parse(raw);
+      const cleaned = raw.replace(/^```json\n?/, "").replace(/\n?```$/, "");
+      parsed = JSON.parse(cleaned);
     } catch {
       return res.status(500).json({ error: "Failed to parse Forge response" });
     }
