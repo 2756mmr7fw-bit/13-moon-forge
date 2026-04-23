@@ -4,7 +4,7 @@ import {
   Flame, FolderKanban, PlusCircle, CreditCard, ExternalLink,
   Sparkles, Code2, Wand2, Layers, Scale, Crosshair, Activity,
   GraduationCap, ArrowRightLeft, Wrench, BookOpen, Archive, Gamepad2, Rocket, LogOut,
-  Shield, Github, Package, User, LogIn, Menu, X, Settings, KeyRound, ShieldAlert, PlugZap, Swords, Monitor, MonitorPlay, Globe, Download, Wifi,
+  Shield, Github, Package, User, LogIn, Menu, X, Settings, KeyRound, ShieldAlert, PlugZap, Swords, Monitor, MonitorPlay, Globe, Download, Wifi, LayoutTemplate,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LogoMark, LogoWordmark } from "@/components/logo";
@@ -45,10 +45,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
   // ── Navigation items ──────────────────────────────────────────────────────
 
   const builderItems: NavItem[] = [
-    { href: "/dashboard",    label: "Home",             icon: Flame,        tip: "Your dashboard — projects, stats, quick actions" },
-    { href: "/projects",     label: "My Projects",      icon: FolderKanban, tip: "View and manage all your projects"              },
-    { href: "/projects/new", label: "New Project",      icon: PlusCircle,   tip: "Start a brand-new project from scratch"         },
-    { href: "/brainstorm",   label: "Brainstorm",        icon: Sparkles,     tip: "AI helps you flesh out and plan your idea"      },
+    { href: "/dashboard",    label: "Home",             icon: Flame,          tip: "Your dashboard — projects, stats, quick actions" },
+    { href: "/projects",     label: "My Projects",      icon: FolderKanban,   tip: "View and manage all your projects"              },
+    { href: "/workspace",    label: "Workspace",        icon: LayoutTemplate, tip: "Forge builds folders, plans, blueprints, PDFs — anything you need" },
+    { href: "/projects/new", label: "New Project",      icon: PlusCircle,     tip: "Start a brand-new project from scratch"         },
+    { href: "/brainstorm",   label: "Brainstorm",       icon: Sparkles,       tip: "AI helps you flesh out and plan your idea"      },
   ];
 
   const toolItems: NavItem[] = [

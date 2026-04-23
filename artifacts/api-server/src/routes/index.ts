@@ -23,6 +23,7 @@ import siteForgeRouter from "./site-forge";
 import landingForgeRouter from "./landing-forge";
 import computerFixRouter from "./computer-fix";
 import { remoteRouter } from "./remote";
+import workspaceRouter from "./workspace";
 
 const router: IRouter = Router();
 
@@ -50,5 +51,6 @@ router.use(siteForgeRouter);
 router.use(landingForgeRouter);
 router.use(computerFixRouter);
 router.use("/remote", remoteRouter);
+router.use(workspaceRouter);
 
 export default router;

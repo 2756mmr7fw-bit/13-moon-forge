@@ -43,6 +43,7 @@ import Landing from "@/pages/landing";
 import SiteForge from "@/pages/site-forge";
 import ComputerFix from "@/pages/computer-fix";
 import Download from "@/pages/download";
+import Workspace from "@/pages/workspace";
 import RemoteViewer from "@/pages/remote-viewer";
 import { ProtectedRoute } from "@/components/protected-route";
 
@@ -207,6 +208,7 @@ function Router() {
                   <Route path="/monitor" component={Monitor} />
                   <Route path="/site-forge" component={SiteForge} />
                   <Route path="/fix" component={ComputerFix} />
+                  <Route path="/workspace" component={Workspace} />
                   <Route path="/admin" component={AdminPanel} />
                   <Route component={NotFound} />
                 </Switch>

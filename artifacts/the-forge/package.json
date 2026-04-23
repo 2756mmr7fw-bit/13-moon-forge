@@ -78,6 +78,7 @@
   "dependencies": {
     "@clerk/react": "^6.4.2",
     "file-saver": "^2.0.5",
-    "jszip": "^3.10.1"
+    "jszip": "^3.10.1",
+    "react-markdown": "^10.1.0"
   }
 }
