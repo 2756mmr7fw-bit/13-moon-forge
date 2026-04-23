@@ -117,7 +117,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <p className="text-[10px] text-muted-foreground truncate">{user?.emailAddresses?.[0]?.emailAddress}</p>
         </div>
         <div className="flex items-center gap-1">
-          <Link href="/account" onClick={onNavigate} title="Account settings">
+            <Link href="/account" onClick={onNavigate} title="Account settings">
             <button className="p-1.5 rounded hover:bg-muted-foreground/20 transition-colors">
               <Settings size={13} className="text-muted-foreground" />
             </button>
@@ -180,7 +180,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <ExternalLink size={18} />
             Our Other Apps
           </a>
-          <Show>
+          <Show when="signed-out">
             <Link
               href="/sign-in"
               onClick={onClose}
