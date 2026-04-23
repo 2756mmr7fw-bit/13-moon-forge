@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { lazy, Suspense, useEffect, useRef } from "react";
 import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { ClerkProvider, SignIn, SignUp, useClerk, useAuth } from "@clerk/react";
@@ -6,46 +6,50 @@ import { setAuthTokenGetter } from "@workspace/api-client-react";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Layout } from "@/components/layout";
-import NotFound from "@/pages/not-found";
-import Dashboard from "@/pages/dashboard";
-import Projects from "@/pages/projects";
-import NewProject from "@/pages/new-project";
-import ProjectDetail from "@/pages/project-detail";
-import PageEditor from "@/pages/page-editor";
-import Pricing from "@/pages/pricing";
-import PaymentSuccess from "@/pages/payment-success";
-import Brainstorm from "@/pages/brainstorm";
-import CodeForge from "@/pages/code-forge";
-import ForgeTools from "@/pages/forge-tools";
-import GameDoc from "@/pages/game-doc";
-import SnippetVault from "@/pages/snippet-vault";
-import GameDesignTools from "@/pages/game-design-tools";
-import GameStudio from "@/pages/game-studio";
-import ComputerAdvisor from "@/pages/computer-advisor";
-import ScreenCoach from "@/pages/screen-coach";
-import LaunchKit from "@/pages/launch-kit";
-import LegalDecoder from "@/pages/legal-decoder";
-import LearnWithSage from "@/pages/learn-sage";
-import AskHawk from "@/pages/ask-hawk";
-import MigrationHub from "@/pages/migration-hub";
-import AppHub from "@/pages/app-hub";
-import MigrationWizard from "@/pages/migration-wizard";
-import Leaving from "@/pages/leaving";
-import SovereignStack from "@/pages/sovereign";
-import GitHubConnect from "@/pages/github-connect";
-import Registry from "@/pages/registry";
-import Account from "@/pages/account";
-import SecretsVault from "@/pages/secrets-vault";
-import AdminPanel from "@/pages/admin";
-import Connections from "@/pages/connections";
-import Monitor from "@/pages/monitor";
-import Landing from "@/pages/landing";
-import SiteForge from "@/pages/site-forge";
-import ComputerFix from "@/pages/computer-fix";
-import Download from "@/pages/download";
-import Workspace from "@/pages/workspace";
-import RemoteViewer from "@/pages/remote-viewer";
 import { ProtectedRoute } from "@/components/protected-route";
+
+// ── Eager — always needed immediately ──────────────────────────────────────
+import Landing from "@/pages/landing";
+import NotFound from "@/pages/not-found";
+
+// ── Lazy — only loaded when the user navigates there ───────────────────────
+const Dashboard        = lazy(() => import("@/pages/dashboard"));
+const Projects         = lazy(() => import("@/pages/projects"));
+const NewProject       = lazy(() => import("@/pages/new-project"));
+const ProjectDetail    = lazy(() => import("@/pages/project-detail"));
+const PageEditor       = lazy(() => import("@/pages/page-editor"));
+const Pricing          = lazy(() => import("@/pages/pricing"));
+const PaymentSuccess   = lazy(() => import("@/pages/payment-success"));
+const Brainstorm       = lazy(() => import("@/pages/brainstorm"));
+const CodeForge        = lazy(() => import("@/pages/code-forge"));
+const ForgeTools       = lazy(() => import("@/pages/forge-tools"));
+const GameDoc          = lazy(() => import("@/pages/game-doc"));
+const SnippetVault     = lazy(() => import("@/pages/snippet-vault"));
+const GameDesignTools  = lazy(() => import("@/pages/game-design-tools"));
+const GameStudio       = lazy(() => import("@/pages/game-studio"));
+const ComputerAdvisor  = lazy(() => import("@/pages/computer-advisor"));
+const ScreenCoach      = lazy(() => import("@/pages/screen-coach"));
+const LaunchKit        = lazy(() => import("@/pages/launch-kit"));
+const LegalDecoder     = lazy(() => import("@/pages/legal-decoder"));
+const LearnWithSage    = lazy(() => import("@/pages/learn-sage"));
+const AskHawk          = lazy(() => import("@/pages/ask-hawk"));
+const MigrationHub     = lazy(() => import("@/pages/migration-hub"));
+const AppHub           = lazy(() => import("@/pages/app-hub"));
+const MigrationWizard  = lazy(() => import("@/pages/migration-wizard"));
+const Leaving          = lazy(() => import("@/pages/leaving"));
+const SovereignStack   = lazy(() => import("@/pages/sovereign"));
+const GitHubConnect    = lazy(() => import("@/pages/github-connect"));
+const Registry         = lazy(() => import("@/pages/registry"));
+const Account          = lazy(() => import("@/pages/account"));
+const SecretsVault     = lazy(() => import("@/pages/secrets-vault"));
+const AdminPanel       = lazy(() => import("@/pages/admin"));
+const Connections      = lazy(() => import("@/pages/connections"));
+const Monitor          = lazy(() => import("@/pages/monitor"));
+const SiteForge        = lazy(() => import("@/pages/site-forge"));
+const ComputerFix      = lazy(() => import("@/pages/computer-fix"));
+const Download         = lazy(() => import("@/pages/download"));
+const Workspace        = lazy(() => import("@/pages/workspace"));
+const RemoteViewer     = lazy(() => import("@/pages/remote-viewer"));
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
@@ -105,6 +109,15 @@ const queryClient = new QueryClient({
   },
 });
 
+// Minimal spinner shown while a lazy page chunk loads
+function PageLoader() {
+  return (
+    <div className="flex items-center justify-center min-h-[60vh]">
+      <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+    </div>
+  );
+}
+
 function ClerkQueryClientCacheInvalidator() {
   const { addListener } = useClerk();
   const qc = useQueryClient();
@@ -139,8 +152,6 @@ function ClerkTokenInitializer() {
 }
 
 function SignInPage() {
-  // To update login providers, app branding, or OAuth settings use the Auth
-  // pane in the workspace toolbar. More information can be found in the Replit docs.
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} />
@@ -149,8 +160,6 @@ function SignInPage() {
 }
 
 function SignUpPage() {
-  // To update login providers, app branding, or OAuth settings use the Auth
-  // pane in the workspace toolbar. More information can be found in the Replit docs.
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} />
@@ -160,64 +169,66 @@ function SignUpPage() {
 
 function Router() {
   return (
-    <Switch>
-      <Route path="/sign-in/*?" component={SignInPage} />
-      <Route path="/sign-up/*?" component={SignUpPage} />
-      <Route path="/" component={Landing} />
-      <Route>
-        <Layout>
-          <Switch>
-            {/* ── Public routes (no auth required) ── */}
-            <Route path="/pricing" component={Pricing} />
-            <Route path="/payment/success" component={PaymentSuccess} />
-            <Route path="/download" component={Download} />
-            <Route path="/remote/:sessionId" component={RemoteViewer} />
+    <Suspense fallback={<PageLoader />}>
+      <Switch>
+        <Route path="/sign-in/*?" component={SignInPage} />
+        <Route path="/sign-up/*?" component={SignUpPage} />
+        <Route path="/" component={Landing} />
+        <Route>
+          <Layout>
+            <Switch>
+              {/* ── Public routes ── */}
+              <Route path="/pricing" component={Pricing} />
+              <Route path="/payment/success" component={PaymentSuccess} />
+              <Route path="/download" component={Download} />
+              <Route path="/remote/:sessionId" component={RemoteViewer} />
 
-            {/* ── Protected routes (sign-in required) ── */}
-            <Route>
-              <ProtectedRoute>
-                <Switch>
-                  <Route path="/dashboard" component={Dashboard} />
-                  <Route path="/projects" component={Projects} />
-                  <Route path="/projects/new" component={NewProject} />
-                  <Route path="/projects/:id" component={ProjectDetail} />
-                  <Route path="/projects/:id/editor" component={PageEditor} />
-                  <Route path="/brainstorm" component={Brainstorm} />
-                  <Route path="/code-forge" component={CodeForge} />
-                  <Route path="/tools" component={ForgeTools} />
-                  <Route path="/game-doc" component={GameDoc} />
-                  <Route path="/snippets" component={SnippetVault} />
-                  <Route path="/game-tools" component={GameDesignTools} />
-                  <Route path="/game-studio" component={GameStudio} />
-                  <Route path="/computer-advisor" component={ComputerAdvisor} />
-                  <Route path="/screen-coach" component={ScreenCoach} />
-                  <Route path="/launch" component={LaunchKit} />
-                  <Route path="/legal" component={LegalDecoder} />
-                  <Route path="/sage" component={LearnWithSage} />
-                  <Route path="/hawk" component={AskHawk} />
-                  <Route path="/migration" component={MigrationHub} />
-                  <Route path="/app-hub" component={AppHub} />
-                  <Route path="/wizard" component={MigrationWizard} />
-                  <Route path="/leaving" component={Leaving} />
-                  <Route path="/sovereign" component={SovereignStack} />
-                  <Route path="/github" component={GitHubConnect} />
-                  <Route path="/registry" component={Registry} />
-                  <Route path="/account" component={Account} />
-                  <Route path="/secrets" component={SecretsVault} />
-                  <Route path="/connections" component={Connections} />
-                  <Route path="/monitor" component={Monitor} />
-                  <Route path="/site-forge" component={SiteForge} />
-                  <Route path="/fix" component={ComputerFix} />
-                  <Route path="/workspace" component={Workspace} />
-                  <Route path="/admin" component={AdminPanel} />
-                  <Route component={NotFound} />
-                </Switch>
-              </ProtectedRoute>
-            </Route>
-          </Switch>
-        </Layout>
-      </Route>
-    </Switch>
+              {/* ── Protected routes ── */}
+              <Route>
+                <ProtectedRoute>
+                  <Switch>
+                    <Route path="/dashboard"              component={Dashboard} />
+                    <Route path="/projects"               component={Projects} />
+                    <Route path="/projects/new"           component={NewProject} />
+                    <Route path="/projects/:id"           component={ProjectDetail} />
+                    <Route path="/projects/:id/editor"    component={PageEditor} />
+                    <Route path="/brainstorm"             component={Brainstorm} />
+                    <Route path="/code-forge"             component={CodeForge} />
+                    <Route path="/tools"                  component={ForgeTools} />
+                    <Route path="/game-doc"               component={GameDoc} />
+                    <Route path="/snippets"               component={SnippetVault} />
+                    <Route path="/game-tools"             component={GameDesignTools} />
+                    <Route path="/game-studio"            component={GameStudio} />
+                    <Route path="/computer-advisor"       component={ComputerAdvisor} />
+                    <Route path="/screen-coach"           component={ScreenCoach} />
+                    <Route path="/launch"                 component={LaunchKit} />
+                    <Route path="/legal"                  component={LegalDecoder} />
+                    <Route path="/sage"                   component={LearnWithSage} />
+                    <Route path="/hawk"                   component={AskHawk} />
+                    <Route path="/migration"              component={MigrationHub} />
+                    <Route path="/app-hub"                component={AppHub} />
+                    <Route path="/wizard"                 component={MigrationWizard} />
+                    <Route path="/leaving"                component={Leaving} />
+                    <Route path="/sovereign"              component={SovereignStack} />
+                    <Route path="/github"                 component={GitHubConnect} />
+                    <Route path="/registry"               component={Registry} />
+                    <Route path="/account"                component={Account} />
+                    <Route path="/secrets"                component={SecretsVault} />
+                    <Route path="/connections"            component={Connections} />
+                    <Route path="/monitor"                component={Monitor} />
+                    <Route path="/site-forge"             component={SiteForge} />
+                    <Route path="/fix"                    component={ComputerFix} />
+                    <Route path="/workspace"              component={Workspace} />
+                    <Route path="/admin"                  component={AdminPanel} />
+                    <Route component={NotFound} />
+                  </Switch>
+                </ProtectedRoute>
+              </Route>
+            </Switch>
+          </Layout>
+        </Route>
+      </Switch>
+    </Suspense>
   );
 }
 
