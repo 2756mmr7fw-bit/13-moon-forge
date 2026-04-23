@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Flame, Loader2, Hammer, Send, RotateCcw, CheckCircle2, Edit2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SpeakButton } from "@/components/speak-button";
 
 const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -232,6 +233,11 @@ export default function NewProject() {
                 <span className="text-[9px] font-bold uppercase tracking-widest text-primary block mb-1.5">Forge</span>
               )}
               <span className="whitespace-pre-wrap">{m.text}</span>
+              {m.role === "forge" && m.text && !streaming && (
+                <div className="mt-1.5 flex justify-end">
+                  <SpeakButton text={m.text} />
+                </div>
+              )}
               {m.role === "forge" && m.text === "" && streaming && (
                 <span className="inline-flex gap-0.5 ml-1">
                   {[0, 1, 2].map(j => (

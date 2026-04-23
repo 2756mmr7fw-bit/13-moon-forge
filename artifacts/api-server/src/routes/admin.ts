@@ -32,7 +32,7 @@ const clerkClient = createClerkClient({
 const adminCache = new Map<string, { result: boolean; expiresAt: number }>();
 const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
-async function isAdmin(userId: string): Promise<boolean> {
+export async function isAdmin(userId: string): Promise<boolean> {
   if (!userId || userId.startsWith("anon-")) return false;
 
   // Fast path: check by ID
