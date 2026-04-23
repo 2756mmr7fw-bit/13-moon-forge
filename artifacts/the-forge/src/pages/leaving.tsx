@@ -157,16 +157,17 @@ export default function Leaving() {
           <PackageOpen size={22} className="text-primary" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-bold text-sm mb-1">Take everything Forge built with you</p>
+          <p className="font-bold text-sm mb-1">Your work leaves with you — all of it</p>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Every document, plan, blueprint, goal sheet, and code file you created lives in your Workspace.
-            Download it all as a ZIP — organized folders, markdown files, fully portable. Nothing is locked here.
+            Every document, plan, blueprint, goal sheet, and code file you made is in your Workspace.
+            One click downloads everything as a ZIP — clean markdown files in organized folders. Nothing held back, nothing lost.
+            And if you ever want to come back, we'll be right here.
           </p>
         </div>
         <div className="flex gap-2 shrink-0 flex-wrap">
           <Link href="/workspace">
             <Button className="gap-2 bg-primary text-white text-sm">
-              <Flame size={14} /> Open Workspace
+              <Flame size={14} /> Pack My Bags
             </Button>
           </Link>
         </div>
@@ -253,9 +254,9 @@ export default function Leaving() {
         {/* CTA */}
         <div className="rounded-xl border border-primary/20 bg-primary/5 p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
           <div className="flex-1">
-            <p className="font-bold mb-1">Ready to start?</p>
+            <p className="font-bold mb-1">Ready to make the move?</p>
             <p className="text-sm text-muted-foreground">
-              The Migration Wizard walks you through this entire checklist step by step — audit first, then rewrites, then infrastructure, then deploy.
+              The Migration Wizard walks you through this entire checklist step by step — audit first, then rewrites, then infrastructure, then deploy. Go at your own pace.
             </p>
           </div>
           <div className="flex gap-3 shrink-0 flex-wrap">
@@ -270,6 +271,16 @@ export default function Leaving() {
               </Button>
             </Link>
           </div>
+        </div>
+
+        {/* Farewell note */}
+        <div className="rounded-xl border border-border bg-card/40 p-6 text-center space-y-2">
+          <p className="font-bold text-sm">We're rooting for you.</p>
+          <p className="text-xs text-muted-foreground leading-relaxed max-w-md mx-auto">
+            Wherever you're headed — your own server, a different platform, or just a fresh start — we genuinely hope it goes well.
+            Your files are packed, your checklist is ready, and if you ever want to swing by again, the door's always open.
+          </p>
+          <p className="text-xs text-primary font-semibold mt-1">— The Forge Team</p>
         </div>
       </div>
     </div>
