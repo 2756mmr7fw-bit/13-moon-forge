@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { LogOut, CheckSquare, Wand2, ExternalLink, ChevronRight } from "lucide-react";
+import { LogOut, CheckSquare, Wand2, ExternalLink, ChevronRight, PackageOpen, Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface PlatformGuide {
@@ -139,7 +139,7 @@ export default function Leaving() {
   return (
     <div className="max-w-4xl mx-auto animate-in fade-in duration-300">
       {/* Header */}
-      <div className="flex items-start gap-4 mb-8">
+      <div className="flex items-start gap-4 mb-6">
         <div className="bg-destructive/10 rounded-xl p-3 shrink-0 border border-destructive/20">
           <LogOut className="w-7 h-7 text-destructive" />
         </div>
@@ -148,6 +148,27 @@ export default function Leaving() {
           <p className="text-sm text-muted-foreground mt-1">
             Platform-specific migration guides. Find yours, understand what's got you hooked, and walk out clean.
           </p>
+        </div>
+      </div>
+
+      {/* Forge Data Banner */}
+      <div className="rounded-2xl border border-primary/25 bg-primary/5 p-5 mb-8 flex flex-col sm:flex-row items-start sm:items-center gap-5">
+        <div className="w-12 h-12 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
+          <PackageOpen size={22} className="text-primary" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-bold text-sm mb-1">Take everything Forge built with you</p>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Every document, plan, blueprint, goal sheet, and code file you created lives in your Workspace.
+            Download it all as a ZIP — organized folders, markdown files, fully portable. Nothing is locked here.
+          </p>
+        </div>
+        <div className="flex gap-2 shrink-0 flex-wrap">
+          <Link href="/workspace">
+            <Button className="gap-2 bg-primary text-white text-sm">
+              <Flame size={14} /> Open Workspace
+            </Button>
+          </Link>
         </div>
       </div>
 

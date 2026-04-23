@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "@clerk/react";
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
 import {
   Folder, FolderOpen, FileText, Target, Calendar, Briefcase,
   LayoutTemplate, File, Plus, Trash2, ChevronRight, ChevronDown,
   Printer, Pencil, Check, X, Loader2, Flame, Send, Star, MoreHorizontal,
-  FolderPlus, FilePlus,
+  FolderPlus, FilePlus, PackageOpen, Code2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -34,6 +36,7 @@ const TYPE_ICONS: Record<string, React.ComponentType<{ size: number; color?: str
   blueprint: LayoutTemplate,
   portfolio: Briefcase,
   goal: Target,
+  code: Code2,
   pdf: File,
 };
 
@@ -99,6 +102,19 @@ export default function Workspace() {
 
   async function forgeCreate() {
     if (!forgeInput.trim() || forging) return;
+
+    // Detect leaving / export intent — Forge helps you take everything
+    const leavingKeywords = /\b(leave|leaving|export|download|take my|pack|backup|back.?up|migrate|move my|get my files|i'm done|im done|switching away)\b/i;
+    if (leavingKeywords.test(forgeInput)) {
+      setForgeInput("");
+      toast({
+        title: "Forge has your back",
+        description: "Downloading your entire workspace as a ZIP — all your files, folders, and documents.",
+      });
+      await exportAll();
+      return;
+    }
+
     setForging(true);
     try {
       const headers = await authHeaders();
@@ -352,13 +368,43 @@ ${markdownToHtml(selected.content ?? "")}
 
   const pinnedItems = items.filter(i => i.pinned);
 
+  async function exportAll() {
+    if (items.filter(i => i.type !== "folder").length === 0) {
+      toast({ title: "Nothing to export yet", description: "Create some files first and they'll be included in the download." });
+      return;
+    }
+    const zip = new JSZip();
+    for (const item of items) {
+      if (item.type === "folder") continue;
+      const parent = items.find(i => i.id === item.parentId);
+      const dir = parent ? `${parent.name}/` : "";
+      const ext = item.type === "code" ? "md" : "md";
+      const filename = `${dir}${item.name}.${ext}`;
+      const header = `# ${item.name}\n_Type: ${item.type} · Created: ${new Date(item.createdAt).toLocaleDateString()}_\n\n`;
+      zip.file(filename, header + (item.content ?? ""));
+    }
+    const blob = await zip.generateAsync({ type: "blob" });
+    const date = new Date().toISOString().slice(0, 10);
+    saveAs(blob, `forge-workspace-${date}.zip`);
+    toast({ title: "Downloaded!", description: `${items.filter(i => i.type !== "folder").length} files packed into your ZIP.` });
+  }
+
   return (
     <div className="flex gap-0 -mx-4 -mt-4 h-[calc(100vh-80px)] overflow-hidden rounded-xl border border-border">
       {/* ── Left: File Tree ──────────────────────────────────────────────── */}
       <div className="w-64 shrink-0 border-r border-border bg-card flex flex-col overflow-hidden">
         {/* Header */}
         <div className="p-3 border-b border-border">
-          <h2 className="font-bold text-sm">Workspace</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="font-bold text-sm">Workspace</h2>
+            <button
+              onClick={exportAll}
+              title="Download all files as ZIP"
+              className="p-1 rounded-lg hover:bg-muted text-muted-foreground hover:text-primary transition-colors"
+            >
+              <PackageOpen size={14} />
+            </button>
+          </div>
           <p className="text-[10px] text-muted-foreground mt-0.5">Forge organizes your files</p>
         </div>
 

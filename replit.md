@@ -11,8 +11,9 @@ AI-powered invention and building platform for Sovereign Digital LLC (13moonforg
 
 ### Builder
 - **The Anvil** (`/`) — Dashboard with stats and recent projects
-- **My Projects** (`/projects`) — Project management with templates
-- **New Creation** (`/projects/new`) — Create new project
+- **My Projects** (`/projects`) — Project management with templates, pin/sort, portfolio builder
+- **Workspace** (`/workspace`) — Forge-powered file system: folders, documents, plans, blueprints, portfolios, goals, code files. Forge chat creates any type from natural language. Keyword detection for export intent triggers ZIP download automatically. Full CRUD, pin, rename, PDF export, markdown editor. DB: `workspace_items` table. API: `GET|POST /api/workspace`, `PUT|DELETE /api/workspace/:id`, `POST /api/workspace/forge`.
+- **New Creation** (`/projects/new`) — Conversational Forge chat extracts project plan then one-click creates
 - **Brainstorm** (`/brainstorm`) — AI idea generation
 
 ### Creator Tools
