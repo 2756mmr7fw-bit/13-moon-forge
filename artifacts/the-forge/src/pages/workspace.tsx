@@ -399,13 +399,13 @@ ${markdownToHtml(selected.content ?? "")}
             <h2 className="font-bold text-sm">Workspace</h2>
             <button
               onClick={exportAll}
-              title="Download all files as ZIP"
+              title="Pack My Bags — download everything as a ZIP"
               className="p-1 rounded-lg hover:bg-muted text-muted-foreground hover:text-primary transition-colors"
             >
               <PackageOpen size={14} />
             </button>
           </div>
-          <p className="text-[10px] text-muted-foreground mt-0.5">Forge organizes your files</p>
+          <p className="text-[10px] text-muted-foreground mt-0.5">Your failsafe safe — we hold it, you own it</p>
         </div>
 
         {/* Quick creates */}
@@ -441,7 +441,7 @@ ${markdownToHtml(selected.content ?? "")}
                 <div className="text-center py-8 px-3">
                   <Flame size={24} className="text-primary mx-auto mb-2 opacity-60" />
                   <p className="text-xs text-muted-foreground mb-1">Tell Forge what to create below</p>
-                  <p className="text-[10px] text-muted-foreground/60 leading-relaxed">Everything here is yours — always free to save, copy, and take</p>
+                  <p className="text-[10px] text-muted-foreground/60 leading-relaxed">Your failsafe safe — we hold onto everything until you decide to delete it</p>
                 </div>
               )}
               {roots.map(item => <TreeItem key={item.id} item={item} depth={0} />)}
@@ -576,7 +576,7 @@ ${markdownToHtml(selected.content ?? "")}
               <p className="text-muted-foreground text-sm leading-relaxed mb-4">
                 Tell Forge what to create — folders, plans, blueprints, portfolios, goal sheets, anything. He'll build it and organize it for you.
               </p>
-              <p className="text-xs text-muted-foreground/70 mb-6">Everything you make here is yours. Free to save, export, and take whenever you want.</p>
+              <p className="text-xs text-muted-foreground/70 mb-6">Think of this as your failsafe safe — we hold onto everything in case you lose it locally. Crashed laptop, accidental close, gone file — it's all here. We never delete your work without you choosing to.</p>
               <div className="grid grid-cols-2 gap-2 text-left">
                 {[
                   "Create a 90-day business plan",
