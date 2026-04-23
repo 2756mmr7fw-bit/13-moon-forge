@@ -440,7 +440,8 @@ ${markdownToHtml(selected.content ?? "")}
               {roots.length === 0 && (
                 <div className="text-center py-8 px-3">
                   <Flame size={24} className="text-primary mx-auto mb-2 opacity-60" />
-                  <p className="text-xs text-muted-foreground">Tell Forge what to create below</p>
+                  <p className="text-xs text-muted-foreground mb-1">Tell Forge what to create below</p>
+                  <p className="text-[10px] text-muted-foreground/60 leading-relaxed">Everything here is yours — always free to save, copy, and take</p>
                 </div>
               )}
               {roots.map(item => <TreeItem key={item.id} item={item} depth={0} />)}
@@ -572,9 +573,10 @@ ${markdownToHtml(selected.content ?? "")}
                 <Flame size={28} className="text-primary" />
               </div>
               <h3 className="font-bold text-xl mb-2">Forge Workspace</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed mb-6">
+              <p className="text-muted-foreground text-sm leading-relaxed mb-4">
                 Tell Forge what to create — folders, plans, blueprints, portfolios, goal sheets, anything. He'll build it and organize it for you.
               </p>
+              <p className="text-xs text-muted-foreground/70 mb-6">Everything you make here is yours. Free to save, export, and take whenever you want.</p>
               <div className="grid grid-cols-2 gap-2 text-left">
                 {[
                   "Create a 90-day business plan",

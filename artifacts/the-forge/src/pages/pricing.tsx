@@ -9,7 +9,7 @@ const tiers = [
   {
     id: "free",
     name: "Free",
-    tagline: "Try it out",
+    tagline: "Always free — no strings",
     price: 0,
     period: "forever",
     icon: Zap,
@@ -17,15 +17,16 @@ const tiers = [
     iconBg: "bg-muted",
     iconColor: "text-muted-foreground",
     highlight: false,
-    cta: "Start for free",
+    cta: "Start free — no card needed",
     ctaVariant: "outline" as const,
     messages: "10 messages / month",
-    description: "Enough to run one real Screen Coach session and see what Forge can do. No credit card, no commitment.",
+    description: "Jump in, use the tools, save what you build, and take it with you whenever you want. No credit card. No commitment. Come back anytime.",
     features: [
       "10 AI messages per month",
       "Screen Coach (1 session)",
       "Computer Advisor",
       "Ask Hawk",
+      "Your work is always yours to export",
       "Resets every month",
     ],
     note: null,
@@ -371,15 +372,51 @@ export default function Pricing() {
         </Button>
       </div>
 
+      {/* Our Promise */}
+      <div className="rounded-2xl border-2 border-primary/20 bg-primary/4 p-8 space-y-6">
+        <div className="text-center">
+          <p className="text-xs uppercase tracking-widest text-primary font-bold mb-2">Our Promise to You</p>
+          <h2 className="text-2xl font-black">We don't hold your things for ransom.</h2>
+          <p className="text-muted-foreground text-sm mt-2 max-w-lg mx-auto leading-relaxed">
+            Everything you build, write, and save here belongs to you. Always. We mean that.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {[
+            {
+              title: "Free to save",
+              body: "Create a free account and your work is saved. Plans, documents, blueprints, code — stored and ready whenever you come back.",
+            },
+            {
+              title: "Free to take",
+              body: "Download everything as a ZIP anytime. Clean markdown files, organized by your folders. Nothing locked, nothing held back.",
+            },
+            {
+              title: "Free to leave",
+              body: "If you're done with us, we hold the door open. Take your files, cancel with one click, and know you're always welcome back.",
+            },
+          ].map(({ title, body }) => (
+            <div key={title} className="rounded-xl border border-primary/15 bg-card p-5 space-y-2">
+              <p className="font-bold text-sm text-primary">{title}</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">{body}</p>
+            </div>
+          ))}
+        </div>
+        <p className="text-center text-xs text-muted-foreground">
+          No dark patterns. No data harvesting. No "your stuff disappears if you cancel." Built by people, for people.
+        </p>
+      </div>
+
       {/* Bottom CTA */}
       <div className="text-center space-y-4 pb-4">
-        <h3 className="text-2xl font-black">Ready to ditch Geek Squad?</h3>
-        <p className="text-muted-foreground">Start free. No credit card. Upgrade when you're ready.</p>
+        <h3 className="text-2xl font-black">Ready to get started?</h3>
+        <p className="text-muted-foreground">Free account, no card, your work yours forever. Upgrade if you ever need more — downgrade or leave anytime.</p>
         <Link href="/sign-up">
           <Button size="lg" className="gap-2 px-10">
             Start for free <ArrowRight size={15} />
           </Button>
         </Link>
+        <p className="text-xs text-muted-foreground">Come back whenever you need us. The door's always open.</p>
       </div>
 
     </div>

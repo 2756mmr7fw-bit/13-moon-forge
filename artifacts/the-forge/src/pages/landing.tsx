@@ -87,11 +87,11 @@ const TOOLS = [
 
 interface ChatMsg { role: "user" | "forge"; text: string }
 
-const FORGE_INTRO = `Hey — I'm Forge. I'm part of the 13 Moon family built by Sovereign Digital LLC. You've got 10 free messages to use with me right here.
+const FORGE_INTRO = `Hey — I'm Forge. Part of the 13 Moon family, built by Sovereign Digital LLC.
 
-Tell me what you're dealing with — a broken computer, a website idea, a legal document you don't understand, a game you want to build, anything. I'll tell you exactly which Moon can help and what it costs to get it done.
+You're welcome here. No catch, no pressure. You've got 10 free messages right now — use them however you want. Ask me anything, take what you learn, and if you decide to come back, we'll be right here.
 
-What's going on?`;
+Tell me what's going on — a broken computer, a website you want to build, a contract you can't make sense of, anything. What do you need?`;
 
 export default function Landing() {
   const { isSignedIn, isLoaded } = useAuth();
@@ -222,7 +222,7 @@ export default function Landing() {
             <span className="text-primary">tech team.</span>
           </h1>
           <p className="text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
-            Six AI specialists. One workspace. Fix your computer, build a website, understand a contract, learn anything — right in your browser. No Geek Squad. No downloads. No confusion.
+            Six AI specialists. One workspace. Fix your computer, build a website, understand a contract, learn anything. Free to start, free to save, free to take your work and go. No Geek Squad. No lock-in. No confusion.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
             <Button size="lg" className="gap-2 text-base px-8" asChild>
@@ -260,7 +260,7 @@ export default function Landing() {
               Sign in with email
             </a>
           </div>
-          <p className="text-xs text-muted-foreground">Free to start — no credit card needed</p>
+          <p className="text-xs text-muted-foreground">Free to start · No credit card · Your work is always yours to keep and take</p>
         </div>
       </section>
 
@@ -324,11 +324,19 @@ export default function Landing() {
             {/* Input */}
             <div className="border-t border-white/8 p-3 space-y-2">
               {hitLimit ? (
-                <div className="text-center space-y-2 py-2">
-                  <p className="text-sm text-muted-foreground">You've used your 10 free messages.</p>
-                  <Button size="sm" className="gap-2" asChild>
-                    <a href={`${basePath}/sign-up`}>Create a free account to keep going <ArrowRight size={13} /></a>
-                  </Button>
+                <div className="text-center space-y-3 py-3">
+                  <p className="text-sm font-semibold">That's your 10 free messages.</p>
+                  <p className="text-xs text-muted-foreground max-w-xs mx-auto leading-relaxed">
+                    Create a free account to keep going — no credit card, no commitment. Everything you build stays yours. Come back whenever you need us.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                    <Button size="sm" className="gap-2" asChild>
+                      <a href={`${basePath}/sign-up`}>Create free account <ArrowRight size={13} /></a>
+                    </Button>
+                    <Button size="sm" variant="ghost" className="text-xs text-muted-foreground" asChild>
+                      <a href={`${basePath}/sign-in`}>Already have one? Sign in</a>
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <>
@@ -346,7 +354,7 @@ export default function Landing() {
                     </Button>
                   </div>
                   <p className="text-[11px] text-muted-foreground text-center">
-                    {remaining} free message{remaining !== 1 ? "s" : ""} remaining · <a href={`${basePath}/sign-up`} className="text-primary hover:underline">Sign up for more</a>
+                    {remaining} free message{remaining !== 1 ? "s" : ""} remaining · <a href={`${basePath}/sign-up`} className="text-primary hover:underline">Create a free account</a> to keep everything
                   </p>
                 </>
               )}
