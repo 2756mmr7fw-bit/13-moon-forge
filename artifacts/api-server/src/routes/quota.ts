@@ -10,7 +10,7 @@ function currentMonth(): string {
 }
 
 const PLAN_LIMITS: Record<string, number> = {
-  free:    10,
+  free:    30,
   basic:   150,
   pro:     500,
   forge:   150,

@@ -89,7 +89,7 @@ interface ChatMsg { role: "user" | "forge"; text: string }
 
 const FORGE_INTRO = `Hey — I'm Forge. Part of the 13 Moon family, built by Sovereign Digital LLC.
 
-You're welcome here. No catch, no pressure. You've got 10 free messages right now — use them however you want. Ask me anything, take what you learn, and if you decide to come back, we'll be right here.
+You're welcome here. No catch, no pressure. You've got 30 free messages right now — use them however you want. Ask me anything, take what you learn, and if you decide to come back, we'll be right here.
 
 Tell me what's going on — a broken computer, a website you want to build, a contract you can't make sense of, anything. What do you need?`;
 
@@ -325,7 +325,7 @@ export default function Landing() {
             <div className="border-t border-white/8 p-3 space-y-2">
               {hitLimit ? (
                 <div className="text-center space-y-3 py-3">
-                  <p className="text-sm font-semibold">That's your 10 free messages.</p>
+                  <p className="text-sm font-semibold">That's your 30 free messages.</p>
                   <p className="text-xs text-muted-foreground max-w-xs mx-auto leading-relaxed">
                     Create a free account to keep going — no credit card, no commitment. Everything you build stays yours. Come back whenever you need us.
                   </p>
