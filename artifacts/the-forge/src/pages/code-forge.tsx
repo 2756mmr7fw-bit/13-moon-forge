@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
+import { useAuth } from "@clerk/react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -13,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import {
   Code2, FolderTree as FolderTreeIcon, Copy, Check, Download, Plus, Trash2,
-  Flame, ChevronDown, ChevronRight, Info, Wand2, Loader2, ExternalLink,
+  Flame, ChevronDown, ChevronRight, Info, Wand2, Loader2, ExternalLink, Archive,
 } from "lucide-react";
 import { getUserId } from "@/lib/userId";
 
@@ -298,7 +299,31 @@ function FormatTab() {
   const [input, setInput] = useState("");
   const [platform, setPlatform] = useState<PlatformId>("godot");
   const [showRules, setShowRules] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const { getToken } = useAuth();
   const formatted = formatCode(input, platform);
+
+  const saveToWorkspace = async () => {
+    if (!formatted || saving) return;
+    setSaving(true);
+    try {
+      const token = await getToken();
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) headers.Authorization = `Bearer ${token}`;
+      const platformLabel = PLATFORMS.find(p => p.id === platform)?.label ?? platform;
+      const name = `${platformLabel} — ${new Date().toLocaleDateString()}`;
+      const content = `\`\`\`${platform}\n${formatted}\n\`\`\``;
+      await fetch(`${API_BASE}/api/workspace`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ type: "code", name, content, icon: "code-2", color: "#a78bfa" }),
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch { /* silent */ }
+    finally { setSaving(false); }
+  };
 
   return (
     <div className="space-y-6">
@@ -382,7 +407,21 @@ function FormatTab() {
                 </Badge>
               )}
             </div>
-            {formatted && <CopyButton text={formatted} />}
+            <div className="flex items-center gap-1">
+              {formatted && <CopyButton text={formatted} />}
+              {formatted && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={saveToWorkspace}
+                  disabled={saving}
+                  className="h-7 gap-1.5 text-xs"
+                >
+                  {saving ? <Loader2 size={12} className="animate-spin" /> : saved ? <Check size={12} className="text-green-400" /> : <Archive size={12} />}
+                  {saved ? "Saved!" : "Save"}
+                </Button>
+              )}
+            </div>
           </div>
           <div className="relative h-[420px] rounded-md border border-border bg-muted/10 overflow-hidden">
             {formatted ? (
@@ -499,8 +538,36 @@ function OrganizeTab() {
   const [analyzing, setAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [analyzeError, setAnalyzeError] = useState<{ message: string; subscribeUrl?: string } | null>(null);
+  const [savingToWs, setSavingToWs] = useState(false);
+  const [savedToWs, setSavedToWs] = useState(false);
+  const { getToken } = useAuth();
 
   const activeFile = files.find(f => f.id === activeId) ?? files[0];
+
+  const saveProjectToWorkspace = async () => {
+    const hasCode = files.some(f => f.code.trim());
+    if (!hasCode || savingToWs) return;
+    setSavingToWs(true);
+    try {
+      const token = await getToken();
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) headers.Authorization = `Bearer ${token}`;
+      for (const f of files) {
+        if (!f.code.trim()) continue;
+        const folder = f.folder === "custom" ? f.customFolder || "misc" : f.folder;
+        const name = f.name || "untitled";
+        const content = `## ${folder}/${name}\n\n\`\`\`\n${f.code}\n\`\`\``;
+        await fetch(`${API_BASE}/api/workspace`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ type: "code", name, content, icon: "code-2", color: "#a78bfa" }),
+        });
+      }
+      setSavedToWs(true);
+      setTimeout(() => setSavedToWs(false), 3000);
+    } catch { /* silent */ }
+    finally { setSavingToWs(false); }
+  };
 
   const updateFile = useCallback((id: string, patch: Partial<ProjectFile>) => {
     setFiles(prev => prev.map(f => f.id === id ? { ...f, ...patch } : f));
@@ -785,6 +852,15 @@ function OrganizeTab() {
           >
             <Download size={15} />
             {downloading ? "Building ZIP…" : "Download ZIP"}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={saveProjectToWorkspace}
+            disabled={savingToWs || files.every(f => !f.code.trim())}
+            className="w-full gap-2"
+          >
+            {savingToWs ? <Loader2 size={14} className="animate-spin" /> : savedToWs ? <Check size={14} className="text-green-400" /> : <Archive size={14} />}
+            {savedToWs ? "Saved to Workspace!" : "Save to Workspace"}
           </Button>
           <p className="text-[11px] text-muted-foreground">
             All processing happens in your browser — no code is sent to any server.

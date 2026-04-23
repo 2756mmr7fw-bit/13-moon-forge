@@ -208,7 +208,8 @@ For folders: always return empty content string.`;
 function typeToIcon(type: string): string {
   const map: Record<string, string> = {
     folder: "folder", document: "file-text", plan: "calendar-check",
-    blueprint: "layout-template", portfolio: "briefcase", goal: "target", pdf: "file",
+    blueprint: "layout-template", portfolio: "briefcase", goal: "target",
+    pdf: "file", code: "code-2",
   };
   return map[type] ?? "file";
 }
@@ -216,7 +217,8 @@ function typeToIcon(type: string): string {
 function typeToColor(type: string): string {
   const map: Record<string, string> = {
     folder: "#f59e0b", document: "#60a5fa", plan: "#a78bfa",
-    blueprint: "#38bdf8", portfolio: "#e8611a", goal: "#4ade80", pdf: "#94a3b8",
+    blueprint: "#38bdf8", portfolio: "#e8611a", goal: "#4ade80",
+    pdf: "#94a3b8", code: "#c084fc",
   };
   return map[type] ?? "#60a5fa";
 }
