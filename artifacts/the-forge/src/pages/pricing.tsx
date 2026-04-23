@@ -381,11 +381,15 @@ export default function Pricing() {
             Everything you build, write, and save here belongs to you. Always. We mean that.
           </p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
             {
               title: "Free to save",
               body: "Create a free account and your work is saved. Plans, documents, blueprints, code — stored and ready whenever you come back.",
+            },
+            {
+              title: "Your failsafe safe",
+              body: "We hold onto everything in case you lose it locally. Crashed laptop, deleted file, accidental close — we've got it. It's yours until you decide to delete it.",
             },
             {
               title: "Free to take",
@@ -403,7 +407,7 @@ export default function Pricing() {
           ))}
         </div>
         <p className="text-center text-xs text-muted-foreground">
-          No dark patterns. No data harvesting. No "your stuff disappears if you cancel." Built by people, for people.
+          No dark patterns. No data harvesting. We never delete your work without your say-so. Built by people, for people.
         </p>
       </div>
 

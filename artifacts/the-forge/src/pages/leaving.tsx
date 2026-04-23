@@ -161,7 +161,7 @@ export default function Leaving() {
           <p className="text-xs text-muted-foreground leading-relaxed">
             Every document, plan, blueprint, goal sheet, and code file you made is in your Workspace.
             One click downloads everything as a ZIP — clean markdown files in organized folders. Nothing held back, nothing lost.
-            And if you ever want to come back, we'll be right here.
+            And if you're not ready to download yet, your files stay right here. We never delete anything without your say-so. Come back whenever you're ready.
           </p>
         </div>
         <div className="flex gap-2 shrink-0 flex-wrap">
