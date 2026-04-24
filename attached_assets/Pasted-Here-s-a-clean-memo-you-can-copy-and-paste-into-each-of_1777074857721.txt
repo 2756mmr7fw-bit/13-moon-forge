@@ -1,0 +1,75 @@
+Here's a clean memo you can copy and paste into each of your other apps' chats (or hand to whoever's working on them). I wrote it so it explains itself — no extra setup needed on your end.
+
+📋 PASTE THIS INTO EACH SISTER APP
+Subject: Email service change — switch from SendGrid to Resend
+
+The SendGrid API key we've been using across the Thirteen Moons suite is dead. It returns 403 forbidden. That means any welcome letters, alerts, password resets, or notifications this app has been trying to send through SendGrid have been silently failing — the app keeps running, the user never gets the mail, no error is shown.
+
+From now on, all email goes through Resend. Here's what to do:
+
+1. Find every place in the codebase that uses SendGrid. Search for @sendgrid/mail, SENDGRID_API_KEY, sgMail, or MailService. Common files: server/email.ts, server/routes.ts, anything in a replit_integrations/email/ folder.
+
+2. Remove the SendGrid wiring. Don't keep it as a fallback. Delete it. The dead key has been masking failures for a long time and we don't want it doing that again.
+
+3. Replace it with Resend. The pattern is plain HTTP — no SDK needed. Use this:
+
+// server/email.ts (or equivalent)
+export async function sendEmail(
+  to: string,
+  subject: string,
+  text: string,
+  html: string
+): Promise<boolean> {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.error("RESEND_API_KEY not set");
+    return false;
+  }
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: "Town Square <noreply@updates.thepeoplestownsq.com>",
+      to: [to],
+      subject,
+      text,
+      html,
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    console.error(`Resend failed (${res.status}):`, err);
+    return false;
+  }
+  return true;
+}
+
+4. Set the secret. Add RESEND_API_KEY to this app's environment secrets. Use the same key value that's in The People's Digital Town Square's secrets. (Ezekiel will share it — do NOT regenerate a new one, one key serves the whole suite.)
+
+5. Update the FROM address if this app has its own brand.
+
+Town Square companion apps (payment gateway, community connect, moon redirect): use Town Square <noreply@updates.thepeoplestownsq.com> — already verified, works today.
+Standalone-brand apps (Call Guardian, EZ Quill, Film Editor, Forge Builder, Inventor's Workshop, Antivirus, TSP/TSPTV): for now use the same Town Square sender so it works today. When that app is ready for its own brand mail, verify a domain like noreply@callguardian.app (or whatever) inside the same Resend account, then swap the FROM line. The same RESEND_API_KEY will send from any verified domain — no new key needed.
+6. Remove SENDGRID_API_KEY from this app's secrets once the swap is done. Don't leave dead keys sitting in environments — they're security clutter.
+
+7. Send one test email to ezekiel@thepeoplestownsq.com after the change. Subject: [APP NAME] email test — Resend. If it lands, you're done. If it doesn't, check the logs for the Resend error message and report back.
+
+Why we're doing this: one working email pipeline across the whole suite. Resend is a plain HTTP API — no platform-specific connectors, no Replit-specific code. That means when the suite moves off Replit and onto Forge, email keeps working with zero changes. Done once, done right.
+
+— Ezekiel
+
+🔑 The one piece of info you'll need to share
+When you forward that note, you'll need to give each app the value of RESEND_API_KEY. Don't paste it into the chat — pull it from your Replit secrets and add it directly to each app's secrets one at a time. If you want, I can walk you through that the same way I'd walk anyone else through it — just tell me which app you're starting with.
+
+🧹 Apps in priority order
+If you want a sane sequence to do them in:
+
+Payment Gateway — most critical, handles money, confirmation emails matter
+Community Connect — user-facing, sends notifications
+Moon Redirect — probably doesn't even send mail, but worth checking
+Call Guardian — alert emails are the whole point of this app
+EZ Quill, Film Editor, Forge Builder, Inventor's Workshop, Antivirus, TSP/TSPTV — knock them out in any order
+And yes — The People's Digital Town Square itself needs the same change. Want me to do that one for you right now since I'm already in the codebase? Just say "do Town Square" and I'll handle it. 🌙
