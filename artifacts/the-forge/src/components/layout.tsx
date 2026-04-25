@@ -4,12 +4,13 @@ import {
   Flame, FolderKanban, PlusCircle, CreditCard, ExternalLink,
   Sparkles, Code2, Wand2, Layers, Scale, Crosshair, Activity,
   GraduationCap, ArrowRightLeft, Wrench, BookOpen, Archive, Gamepad2, Rocket, LogOut,
-  Shield, Github, Package, User, LogIn, Menu, X, Settings, KeyRound, ShieldAlert, PlugZap, Swords, Monitor, MonitorPlay, Globe, Download, Wifi, LayoutTemplate,
+  Shield, Github, Package, User, LogIn, Menu, X, Settings, KeyRound, ShieldAlert, PlugZap, Swords, Monitor, MonitorPlay, Globe, Download, Wifi, LayoutTemplate, PencilLine,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LogoMark, LogoWordmark } from "@/components/logo";
 import { OnboardingModal } from "@/components/onboarding-modal";
 import { useUser, useClerk, useAuth, Show } from "@clerk/react";
+import { SkillLevelBadge, SkillLevelDialog } from "@/components/skill-level-selector";
 
 const OUR_APPS_URL = "https://thepeoplestownsq.com";
 
@@ -25,6 +26,7 @@ const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 export function Layout({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [skillOpen, setSkillOpen] = useState(false);
   const { user } = useUser();
   const { signOut } = useClerk();
   const { getToken } = useAuth();
@@ -56,7 +58,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/fix",        label: "Computer Fix",         icon: Wrench,        tip: "Flint diagnoses your computer problem first — $19 one-time fix, no subscription" },
     { href: "/download",   label: "Get the App",          icon: Download,      tip: "Install 13 Moon Forge on any device — or download the Forge Remote Agent" },
     { href: "/site-forge", label: "Site Forge",          icon: Globe,         tip: "Build a professional business website in 60 seconds — yours forever" },
-    { href: "/sage",       label: "Learn with Sage",     icon: GraduationCap, tip: "Step-by-step AI tutor — learn anything at your pace" },
     { href: "/hawk",       label: "Ask Hawk",            icon: Crosshair,     tip: "Get quick answers about your project or code"         },
     { href: "/tools",      label: "AI Tools",            icon: Wrench,        tip: "A collection of AI-powered builder utilities"         },
     { href: "/code-forge", label: "Write Code",          icon: Code2,         tip: "Generate, explain, and improve code with AI"          },
@@ -82,6 +83,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/monitor",    label: "App Health",          icon: Activity,        tip: "Live status of your running apps and infrastructure"               },
     { href: "/connections",label: "Integrations",        icon: PlugZap,         tip: "Connect third-party services to the Forge"                        },
     { href: "/antivirus",  label: "Antivirus Link",      icon: ShieldAlert,     tip: "Link 13 Moon Antivirus — extract emailed code and send it straight to Forge" },
+  ];
+
+  const learnItems: NavItem[] = [
+    { href: "/sage",       label: "Learn to Code",       icon: GraduationCap,  tip: "Step-by-step AI tutor — learn anything at your pace, beginner to advanced" },
+    { href: "/diy-code",   label: "Write Code Yourself", icon: PencilLine,     tip: "Code editor — write your own code with no AI, no credits needed" },
   ];
 
   const isActive = (href: string) =>
@@ -160,6 +166,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
           {toolItems.map(item => <NavLink key={item.href} {...item} onClick={onClose} />)}
         </div>
 
+        {/* Learn */}
+        <div className="pt-4 pb-1 px-3">
+          <p className="text-[10px] font-bold tracking-widest text-muted-foreground/50 uppercase">Learn & Build Yourself</p>
+        </div>
+        <div className="space-y-0.5">
+          {learnItems.map(item => <NavLink key={item.href} {...item} onClick={onClose} />)}
+        </div>
+
         {/* Own Your Apps */}
         <div className="pt-4 pb-1 px-3">
           <p className="text-[10px] font-bold tracking-widest text-muted-foreground/50 uppercase">Own Your Apps</p>
@@ -197,6 +211,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </div>
       </nav>
 
+      <div className="px-4 pb-1">
+        <button
+          onClick={() => setSkillOpen(true)}
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          title="Set your skill level — Forge adjusts explanations for you"
+        >
+          <GraduationCap size={15} />
+          <span>My Skill Level</span>
+        </button>
+      </div>
       <div className="px-4 pb-2">
         <UserPanel onNavigate={onClose} />
       </div>
@@ -218,6 +242,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen bg-background text-foreground">
       <OnboardingModal />
+      <SkillLevelDialog open={skillOpen} onClose={() => setSkillOpen(false)} />
 
       {/* Desktop Sidebar */}
       <aside className="w-64 border-r border-border bg-sidebar flex-col hidden md:flex shrink-0">
