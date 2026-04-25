@@ -16,6 +16,18 @@ AI-powered invention and building platform for Sovereign Digital LLC (13moonforg
 - **New Creation** (`/projects/new`) — Conversational Forge chat extracts project plan then one-click creates
 - **Brainstorm** (`/brainstorm`) — AI idea generation
 
+### Learn & Build Yourself
+- **Write Code Yourself** (`/diy-code`) — Full Monaco editor (VS Code-quality). 16 languages. Zero credits, no AI required. Save directly to Workspace or download the file. For users who want to write their own code without using Forge.
+- **Learn to Code** (`/sage`) — Sage AI tutor, now skill-level-aware.
+
+### Skill Level System
+- User sets their level via "My Skill Level" button at the bottom of the sidebar: Just Starting / Beginner / Novice / Intermediate / Pro
+- Stored in localStorage (`13moonforge_skill_level`)
+- All AI streaming routes read `x-skill-level` header and inject a matching system prompt instruction
+- Skill levels: `absolute-beginner` → plain English + every-line explanations; `beginner` → encouraging + concept definitions; `novice` → 'why' explanations; `intermediate` → normal technical; `pro` → concise, code-first
+- Explain Mode: `x-explain-mode: true` header makes Forge narrate "What I just did:" after every code block
+- Implemented in: `artifacts/the-forge/src/lib/skillLevel.ts`, `components/skill-level-selector.tsx`, API in `forge.ts` `makeStreamRoute()`
+
 ### Creator Tools
 - **Learn with Sage** (`/sage`) — Sage Moon AI tutor
 - **Ask Hawk** (`/hawk`) — Hawk Moon AI assistant

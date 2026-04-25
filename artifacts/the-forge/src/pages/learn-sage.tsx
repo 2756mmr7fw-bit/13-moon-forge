@@ -10,6 +10,7 @@ import {
   GraduationCap, BookOpenCheck, Lightbulb, Loader2, Copy, Check, ExternalLink, RotateCcw,
 } from "lucide-react";
 import { getUserId } from "@/lib/userId";
+import { getSkillLevel, getSkillMeta, SKILL_LEVELS, setSkillLevel, type SkillLevel } from "@/lib/skillLevel";
 
 const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -24,7 +25,11 @@ function useForgeStream(endpoint: string) {
     try {
       const res = await fetch(`${API_BASE}${endpoint}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-user-id": getUserId() },
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-id": getUserId(),
+          "x-skill-level": getSkillLevel(),
+        },
         body: JSON.stringify(body),
       });
       if (!res.body) throw new Error("No stream");

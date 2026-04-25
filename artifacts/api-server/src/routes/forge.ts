@@ -346,6 +346,27 @@ ${code.slice(0, 4000)}
   }
 });
 
+// ─── Skill level system prompt injections ─────────────────────────────────────
+
+type SkillLevel = "absolute-beginner" | "beginner" | "novice" | "intermediate" | "pro";
+
+function skillLevelInstruction(level: SkillLevel | string | undefined): string {
+  switch (level) {
+    case "absolute-beginner":
+      return `\n\n---\nSKILL LEVEL — JUST STARTING: This person has NEVER coded before and may be new to technology. Break EVERYTHING down. Use real-world analogies (e.g. 'a variable is like a labeled box that holds something'). Define every technical term the moment you use it. After any code, explain what EACH LINE does in plain English. Be warm, patient, and genuinely encouraging. Never assume any prior knowledge. Celebrate small wins.`;
+    case "beginner":
+      return `\n\n---\nSKILL LEVEL — BEGINNER: This person is learning the basics. Use plain English, explain what concepts do (not just what they are), and define technical terms when you first use them. After code blocks, add a brief explanation of what the code does and why it works. Be encouraging and build their confidence step by step.`;
+    case "novice":
+      return `\n\n---\nSKILL LEVEL — NOVICE: This person understands fundamentals and is building things. Explain the 'why' behind your decisions. Add helpful comments to code. Briefly explain new concepts as you introduce them. Assume they know basics but still appreciate clear guidance.`;
+    case "intermediate":
+      return `\n\n---\nSKILL LEVEL — INTERMEDIATE: This person is comfortable coding. Use standard technical language. Add comments to complex or non-obvious sections. No need for basic explanations unless something is genuinely tricky.`;
+    case "pro":
+      return `\n\n---\nSKILL LEVEL — PRO: Expert developer. Be concise and technical. Code-first, minimal explanation. Skip the basics entirely.`;
+    default:
+      return "";
+  }
+}
+
 // ─── Helper: streaming SSE tool endpoint ───────────────────────────────────────
 type AccessChecker = (userId: string) => Promise<{ allowed: boolean; moon: string | null; error?: string; subscribeUrl: string }>;
 
@@ -373,13 +394,21 @@ function makeStreamRoute(
       return res.end();
     }
 
+    const skillLevel = (req.headers["x-skill-level"] as string) || body.skillLevel || "novice";
+    const explainMode = req.headers["x-explain-mode"] === "true" || body.explainMode === "true";
+    const explainInstruction = explainMode
+      ? `\n\n---\nEXPLAIN MODE ON: After every block of code you write, add a section called "What I just did:" and explain it in plain English appropriate to the user's skill level. Walk through the logic like you're a patient teacher narrating your own work.`
+      : "";
+
+    const enrichedSystem = systemPrompt + skillLevelInstruction(skillLevel) + explainInstruction;
+
     try {
       const stream = await openai.chat.completions.create({
         model: "gpt-4o",
         max_tokens: maxTokens,
         stream: true,
         messages: [
-          { role: "system", content: systemPrompt },
+          { role: "system", content: enrichedSystem },
           { role: "user", content: buildUserMessage(body) },
         ],
       });
