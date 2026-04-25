@@ -132,6 +132,26 @@ Forge passes its own Sovereign Stack standard — it has a production Dockerfile
 
 ---
 
+## Blueprint — Ideas Parked for Later
+
+### Antivirus → Email → PDF → Forge Pipeline
+**Idea**: Link 13 Moon Antivirus (which can hook into email and extract PDFs) directly to Forge so emailed code/files become Forge build inputs automatically.
+
+**The flow**:
+Email arrives with code/PDF → Antivirus extracts the content → Forge receives it → Forge AI can read and build from it
+
+**Open questions before building**:
+- How does the Antivirus expose extracted content? Outbound webhook (push) or query API (pull)?
+- What format does the extracted content arrive in? Plain text, raw PDF, or structured JSON?
+- Is code in PDFs as text or scanned images? (Text = easy; image = needs OCR)
+
+**Build plan when ready**:
+- Forge inbound webhook endpoint: `POST /api/ingest/document` — accepts extracted text or file from Antivirus
+- Stores ingested content as a Workspace item so Forge AI can see and act on it
+- Antivirus fires the webhook when it pulls a PDF from email
+
+---
+
 ## Workspace
 pnpm workspace monorepo, TypeScript, Node.js 24.
 
