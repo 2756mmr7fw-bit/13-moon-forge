@@ -50,6 +50,7 @@ const ComputerFix      = lazy(() => import("@/pages/computer-fix"));
 const Download         = lazy(() => import("@/pages/download"));
 const Workspace        = lazy(() => import("@/pages/workspace"));
 const RemoteViewer     = lazy(() => import("@/pages/remote-viewer"));
+const Antivirus        = lazy(() => import("@/pages/antivirus"));
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
@@ -266,6 +267,7 @@ function Router() {
                     <Route path="/fix"                    component={ComputerFix} />
                     <Route path="/workspace"              component={Workspace} />
                     <Route path="/admin"                  component={AdminPanel} />
+                    <Route path="/antivirus"              component={Antivirus} />
                     <Route component={NotFound} />
                   </Switch>
                 </ProtectedRoute>

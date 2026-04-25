@@ -25,6 +25,7 @@ import computerFixRouter from "./computer-fix";
 import { remoteRouter } from "./remote";
 import workspaceRouter from "./workspace";
 import ttsRouter from "./tts";
+import antivirusRouter from "./antivirus";
 
 const router: IRouter = Router();
 
@@ -54,5 +55,6 @@ router.use(computerFixRouter);
 router.use("/remote", remoteRouter);
 router.use(workspaceRouter);
 router.use(ttsRouter);
+router.use(antivirusRouter);
 
 export default router;
