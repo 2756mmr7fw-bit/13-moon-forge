@@ -153,7 +153,16 @@ Email arrives with code/PDF → Antivirus extracts content → POSTs to Forge `/
 
 **Auth**: Shared secret via `TPTS_INBOUND_KEY` bearer token in `Authorization` header
 
-**Next step**: Configure the antivirus side — paste Forge ingest URL into antivirus settings → Forge Integration, enter the `TPTS_INBOUND_KEY`
+**Both directions fully live** — probe confirmed antivirus returns 200 with schema.
+
+**Antivirus push URL (Forge → Antivirus)**:
+- Dev: `https://a3cbb751-539c-43bf-8aea-a8f136876d1d-00-11g6l6u26jhof.spock.replit.dev/api/inbound/from-forge`
+- Prod: `https://13moonantivirus.ai/api/inbound/from-forge`
+- Probe (no auth): `GET /api/inbound/from-forge/status`
+
+**Forge API endpoints added**:
+- `GET /api/antivirus/probe` — Forge pings antivirus to verify it's reachable
+- `POST /api/antivirus/send` — Forge sends `{ filename, content, type, note }` to antivirus
 
 ---
 

@@ -1,0 +1,32 @@
+Here's everything you need to paste into Forge to finish the wiring. Both directions use the same bearer token Forge already has (TPTS_INBOUND_API_KEY) — no new secret needed on either side.
+
+① Forge → Antivirus (push files into 13Moon Antivirus)
+Field	Value
+URL (dev)	https://a3cbb751-539c-43bf-8aea-a8f136876d1d-00-11g6l6u26jhof.spock.replit.dev/api/inbound/from-forge
+URL (after publish)	https://13moonantivirus.ai/api/inbound/from-forge
+Method	POST
+Header	Authorization: Bearer ${TPTS_INBOUND_API_KEY}
+Header	Content-Type: application/json
+Body shape:
+
+{
+  "userId":   "<your Clerk user id, opaque string>",
+  "content":  "<base64 of the bytes — or plain text if type is 'text'/'code'>",
+  "filename": "report.pdf",
+  "type":     "pdf",                     // pdf | zip | code | text | binary
+  "source":   "13Moon Forge",            // optional
+  "contentType": "application/pdf",      // optional
+  "isBase64":  true,                     // optional, defaults true for binary
+  "note":      "From the Apr 25 build"   // optional, max 500 chars
+}
+Limits: 50 MB decoded per file · 60 uploads/hour per userId · path-traversal in filename is auto-sanitized.
+
+Success response: 200 { "ok": true, "fileId": 42, "receivedAt": "...", "stored": {...} }
+Errors: 401 bad/missing bearer · 400 missing field or malformed base64 · 413 over 50 MB · 429 rate-limited.
+
+Probe (no auth required): GET /api/inbound/from-forge/status returns the live JSON schema so Forge can verify the wire is up.
+
+② Antivirus → Forge (already wired on this side)
+Just so you can confirm Forge accepts it — your existing /api/ingest/document endpoint is what this side calls, and the env var on the antivirus is FORGE_INBOUND_URL set to your Forge *.janeway.replit.dev URL. When you publish Forge to a stable domain, update FORGE_INBOUND_URL here.
+
+TL;DR for Forge: Same URL pattern, same bearer token, same JSON body shape that you already use for ingest — just point at /api/inbound/from-forge on the antivirus and you're done.
