@@ -134,21 +134,26 @@ Forge passes its own Sovereign Stack standard — it has a production Dockerfile
 
 ## Blueprint — Ideas Parked for Later
 
-### Antivirus → Email → PDF → Forge Pipeline
-**Idea**: Link 13 Moon Antivirus (which can hook into email and extract PDFs) directly to Forge so emailed code/files become Forge build inputs automatically.
+### Antivirus ↔ Forge Integration (BUILT — pending antivirus-side config)
+**Deployed**: Two-way link between 13 Moon Antivirus and Forge.
+
+**URLs**:
+- Antivirus web: `https://13moonantivirus.ai` / `https://13-moon-ai-antivirus.replit.app`
+- Forge ingest URL (dev): `https://<replit-dev-domain>/api/ingest/document`
 
 **The flow**:
-Email arrives with code/PDF → Antivirus extracts the content → Forge receives it → Forge AI can read and build from it
+Email arrives with code/PDF → Antivirus extracts content → POSTs to Forge `/api/ingest/document` → lands in Workspace automatically
 
-**Open questions before building**:
-- How does the Antivirus expose extracted content? Outbound webhook (push) or query API (pull)?
-- What format does the extracted content arrive in? Plain text, raw PDF, or structured JSON?
-- Is code in PDFs as text or scanned images? (Text = easy; image = needs OCR)
+**Forge API routes** (`artifacts/api-server/src/routes/antivirus.ts`):
+- `GET /api/antivirus/status` — returns ingest URL and setup instructions (public)
+- `GET /api/antivirus/ping` — health check for antivirus to verify Forge is reachable (auth: `TPTS_INBOUND_KEY`)
+- `POST /api/ingest/document` — receives `{ userId, content, filename, type, source }`, creates Workspace item (auth: `TPTS_INBOUND_KEY`)
 
-**Build plan when ready**:
-- Forge inbound webhook endpoint: `POST /api/ingest/document` — accepts extracted text or file from Antivirus
-- Stores ingested content as a Workspace item so Forge AI can see and act on it
-- Antivirus fires the webhook when it pulls a PDF from email
+**Forge page**: `/antivirus` — shows ingest URL (copyable), step-by-step setup, test connection button, recommendation for Replit migration use case
+
+**Auth**: Shared secret via `TPTS_INBOUND_KEY` bearer token in `Authorization` header
+
+**Next step**: Configure the antivirus side — paste Forge ingest URL into antivirus settings → Forge Integration, enter the `TPTS_INBOUND_KEY`
 
 ---
 

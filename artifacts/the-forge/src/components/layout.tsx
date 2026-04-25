@@ -81,6 +81,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/secrets",    label: "API Keys",            icon: KeyRound,        tip: "Securely store passwords, API keys, and tokens"                    },
     { href: "/monitor",    label: "App Health",          icon: Activity,        tip: "Live status of your running apps and infrastructure"               },
     { href: "/connections",label: "Integrations",        icon: PlugZap,         tip: "Connect third-party services to the Forge"                        },
+    { href: "/antivirus",  label: "Antivirus Link",      icon: ShieldAlert,     tip: "Link 13 Moon Antivirus — extract emailed code and send it straight to Forge" },
   ];
 
   const isActive = (href: string) =>
