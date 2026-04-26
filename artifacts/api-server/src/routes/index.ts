@@ -28,6 +28,7 @@ import ttsRouter from "./tts";
 import antivirusRouter from "./antivirus";
 import mailboxRouter from "./mailbox";
 import emailInboundRouter from "./email-inbound";
+import accountRouter from "./account";
 
 const router: IRouter = Router();
 
@@ -60,5 +61,6 @@ router.use(ttsRouter);
 router.use(antivirusRouter);
 router.use(mailboxRouter);
 router.use(emailInboundRouter);
+router.use(accountRouter);
 
 export default router;

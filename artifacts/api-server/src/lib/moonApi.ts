@@ -3,6 +3,23 @@
 // Inbound key:  TPTS_INBOUND_KEY  (TPTS sends this as x-api-key on webhooks to us)
 const MOON_API_KEY = process.env.TPTS_MOON_API_KEY ?? process.env.TSQ_MOON_API_KEY ?? process.env.MOON_API_KEY ?? "";
 
+import { db, userTptsLinks } from "@workspace/db";
+import { eq } from "drizzle-orm";
+
+// Look up the TPTS email linked to a Forge user, or null if none stored.
+async function getLinkedTptsEmail(userId: string): Promise<string | null> {
+  try {
+    const [row] = await db
+      .select({ tptsEmail: userTptsLinks.tptsEmail })
+      .from(userTptsLinks)
+      .where(eq(userTptsLinks.userId, userId))
+      .limit(1);
+    return row?.tptsEmail ?? null;
+  } catch {
+    return null;
+  }
+}
+
 // ─── Server-side Moon subscription cache ──────────────────────────────────────
 // Avoids hammering TPTS API on every page load. 5-min TTL per userId.
 const moonCache = new Map<string, { data: unknown; expiresAt: number }>();
@@ -91,6 +108,8 @@ async function verifyMoon(userId: string, moon: string): Promise<MoonVerifyResul
 
 /**
  * Generic access check — tries primary Moon first, falls back to secondary.
+ * If the Forge userId has no active subscription, retries using the user's
+ * linked TPTS email (in case they subscribed on TPTS with a different email).
  */
 async function checkMoonAccess(
   userId: string,
@@ -104,15 +123,31 @@ async function checkMoonAccess(
     return { allowed: true, moon: primary, isBundle: false, messagesRemaining: 999, subscribeUrl };
   }
 
+  // Try with the Forge userId first
   const [primaryResult, fallbackResult] = await Promise.all([
     verifyMoon(userId, primary),
     verifyMoon(userId, fallback),
   ]);
 
-  const active =
+  let active =
     primaryResult.active && primaryResult.messagesRemaining > 0 ? primaryResult
     : fallbackResult.active && fallbackResult.messagesRemaining > 0 ? fallbackResult
     : null;
+
+  // If not found by Forge userId, try the linked TPTS email (different account email)
+  if (!active) {
+    const tptsEmail = await getLinkedTptsEmail(userId);
+    if (tptsEmail) {
+      const [emailPrimary, emailFallback] = await Promise.all([
+        verifyMoon(tptsEmail, primary),
+        verifyMoon(tptsEmail, fallback),
+      ]);
+      active =
+        emailPrimary.active && emailPrimary.messagesRemaining > 0 ? emailPrimary
+        : emailFallback.active && emailFallback.messagesRemaining > 0 ? emailFallback
+        : null;
+    }
+  }
 
   if (!active) {
     const outOfMessages = primaryResult.active && primaryResult.messagesRemaining === 0;
