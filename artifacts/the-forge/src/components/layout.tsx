@@ -50,7 +50,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/dashboard",    label: "Home",             icon: Flame,          tip: "Your dashboard — projects, stats, quick actions" },
     { href: "/projects",     label: "My Projects",      icon: FolderKanban,   tip: "View and manage all your projects"              },
     { href: "/workspace",    label: "Workspace",        icon: LayoutTemplate, tip: "Forge builds folders, plans, blueprints, PDFs — anything you need" },
-    { href: "/mailbox",      label: "Forge Mailbox",    icon: Mail,           tip: "Your personal inbox — send notes to yourself, get messages from Forge" },
+    { href: "/mailbox",      label: "Forge Inbox",      icon: Mail,           tip: "Your forwarding address — forward emails and attachments here, they land in Workspace" },
     { href: "/projects/new", label: "New Project",      icon: PlusCircle,     tip: "Start a brand-new project from scratch"         },
     { href: "/brainstorm",   label: "Brainstorm",       icon: Sparkles,       tip: "AI helps you flesh out and plan your idea"      },
   ];
