@@ -1,12 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import {
-  Mail, Star, Trash2, Send, RefreshCw, X, Inbox, ArrowLeft,
-  PenLine, Loader2, Copy, Check, Paperclip, FolderOpen,
+  Mail, Star, Trash2, RefreshCw, Inbox, ArrowLeft,
+  Loader2, Copy, Check, Paperclip, FolderOpen, Forward,
 } from "lucide-react";
 import { useUser } from "@clerk/clerk-react";
 import { format } from "date-fns";
@@ -37,16 +35,12 @@ async function apiFetch(path: string, opts: RequestInit = {}) {
   return res.json();
 }
 
-export default function Mailbox() {
+export default function ForgeInbox() {
   const { user } = useUser();
   const [folder, setFolder] = useState<Folder>("inbox");
   const [messages, setMessages] = useState<ForgeMessage[]>([]);
   const [selected, setSelected] = useState<ForgeMessage | null>(null);
   const [loading, setLoading] = useState(false);
-  const [composing, setComposing] = useState(false);
-  const [subject, setSubject] = useState("");
-  const [body, setBody] = useState("");
-  const [sending, setSending] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const forgeEmail = user ? `${user.id}@forge.13moonforge.ai` : "—";
@@ -86,28 +80,12 @@ export default function Mailbox() {
     } catch { /* ignore */ }
   }
 
-  async function trashMessage(msg: ForgeMessage) {
+  async function removeMessage(msg: ForgeMessage) {
     try {
       await apiFetch(`/api/mailbox/${msg.id}`, { method: "DELETE" });
       setSelected(null);
       setMessages(prev => prev.filter(m => m.id !== msg.id));
     } catch { /* ignore */ }
-  }
-
-  async function send() {
-    if (!body.trim()) return;
-    setSending(true);
-    try {
-      await apiFetch("/api/mailbox/compose", {
-        method: "POST",
-        body: JSON.stringify({ subject: subject.trim() || "(No subject)", body: body.trim() }),
-      });
-      setComposing(false);
-      setSubject(""); setBody("");
-      if (folder === "inbox") load();
-    } catch { /* ignore */ } finally {
-      setSending(false);
-    }
   }
 
   function copyEmail() {
@@ -142,49 +120,42 @@ export default function Mailbox() {
     <div className="h-screen flex flex-col overflow-hidden">
       {/* Header */}
       <div className="border-b border-border px-6 py-4 shrink-0">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-              <Mail size={20} className="text-primary" />
-              Forge Mailbox
-            </h1>
-            <div className="flex items-center gap-2 mt-0.5">
-              <p className="text-xs text-muted-foreground font-mono">{forgeEmail}</p>
-              <button onClick={copyEmail} className="text-muted-foreground hover:text-foreground transition-colors" title="Copy address">
-                {copied ? <Check size={12} className="text-green-500" /> : <Copy size={12} />}
-              </button>
-            </div>
+        <div className="flex items-center gap-3">
+          <Mail size={20} className="text-primary shrink-0" />
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl font-bold tracking-tight">Forge Inbox</h1>
+            <p className="text-xs text-muted-foreground">Receive-only forwarding address — nothing goes out from here</p>
           </div>
-          <Button onClick={() => setComposing(true)} size="sm" className="gap-2 shrink-0">
-            <PenLine size={14} />
-            New Note
-          </Button>
         </div>
 
-        {/* Email-to-Workspace callout */}
+        {/* Forwarding address callout */}
         <div className="mt-3 flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3">
-          <Paperclip size={16} className="text-primary mt-0.5 shrink-0" />
+          <Forward size={16} className="text-primary mt-0.5 shrink-0" />
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-foreground">Email PDFs & ZIPs straight to Forge</p>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Send any file as an attachment to{" "}
+            <p className="text-xs font-medium text-foreground">Your Forge forwarding address</p>
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
+              <span className="font-mono text-xs text-primary bg-primary/10 rounded px-2 py-0.5 break-all">
+                {forgeEmail}
+              </span>
               <button
                 onClick={copyEmail}
-                className="font-mono text-primary hover:underline inline-flex items-center gap-1"
+                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0"
                 title="Copy address"
               >
-                {forgeEmail}
-                {copied ? <Check size={10} className="text-green-500" /> : <Copy size={10} />}
+                {copied ? <Check size={12} className="text-green-500" /> : <Copy size={12} />}
+                {copied ? "Copied" : "Copy"}
               </button>
-              {" "}and it will land in your{" "}
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-1.5 leading-relaxed">
+              Forward emails here — PDFs, ZIPs, or any attachment lands in your{" "}
               <span className="inline-flex items-center gap-0.5 font-medium text-foreground">
                 <FolderOpen size={11} />
                 Workspace
               </span>
-              {" "}automatically.
+              {" "}automatically. You can't send mail out from this address.
             </p>
-            <p className="text-[10px] text-muted-foreground/60 mt-1">
-              Requires MX records on forge.13moonforge.ai — see setup guide once DNS is configured.
+            <p className="text-[10px] text-muted-foreground/50 mt-1">
+              Needs MX records on forge.13moonforge.ai to receive external mail — works in-app now.
             </p>
           </div>
         </div>
@@ -211,8 +182,11 @@ export default function Mailbox() {
             </div>
           ) : messages.length === 0 ? (
             <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground p-8 text-center gap-3">
-              <Mail size={32} className="opacity-30" />
-              <p className="text-sm">Nothing here yet</p>
+              <Forward size={32} className="opacity-20" />
+              <div>
+                <p className="text-sm font-medium">Nothing forwarded yet</p>
+                <p className="text-xs mt-1 opacity-70">Forward an email with an attachment to your Forge address and it'll show up here</p>
+              </div>
             </div>
           ) : (
             <div className="flex-1 overflow-y-auto">
@@ -258,7 +232,9 @@ export default function Mailbox() {
                   <h2 className="text-base font-semibold">{selected.subject}</h2>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     From <span className="font-medium text-foreground">{selected.fromName}</span>
-                    <span className="ml-1 opacity-60">&lt;{selected.fromAddress}&gt;</span>
+                    {selected.fromAddress && (
+                      <span className="ml-1 opacity-60">&lt;{selected.fromAddress}&gt;</span>
+                    )}
                     <span className="ml-2">{format(new Date(selected.createdAt), "MMM d, yyyy 'at' h:mm a")}</span>
                   </p>
                 </div>
@@ -271,7 +247,7 @@ export default function Mailbox() {
                     <Star size={15} fill={selected.starred ? "currentColor" : "none"} />
                   </button>
                   <button
-                    onClick={() => trashMessage(selected)}
+                    onClick={() => removeMessage(selected)}
                     className="p-2 rounded-md hover:bg-muted text-muted-foreground hover:text-destructive transition-colors"
                     title="Delete"
                   >
@@ -286,59 +262,16 @@ export default function Mailbox() {
               </div>
             </>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground gap-3">
-              <Mail size={40} className="opacity-20" />
-              <p className="text-sm">Select a message to read it</p>
+            <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground gap-3 p-8 text-center">
+              <Paperclip size={40} className="opacity-20" />
+              <div>
+                <p className="text-sm font-medium">Select a message to read it</p>
+                <p className="text-xs mt-1 opacity-70">Attachments you forward here are saved to Workspace automatically</p>
+              </div>
             </div>
           )}
         </div>
       </div>
-
-      {/* Compose overlay */}
-      {composing && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center p-4">
-          <div className="bg-background border border-border rounded-xl w-full max-w-lg shadow-2xl flex flex-col">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-              <h3 className="font-semibold text-sm flex items-center gap-2">
-                <PenLine size={15} className="text-primary" />
-                New Note to Self
-              </h3>
-              <button onClick={() => { setComposing(false); setSubject(""); setBody(""); }} className="text-muted-foreground hover:text-foreground">
-                <X size={16} />
-              </button>
-            </div>
-            <div className="p-5 flex flex-col gap-3">
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">To</p>
-                <p className="text-sm font-mono text-foreground/70 bg-muted rounded-md px-3 py-2 text-xs">{forgeEmail}</p>
-              </div>
-              <Input
-                placeholder="Subject (optional)"
-                value={subject}
-                onChange={e => setSubject(e.target.value)}
-                className="text-sm"
-              />
-              <Textarea
-                placeholder="Write your note..."
-                value={body}
-                onChange={e => setBody(e.target.value)}
-                rows={8}
-                className="text-sm resize-none"
-                autoFocus
-              />
-            </div>
-            <div className="px-5 pb-5 flex justify-end gap-2">
-              <Button variant="ghost" size="sm" onClick={() => { setComposing(false); setSubject(""); setBody(""); }}>
-                Cancel
-              </Button>
-              <Button size="sm" onClick={send} disabled={!body.trim() || sending} className="gap-2">
-                {sending ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />}
-                Save to Inbox
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
