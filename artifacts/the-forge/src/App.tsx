@@ -52,6 +52,7 @@ const Workspace        = lazy(() => import("@/pages/workspace"));
 const RemoteViewer     = lazy(() => import("@/pages/remote-viewer"));
 const Antivirus        = lazy(() => import("@/pages/antivirus"));
 const DiyCode          = lazy(() => import("@/pages/diy-code"));
+const Mailbox          = lazy(() => import("@/pages/mailbox"));
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
@@ -270,6 +271,7 @@ function Router() {
                     <Route path="/admin"                  component={AdminPanel} />
                     <Route path="/antivirus"              component={Antivirus} />
                     <Route path="/diy-code"               component={DiyCode} />
+                    <Route path="/mailbox"                component={Mailbox} />
                     <Route component={NotFound} />
                   </Switch>
                 </ProtectedRoute>
