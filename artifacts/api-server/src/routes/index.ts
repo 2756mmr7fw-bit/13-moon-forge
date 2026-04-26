@@ -26,6 +26,7 @@ import { remoteRouter } from "./remote";
 import workspaceRouter from "./workspace";
 import ttsRouter from "./tts";
 import antivirusRouter from "./antivirus";
+import mailboxRouter from "./mailbox";
 
 const router: IRouter = Router();
 
@@ -56,5 +57,6 @@ router.use("/remote", remoteRouter);
 router.use(workspaceRouter);
 router.use(ttsRouter);
 router.use(antivirusRouter);
+router.use(mailboxRouter);
 
 export default router;
