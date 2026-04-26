@@ -6,7 +6,7 @@ import {
   Folder, FolderOpen, FileText, Target, Calendar, Briefcase,
   LayoutTemplate, File, Plus, Trash2, ChevronRight, ChevronDown,
   Printer, Pencil, Check, X, Loader2, Flame, Send, Star, MoreHorizontal,
-  FolderPlus, FilePlus, PackageOpen, Code2,
+  FolderPlus, FilePlus, PackageOpen, Code2, Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -378,7 +378,15 @@ ${markdownToHtml(selected.content ?? "")}
       if (item.type === "folder") continue;
       const parent = items.find(i => i.id === item.parentId);
       const dir = parent ? `${parent.name}/` : "";
-      const ext = item.type === "code" ? "md" : "md";
+
+      // Binary files stored as data URIs (e.g. emailed PDFs/ZIPs)
+      if (item.type === "file" && item.content?.startsWith("data:")) {
+        const base64 = item.content.split(",")[1] ?? "";
+        zip.file(`${dir}${item.name}`, base64, { base64: true });
+        continue;
+      }
+
+      const ext = "md";
       const filename = `${dir}${item.name}.${ext}`;
       const header = `# ${item.name}\n_Type: ${item.type} · Created: ${new Date(item.createdAt).toLocaleDateString()}_\n\n`;
       zip.file(filename, header + (item.content ?? ""));
@@ -496,7 +504,20 @@ ${markdownToHtml(selected.content ?? "")}
                 <p className="text-[10px] text-muted-foreground capitalize">{selected.type} · {new Date(selected.updatedAt).toLocaleDateString()}</p>
               </div>
               <div className="flex items-center gap-2">
-                {editing ? (
+                {selected.type === "file" && selected.content?.startsWith("data:") ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      const a = document.createElement("a");
+                      a.href = selected.content ?? "";
+                      a.download = selected.name;
+                      a.click();
+                    }}
+                  >
+                    <Download size={13} className="mr-1" /> Download
+                  </Button>
+                ) : editing ? (
                   <>
                     <Button size="sm" variant="ghost" onClick={() => { setEditing(false); }}>
                       <X size={13} className="mr-1" /> Cancel
@@ -520,7 +541,41 @@ ${markdownToHtml(selected.content ?? "")}
 
             {/* Doc content */}
             <div className="flex-1 overflow-y-auto">
-              {editing ? (
+              {selected.type === "file" && selected.content?.startsWith("data:") ? (
+                // Binary file received via email — show download panel
+                <div className="flex flex-col items-center justify-center h-full gap-6 p-8">
+                  <div className="text-6xl">{selected.icon && selected.icon.length <= 2 ? selected.icon : "📁"}</div>
+                  <div className="text-center">
+                    <h3 className="font-bold text-lg">{selected.name}</h3>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {(() => {
+                        const mime = selected.content.split(";")[0].replace("data:", "");
+                        if (mime.includes("pdf")) return "PDF Document";
+                        if (mime.includes("zip")) return "ZIP Archive";
+                        if (mime.includes("word") || mime.includes("docx")) return "Word Document";
+                        return "Binary File";
+                      })()}
+                      {" · "}
+                      Received via email
+                    </p>
+                  </div>
+                  <Button
+                    onClick={() => {
+                      const a = document.createElement("a");
+                      a.href = selected.content ?? "";
+                      a.download = selected.name;
+                      a.click();
+                    }}
+                    className="gap-2"
+                  >
+                    <Download size={15} />
+                    Download {selected.name}
+                  </Button>
+                  <p className="text-xs text-muted-foreground/60 text-center max-w-xs">
+                    This file was emailed to your Forge address and saved here automatically.
+                  </p>
+                </div>
+              ) : editing ? (
                 <textarea
                   value={editContent}
                   onChange={e => setEditContent(e.target.value)}

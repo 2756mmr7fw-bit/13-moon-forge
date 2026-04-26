@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import {
   Mail, Star, Trash2, Send, RefreshCw, X, Inbox, ArrowLeft,
-  PenLine, Loader2, Copy, Check,
+  PenLine, Loader2, Copy, Check, Paperclip, FolderOpen,
 } from "lucide-react";
 import { useUser } from "@clerk/clerk-react";
 import { format } from "date-fns";
@@ -141,23 +141,53 @@ export default function Mailbox() {
   return (
     <div className="h-screen flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="border-b border-border px-6 py-4 flex items-center justify-between shrink-0">
-        <div>
-          <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-            <Mail size={20} className="text-primary" />
-            Forge Mailbox
-          </h1>
-          <div className="flex items-center gap-2 mt-1">
-            <p className="text-xs text-muted-foreground font-mono">{forgeEmail}</p>
-            <button onClick={copyEmail} className="text-muted-foreground hover:text-foreground transition-colors" title="Copy address">
-              {copied ? <Check size={12} className="text-green-500" /> : <Copy size={12} />}
-            </button>
+      <div className="border-b border-border px-6 py-4 shrink-0">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
+              <Mail size={20} className="text-primary" />
+              Forge Mailbox
+            </h1>
+            <div className="flex items-center gap-2 mt-0.5">
+              <p className="text-xs text-muted-foreground font-mono">{forgeEmail}</p>
+              <button onClick={copyEmail} className="text-muted-foreground hover:text-foreground transition-colors" title="Copy address">
+                {copied ? <Check size={12} className="text-green-500" /> : <Copy size={12} />}
+              </button>
+            </div>
+          </div>
+          <Button onClick={() => setComposing(true)} size="sm" className="gap-2 shrink-0">
+            <PenLine size={14} />
+            New Note
+          </Button>
+        </div>
+
+        {/* Email-to-Workspace callout */}
+        <div className="mt-3 flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3">
+          <Paperclip size={16} className="text-primary mt-0.5 shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-medium text-foreground">Email PDFs & ZIPs straight to Forge</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Send any file as an attachment to{" "}
+              <button
+                onClick={copyEmail}
+                className="font-mono text-primary hover:underline inline-flex items-center gap-1"
+                title="Copy address"
+              >
+                {forgeEmail}
+                {copied ? <Check size={10} className="text-green-500" /> : <Copy size={10} />}
+              </button>
+              {" "}and it will land in your{" "}
+              <span className="inline-flex items-center gap-0.5 font-medium text-foreground">
+                <FolderOpen size={11} />
+                Workspace
+              </span>
+              {" "}automatically.
+            </p>
+            <p className="text-[10px] text-muted-foreground/60 mt-1">
+              Requires MX records on forge.13moonforge.ai — see setup guide once DNS is configured.
+            </p>
           </div>
         </div>
-        <Button onClick={() => setComposing(true)} size="sm" className="gap-2">
-          <PenLine size={14} />
-          New Note
-        </Button>
       </div>
 
       <div className="flex flex-1 overflow-hidden">
