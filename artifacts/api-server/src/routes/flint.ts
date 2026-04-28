@@ -64,13 +64,21 @@ router.post("/flint/chat", async (req, res) => {
     return res.end();
   }
 
+  // ─── Narration mode ────────────────────────────────────────────────────────
+  const narrationOn = req.headers["x-narration-mode"] === "true";
+  const narrationInstruction = narrationOn
+    ? `\n\n---\nNARRATION MODE ON: As you respond, think out loud. Before each major point, briefly say what you're about to do: "I'm going to challenge your assumption here..." or "Let me look at this from a different angle..." or "Here's the question nobody's asking..." — as if you're a live coach talking the user through your thinking process. Keep it natural, not robotic.`
+    : "";
+
+  const systemPrompt = FLINT_SYSTEM_PROMPT + narrationInstruction;
+
   try {
     const stream = await openai.chat.completions.create({
       model: "gpt-4o",
       max_tokens: 1024,
       stream: true,
       messages: [
-        { role: "system", content: FLINT_SYSTEM_PROMPT },
+        { role: "system", content: systemPrompt },
         ...messages,
       ],
     });
