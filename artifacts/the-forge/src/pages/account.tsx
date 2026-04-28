@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { UserProfile, useUser } from "@clerk/react";
 import { Show } from "@clerk/react";
 import { Link } from "wouter";
-import { ExternalLink, Shield, CreditCard, LogIn, Link2, CheckCircle2, Loader2, X, AlertCircle, Mail, Send, Brain, Save } from "lucide-react";
+import { ExternalLink, Shield, CreditCard, LogIn, Link2, CheckCircle2, Loader2, X, AlertCircle, Mail, Send, Brain, Save, Trophy, Users, Copy, Check, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -322,6 +322,134 @@ function MemoryCard() {
   );
 }
 
+const SCORE_TIERS = [
+  { min: 500, label: "Sovereign",   color: "#f97316" },
+  { min: 300, label: "Forgemaster", color: "#a855f7" },
+  { min: 150, label: "Craftsman",   color: "#3b82f6" },
+  { min: 50,  label: "Builder",     color: "#22c55e" },
+  { min: 0,   label: "Apprentice",  color: "#6b7280" },
+];
+const TIERS_ASC = [...SCORE_TIERS].reverse();
+function getNextTier(score: number) {
+  return SCORE_TIERS.find(t => t.min > score) ? SCORE_TIERS[SCORE_TIERS.findIndex(t => t.min <= score) - 1] : null;
+}
+
+interface ScoreData { score: number; tier: string; tierColor: string; messages: number; projects: number; outputs: number; }
+
+function ForgeScoreCard() {
+  const { getToken } = useAuth();
+  const [data, setData] = useState<ScoreData | null>(null);
+  const API_BASE = basePath;
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const token = await getToken();
+        const res = await fetch(`${API_BASE}/api/score`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+        if (res.ok) setData(await res.json());
+      } catch { /* silent */ }
+    })();
+  }, [getToken]);
+
+  if (!data) return null;
+
+  const next = getNextTier(data.score);
+  const current = TIERS_ASC.find(t => t.min <= data.score) ?? SCORE_TIERS[SCORE_TIERS.length - 1];
+  const progress = next
+    ? Math.min(100, Math.round(((data.score - current.min) / (next.min - current.min)) * 100))
+    : 100;
+
+  return (
+    <div className="rounded-xl border bg-card p-5 space-y-3" style={{ borderColor: `${data.tierColor}44` }}>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Trophy size={15} style={{ color: data.tierColor }} />
+          <h2 className="font-semibold text-sm">Forge Score</h2>
+        </div>
+        <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: `${data.tierColor}22`, color: data.tierColor }}>
+          {data.tier}
+        </span>
+      </div>
+      <div className="text-4xl font-black" style={{ color: data.tierColor }}>{data.score.toLocaleString()}</div>
+      <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
+        <div className="h-full rounded-full transition-all" style={{ width: `${progress}%`, background: data.tierColor }} />
+      </div>
+      {next && (
+        <p className="text-[11px] text-muted-foreground">{next.min - data.score} pts to <span style={{ color: next.color }}>{next.label}</span></p>
+      )}
+      <div className="grid grid-cols-3 gap-2 pt-1">
+        {[["Messages", data.messages, "💬"], ["Projects", data.projects, "📁"], ["Shares", data.outputs, "🔗"]].map(([label, val, emoji]) => (
+          <div key={String(label)} className="text-center">
+            <div className="text-base">{emoji}</div>
+            <div className="text-sm font-black">{Number(val).toLocaleString()}</div>
+            <div className="text-[10px] text-muted-foreground">{label}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+interface ReferralData { code: string; referralUrl: string; successfulReferrals: number; bonusMessages: number; }
+
+function ReferralCard() {
+  const { getToken } = useAuth();
+  const [data, setData] = useState<ReferralData | null>(null);
+  const [copied, setCopied] = useState(false);
+  const API_BASE = basePath;
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const token = await getToken();
+        const res = await fetch(`${API_BASE}/api/referral`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+        if (res.ok) setData(await res.json());
+      } catch { /* silent */ }
+    })();
+  }, [getToken]);
+
+  function copy() {
+    if (!data) return;
+    navigator.clipboard.writeText(data.referralUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  if (!data) return null;
+
+  return (
+    <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+      <div className="flex items-center gap-2">
+        <Users size={15} className="text-primary" />
+        <h2 className="font-semibold text-sm">Refer a Friend</h2>
+        {data.successfulReferrals > 0 && (
+          <span className="ml-auto text-[11px] font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full">
+            {data.successfulReferrals} joined
+          </span>
+        )}
+      </div>
+      <p className="text-xs text-muted-foreground leading-relaxed">
+        Send someone your link. When they sign up, you both get <span className="font-semibold text-foreground">50 free messages</span>.
+      </p>
+      <div className="space-y-2">
+        <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2">
+          <code className="text-xs font-mono text-primary flex-1 truncate">{data.referralUrl}</code>
+        </div>
+        <Button size="sm" className="w-full gap-2 text-xs" onClick={copy}>
+          {copied ? <Check size={12} /> : <Copy size={12} />}
+          {copied ? "Copied!" : "Copy Referral Link"}
+        </Button>
+      </div>
+      {data.bonusMessages > 0 && (
+        <div className="flex items-center gap-2 text-xs text-green-400 bg-green-500/10 rounded-lg px-3 py-2">
+          <Zap size={12} />
+          You've earned {data.bonusMessages} bonus messages from referrals!
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function AccountPage() {
   const { user, isLoaded } = useUser();
 
@@ -338,6 +466,12 @@ export default function AccountPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left column */}
           <div className="lg:col-span-1 space-y-4">
+
+            {/* Forge Score */}
+            <ForgeScoreCard />
+
+            {/* Referral */}
+            <ReferralCard />
 
             {/* Memory — Tell Forge About You */}
             <MemoryCard />

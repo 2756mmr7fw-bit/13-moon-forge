@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { getUserId } from "@/lib/userId";
 import { SpeakButton } from "@/components/speak-button";
+import { TemplatesPanel } from "@/components/templates-panel";
 import { MoonOutputActions } from "@/components/moon-output-actions";
 import { getSkillLevel, getSkillMeta, SKILL_LEVELS, setSkillLevel, type SkillLevel } from "@/lib/skillLevel";
 
@@ -117,7 +118,10 @@ function ExplainIt() {
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <div className="space-y-4">
         <div>
-          <Label className="text-xs text-muted-foreground mb-1.5 block">What do you want to understand? <span className="text-indigo-400">Required</span></Label>
+          <div className="flex items-center justify-between mb-1.5">
+            <Label className="text-xs text-muted-foreground">What do you want to understand? <span className="text-indigo-400">Required</span></Label>
+            <TemplatesPanel moonId="sage" onSelect={setTopic} />
+          </div>
           <Textarea value={topic} onChange={e => setTopic(e.target.value)} placeholder="Ask anything — a concept, a technology, a principle, a system. No such thing as a dumb question here." className="h-[120px] text-sm resize-none" />
         </div>
 

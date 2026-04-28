@@ -7,6 +7,7 @@ import { getUserId } from "@/lib/userId";
 import { SpeakButton } from "@/components/speak-button";
 import { useChatHistory } from "@/hooks/useChatHistory";
 import { SavedPromptsPanel } from "@/components/saved-prompts-panel";
+import { TemplatesPanel } from "@/components/templates-panel";
 import { MoonOutputActions } from "@/components/moon-output-actions";
 import { useNarrationMode } from "@/hooks/useNarrationMode";
 import { NarrationBanner } from "@/components/narration-banner";
@@ -283,8 +284,11 @@ export default function Brainstorm() {
         <div ref={bottomRef} />
       </div>
 
-      {/* Input */}
-      <div className="mt-4 flex gap-3 items-end">
+      {/* Templates + Input */}
+      <div className="mt-2 flex justify-end">
+        <TemplatesPanel moonId="brainstorm" onSelect={setInput} />
+      </div>
+      <div className="mt-2 flex gap-3 items-end">
         <Textarea
           ref={textareaRef}
           value={input}
