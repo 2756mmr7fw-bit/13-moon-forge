@@ -1,4 +1,4 @@
-import { Flame, Zap, Rocket, Check, RotateCcw, ExternalLink, MonitorPlay, Monitor, Swords, Sparkles, Code2, GraduationCap, Scale, ArrowRight, Server, GitBranch, Package, KeyRound, ArrowRightLeft } from "lucide-react";
+import { Flame, Zap, Rocket, Check, RotateCcw, ExternalLink, MonitorPlay, Monitor, Swords, Sparkles, Code2, GraduationCap, Scale, ArrowRight, Server, GitBranch, Package, KeyRound, ArrowRightLeft, Shield, Heart, Lock, Equal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Link } from "wouter";
@@ -125,6 +125,54 @@ export default function Pricing() {
         <p className="text-muted-foreground text-lg max-w-xl mx-auto leading-relaxed">
           Forge watches your screen, fixes your computer, builds your apps, and teaches you anything — right in your browser. No house calls. No hourly rates. No confusion.
         </p>
+      </div>
+
+      {/* Why these prices */}
+      <div className="rounded-2xl border border-white/10 bg-white/2 p-8 space-y-5">
+        <div className="text-center space-y-2">
+          <p className="text-xs uppercase tracking-widest text-primary font-semibold">Why these prices</p>
+          <h2 className="text-2xl font-bold tracking-tight">Honest. That's the whole reason.</h2>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+          {[
+            {
+              label: "Geek Squad visit",
+              price: "$100–200",
+              note: "One problem. One visit. No follow-up.",
+              ours: false,
+            },
+            {
+              label: "ChatGPT Plus",
+              price: "$20/mo",
+              note: "One general AI. No specialists.",
+              ours: false,
+            },
+            {
+              label: "Forge Basic",
+              price: "$7/mo",
+              note: "Six specialists. Legal, code, research, teaching, and more.",
+              ours: true,
+            },
+          ].map(c => (
+            <div key={c.label} className={cn(
+              "rounded-xl p-4 space-y-1 border",
+              c.ours ? "border-primary/40 bg-primary/8" : "border-white/6 bg-white/2 opacity-70",
+            )}>
+              <p className="text-xs text-muted-foreground">{c.label}</p>
+              <p className={cn("text-2xl font-black", c.ours ? "text-primary" : "text-foreground")}>{c.price}</p>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">{c.note}</p>
+              {c.ours && <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/20 text-primary uppercase tracking-wide">That's us</span>}
+            </div>
+          ))}
+        </div>
+        <p className="text-center text-sm text-muted-foreground max-w-xl mx-auto leading-relaxed">
+          We charge $7 because that's what's fair — not because that's all you're worth. The working person deserves the same AI tools that cost professionals hundreds of dollars an hour. Now they have them.
+        </p>
+        <div className="text-center">
+          <Link href="/promise" className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline font-medium">
+            Read the full Sovereign Promise <ArrowRight size={13} />
+          </Link>
+        </div>
       </div>
 
       {/* Pricing cards */}

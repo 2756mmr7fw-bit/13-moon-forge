@@ -191,6 +191,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {/* Bottom links */}
         <div className="pt-4 space-y-0.5">
           <NavLink href="/pricing" label="Upgrade Plan" icon={CreditCard} tip="See subscription options and upgrade" onClick={onClose} />
+          <NavLink href="/promise" label="Sovereign Promise" icon={Shield} tip="Our commitment to the working person — read what we stand for" onClick={onClose} />
           <a
             href={OUR_APPS_URL}
             target="_blank"
