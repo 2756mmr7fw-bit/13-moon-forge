@@ -8,6 +8,8 @@ import { SpeakButton } from "@/components/speak-button";
 import { useChatHistory } from "@/hooks/useChatHistory";
 import { SavedPromptsPanel } from "@/components/saved-prompts-panel";
 import { MoonOutputActions } from "@/components/moon-output-actions";
+import { useNarrationMode } from "@/hooks/useNarrationMode";
+import { NarrationBanner } from "@/components/narration-banner";
 
 interface Message {
   role: "user" | "assistant";
@@ -32,6 +34,7 @@ export default function Brainstorm() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [showRestoreBanner, setShowRestoreBanner] = useState(false);
   const { session, loaded, save: saveHistory, clear: clearHistory } = useChatHistory("brainstorm");
+  const { narrationOn, toggle: toggleNarration } = useNarrationMode();
 
   // Check for a pending workspace AI action
   useEffect(() => {
@@ -72,6 +75,7 @@ export default function Brainstorm() {
         headers: {
           "Content-Type": "application/json",
           "x-user-id": getUserId(),
+          ...(narrationOn ? { "x-narration-mode": "true" } : {}),
         },
         body: JSON.stringify({
           messages: history.map(m => ({ role: m.role, content: m.content })),
@@ -203,6 +207,11 @@ export default function Brainstorm() {
           </button>
         </div>
       )}
+
+      {/* Narration Mode */}
+      <div className="mb-4">
+        <NarrationBanner narrationOn={narrationOn} onToggle={toggleNarration} moonName="Flint" />
+      </div>
 
       {/* Flint's quote */}
       <div className="mb-5 px-4 py-3 rounded-lg border border-amber-900/40 bg-amber-950/20">

@@ -35,6 +35,7 @@ import moonUsageRouter from "./moonUsage";
 import shareRouter from "./share";
 import workspaceSearchRouter from "./workspaceSearch";
 import forgeReportRouter from "./forgeReport";
+import buildWithMeRouter from "./buildWithMe";
 
 const router: IRouter = Router();
 
@@ -74,5 +75,6 @@ router.use(moonUsageRouter);
 router.use(shareRouter);
 router.use(workspaceSearchRouter);
 router.use(forgeReportRouter);
+router.use(buildWithMeRouter);
 
 export default router;

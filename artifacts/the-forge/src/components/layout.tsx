@@ -56,6 +56,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/projects/new", label: "New Project",      icon: PlusCircle,     tip: "Start a brand-new project from scratch"         },
     { href: "/brainstorm",   label: "Brainstorm",       icon: Sparkles,       tip: "AI helps you flesh out and plan your idea"      },
     { href: "/starters",     label: "Forge Starters",   icon: LayoutTemplate, tip: "Pre-built Moon workflows — pick a use case and launch instantly" },
+    { href: "/build-with-me", label: "Build With Me",  icon: Flame,          tip: "Tell Forge what you want to build — get a step-by-step Moon plan" },
   ];
 
   const toolItems: NavItem[] = [
