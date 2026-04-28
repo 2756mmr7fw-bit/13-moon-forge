@@ -194,6 +194,39 @@ function ClerkTokenInitializer() {
   return null;
 }
 
+const REFERRAL_CLAIMED_KEY = "forge:referral:claimed";
+const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+function ReferralClaimHandler() {
+  const { getToken, isSignedIn } = useAuth();
+
+  useEffect(() => {
+    if (!isSignedIn) return;
+    try {
+      if (localStorage.getItem(REFERRAL_CLAIMED_KEY)) return;
+      const params = new URLSearchParams(window.location.search);
+      const ref = params.get("ref");
+      if (!ref) return;
+      (async () => {
+        try {
+          const token = await getToken();
+          await fetch(`${API_BASE}/api/referral/claim`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify({ code: ref }),
+          });
+          localStorage.setItem(REFERRAL_CLAIMED_KEY, "1");
+        } catch { /* silent */ }
+      })();
+    } catch { /* silent */ }
+  }, [isSignedIn, getToken]);
+
+  return null;
+}
+
 function SignInPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -323,6 +356,7 @@ function ClerkProviderWithRoutes() {
       <QueryClientProvider client={queryClient}>
         <ClerkQueryClientCacheInvalidator />
         <ClerkTokenInitializer />
+        <ReferralClaimHandler />
         <TooltipProvider>
           <Router />
           <Toaster />

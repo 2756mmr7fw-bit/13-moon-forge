@@ -39,6 +39,7 @@ import buildWithMeRouter from "./buildWithMe";
 import memoryRouter from "./memory";
 import pulseRouter from "./pulse";
 import scoreRouter from "./score";
+import referralRouter from "./referral";
 
 const router: IRouter = Router();
 
@@ -82,5 +83,6 @@ router.use(buildWithMeRouter);
 router.use(memoryRouter);
 router.use(pulseRouter);
 router.use(scoreRouter);
+router.use(referralRouter);
 
 export default router;

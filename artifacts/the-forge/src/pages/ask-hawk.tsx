@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { getUserId } from "@/lib/userId";
 import { SpeakButton } from "@/components/speak-button";
+import { TemplatesPanel } from "@/components/templates-panel";
 
 const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -95,7 +96,10 @@ export default function AskHawk() {
         {/* Input */}
         <div className="space-y-4">
           <div>
-            <Label className="text-xs text-muted-foreground mb-1.5 block">What are you looking for? <span className="text-amber-400">Required</span></Label>
+            <div className="flex items-center justify-between mb-1.5">
+              <Label className="text-xs text-muted-foreground">What are you looking for? <span className="text-amber-400">Required</span></Label>
+              <TemplatesPanel moonId="hawk" onSelect={setQuery} />
+            </div>
             <Textarea
               value={query}
               onChange={e => setQuery(e.target.value)}

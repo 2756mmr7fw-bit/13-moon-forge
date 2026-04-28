@@ -9,8 +9,10 @@ import {
 import {
   Layers, Check, Loader2,
   Flame, BookOpen, Crosshair, Scale, Zap, Code2, GitMerge,
+  FileDown, FileText,
 } from "lucide-react";
 import { ShareCard } from "@/components/share-card";
+import { downloadMarkdown, downloadPDF } from "@/lib/export";
 
 const API = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -109,6 +111,35 @@ export function MoonOutputActions({ content, moonId, title, className }: MoonOut
           : <Layers size={12} />}
         {saved ? "Saved!" : "Save to Workspace"}
       </Button>
+
+      {/* Export */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="sm" className="h-7 gap-1.5 text-xs" title="Export this output">
+            <FileDown size={12} /> Export
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-44">
+          <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
+            Download as…
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={() => downloadMarkdown(title ?? `${moonId} output`, content)}
+            className="gap-2 text-xs cursor-pointer"
+          >
+            <FileText size={12} />
+            Markdown (.md)
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => downloadPDF(title ?? `${moonId} output`, content)}
+            className="gap-2 text-xs cursor-pointer"
+          >
+            <FileDown size={12} />
+            PDF (print)
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       {/* Share card */}
       {!shareId ? (
