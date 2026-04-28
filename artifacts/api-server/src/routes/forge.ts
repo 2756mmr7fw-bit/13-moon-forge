@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { projectsTable, pagesTable, pageRevisionsTable } from "@workspace/db";
+import { projectsTable, pagesTable, pageRevisionsTable, userMemory } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import {
@@ -400,7 +400,25 @@ function makeStreamRoute(
       ? `\n\n---\nEXPLAIN MODE ON: After every block of code you write, add a section called "What I just did:" and explain it in plain English appropriate to the user's skill level. Walk through the logic like you're a patient teacher narrating your own work.`
       : "";
 
-    const enrichedSystem = systemPrompt + skillLevelInstruction(skillLevel) + explainInstruction;
+    // ─── User memory injection ─────────────────────────────────────────────────
+    let memoryContext = "";
+    if (req.userId) {
+      try {
+        const [mem] = await db.select().from(userMemory).where(eq(userMemory.userId, req.userId));
+        if (mem) {
+          const parts: string[] = [];
+          if (mem.name) parts.push(`User's name: ${mem.name}`);
+          if (mem.building) parts.push(`What they're currently building: ${mem.building}`);
+          if (mem.role) parts.push(`Their background/role: ${mem.role}`);
+          if (mem.preferences) parts.push(`Their preferences: ${mem.preferences}`);
+          if (parts.length > 0) {
+            memoryContext = `\n\n---\nUSER CONTEXT (remember this throughout your response):\n${parts.join("\n")}\nUse this context to personalize your response — address them by name if appropriate, reference what they're building, and tailor your tone and examples to their background.`;
+          }
+        }
+      } catch { /* non-fatal */ }
+    }
+
+    const enrichedSystem = systemPrompt + skillLevelInstruction(skillLevel) + explainInstruction + memoryContext;
 
     try {
       const stream = await openai.chat.completions.create({

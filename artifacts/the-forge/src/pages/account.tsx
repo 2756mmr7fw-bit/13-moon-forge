@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 import { UserProfile, useUser } from "@clerk/react";
 import { Show } from "@clerk/react";
 import { Link } from "wouter";
-import { ExternalLink, Shield, CreditCard, LogIn, Link2, CheckCircle2, Loader2, X, AlertCircle, Mail, Send } from "lucide-react";
+import { ExternalLink, Shield, CreditCard, LogIn, Link2, CheckCircle2, Loader2, X, AlertCircle, Mail, Send, Brain, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@clerk/react";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 const API = basePath;
@@ -208,6 +210,118 @@ function ForgeReportCard({ email, firstName }: { email: string; firstName?: stri
   );
 }
 
+// ─── Memory Card ─────────────────────────────────────────────────────────────
+function MemoryCard() {
+  const { getToken } = useAuth();
+  const [name, setName] = useState("");
+  const [building, setBuilding] = useState("");
+  const [role, setRole] = useState("");
+  const [preferences, setPreferences] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const token = await getToken();
+        const res = await fetch(`${API}/api/user/memory`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (res.ok) {
+          const data = await res.json() as { name?: string; building?: string; role?: string; preferences?: string };
+          setName(data.name ?? "");
+          setBuilding(data.building ?? "");
+          setRole(data.role ?? "");
+          setPreferences(data.preferences ?? "");
+        }
+      } catch { /* silent */ } finally {
+        setLoaded(true);
+      }
+    })();
+  }, [getToken]);
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      const token = await getToken();
+      await fetch(`${API}/api/user/memory`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ name, building, role, preferences }),
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch { /* silent */ } finally {
+      setSaving(false);
+    }
+  };
+
+  if (!loaded) return null;
+
+  return (
+    <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+      <div className="flex items-center gap-2">
+        <Brain size={15} className="text-primary" />
+        <h2 className="font-semibold text-sm">Tell Forge About You</h2>
+      </div>
+      <p className="text-xs text-muted-foreground leading-relaxed">
+        The Moons remember this in every response — making them personal to you.
+      </p>
+      <div className="space-y-3">
+        <div>
+          <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block mb-1">Your Name</label>
+          <Input
+            value={name}
+            onChange={e => setName(e.target.value)}
+            placeholder="What should Forge call you?"
+            className="h-8 text-xs"
+          />
+        </div>
+        <div>
+          <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block mb-1">What You're Building</label>
+          <Input
+            value={building}
+            onChange={e => setBuilding(e.target.value)}
+            placeholder="e.g. a zombie game in Godot, a SaaS for freelancers"
+            className="h-8 text-xs"
+          />
+        </div>
+        <div>
+          <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block mb-1">Your Background</label>
+          <Input
+            value={role}
+            onChange={e => setRole(e.target.value)}
+            placeholder="e.g. beginner, indie dev, non-technical founder"
+            className="h-8 text-xs"
+          />
+        </div>
+        <div>
+          <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block mb-1">Preferences</label>
+          <Textarea
+            value={preferences}
+            onChange={e => setPreferences(e.target.value)}
+            placeholder="e.g. skip the preamble, give me code examples, explain like I'm 12"
+            className="text-xs min-h-[60px] resize-none"
+          />
+        </div>
+        <Button
+          size="sm"
+          className="w-full gap-2 text-xs h-8"
+          onClick={save}
+          disabled={saving}
+        >
+          {saving ? <Loader2 size={12} className="animate-spin" /> : saved ? <CheckCircle2 size={12} className="text-green-400" /> : <Save size={12} />}
+          {saving ? "Saving…" : saved ? "Saved!" : "Save to Forge Memory"}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export default function AccountPage() {
   const { user, isLoaded } = useUser();
 
@@ -224,6 +338,9 @@ export default function AccountPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left column */}
           <div className="lg:col-span-1 space-y-4">
+
+            {/* Memory — Tell Forge About You */}
+            <MemoryCard />
 
             {/* TPTS email linker — most prominent if they have moons */}
             <TptsEmailLinker />

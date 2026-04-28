@@ -1,6 +1,9 @@
 import { Router } from "express";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { checkFlintAccess, deductMoonMessage } from "../lib/moonApi";
+import { db } from "@workspace/db";
+import { userMemory } from "@workspace/db";
+import { eq } from "drizzle-orm";
 
 const router = Router();
 
@@ -70,7 +73,25 @@ router.post("/flint/chat", async (req, res) => {
     ? `\n\n---\nNARRATION MODE ON: As you respond, think out loud. Before each major point, briefly say what you're about to do: "I'm going to challenge your assumption here..." or "Let me look at this from a different angle..." or "Here's the question nobody's asking..." — as if you're a live coach talking the user through your thinking process. Keep it natural, not robotic.`
     : "";
 
-  const systemPrompt = FLINT_SYSTEM_PROMPT + narrationInstruction;
+  // ─── User memory ───────────────────────────────────────────────────────────
+  let memoryContext = "";
+  if (req.userId) {
+    try {
+      const [mem] = await db.select().from(userMemory).where(eq(userMemory.userId, req.userId));
+      if (mem) {
+        const parts: string[] = [];
+        if (mem.name) parts.push(`User's name: ${mem.name}`);
+        if (mem.building) parts.push(`What they're currently building: ${mem.building}`);
+        if (mem.role) parts.push(`Their background/role: ${mem.role}`);
+        if (mem.preferences) parts.push(`Their preferences: ${mem.preferences}`);
+        if (parts.length > 0) {
+          memoryContext = `\n\n---\nUSER CONTEXT:\n${parts.join("\n")}\nAddress them by name if appropriate. Reference what they're building when relevant. Keep your voice sharp and personal.`;
+        }
+      }
+    } catch { /* non-fatal */ }
+  }
+
+  const systemPrompt = FLINT_SYSTEM_PROMPT + narrationInstruction + memoryContext;
 
   try {
     const stream = await openai.chat.completions.create({

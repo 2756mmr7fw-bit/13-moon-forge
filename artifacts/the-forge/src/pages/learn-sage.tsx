@@ -10,6 +10,7 @@ import {
   GraduationCap, BookOpenCheck, Lightbulb, Loader2, Copy, Check, ExternalLink, RotateCcw,
 } from "lucide-react";
 import { getUserId } from "@/lib/userId";
+import { SpeakButton } from "@/components/speak-button";
 import { MoonOutputActions } from "@/components/moon-output-actions";
 import { getSkillLevel, getSkillMeta, SKILL_LEVELS, setSkillLevel, type SkillLevel } from "@/lib/skillLevel";
 
@@ -77,6 +78,7 @@ function OutputPanel({ output, status, subscribeUrl, placeholder, onReset, moonI
         </Label>
         <div className="flex flex-wrap gap-1.5 items-center">
           {output && <Button variant="ghost" size="sm" onClick={copy} className="h-7 gap-1.5 text-xs">{copied ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}{copied ? "Copied" : "Copy"}</Button>}
+          {output && <SpeakButton text={output} className="h-7 w-7 rounded-md hover:bg-accent" />}
           {output && <Button variant="ghost" size="sm" onClick={onReset} className="h-7 gap-1.5 text-xs text-muted-foreground"><RotateCcw size={12} /> Clear</Button>}
           <MoonOutputActions content={output} moonId={moonId} title={title} />
         </div>

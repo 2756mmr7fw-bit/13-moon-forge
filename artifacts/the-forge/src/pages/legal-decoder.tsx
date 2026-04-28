@@ -9,6 +9,7 @@ import {
   Scale, Wand2, Loader2, Copy, Check, ExternalLink, RotateCcw, ShieldAlert,
 } from "lucide-react";
 import { getUserId } from "@/lib/userId";
+import { SpeakButton } from "@/components/speak-button";
 
 const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -132,6 +133,7 @@ export default function LegalDecoder() {
             </Label>
             <div className="flex gap-2">
               {output && <Button variant="ghost" size="sm" onClick={copy} className="h-7 gap-1.5 text-xs">{copied ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}{copied ? "Copied" : "Copy"}</Button>}
+              {output && <SpeakButton text={output} className="h-7 w-7 rounded-md hover:bg-accent" />}
               {output && <Button variant="ghost" size="sm" onClick={reset} className="h-7 gap-1.5 text-xs text-muted-foreground"><RotateCcw size={12} /> Clear</Button>}
             </div>
           </div>
