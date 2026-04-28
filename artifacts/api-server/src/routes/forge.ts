@@ -412,7 +412,7 @@ function makeStreamRoute(
           if (mem.role) parts.push(`Their background/role: ${mem.role}`);
           if (mem.preferences) parts.push(`Their preferences: ${mem.preferences}`);
           if (parts.length > 0) {
-            memoryContext = `\n\n---\nUSER CONTEXT (remember this throughout your response):\n${parts.join("\n")}\nUse this context to personalize your response — address them by name if appropriate, reference what they're building, and tailor your tone and examples to their background.`;
+            memoryContext = `\n\n---\nUSER CONTEXT (remember this throughout your response):\n${parts.join("\n")}\nIMPORTANT: Begin your response with a single short sentence that naturally references something specific from the user context — their name, what they're building, or their background. Keep it conversational, like you're picking up a familiar conversation. Example: "Since you're working on [their project], here's what I'd do..." or "Hey [name] — given your background in [role]...". Then continue directly into your main response.`;
           }
         }
       } catch { /* non-fatal */ }

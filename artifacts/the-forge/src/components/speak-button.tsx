@@ -7,6 +7,7 @@ const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 interface SpeakButtonProps {
   text: string;
+  moon?: string;
   className?: string;
   size?: number;
 }
@@ -23,7 +24,7 @@ function stopGlobalAudio() {
   }
 }
 
-export function SpeakButton({ text, className, size = 13 }: SpeakButtonProps) {
+export function SpeakButton({ text, moon, className, size = 13 }: SpeakButtonProps) {
   const [state, setState] = useState<"idle" | "loading" | "playing">("idle");
   const isMineRef = useRef(false);
 
@@ -52,7 +53,7 @@ export function SpeakButton({ text, className, size = 13 }: SpeakButtonProps) {
           "Content-Type": "application/json",
           "x-user-id": getUserId(),
         },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text, moon }),
       });
 
       listeners.delete(onOtherStop);
@@ -85,13 +86,13 @@ export function SpeakButton({ text, className, size = 13 }: SpeakButtonProps) {
       setState("idle");
       isMineRef.current = false;
     }
-  }, [text, state, stop]);
+  }, [text, moon, state, stop]);
 
   return (
     <button
       onClick={speak}
-      title={state === "playing" ? "Stop speaking" : "Hear Forge speak"}
-      aria-label={state === "playing" ? "Stop speaking" : "Hear Forge speak"}
+      title={state === "playing" ? "Stop" : moon ? `Hear ${moon.charAt(0).toUpperCase() + moon.slice(1)} speak` : "Hear this read aloud"}
+      aria-label={state === "playing" ? "Stop speaking" : "Hear this read aloud"}
       className={cn(
         "inline-flex items-center justify-center rounded transition-colors",
         "text-muted-foreground/60 hover:text-muted-foreground",

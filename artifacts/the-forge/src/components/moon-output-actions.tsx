@@ -7,9 +7,10 @@ import {
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Layers, Share2, Check, Loader2, Link2,
+  Layers, Check, Loader2,
   Flame, BookOpen, Crosshair, Scale, Zap, Code2, GitMerge,
 } from "lucide-react";
+import { ShareCard } from "@/components/share-card";
 
 const API = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -35,8 +36,7 @@ export function MoonOutputActions({ content, moonId, title, className }: MoonOut
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [sharing, setSharing] = useState(false);
-  const [shareUrl, setShareUrl] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [shareId, setShareId] = useState<string | null>(null);
 
   const authHeaders = useCallback(async (): Promise<Record<string, string>> => {
     const token = await getToken();
@@ -76,17 +76,11 @@ export function MoonOutputActions({ content, moonId, title, className }: MoonOut
           content,
         }),
       });
-      const data = await res.json() as { url: string };
-      setShareUrl(data.url);
+      const data = await res.json() as { url: string; id?: string };
+      const id = data.id ?? data.url?.split("/").pop() ?? null;
+      setShareId(id);
     } catch { /* silent */ }
     finally { setSharing(false); }
-  }
-
-  async function copyShareUrl() {
-    if (!shareUrl) return;
-    await navigator.clipboard.writeText(shareUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
   }
 
   function sendToMoon(href: string) {
@@ -116,29 +110,21 @@ export function MoonOutputActions({ content, moonId, title, className }: MoonOut
         {saved ? "Saved!" : "Save to Workspace"}
       </Button>
 
-      {/* Share link */}
-      {!shareUrl ? (
+      {/* Share card */}
+      {!shareId ? (
         <Button
           variant="ghost"
           size="sm"
           className="h-7 gap-1.5 text-xs"
           onClick={shareOutput}
           disabled={sharing}
-          title="Create a shareable link anyone can view"
+          title="Create a shareable card anyone can view"
         >
-          {sharing ? <Loader2 size={12} className="animate-spin" /> : <Share2 size={12} />}
-          {sharing ? "Creating…" : "Share Link"}
+          {sharing ? <Loader2 size={12} className="animate-spin" /> : null}
+          {sharing ? "Creating…" : "Share"}
         </Button>
       ) : (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-7 gap-1.5 text-xs text-green-400"
-          onClick={copyShareUrl}
-        >
-          {copied ? <Check size={12} /> : <Link2 size={12} />}
-          {copied ? "Copied!" : "Copy Link"}
-        </Button>
+        <ShareCard moonId={moonId} title={title ?? `${moonId} output`} content={content} shareId={shareId} />
       )}
 
       {/* Send to Moon */}

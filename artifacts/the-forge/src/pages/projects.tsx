@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
   Anvil, Search, Loader2, PlusCircle, ArrowRight, Clock, Layers,
-  Briefcase, Star, SortAsc, SortDesc, Flame, ChevronDown,
+  Briefcase, Star, SortAsc, SortDesc, Flame, ChevronDown, Globe, Github,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -212,9 +212,39 @@ export default function Projects() {
                       </Badge>
                     </div>
 
-                    <p className="text-muted-foreground text-sm line-clamp-2 mb-4 flex-1">
+                    <p className="text-muted-foreground text-sm line-clamp-2 mb-3 flex-1">
                       {project.description || "No description yet."}
                     </p>
+
+                    {/* Live URL / Domain */}
+                    {((project as unknown as Record<string, string>).liveUrl || (project as unknown as Record<string, string>).domain) && (
+                      <div className="flex items-center gap-2 mb-3">
+                        {(project as unknown as Record<string, string>).liveUrl && (
+                          <a
+                            href={(project as unknown as Record<string, string>).liveUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={e => e.stopPropagation()}
+                            className="flex items-center gap-1 text-[11px] text-primary hover:underline font-medium"
+                          >
+                            <Globe className="w-3 h-3" />
+                            {(project as unknown as Record<string, string>).domain || (project as unknown as Record<string, string>).liveUrl}
+                          </a>
+                        )}
+                        {(project as unknown as Record<string, string>).githubUrl && (
+                          <a
+                            href={(project as unknown as Record<string, string>).githubUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={e => e.stopPropagation()}
+                            className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground"
+                          >
+                            <Github className="w-3 h-3" />
+                            GitHub
+                          </a>
+                        )}
+                      </div>
+                    )}
 
                     <div className="flex items-center gap-4 text-xs text-muted-foreground mb-4">
                       <span className="capitalize font-medium text-foreground/70">{project.template}</span>

@@ -37,6 +37,8 @@ import workspaceSearchRouter from "./workspaceSearch";
 import forgeReportRouter from "./forgeReport";
 import buildWithMeRouter from "./buildWithMe";
 import memoryRouter from "./memory";
+import pulseRouter from "./pulse";
+import scoreRouter from "./score";
 
 const router: IRouter = Router();
 
@@ -78,5 +80,7 @@ router.use(workspaceSearchRouter);
 router.use(forgeReportRouter);
 router.use(buildWithMeRouter);
 router.use(memoryRouter);
+router.use(pulseRouter);
+router.use(scoreRouter);
 
 export default router;
