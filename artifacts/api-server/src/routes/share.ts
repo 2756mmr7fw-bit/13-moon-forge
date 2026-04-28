@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { db, sharedOutputs } from "@workspace/db";
-import { eq, and, desc } from "drizzle-orm";
+import { db, sharedOutputs, galleryReactions } from "@workspace/db";
+import { eq, and, desc, sql } from "drizzle-orm";
 
 const router = Router();
 
@@ -40,7 +40,7 @@ router.post("/share", async (req, res) => {
   }
 });
 
-// GET /api/share/public — fetch all public shared outputs for gallery
+// GET /api/share/public — fetch all public shared outputs with reaction counts
 router.get("/share/public", async (req, res) => {
   try {
     const rows = await db
@@ -56,10 +56,61 @@ router.get("/share/public", async (req, res) => {
       .orderBy(desc(sharedOutputs.createdAt))
       .limit(60);
 
-    res.json(rows);
+    if (rows.length === 0) return res.json([]);
+
+    const reactionRows = await db
+      .select({
+        outputId: galleryReactions.outputId,
+        reaction: galleryReactions.reaction,
+        count: sql<number>`cast(count(*) as int)`,
+      })
+      .from(galleryReactions)
+      .groupBy(galleryReactions.outputId, galleryReactions.reaction);
+
+    const reactionMap: Record<string, { fire: number; useful: number; saved: number }> = {};
+    for (const r of reactionRows) {
+      if (!reactionMap[r.outputId]) reactionMap[r.outputId] = { fire: 0, useful: 0, saved: 0 };
+      const k = r.reaction as "fire" | "useful" | "saved";
+      if (k in reactionMap[r.outputId]) reactionMap[r.outputId][k] = r.count;
+    }
+
+    res.json(rows.map(r => ({ ...r, reactions: reactionMap[r.id] ?? { fire: 0, useful: 0, saved: 0 } })));
   } catch (err) {
     req.log.error({ err }, "share/public: fetch failed");
     res.status(500).json({ error: "Failed to load gallery" });
+  }
+});
+
+// POST /api/share/:id/react — toggle a reaction (fire | useful | saved)
+router.post("/share/:id/react", async (req, res) => {
+  const userId = req.userId;
+  const { id } = req.params;
+  const { reaction } = req.body ?? {};
+
+  if (!["fire", "useful", "saved"].includes(reaction)) {
+    return res.status(400).json({ error: "reaction must be fire | useful | saved" });
+  }
+
+  try {
+    const existing = await db
+      .select()
+      .from(galleryReactions)
+      .where(and(
+        eq(galleryReactions.outputId, id),
+        eq(galleryReactions.userId, userId),
+        eq(galleryReactions.reaction, reaction),
+      ))
+      .limit(1);
+
+    if (existing.length > 0) {
+      await db.delete(galleryReactions).where(eq(galleryReactions.id, existing[0].id));
+      return res.json({ action: "removed", reaction });
+    }
+    await db.insert(galleryReactions).values({ outputId: id, userId, reaction });
+    res.json({ action: "added", reaction });
+  } catch (err) {
+    req.log.error({ err }, "share: react failed");
+    res.status(500).json({ error: "Failed to react" });
   }
 });
 

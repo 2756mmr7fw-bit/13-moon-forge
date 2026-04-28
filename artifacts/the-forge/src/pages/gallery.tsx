@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
-import { Sparkles, BookOpen, Crosshair, Scale, Zap, Code2, ExternalLink, Clock, Grid3X3, Filter } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Sparkles, BookOpen, Crosshair, Scale, Zap, Code2, ExternalLink, Clock, Grid3X3, Filter, Flame, Lightbulb, Bookmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getUserId } from "@/lib/userId";
 
 const API = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -14,19 +15,32 @@ const MOON_META: Record<string, { label: string; icon: React.ComponentType<{ siz
   flint:       { label: "Flint",       icon: Sparkles,  color: "#f59e0b" },
 };
 
+interface Reactions { fire: number; useful: number; saved: number; }
 interface GalleryItem {
   id: string;
   moonId: string;
   title: string;
   content: string;
   createdAt: string;
+  reactions: Reactions;
 }
+
+type ReactionKey = keyof Reactions;
+const REACTION_DEFS: { key: ReactionKey; Icon: React.ComponentType<{ size: number; className?: string }>; label: string }[] = [
+  { key: "fire",   Icon: Flame,      label: "Fire"  },
+  { key: "useful", Icon: Lightbulb,  label: "Useful" },
+  { key: "saved",  Icon: Bookmark,   label: "Saved"  },
+];
 
 export default function Gallery() {
   const [items, setItems] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all");
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [myReactions, setMyReactions] = useState<Record<string, Set<ReactionKey>>>({});
+  const [reacting, setReacting] = useState<string | null>(null);
+
+  const userId = getUserId();
 
   useEffect(() => {
     fetch(`${API}/api/share/public`)
@@ -37,6 +51,32 @@ export default function Gallery() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  const handleReact = useCallback(async (itemId: string, reaction: ReactionKey) => {
+    if (reacting) return;
+    setReacting(`${itemId}-${reaction}`);
+    const hasIt = myReactions[itemId]?.has(reaction);
+    setMyReactions(prev => {
+      const copy = { ...prev };
+      const set = new Set(copy[itemId] ?? []);
+      hasIt ? set.delete(reaction) : set.add(reaction);
+      copy[itemId] = set;
+      return copy;
+    });
+    setItems(prev => prev.map(item => {
+      if (item.id !== itemId) return item;
+      const delta = hasIt ? -1 : 1;
+      return { ...item, reactions: { ...item.reactions, [reaction]: Math.max(0, (item.reactions[reaction] ?? 0) + delta) } };
+    }));
+    try {
+      await fetch(`${API}/api/share/${itemId}/react`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-user-id": userId },
+        body: JSON.stringify({ reaction }),
+      });
+    } catch { /* optimistic only */ }
+    setReacting(null);
+  }, [reacting, myReactions, userId]);
 
   const moonIds = ["all", ...Array.from(new Set(items.map(i => i.moonId))).sort()];
   const filtered = filter === "all" ? items : items.filter(i => i.moonId === filter);
@@ -127,22 +167,44 @@ export default function Gallery() {
                   {item.content}
                 </p>
 
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setExpanded(isOpen ? null : item.id)}
-                    className="text-[11px] text-primary hover:underline"
-                  >
-                    {isOpen ? "Show less" : "Read more"}
-                  </button>
-                  <a
-                    href={`/share/${item.id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[11px] text-muted-foreground hover:text-foreground flex items-center gap-1 ml-auto"
-                  >
-                    <ExternalLink size={10} />
-                    Full view
-                  </a>
+                {/* Reactions */}
+                <div className="flex items-center gap-1.5 pt-0.5 border-t border-border/40">
+                  {REACTION_DEFS.map(({ key, Icon, label }) => {
+                    const active = myReactions[item.id]?.has(key);
+                    const count = item.reactions?.[key] ?? 0;
+                    return (
+                      <button
+                        key={key}
+                        onClick={() => handleReact(item.id, key)}
+                        title={label}
+                        className={`flex items-center gap-1 text-[11px] px-2 py-1 rounded-full transition-all ${
+                          active
+                            ? "bg-primary/15 text-primary font-semibold"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                        }`}
+                      >
+                        <Icon size={11} className={active ? "fill-current" : ""} />
+                        {count > 0 && <span>{count}</span>}
+                      </button>
+                    );
+                  })}
+                  <div className="ml-auto flex items-center gap-2">
+                    <button
+                      onClick={() => setExpanded(isOpen ? null : item.id)}
+                      className="text-[11px] text-primary hover:underline"
+                    >
+                      {isOpen ? "Less" : "More"}
+                    </button>
+                    <a
+                      href={`/share/${item.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[11px] text-muted-foreground hover:text-foreground flex items-center gap-1"
+                    >
+                      <ExternalLink size={10} />
+                      View
+                    </a>
+                  </div>
                 </div>
               </div>
             );

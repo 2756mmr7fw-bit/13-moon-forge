@@ -1,13 +1,13 @@
 import { Router } from "express";
+import { getVoiceId } from "../lib/moonVoices";
 
 const router = Router();
 
-const DREW_VOICE_ID = "29vD33N1CtxCmqQRPOHJ";
 const ELEVENLABS_MODEL = "eleven_turbo_v2_5";
 const MAX_CHARS = 2500;
 
 router.post("/tts", async (req, res) => {
-  const { text } = req.body as { text?: string };
+  const { text, moon } = req.body as { text?: string; moon?: string };
 
   if (!text || typeof text !== "string" || !text.trim()) {
     return res.status(400).json({ error: "text is required" });
@@ -17,6 +17,8 @@ router.post("/tts", async (req, res) => {
   if (!apiKey) {
     return res.status(500).json({ error: "TTS not configured" });
   }
+
+  const voiceId = getVoiceId(moon);
 
   const clean = text
     .replace(/#{1,6}\s*/g, "")
@@ -33,7 +35,7 @@ router.post("/tts", async (req, res) => {
 
   try {
     const upstream = await fetch(
-      `https://api.elevenlabs.io/v1/text-to-speech/${DREW_VOICE_ID}?output_format=mp3_44100_128`,
+      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_128`,
       {
         method: "POST",
         headers: {
@@ -56,7 +58,7 @@ router.post("/tts", async (req, res) => {
 
     if (!upstream.ok) {
       const detail = await upstream.text().catch(() => "");
-      req.log?.warn({ status: upstream.status, detail }, "ElevenLabs TTS error");
+      req.log?.warn({ status: upstream.status, detail, voiceId, moon }, "ElevenLabs TTS error");
       return res.status(502).json({ error: "TTS request failed" });
     }
 

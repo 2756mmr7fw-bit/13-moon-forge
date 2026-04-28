@@ -95,9 +95,72 @@ function MoonUsageWidget({ data }: { data: MoonUsageData }) {
   );
 }
 
+// ─── Moon of the Day data ─────────────────────────────────────────────────────
+const MOON_PROMPTS = [
+  { moon: "Forge",  href: "/forge",      color: "#f97316", prompt: "Build a one-page app that solves a problem you had this week." },
+  { moon: "Hawk",   href: "/hawk",        color: "#eab308", prompt: "Research your top competitor and find the gap they're missing." },
+  { moon: "Sage",   href: "/sage",        color: "#22c55e", prompt: "Get a plain-English breakdown of any tech concept holding you back." },
+  { moon: "Flint",  href: "/flint",       color: "#3b82f6", prompt: "Diagnose the one device or software that's been giving you the most trouble." },
+  { moon: "Quill",  href: "/quill",       color: "#a855f7", prompt: "Write a cold email to a potential client that actually sounds human." },
+  { moon: "Creed",  href: "/creed",       color: "#ef4444", prompt: "Build a training plan for a skill you've been putting off for months." },
+  { moon: "Forge",  href: "/forge",       color: "#f97316", prompt: "Turn a messy idea into a step-by-step build plan." },
+  { moon: "Hawk",   href: "/hawk",        color: "#eab308", prompt: "Find 5 real people in your industry worth reaching out to this week." },
+  { moon: "Sage",   href: "/sage",        color: "#22c55e", prompt: "Explain how to automate one repetitive task in your business or work." },
+  { moon: "Flint",  href: "/flint",       color: "#3b82f6", prompt: "Walk me through setting up a free server for my side project." },
+  { moon: "Quill",  href: "/quill",       color: "#a855f7", prompt: "Write a LinkedIn post that shows off what you're actually building." },
+  { moon: "Creed",  href: "/creed",       color: "#ef4444", prompt: "Build a 30-day challenge to finally learn something new." },
+];
+
+function useMoonOfDay() {
+  const dayIndex = new Date().getDate() % MOON_PROMPTS.length;
+  return MOON_PROMPTS[dayIndex];
+}
+
+// ─── Pulse hook ────────────────────────────────────────────────────────────────
+interface PulseData { buildersToday: number; outputsToday: number; }
+function usePulse() {
+  const [data, setData] = useState<PulseData | null>(null);
+  useEffect(() => {
+    fetch(`${API_BASE}/api/pulse`)
+      .then(r => r.ok ? r.json() : null)
+      .then(setData)
+      .catch(() => {});
+  }, []);
+  return data;
+}
+
+// ─── Forge Score hook ─────────────────────────────────────────────────────────
+interface ScoreData {
+  score: number;
+  tier: string;
+  tierColor: string;
+  messages: number;
+  projects: number;
+  outputs: number;
+}
+function useForgeScore() {
+  const { getToken } = useAuth();
+  const [data, setData] = useState<ScoreData | null>(null);
+  useEffect(() => {
+    (async () => {
+      try {
+        const token = await getToken();
+        const res = await fetch(`${API_BASE}/api/score`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (res.ok) setData(await res.json() as ScoreData);
+      } catch { /* silent */ }
+    })();
+  }, [getToken]);
+  return data;
+}
+
 export default function Dashboard() {
   const { user, isLoaded } = useUser();
   const quota = useQuota();
+  const pulse = usePulse();
+  const forgeScore = useForgeScore();
+  const moonOfDay = useMoonOfDay();
   const { data: summary, isLoading: isLoadingSummary } = useGetDashboardSummary({
     query: { queryKey: getGetDashboardSummaryQueryKey() }
   });
@@ -137,9 +200,32 @@ export default function Dashboard() {
                 </div>
               </Link>
             )}
+            {pulse && (
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/40 border border-border rounded-full px-3 py-1">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+                </span>
+                {pulse.buildersToday} builder{pulse.buildersToday !== 1 ? "s" : ""} building today
+              </div>
+            )}
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap justify-end">
+          {forgeScore && (
+            <div
+              className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border bg-card"
+              title={`${forgeScore.score} pts — ${forgeScore.messages} messages · ${forgeScore.projects} projects · ${forgeScore.outputs} shares`}
+            >
+              <span className="text-base">⚒️</span>
+              <div>
+                <div className="text-[10px] text-muted-foreground font-medium leading-none mb-0.5">Forge Score</div>
+                <div className="text-sm font-black leading-none" style={{ color: forgeScore.tierColor }}>
+                  {forgeScore.score.toLocaleString()} <span className="text-[10px] font-semibold opacity-70">{forgeScore.tier}</span>
+                </div>
+              </div>
+            </div>
+          )}
           {quota && <QuotaWidget quota={quota} />}
           <Link href="/projects/new">
             <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold gap-2">
@@ -168,6 +254,30 @@ export default function Dashboard() {
           </>
         ) : null}
       </div>
+
+      {/* Moon of the Day */}
+      <Link href={moonOfDay.href}>
+        <div
+          className="rounded-2xl border p-5 flex items-center gap-5 cursor-pointer hover:opacity-90 transition-opacity"
+          style={{ borderColor: `${moonOfDay.color}44`, background: `${moonOfDay.color}0d` }}
+        >
+          <div
+            className="w-10 h-10 rounded-full shrink-0 flex items-center justify-center text-xl font-black"
+            style={{ background: `${moonOfDay.color}33`, color: moonOfDay.color }}
+          >
+            ☽
+          </div>
+          <div className="min-w-0">
+            <div className="text-[10px] font-bold tracking-widest uppercase mb-1" style={{ color: moonOfDay.color }}>
+              {moonOfDay.moon} — Daily Challenge
+            </div>
+            <p className="text-sm font-semibold leading-snug">{moonOfDay.prompt}</p>
+          </div>
+          <div className="ml-auto shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-full" style={{ background: `${moonOfDay.color}22`, color: moonOfDay.color }}>
+            Try it →
+          </div>
+        </div>
+      </Link>
 
       {/* Flagship: Get Help Tools */}
       <div className="space-y-3">
