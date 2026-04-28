@@ -1,0 +1,384 @@
+Got it — here it is in copy-paste form. Create these four files inside Forge's server/ (or wherever Forge keeps server code) under a folder called moonReceiver/, then paste the wire-up snippet into Forge's main Express setup file.
+
+1. server/moonReceiver/types.ts
+export type MoonEvent =
+  | "purchased"
+  | "granted"
+  | "refilled"
+  | "refunded"
+  | "expired"
+  | "cancelled";
+export interface MoonWebhookPayload {
+  event: MoonEvent;
+  userId: string;
+  moon: string;
+  isBundle?: boolean;
+  messagesRemaining?: number;
+  expiresAt?: string | null;
+  reason?: string;
+}
+export interface EntitlementRecord {
+  userId: string;
+  moons: string[];
+  isActive: boolean;
+  messagesRemaining?: number;
+  expiresAt?: string | null;
+  updatedAt: string;
+}
+export interface LookupResponse {
+  userId: string;
+  isActive: boolean;
+  moons: string[];
+  messagesRemaining?: number;
+  expiresAt?: string | null;
+}
+export interface NotFoundLookupResponse {
+  userId: string;
+  isActive: false;
+  moons: [];
+  found: false;
+}
+export interface IntegrationStatusResponse {
+  ok: true;
+  app: string;
+  version: string;
+  relevantMoons: string[];
+}
+export interface WebhookAckResponse {
+  ok: true;
+  entitled: boolean;
+  userId: string;
+  moons: string[];
+}
+export interface WebhookErrorResponse {
+  ok: false;
+  error: string;
+}
+2. server/moonReceiver/store.ts
+import type { EntitlementRecord } from "./types";
+export interface EntitlementStore {
+  get(userId: string): Promise<EntitlementRecord | null>;
+  upsert(record: EntitlementRecord): Promise<void>;
+  clear(userId: string): Promise<void>;
+}
+// In-memory store. Loses state on restart. Fine for getting started; swap for
+// a Postgres-backed store before relying on it in production.
+export class InMemoryEntitlementStore implements EntitlementStore {
+  private readonly data = new Map<string, EntitlementRecord>();
+  async get(userId: string): Promise<EntitlementRecord | null> {
+    return this.data.get(userId) ?? null;
+  }
+  async upsert(record: EntitlementRecord): Promise<void> {
+    this.data.set(record.userId, record);
+  }
+  async clear(userId: string): Promise<void> {
+    this.data.delete(userId);
+  }
+}
+3. server/moonReceiver/router.ts
+import { Router, type Request, type Response, type NextFunction } from "express";
+import type { EntitlementStore } from "./store";
+import type {
+  EntitlementRecord,
+  IntegrationStatusResponse,
+  LookupResponse,
+  MoonWebhookPayload,
+  NotFoundLookupResponse,
+  WebhookAckResponse,
+  WebhookErrorResponse,
+} from "./types";
+export interface ReceiverConfig {
+  apiKey: string;
+  relevantMoons: string[];
+  appName: string;
+  store: EntitlementStore;
+  version?: string;
+  onApplied?: (event: MoonWebhookPayload, record: EntitlementRecord) => void | Promise<void>;
+}
+function requireApiKey(expected: string) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const provided = req.header("x-api-key");
+    if (!provided || provided !== expected) {
+      const body: WebhookErrorResponse = { ok: false, error: "unauthorized" };
+      res.status(401).json(body);
+      return;
+    }
+    next();
+  };
+}
+function isMoonEvent(s: unknown): s is MoonWebhookPayload["event"] {
+  return (
+    s === "purchased" ||
+    s === "granted" ||
+    s === "refilled" ||
+    s === "refunded" ||
+    s === "expired" ||
+    s === "cancelled"
+  );
+}
+function parsePayload(body: unknown): MoonWebhookPayload | null {
+  if (!body || typeof body !== "object") return null;
+  const b = body as Record<string, unknown>;
+  if (typeof b.userId !== "string" || !b.userId) return null;
+  if (typeof b.moon !== "string" || !b.moon) return null;
+  if (!isMoonEvent(b.event)) return null;
+  return {
+    event: b.event,
+    userId: b.userId,
+    moon: b.moon,
+    isBundle: b.isBundle === true,
+    messagesRemaining:
+      typeof b.messagesRemaining === "number" ? b.messagesRemaining : undefined,
+    expiresAt:
+      typeof b.expiresAt === "string"
+        ? b.expiresAt
+        : b.expiresAt === null
+          ? null
+          : undefined,
+    reason: typeof b.reason === "string" ? b.reason : undefined,
+  };
+}
+function moonsAfterEvent(
+  payload: MoonWebhookPayload,
+  prior: EntitlementRecord | null,
+  relevantMoons: string[],
+): { moons: string[]; isActive: boolean } {
+  const grantingEvents: MoonWebhookPayload["event"][] = ["purchased", "granted"];
+  const revokingEvents: MoonWebhookPayload["event"][] = ["refunded", "expired", "cancelled"];
+  const isGrant = grantingEvents.includes(payload.event);
+  const isRevoke = revokingEvents.includes(payload.event);
+  if (isGrant) {
+    const granted = payload.isBundle ? relevantMoons.slice() : [payload.moon];
+    const merged = new Set<string>(prior?.moons ?? []);
+    for (const m of granted) {
+      if (relevantMoons.includes(m)) merged.add(m);
+    }
+    return { moons: Array.from(merged), isActive: merged.size > 0 };
+  }
+  if (isRevoke) {
+    if (payload.isBundle) {
+      return { moons: [], isActive: false };
+    }
+    const remaining = (prior?.moons ?? []).filter((m) => m !== payload.moon);
+    return { moons: remaining, isActive: remaining.length > 0 };
+  }
+  return {
+    moons: prior?.moons ?? (relevantMoons.includes(payload.moon) ? [payload.moon] : []),
+    isActive: prior?.isActive ?? false,
+  };
+}
+export function createReceiverRouter(config: ReceiverConfig): Router {
+  const router = Router();
+  const auth = requireApiKey(config.apiKey);
+  const version = config.version ?? "1.0.0";
+  router.get("/api/moon/integration-status", auth, (_req, res) => {
+    const body: IntegrationStatusResponse = {
+      ok: true,
+      app: config.appName,
+      version,
+      relevantMoons: config.relevantMoons.slice(),
+    };
+    res.json(body);
+  });
+  router.post("/api/moon/webhook", auth, async (req, res) => {
+    const payload = parsePayload(req.body);
+    if (!payload) {
+      const body: WebhookErrorResponse = { ok: false, error: "invalid-payload" };
+      res.status(400).json(body);
+      return;
+    }
+    const isRelevant =
+      payload.isBundle ||
+      payload.moon === "bundle" ||
+      config.relevantMoons.includes(payload.moon);
+    if (!isRelevant) {
+      const body: WebhookAckResponse = {
+        ok: true,
+        entitled: false,
+        userId: payload.userId,
+        moons: [],
+      };
+      res.json(body);
+      return;
+    }
+    const prior = await config.store.get(payload.userId);
+    const { moons, isActive } = moonsAfterEvent(payload, prior, config.relevantMoons);
+    const record: EntitlementRecord = {
+      userId: payload.userId,
+      moons,
+      isActive,
+      messagesRemaining:
+        payload.event === "refilled" || payload.event === "purchased" || payload.event === "granted"
+          ? payload.messagesRemaining ?? prior?.messagesRemaining
+          : isActive
+            ? prior?.messagesRemaining
+            : undefined,
+      expiresAt:
+        payload.event === "purchased" || payload.event === "granted"
+          ? payload.expiresAt ?? prior?.expiresAt ?? null
+          : isActive
+            ? prior?.expiresAt ?? null
+            : null,
+      updatedAt: new Date().toISOString(),
+    };
+    if (isActive) {
+      await config.store.upsert(record);
+    } else {
+      await config.store.clear(payload.userId);
+    }
+    if (config.onApplied) {
+      try {
+        await config.onApplied(payload, record);
+      } catch (err) {
+        console.error("[moonReceiver] onApplied hook threw:", err);
+      }
+    }
+    const ack: WebhookAckResponse = {
+      ok: true,
+      entitled: isActive,
+      userId: payload.userId,
+      moons,
+    };
+    res.json(ack);
+  });
+  router.get<{ userId: string }>(
+    "/api/moon/lookup-user/:userId",
+    auth,
+    async (req, res) => {
+      const userId = req.params.userId;
+      const record = await config.store.get(userId);
+      if (!record || !record.isActive) {
+        const body: NotFoundLookupResponse = {
+          userId,
+          isActive: false,
+          moons: [],
+          found: false,
+        };
+        res.status(404).json(body);
+        return;
+      }
+      const body: LookupResponse = {
+        userId: record.userId,
+        isActive: record.isActive,
+        moons: record.moons,
+        messagesRemaining: record.messagesRemaining,
+        expiresAt: record.expiresAt ?? null,
+      };
+      res.json(body);
+    },
+  );
+  return router;
+}
+4. server/moonReceiver/index.ts
+export { createReceiverRouter, type ReceiverConfig } from "./router";
+export { InMemoryEntitlementStore, type EntitlementStore } from "./store";
+export type {
+  EntitlementRecord,
+  IntegrationStatusResponse,
+  LookupResponse,
+  MoonEvent,
+  MoonWebhookPayload,
+  NotFoundLookupResponse,
+  WebhookAckResponse,
+  WebhookErrorResponse,
+} from "./types";
+5. Wire it into Forge's Express setup
+Find Forge's main server file (probably server/index.ts or server/routes.ts — wherever you call app.use(...) for other routers). Add this near the other app.use lines:
+
+import { createReceiverRouter, InMemoryEntitlementStore } from "./moonReceiver";
+const moonStore = new InMemoryEntitlementStore();
+app.use(
+  createReceiverRouter({
+    apiKey: process.env.FORGE_BUILDER_API_KEY!,
+    appName: "Forge",
+    relevantMoons: ["forge", "flint"],
+    store: moonStore,
+    onApplied: (event, record) => {
+      console.log(
+        `[forge] ${record.userId} → active=${record.isActive}, moons=${record.moons.join(",") || "(none)"} (event: ${event.event})`,
+      );
+    },
+  }),
+);
+Two things to make sure of:
+
+app.use(express.json()) is already called somewhere before this — Forge needs it to parse the webhook body
+FORGE_BUILDER_API_KEY is set as a secret in Forge's Replit environment, with the exact same value as the one set here on the storefront
+6. Set the secret on Forge
+In the Forge Replit, open the Secrets pane and add:
+
+Key: FORGE_BUILDER_API_KEY
+Value: the same value that's already saved here on TPTS for the same secret name
+Restart Forge after pasting everything. Then on this side, you can run the smoke test and Forge should flip from yellow ("ack only") to green ("end-to-end revoked").
+
+Optional: Postgres-backed storage
+The in-memory store loses state when Forge restarts, so if Forge restarts while a user is mid-session they'd briefly look unentitled until the next webhook. If Forge already has Postgres, swap the store for this:
+
+SQL — run once in Forge's database:
+
+create table if not exists moon_entitlements (
+  user_id            text primary key,
+  moons              text[] not null default '{}',
+  is_active          boolean not null default false,
+  messages_remaining integer,
+  expires_at         timestamptz,
+  updated_at         timestamptz not null default now()
+);
+server/moonReceiver/postgresStore.ts:
+
+import { Pool } from "pg";
+import type { EntitlementRecord, EntitlementStore } from "./types";
+export class PostgresEntitlementStore implements EntitlementStore {
+  constructor(private readonly pool: Pool) {}
+  async get(userId: string): Promise<EntitlementRecord | null> {
+    const { rows } = await this.pool.query(
+      `select user_id, moons, is_active, messages_remaining, expires_at, updated_at
+         from moon_entitlements
+        where user_id = $1`,
+      [userId],
+    );
+    if (!rows.length) return null;
+    const r = rows[0];
+    return {
+      userId: r.user_id,
+      moons: r.moons ?? [],
+      isActive: r.is_active,
+      messagesRemaining: r.messages_remaining ?? undefined,
+      expiresAt: r.expires_at ? new Date(r.expires_at).toISOString() : null,
+      updatedAt: new Date(r.updated_at).toISOString(),
+    };
+  }
+  async upsert(record: EntitlementRecord): Promise<void> {
+    await this.pool.query(
+      `insert into moon_entitlements
+         (user_id, moons, is_active, messages_remaining, expires_at, updated_at)
+       values ($1, $2, $3, $4, $5, $6)
+       on conflict (user_id) do update set
+         moons              = excluded.moons,
+         is_active          = excluded.is_active,
+         messages_remaining = excluded.messages_remaining,
+         expires_at         = excluded.expires_at,
+         updated_at         = excluded.updated_at`,
+      [
+        record.userId,
+        record.moons,
+        record.isActive,
+        record.messagesRemaining ?? null,
+        record.expiresAt ?? null,
+        record.updatedAt,
+      ],
+    );
+  }
+  async clear(userId: string): Promise<void> {
+    await this.pool.query(
+      `update moon_entitlements
+          set is_active = false, moons = '{}', messages_remaining = null,
+              expires_at = null, updated_at = now()
+        where user_id = $1`,
+      [userId],
+    );
+  }
+}
+If Forge uses Drizzle instead of raw pg, the same shape ports over in about ten minutes — just three methods to implement.
+
+That's the whole receiver. Once it's pasted in and the secret matches, Forge becomes a fully verified end-to-end participant in the network. Holler if something doesn't compile on the Forge side and I'll help untangle it. 🌙
