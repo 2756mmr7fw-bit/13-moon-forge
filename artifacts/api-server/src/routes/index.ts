@@ -32,6 +32,9 @@ import accountRouter from "./account";
 import chatHistoryRouter from "./chatHistory";
 import promptsRouter from "./prompts";
 import moonUsageRouter from "./moonUsage";
+import shareRouter from "./share";
+import workspaceSearchRouter from "./workspaceSearch";
+import forgeReportRouter from "./forgeReport";
 
 const router: IRouter = Router();
 
@@ -68,5 +71,8 @@ router.use(accountRouter);
 router.use(chatHistoryRouter);
 router.use(promptsRouter);
 router.use(moonUsageRouter);
+router.use(shareRouter);
+router.use(workspaceSearchRouter);
+router.use(forgeReportRouter);
 
 export default router;

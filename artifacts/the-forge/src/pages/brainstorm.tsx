@@ -7,6 +7,7 @@ import { getUserId } from "@/lib/userId";
 import { SpeakButton } from "@/components/speak-button";
 import { useChatHistory } from "@/hooks/useChatHistory";
 import { SavedPromptsPanel } from "@/components/saved-prompts-panel";
+import { MoonOutputActions } from "@/components/moon-output-actions";
 
 interface Message {
   role: "user" | "assistant";
@@ -255,8 +256,16 @@ export default function Brainstorm() {
                 </div>
               )}
               {msg.role === "assistant" && !msg.streaming && !msg.subscriptionRequired && msg.content.trim() && (
-                <div className="mt-2 flex justify-end">
-                  <SpeakButton text={msg.content} />
+                <div className="mt-2 space-y-1.5">
+                  <div className="flex justify-end">
+                    <SpeakButton text={msg.content} />
+                  </div>
+                  <MoonOutputActions
+                    content={msg.content}
+                    moonId="brainstorm"
+                    title={`Flint — ${new Date().toLocaleDateString()}`}
+                    className="justify-end"
+                  />
                 </div>
               )}
             </div>

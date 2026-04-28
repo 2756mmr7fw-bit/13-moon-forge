@@ -55,6 +55,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/mailbox",      label: "Forge Inbox",      icon: Mail,           tip: "Your forwarding address — forward emails and attachments here, they land in Workspace" },
     { href: "/projects/new", label: "New Project",      icon: PlusCircle,     tip: "Start a brand-new project from scratch"         },
     { href: "/brainstorm",   label: "Brainstorm",       icon: Sparkles,       tip: "AI helps you flesh out and plan your idea"      },
+    { href: "/starters",     label: "Forge Starters",   icon: LayoutTemplate, tip: "Pre-built Moon workflows — pick a use case and launch instantly" },
   ];
 
   const toolItems: NavItem[] = [

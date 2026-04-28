@@ -7,7 +7,7 @@ import {
   Folder, FolderOpen, FileText, Target, Calendar, Briefcase,
   LayoutTemplate, File, Plus, Trash2, ChevronRight, ChevronDown,
   Printer, Pencil, Check, X, Loader2, Flame, Send, Star, MoreHorizontal,
-  FolderPlus, FilePlus, PackageOpen, Code2, Download,
+  FolderPlus, FilePlus, PackageOpen, Code2, Download, Search,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -77,6 +77,9 @@ export default function Workspace() {
   const [showMenu, setShowMenu] = useState<number | null>(null);
   const renameRef = useRef<HTMLInputElement>(null);
   const [, navigate] = useLocation();
+  const [searchQ, setSearchQ] = useState("");
+  const [searchResults, setSearchResults] = useState<{ id: number; name: string; type: string; snippet: string; parentId: number | null }[]>([]);
+  const [searching, setSearching] = useState(false);
 
   const authHeaders = useCallback(async (): Promise<Record<string, string>> => {
     const token = await getToken();
@@ -97,6 +100,21 @@ export default function Workspace() {
   useEffect(() => {
     if (renamingId !== null) renameRef.current?.focus();
   }, [renamingId]);
+
+  // Search
+  useEffect(() => {
+    if (!searchQ.trim() || searchQ.length < 2) { setSearchResults([]); return; }
+    const timer = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const headers = await authHeaders();
+        const res = await fetch(`${API_BASE}/api/workspace/search?q=${encodeURIComponent(searchQ)}`, { headers });
+        if (res.ok) setSearchResults(await res.json());
+      } catch { /* silent */ }
+      finally { setSearching(false); }
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [searchQ, authHeaders]);
 
   // Build tree
   const roots = items.filter(i => !i.parentId);
@@ -442,6 +460,16 @@ ${markdownToHtml(selected.content ?? "")}
             </button>
           </div>
           <p className="text-[10px] text-muted-foreground mt-0.5">Your failsafe safe — we hold it, you own it</p>
+          {/* Search */}
+          <div className="relative mt-2">
+            <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+            <input
+              value={searchQ}
+              onChange={e => setSearchQ(e.target.value)}
+              placeholder="Search files…"
+              className="w-full bg-muted border border-border rounded-md pl-7 pr-3 py-1.5 text-xs outline-none focus:border-primary/50 placeholder:text-muted-foreground"
+            />
+          </div>
         </div>
 
         {/* Quick creates */}
@@ -460,9 +488,40 @@ ${markdownToHtml(selected.content ?? "")}
           </div>
         </div>
 
-        {/* Tree */}
+        {/* Tree / Search results */}
         <div className="flex-1 overflow-y-auto px-1 py-2" onClick={() => setShowMenu(null)}>
-          {loading ? (
+          {searchQ.trim().length >= 2 ? (
+            /* ── Search results ── */
+            searching ? (
+              <div className="flex justify-center p-4"><Loader2 className="animate-spin text-primary" size={16} /></div>
+            ) : searchResults.length === 0 ? (
+              <div className="text-center py-8 px-3">
+                <Search size={20} className="text-muted-foreground mx-auto mb-2 opacity-50" />
+                <p className="text-xs text-muted-foreground">No files match "{searchQ}"</p>
+              </div>
+            ) : (
+              <div className="space-y-0.5">
+                {searchResults.map(r => (
+                  <button
+                    key={r.id}
+                    onClick={() => {
+                      const found = items.find(i => i.id === r.id);
+                      if (found) { setSelected(found); setSearchQ(""); }
+                    }}
+                    className="w-full text-left px-2 py-2 rounded-lg hover:bg-muted transition-colors group"
+                  >
+                    <div className="flex items-center gap-1.5 mb-0.5">
+                      <FileText size={10} className="text-muted-foreground shrink-0" />
+                      <span className="text-xs font-medium truncate">{r.name}</span>
+                    </div>
+                    {r.snippet && (
+                      <p className="text-[10px] text-muted-foreground leading-relaxed line-clamp-2 pl-4">{r.snippet}</p>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )
+          ) : loading ? (
             <div className="flex justify-center p-4"><Loader2 className="animate-spin text-primary" size={18} /></div>
           ) : (
             <>
