@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
   MonitorPlay, Monitor, Swords, Sparkles, Code2, GraduationCap,
   Crosshair, Shield, ArrowRight, Flame, Globe, Scale, Wrench,
-  Send, Zap, Users, Star, ExternalLink,
+  Send, Zap, Users, Star, ExternalLink, Check, Heart, Lock, Equal,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -218,11 +218,11 @@ export default function Landing() {
             <Flame size={12} /> A product of Sovereign Digital LLC · The People's Town Square
           </div>
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight tracking-tight">
-            Your personal AI<br />
-            <span className="text-primary">tech team.</span>
+            The AI tools they<br />
+            <span className="text-primary">never gave you.</span>
           </h1>
           <p className="text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
-            Six AI specialists. One workspace. Fix your computer, build a website, understand a contract, learn anything. Free to start, free to save, free to take your work and go. No Geek Squad. No lock-in. No confusion.
+            Legal help. Code generation. Research. Teaching. All in one place. Free to start. No Geek Squad. No lock-in. Built for the people who needed it most — starting at $7, or free forever.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
             <Button size="lg" className="gap-2 text-base px-8" asChild>
@@ -532,6 +532,51 @@ export default function Landing() {
               Visit The People's Town Square <ExternalLink size={13} />
             </a>
           </Button>
+        </div>
+      </section>
+
+      {/* ── Sovereign Promise ───────────────────────────────────────────────── */}
+      <section className="py-20 px-6 border-t border-white/8">
+        <div className="max-w-3xl mx-auto space-y-10">
+          <div className="text-center space-y-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-primary text-xs font-semibold">
+              <Shield size={11} /> The Sovereign Promise
+            </div>
+            <h2 className="text-3xl font-bold tracking-tight">
+              You can tell a big man by how he treats a little man.
+            </h2>
+            <p className="text-muted-foreground max-w-lg mx-auto text-sm leading-relaxed">
+              My father said that. It's the foundation of everything we build here. This is what it means for you.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {[
+              { icon: Heart, color: "#ef4444", title: "The free tier is real.", body: "Not a demo. Not bait. You can actually use it — and take everything you build when you go." },
+              { icon: Lock, color: "#22c55e", title: "No lock-in. Ever.", body: "Cancel anytime. Your data leaves with you. We don't punish you for walking out the door." },
+              { icon: Equal, color: "#8b5cf6", title: "The same tools for everyone.", body: "The $7 subscriber gets the same AI power a law firm pays $400/hour for. No second-tier service." },
+              { icon: Shield, color: "#f97316", title: "The price won't quietly change.", body: "If anything ever costs more, you'll know before it happens. No surprises. No fine print tricks." },
+            ].map(p => {
+              const Icon = p.icon;
+              return (
+                <div key={p.title} className="flex gap-4 p-5 rounded-xl border border-white/8 bg-white/3">
+                  <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: `${p.color}18` }}>
+                    <Icon size={17} style={{ color: p.color }} />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="font-semibold text-sm">{p.title}</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{p.body}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="text-center">
+            <a href={`${basePath}/promise`} className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline font-medium">
+              Read the full Sovereign Promise <ArrowRight size={13} />
+            </a>
+          </div>
         </div>
       </section>
 
