@@ -29,6 +29,9 @@ import antivirusRouter from "./antivirus";
 import mailboxRouter from "./mailbox";
 import emailInboundRouter from "./email-inbound";
 import accountRouter from "./account";
+import chatHistoryRouter from "./chatHistory";
+import promptsRouter from "./prompts";
+import moonUsageRouter from "./moonUsage";
 
 const router: IRouter = Router();
 
@@ -62,5 +65,8 @@ router.use(antivirusRouter);
 router.use(mailboxRouter);
 router.use(emailInboundRouter);
 router.use(accountRouter);
+router.use(chatHistoryRouter);
+router.use(promptsRouter);
+router.use(moonUsageRouter);
 
 export default router;
