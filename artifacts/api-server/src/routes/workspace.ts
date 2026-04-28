@@ -3,8 +3,145 @@ import { db } from "@workspace/db";
 import { workspaceItemsTable, workspaceItemVersionsTable } from "@workspace/db";
 import { eq, and, desc, isNull, isNotNull } from "drizzle-orm";
 import { openai } from "@workspace/integrations-openai-ai-server";
+import { isAdmin } from "./admin";
 
 const router = Router();
+
+// ─── Admin workspace seed ─────────────────────────────────────────────────────
+const CODEBASE_REF = `# 13 Moon Forge — Codebase Reference
+**Sovereign Digital LLC | 13moonforge.ai**
+
+## Architecture
+
+| Layer | Stack |
+|---|---|
+| Frontend | React + Vite + TypeScript + Tailwind + shadcn/ui |
+| Backend | Node.js + Express + TypeScript (ESBuild bundled) |
+| Database | PostgreSQL via Drizzle ORM |
+| Auth | Clerk (JWT, PKCE) |
+| AI | OpenAI GPT-4o (all Moons) |
+| Voice | ElevenLabs TTS |
+| Mobile | Expo React Native |
+| Hosting | Replit → Hetzner VPS + Coolify |
+
+---
+
+## 6 Moon Personas
+
+| Moon | Route | Purpose |
+|---|---|---|
+| Forge | /forge | App builder, architect |
+| Hawk | /ask-hawk | Research, sourcing, supply chain |
+| Sage | /learn-sage | Teaching, deep learning |
+| Flint | /flint | Tech support, computer fix |
+| Quill | /quill | Writing, legal, contracts |
+| Creed | /creed | Faith, philosophy, purpose |
+| Brainstorm | /brainstorm | Idea generation, strategy |
+
+---
+
+## Key Files
+
+### API Server (artifacts/api-server/src/)
+- \`app.ts\` — Express setup, middleware, route mounting
+- \`routes/index.ts\` — All route registrations
+- \`routes/forge.ts\` — Forge Moon AI endpoint
+- \`routes/memory.ts\` — User memory (GET/PUT /api/user/memory)
+- \`routes/workspace.ts\` — Workspace CRUD + Forge AI creation
+- \`routes/quota.ts\` — Message limits, admin bypass
+- \`routes/admin.ts\` — Admin check (ADMIN_EMAILS env var)
+- \`routes/referral.ts\` — Referral links + claim
+- \`routes/score.ts\` — Forge Score calculation
+- \`routes/tts.ts\` — ElevenLabs voice per Moon
+- \`routes/coolify.ts\` — Coolify server integration
+- \`routes/connections.ts\` — Server connection management
+- \`routes/deploy.ts\` — Deploy trigger
+- \`routes/payments.ts\` — Square payment processing
+- \`routes/secrets.ts\` — AES-256-GCM encrypted vault
+- \`lib/moonVoices.ts\` — Voice IDs per Moon persona
+
+### Frontend (artifacts/the-forge/src/)
+- \`App.tsx\` — Router, Clerk provider, referral claim handler
+- \`components/layout.tsx\` — Sidebar nav, mobile nav
+- \`components/onboarding-modal.tsx\` — 2-step onboarding
+- \`components/templates-panel.tsx\` — Moon prompt templates
+- \`components/moon-output-actions.tsx\` — Export (MD/PDF) + Share
+- \`lib/export.ts\` — Markdown + PDF download utilities
+- \`lib/templates.ts\` — All Moon templates (7 per Moon)
+- \`pages/dashboard.tsx\` — Home, Moon of Day, streak, pulse
+- \`pages/workspace.tsx\` — Forge workspace file system
+- \`pages/account.tsx\` — Forge Score, referral link
+- \`pages/connections.tsx\` — Coolify server connection UI
+- \`pages/projects.tsx\` — Project cards, portfolio
+
+### Database (lib/db/src/schema/)
+- \`userMemory.ts\` — Per-user AI memory
+- \`workspace.ts\` — Workspace items + versions
+- \`projects.ts\` — Projects with links
+- \`referrals.ts\` — Referral codes + claims
+- \`usage.ts\` — Message usage tracking
+- \`payments.ts\` — Payment records
+- \`savedPrompts.ts\` — Saved prompts library
+- \`sharedOutputs.ts\` — Gallery shares + reactions
+
+---
+
+## Environment Variables
+
+| Key | Purpose |
+|---|---|
+| ADMIN_EMAILS | Comma-separated admin emails (unlimited quota) |
+| ELEVENLABS_API_KEY | Voice TTS |
+| SESSION_SECRET | Express session |
+| CLERK_SECRET_KEY | Clerk backend auth |
+| DATABASE_URL | PostgreSQL connection |
+
+---
+
+## Admin Access
+Email: \`Ezekiel@thepeoplestownsq.com\`
+- Unlimited messages (plan: owner, limit: 999,999)
+- Access to /api/admin/stats and /api/admin/registry
+- Check: GET /api/admin/check
+
+---
+
+## Deployment Path
+1. Publish on Replit (current) → .replit.app domain
+2. Hetzner VPS → Install Coolify → Connect in Forge Connections page
+3. Deploy from Forge to Coolify → Self-hosted at 13moonforge.ai
+`;
+
+async function seedAdminWorkspace(userId: string): Promise<void> {
+  try {
+    const existing = await db
+      .select()
+      .from(workspaceItemsTable)
+      .where(and(eq(workspaceItemsTable.userId, userId), isNull(workspaceItemsTable.deletedAt)));
+    if (existing.length > 0) return;
+
+    const [folder] = await db.insert(workspaceItemsTable).values({
+      userId,
+      type: "folder",
+      name: "Forge Codebase",
+      content: "",
+      icon: "🔥",
+      color: "#7c3aed",
+      pinned: true,
+      order: 0,
+    }).returning();
+
+    await db.insert(workspaceItemsTable).values({
+      userId,
+      type: "document",
+      name: "Codebase Reference",
+      content: CODEBASE_REF,
+      parentId: folder.id,
+      icon: "📋",
+      order: 0,
+    });
+  } catch { /* silent — don't break workspace load */ }
+}
 
 const MAX_VERSIONS_PER_ITEM = 20;
 
@@ -12,6 +149,11 @@ const MAX_VERSIONS_PER_ITEM = 20;
 router.get("/workspace", async (req, res) => {
   const userId = req.userId;
   try {
+    // Seed codebase reference for admin on first visit
+    if (await isAdmin(userId)) {
+      await seedAdminWorkspace(userId);
+    }
+
     const items = await db
       .select()
       .from(workspaceItemsTable)
