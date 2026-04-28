@@ -6,7 +6,7 @@ import {
   Mail, Star, Trash2, RefreshCw, Inbox, ArrowLeft,
   Loader2, Copy, Check, Paperclip, FolderOpen, Forward,
 } from "lucide-react";
-import { useUser } from "@clerk/clerk-react";
+import { useUser } from "@clerk/react";
 import { format } from "date-fns";
 
 const API = import.meta.env.BASE_URL.replace(/\/$/, "");
