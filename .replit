@@ -32,4 +32,4 @@ channel = "stable-25_05"
 
 [userenv.shared]
 TSQ_BASE_URL = "https://thepeoplestownsq.com"
-ADMIN_EMAILS = "Ezekiel@thepeoplestownsq.com"
+ADMIN_EMAILS = "ezekiel@thepeoplestownsq.com"
