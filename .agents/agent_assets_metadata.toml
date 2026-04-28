@@ -17,3 +17,9 @@ id = "YVVrhdpjhgpIKZ5WHQlO5"
 uri = "file://screenshots/13moonforge-logo.jpg"
 type = "image"
 title = "13 Moon Forge — Logo"
+
+[[outputs]]
+id = "CpiQAV3exubzGjxxImCEC"
+uri = "file://13-moon-forge-full-export.md"
+type = "text"
+title = "13 Moon Forge — Full Source Code Export (203 files)"
