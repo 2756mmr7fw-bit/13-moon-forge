@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { UserProfile, useUser } from "@clerk/react";
 import { Show } from "@clerk/react";
 import { Link } from "wouter";
-import { ExternalLink, Shield, CreditCard, LogIn, Link2, CheckCircle2, Loader2, X, AlertCircle } from "lucide-react";
+import { ExternalLink, Shield, CreditCard, LogIn, Link2, CheckCircle2, Loader2, X, AlertCircle, Mail, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -164,6 +164,50 @@ function TptsEmailLinker() {
   );
 }
 
+function ForgeReportCard({ email, firstName }: { email: string; firstName?: string }) {
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [err, setErr] = useState("");
+
+  async function send() {
+    setSending(true); setErr("");
+    try {
+      const res = await fetch(`${API}/api/forge-report`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, firstName }),
+      });
+      if (!res.ok) throw new Error((await res.json()).error ?? "Failed");
+      setSent(true);
+    } catch (e: unknown) {
+      setErr(e instanceof Error ? e.message : "Something went wrong");
+    } finally { setSending(false); }
+  }
+
+  return (
+    <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+      <div className="flex items-center gap-2">
+        <Mail size={16} className="text-primary" />
+        <h2 className="font-semibold text-sm">Forge Report</h2>
+      </div>
+      <p className="text-xs text-muted-foreground leading-relaxed">
+        Get a weekly activity digest — your sessions, files, and saved prompts — sent to your email.
+      </p>
+      {sent ? (
+        <div className="flex items-center gap-1.5 text-green-400 text-xs font-medium">
+          <CheckCircle2 size={13} /> Sent to {email}
+        </div>
+      ) : (
+        <Button size="sm" className="w-full gap-2 text-xs h-8" onClick={send} disabled={sending}>
+          {sending ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
+          {sending ? "Sending…" : "Send My Forge Report"}
+        </Button>
+      )}
+      {err && <p className="text-xs text-destructive">{err}</p>}
+    </div>
+  );
+}
+
 export default function AccountPage() {
   const { user, isLoaded } = useUser();
 
@@ -183,6 +227,14 @@ export default function AccountPage() {
 
             {/* TPTS email linker — most prominent if they have moons */}
             <TptsEmailLinker />
+
+            {/* Forge Report */}
+            {isLoaded && user?.primaryEmailAddress?.emailAddress && (
+              <ForgeReportCard
+                email={user.primaryEmailAddress.emailAddress}
+                firstName={user.firstName ?? undefined}
+              />
+            )}
 
             {/* Subscription card */}
             <div className="rounded-xl border border-border bg-card p-5 space-y-4">

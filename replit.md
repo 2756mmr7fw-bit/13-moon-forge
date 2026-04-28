@@ -12,9 +12,10 @@ AI-powered invention and building platform for Sovereign Digital LLC (13moonforg
 ### Builder
 - **The Anvil** (`/`) — Dashboard with stats and recent projects
 - **My Projects** (`/projects`) — Project management with templates, pin/sort, portfolio builder
-- **Workspace** (`/workspace`) — Forge-powered file system: folders, documents, plans, blueprints, portfolios, goals, code files. Forge chat creates any type from natural language. Keyword detection for export intent triggers ZIP download automatically. Full CRUD, pin, rename, PDF export, markdown editor. DB: `workspace_items` table. API: `GET|POST /api/workspace`, `PUT|DELETE /api/workspace/:id`, `POST /api/workspace/forge`.
+- **Workspace** (`/workspace`) — Forge-powered file system: folders, documents, plans, blueprints, portfolios, goals, code files. Forge chat creates any type from natural language. Keyword detection for export intent triggers ZIP download automatically. Full CRUD, pin, rename, PDF export, markdown editor. Full-text sidebar search (debounced, hits `/api/workspace/search`). DB: `workspace_items` table. API: `GET|POST /api/workspace`, `PUT|DELETE /api/workspace/:id`, `POST /api/workspace/forge`, `GET /api/workspace/search?q=`.
+- **Forge Starters** (`/starters`) — 6 pre-built Moon workflow templates (Business Plan, Landing Page, Learn a Skill, Contract Review, Build an App, Find a Supplier). Each card lists steps and pre-fills prompts via localStorage handoff to Moon pages.
 - **New Creation** (`/projects/new`) — Conversational Forge chat extracts project plan then one-click creates
-- **Brainstorm** (`/brainstorm`) — AI idea generation
+- **Brainstorm** (`/brainstorm`) — AI idea generation with Moon Output Actions (Save to Workspace, Share Link, Chain to Moon) on every assistant message.
 
 ### Learn & Build Yourself
 - **Write Code Yourself** (`/diy-code`) — Full Monaco editor (VS Code-quality). 16 languages. Zero credits, no AI required. Save directly to Workspace or download the file. For users who want to write their own code without using Forge.
@@ -80,6 +81,18 @@ Uses Replit AI Integrations (OpenAI-compatible, no user API key needed). All rou
 
 **Moon subscription caching** (`artifacts/api-server/src/lib/moonApi.ts`): server-side in-memory Map with 5-min TTL per userId to avoid hammering TPTS on every page load.
 
+**Sharing & Forge Report**:
+- `POST /api/share` — creates a shareable public link for any Moon output. Stores in `shared_outputs` table. Returns `{ id, url, createdAt }`.
+- `GET /api/share/:id` — public (no auth). Returns the shared output or 404/403. Rendered at public route `/share/:id` (no Layout wrapper).
+- `DELETE /api/share/:id` — revokes a share (owner only).
+- `POST /api/forge-report` — generates and emails a Forge activity digest via Resend. Body: `{ email, firstName? }`. Includes session count, saved prompt count, workspace file count, recently used Moons, and a weekly tip.
+- `GET /api/workspace/search?q=` — full-text search across user's workspace items (name + content ILIKE). Returns up to 30 results with contextual snippets. Used by the search bar in the Workspace sidebar.
+
+**Moon Output Actions** (`artifacts/the-forge/src/components/moon-output-actions.tsx`): reusable component shown on AI responses across Moon pages (Brainstorm, Sage). Three actions:
+1. Save to Workspace — POSTs the content to `/api/workspace` as a note file.
+2. Share Link — POSTs to `/api/share`, shows copy-link button on success.
+3. Chain to Moon — dropdown of all Moon pages; pre-fills the content via localStorage handoff pattern.
+
 **Route guards**: `ProtectedRoute` component (`components/protected-route.tsx`) wraps all pages except `/pricing` and `/payment/success`. Unauthenticated users are redirected to `/sign-in?redirect_url=<current_path>` with a spinner shown while Clerk loads.
 
 **Admin access**: Two supported env vars (both comma-separated, both optional):
@@ -121,6 +134,11 @@ Email check uses `createClerkClient` with `CLERK_SECRET_KEY`; results cached per
 - `lib/db/src/schema/` — Drizzle ORM schema files
 - `serverConnectionsTable` — Coolify server connections per user (in `deploy.ts`)
 - `registryAppsTable` — community app submissions (id, name, tagline, description, stack, githubUrl, dockerImage, submittedByUserId, status: pending/approved/rejected, sovereignCertified, minRam)
+- `moon_entitlements` — TPTS webhook-synced Moon subscription entitlements per user
+- `chat_sessions` — persistent Brainstorm (and future Moon) chat history per user
+- `saved_prompts` — user-saved prompts with moonId, title, prompt text
+- `user_tpts_links` — links Forge userId to a TPTS email for subscription lookup
+- `shared_outputs` — public shareable Moon output links (UUID PK, userId, moonId, title, content, isPublic)
 - Push: `pnpm --filter @workspace/db run push-force`
 
 ---

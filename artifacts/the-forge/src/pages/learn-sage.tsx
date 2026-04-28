@@ -10,6 +10,7 @@ import {
   GraduationCap, BookOpenCheck, Lightbulb, Loader2, Copy, Check, ExternalLink, RotateCcw,
 } from "lucide-react";
 import { getUserId } from "@/lib/userId";
+import { MoonOutputActions } from "@/components/moon-output-actions";
 import { getSkillLevel, getSkillMeta, SKILL_LEVELS, setSkillLevel, type SkillLevel } from "@/lib/skillLevel";
 
 const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -62,20 +63,22 @@ function useForgeStream(endpoint: string) {
   return { output, status, subscribeUrl, run, reset };
 }
 
-function OutputPanel({ output, status, subscribeUrl, placeholder, onReset }: {
+function OutputPanel({ output, status, subscribeUrl, placeholder, onReset, moonId = "sage", title }: {
   output: string; status: string; subscribeUrl: string | null; placeholder: string; onReset: () => void;
+  moonId?: string; title?: string;
 }) {
   const [copied, setCopied] = useState(false);
   const copy = async () => { await navigator.clipboard.writeText(output); setCopied(true); setTimeout(() => setCopied(false), 2000); };
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-2">
         <Label className="text-xs text-muted-foreground">
           Sage's Explanation {status === "running" && <span className="ml-2 text-indigo-400 animate-pulse">Teaching…</span>}
         </Label>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-1.5 items-center">
           {output && <Button variant="ghost" size="sm" onClick={copy} className="h-7 gap-1.5 text-xs">{copied ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}{copied ? "Copied" : "Copy"}</Button>}
           {output && <Button variant="ghost" size="sm" onClick={onReset} className="h-7 gap-1.5 text-xs text-muted-foreground"><RotateCcw size={12} /> Clear</Button>}
+          <MoonOutputActions content={output} moonId={moonId} title={title} />
         </div>
       </div>
       <div className={cn("min-h-[380px] rounded-md border p-4 text-sm leading-relaxed overflow-auto whitespace-pre-wrap", status === "error" ? "border-destructive/40 bg-destructive/5 text-destructive" : "border-indigo-900/30 bg-indigo-950/10")}>
