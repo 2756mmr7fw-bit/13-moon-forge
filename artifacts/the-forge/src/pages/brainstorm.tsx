@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Sparkles, RotateCcw, ExternalLink } from "lucide-react";
+import { Send, Sparkles, RotateCcw, ExternalLink, Clock, BookMarked } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { getUserId } from "@/lib/userId";
 import { SpeakButton } from "@/components/speak-button";
+import { useChatHistory } from "@/hooks/useChatHistory";
+import { SavedPromptsPanel } from "@/components/saved-prompts-panel";
 
 interface Message {
   role: "user" | "assistant";
@@ -27,6 +29,27 @@ export default function Brainstorm() {
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [showRestoreBanner, setShowRestoreBanner] = useState(false);
+  const { session, loaded, save: saveHistory, clear: clearHistory } = useChatHistory("brainstorm");
+
+  // Check for a pending workspace AI action
+  useEffect(() => {
+    const pending = localStorage.getItem("forge:workspace:pending");
+    if (pending) {
+      try {
+        const { content, filename } = JSON.parse(pending) as { content: string; filename: string };
+        setInput(`Here's the content of "${filename}":\n\n${content}`);
+        localStorage.removeItem("forge:workspace:pending");
+      } catch { /* ignore */ }
+    }
+  }, []);
+
+  // Show restore banner once session is loaded and has meaningful content
+  useEffect(() => {
+    if (loaded && session && session.messages.length > 2) {
+      setShowRestoreBanner(true);
+    }
+  }, [loaded, session]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -88,6 +111,12 @@ export default function Brainstorm() {
               setMessages(prev => {
                 const next = [...prev];
                 next[next.length - 1] = { role: "assistant", content: accumulated };
+                // Save to persistent history (debounced inside hook)
+                saveHistory(next.filter(m => !m.streaming && !m.subscriptionRequired).map(m => ({
+                  role: m.role as "user" | "assistant",
+                  content: m.content,
+                  ts: Date.now(),
+                })));
                 return next;
               });
             }
@@ -151,6 +180,28 @@ export default function Brainstorm() {
           New Session
         </Button>
       </div>
+
+      {/* Restore last session banner */}
+      {showRestoreBanner && session && (
+        <div className="mb-3 flex items-center gap-3 px-3 py-2 rounded-lg bg-amber-950/30 border border-amber-900/40 text-xs">
+          <Clock size={12} className="text-amber-400 shrink-0" />
+          <span className="text-amber-300/80 flex-1">
+            Last session: <span className="font-medium">{new Date(session.updatedAt).toLocaleDateString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
+          </span>
+          <button
+            onClick={() => {
+              setMessages(session.messages.map(m => ({ role: m.role, content: m.content })));
+              setShowRestoreBanner(false);
+            }}
+            className="text-amber-400 font-medium hover:underline"
+          >
+            Restore
+          </button>
+          <button onClick={() => { clearHistory(); setShowRestoreBanner(false); }} className="text-muted-foreground/50 hover:text-muted-foreground">
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* Flint's quote */}
       <div className="mb-5 px-4 py-3 rounded-lg border border-amber-900/40 bg-amber-950/20">
@@ -237,6 +288,13 @@ export default function Brainstorm() {
       <p className="text-[11px] text-muted-foreground text-center mt-2">
         Press Enter to send · Shift+Enter for new line
       </p>
+
+      <SavedPromptsPanel
+        moonId="brainstorm"
+        currentPrompt={input}
+        onUsePrompt={p => { setInput(p); textareaRef.current?.focus(); }}
+        className="mt-3"
+      />
     </div>
   );
 }

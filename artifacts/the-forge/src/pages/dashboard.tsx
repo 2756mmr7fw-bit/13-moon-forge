@@ -42,6 +42,58 @@ function useQuota() {
   return quota;
 }
 
+interface MoonStatus {
+  id: string;
+  label: string;
+  desc: string;
+  color: string;
+  active: boolean;
+  messagesRemaining: number | null;
+  subscribeUrl: string;
+}
+interface MoonUsageData {
+  hasAnyActive: boolean;
+  moons: MoonStatus[];
+  updatedAt: string | null;
+}
+
+function useMoonUsage() {
+  const [data, setData] = useState<MoonUsageData | null>(null);
+  useEffect(() => {
+    fetch(`${API_BASE}/api/moon/usage`)
+      .then(r => r.ok ? r.json() : null)
+      .then(setData)
+      .catch(() => {});
+  }, []);
+  return data;
+}
+
+function MoonUsageWidget({ data }: { data: MoonUsageData }) {
+  const activeMoons = data.moons.filter(m => m.active);
+  if (activeMoons.length === 0) return null;
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2">
+        <h2 className="text-xs font-bold tracking-widest text-muted-foreground uppercase">Your Moons</h2>
+        <span className="text-[10px] bg-primary/10 text-primary rounded-full px-2 py-0.5 font-medium">{activeMoons.length} active</span>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {activeMoons.map(moon => (
+          <div key={moon.id} className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border bg-card">
+            <div className="w-2 h-2 rounded-full shrink-0" style={{ background: moon.color, boxShadow: `0 0 6px ${moon.color}` }} />
+            <span className="text-xs font-semibold">{moon.label}</span>
+            {moon.messagesRemaining !== null && (
+              <span className="text-[10px] text-muted-foreground">
+                {moon.messagesRemaining} msg left
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const { user, isLoaded } = useUser();
   const quota = useQuota();
@@ -54,6 +106,7 @@ export default function Dashboard() {
   });
 
   const firstName = isLoaded ? (user?.firstName ?? user?.username) : null;
+  const moonUsage = useMoonUsage();
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -181,6 +234,9 @@ export default function Dashboard() {
           ))}
         </div>
       </div>
+
+      {/* Moon Usage */}
+      {moonUsage && <MoonUsageWidget data={moonUsage} />}
 
       {/* Recent Projects */}
       <div className="space-y-4">

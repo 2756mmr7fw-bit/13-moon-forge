@@ -6,3 +6,5 @@ export * from "./workspace";
 export * from "./mailbox";
 export * from "./userLinks";
 export * from "./moonEntitlements";
+export * from "./chatSessions";
+export * from "./savedPrompts";

@@ -4,13 +4,14 @@ import {
   Flame, FolderKanban, PlusCircle, CreditCard, ExternalLink,
   Sparkles, Code2, Wand2, Layers, Scale, Crosshair, Activity,
   GraduationCap, ArrowRightLeft, Wrench, BookOpen, Archive, Gamepad2, Rocket, LogOut,
-  Shield, Github, Package, User, LogIn, Menu, X, Settings, KeyRound, ShieldAlert, PlugZap, Swords, Monitor, MonitorPlay, Globe, Download, Wifi, LayoutTemplate, PencilLine, Mail,
+  Shield, Github, Package, User, LogIn, Menu, X, Settings, KeyRound, ShieldAlert, PlugZap, Swords, Monitor, MonitorPlay, Globe, Download, Wifi, LayoutTemplate, PencilLine, Mail, Search,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LogoMark, LogoWordmark } from "@/components/logo";
 import { OnboardingModal } from "@/components/onboarding-modal";
 import { useUser, useClerk, useAuth, Show } from "@clerk/react";
 import { SkillLevelBadge, SkillLevelDialog } from "@/components/skill-level-selector";
+import { CommandPalette, useCommandPalette } from "@/components/command-palette";
 
 const OUR_APPS_URL = "https://thepeoplestownsq.com";
 
@@ -27,6 +28,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [skillOpen, setSkillOpen] = useState(false);
+  const { open: cmdOpen, setOpen: setCmdOpen } = useCommandPalette();
   const { user } = useUser();
   const { signOut } = useClerk();
   const { getToken } = useAuth();
@@ -212,7 +214,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </div>
       </nav>
 
-      <div className="px-4 pb-1">
+      <div className="px-4 pb-1 space-y-0.5">
+        <button
+          onClick={() => setCmdOpen(true)}
+          className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          title="Command palette — navigate and run saved prompts"
+        >
+          <div className="flex items-center gap-2">
+            <Search size={14} />
+            <span>Search & Navigate</span>
+          </div>
+          <kbd className="text-[9px] bg-muted/80 border border-border rounded px-1 py-0.5 font-mono">⌘K</kbd>
+        </button>
         <button
           onClick={() => setSkillOpen(true)}
           className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
@@ -244,6 +257,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen bg-background text-foreground">
       <OnboardingModal />
       <SkillLevelDialog open={skillOpen} onClose={() => setSkillOpen(false)} />
+      <CommandPalette open={cmdOpen} onClose={() => setCmdOpen(false)} />
 
       {/* Desktop Sidebar */}
       <aside className="w-64 border-r border-border bg-sidebar flex-col hidden md:flex shrink-0">

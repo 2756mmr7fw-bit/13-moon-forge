@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "@clerk/react";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
+import { useLocation } from "wouter";
 import {
   Folder, FolderOpen, FileText, Target, Calendar, Briefcase,
   LayoutTemplate, File, Plus, Trash2, ChevronRight, ChevronDown,
@@ -75,6 +76,7 @@ export default function Workspace() {
   const [activeParent, setActiveParent] = useState<number | null>(null);
   const [showMenu, setShowMenu] = useState<number | null>(null);
   const renameRef = useRef<HTMLInputElement>(null);
+  const [, navigate] = useLocation();
 
   const authHeaders = useCallback(async (): Promise<Record<string, string>> => {
     const token = await getToken();
@@ -351,6 +353,32 @@ ${markdownToHtml(selected.content ?? "")}
                   onClick={e => { e.stopPropagation(); setSelected(item); exportPDF(); setShowMenu(null); }}>
                   <Printer size={11} /> Export PDF
                 </button>
+              )}
+              {item.type !== "folder" && item.content && !item.content.startsWith("data:") && (
+                <>
+                  <div className="border-t border-border my-1" />
+                  <p className="px-3 pt-1 pb-0.5 text-[10px] font-semibold text-muted-foreground/50 uppercase tracking-wider">Send to Moon</p>
+                  {[
+                    { label: "Flint · Brainstorm", href: "/brainstorm" },
+                    { label: "Sage · Learn", href: "/sage" },
+                    { label: "Hawk · Find", href: "/hawk" },
+                  ].map(moon => (
+                    <button key={moon.href}
+                      className="w-full text-left px-3 py-1.5 hover:bg-muted flex items-center gap-2 text-primary/80"
+                      onClick={e => {
+                        e.stopPropagation();
+                        localStorage.setItem("forge:workspace:pending", JSON.stringify({
+                          moonId: moon.label,
+                          content: item.content,
+                          filename: item.name,
+                        }));
+                        navigate(moon.href);
+                        setShowMenu(null);
+                      }}>
+                      <Flame size={11} /> {moon.label}
+                    </button>
+                  ))}
+                </>
               )}
               <div className="border-t border-border my-1" />
               <button className="w-full text-left px-3 py-1.5 hover:bg-destructive/10 text-destructive flex items-center gap-2"
