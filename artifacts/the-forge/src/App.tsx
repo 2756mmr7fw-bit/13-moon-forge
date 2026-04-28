@@ -56,6 +56,7 @@ const Mailbox          = lazy(() => import("@/pages/mailbox"));
 const ShareView        = lazy(() => import("@/pages/share-view"));
 const Starters         = lazy(() => import("@/pages/starters"));
 const BuildWithMe      = lazy(() => import("@/pages/build-with-me"));
+const Gallery          = lazy(() => import("@/pages/gallery"));
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
@@ -278,6 +279,7 @@ function Router() {
                     <Route path="/mailbox"                component={Mailbox} />
                     <Route path="/starters"              component={Starters} />
                     <Route path="/build-with-me"         component={BuildWithMe} />
+                    <Route path="/gallery"               component={Gallery} />
                     <Route component={NotFound} />
                   </Switch>
                 </ProtectedRoute>

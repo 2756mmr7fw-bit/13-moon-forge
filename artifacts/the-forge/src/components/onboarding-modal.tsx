@@ -1,113 +1,130 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { Wand2, Hammer, Compass, X, Flame } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Sparkles, BookOpen, Crosshair, Flame, X, ArrowRight } from "lucide-react";
 
 const FLAG = "13moonforge_onboarded";
 
 const PATHS = [
   {
-    id: "migrate",
-    icon: Wand2,
-    color: "text-violet-400",
-    border: "border-violet-800/40 hover:border-violet-500/60",
-    bg: "bg-violet-900/10 hover:bg-violet-900/20",
-    title: "Migrate an existing app",
-    body: "I have code on Replit, Heroku, Railway, or Render and I need to move it to my own server.",
-    cta: "Start Migration Wizard",
-    href: "/wizard",
+    id: "brainstorm",
+    icon: Sparkles,
+    color: "#f59e0b",
+    title: "I have an idea",
+    sub: "Help me brainstorm and shape it",
+    href: "/brainstorm",
+    prompt: "I have an idea I want to develop. Help me think through it, sharpen what makes it different, and find the angle nobody else is looking at.",
+  },
+  {
+    id: "learn",
+    icon: BookOpen,
+    color: "#22c55e",
+    title: "I want to learn something",
+    sub: "Teach me a concept, skill, or how something works",
+    href: "/sage",
+    prompt: "I want to learn something new. Ask me what topic I want to understand, then teach it from the ground up — no jargon, real examples, the kind of explanation that actually sticks.",
+  },
+  {
+    id: "research",
+    icon: Crosshair,
+    color: "#eab308",
+    title: "I need to find something",
+    sub: "Research a topic, find suppliers, prices, or competitors",
+    href: "/hawk",
+    prompt: "I need help researching something. Ask me what I'm looking for, then find real information — actual options, prices, sources — not vague suggestions.",
   },
   {
     id: "build",
-    icon: Hammer,
-    color: "text-orange-400",
-    border: "border-orange-800/40 hover:border-orange-500/60",
-    bg: "bg-orange-900/10 hover:bg-orange-900/20",
-    title: "Build something new",
-    body: "I want to create a new project — brainstorm, prototype, code, and ship it.",
-    cta: "Create New Project",
-    href: "/projects/new",
-  },
-  {
-    id: "explore",
-    icon: Compass,
-    color: "text-sky-400",
-    border: "border-sky-800/40 hover:border-sky-500/60",
-    bg: "bg-sky-900/10 hover:bg-sky-900/20",
-    title: "Explore the tools",
-    body: "I want to see what Forge can do — legal decoder, code gen, game docs, sovereign stack, and more.",
-    cta: "Take me to the dashboard",
-    href: "/dashboard",
+    icon: Flame,
+    color: "#ef4444",
+    title: "I want to build something",
+    sub: "Give me a plan and walk me through building it",
+    href: "/build-with-me",
+    prompt: "",
   },
 ];
 
 export function OnboardingModal() {
   const [open, setOpen] = useState(false);
-  const [location, navigate] = useLocation();
-
-  const isPublicPage = ["/pricing", "/payment/success"].includes(location);
+  const [, navigate] = useLocation();
 
   useEffect(() => {
-    if (!isPublicPage && !localStorage.getItem(FLAG)) setOpen(true);
-  }, [isPublicPage]);
+    try {
+      if (!localStorage.getItem(FLAG)) setOpen(true);
+    } catch { /* silent */ }
+  }, []);
 
   const dismiss = () => {
-    localStorage.setItem(FLAG, "1");
+    try { localStorage.setItem(FLAG, "1"); } catch {}
     setOpen(false);
   };
 
-  const choose = (href: string) => {
-    localStorage.setItem(FLAG, "1");
+  const choose = (path: typeof PATHS[number]) => {
+    try { localStorage.setItem(FLAG, "1"); } catch {}
     setOpen(false);
-    navigate(href);
+    if (path.prompt) {
+      try {
+        localStorage.setItem("forge:workspace:pending", JSON.stringify({
+          content: path.prompt,
+          filename: "Getting Started",
+        }));
+      } catch { /* silent */ }
+    }
+    setTimeout(() => navigate(path.href), 80);
   };
 
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative bg-card border border-border rounded-2xl shadow-2xl w-full max-w-lg animate-in zoom-in-95 duration-200">
+      <div className="relative bg-card border border-border rounded-2xl shadow-2xl w-full max-w-md animate-in zoom-in-95 duration-200">
         <button
           onClick={dismiss}
           className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
+          aria-label="Close"
         >
-          <X size={18} />
+          <X size={16} />
         </button>
 
-        <div className="p-7">
-          <div className="flex items-center gap-3 mb-2">
-            <Flame size={22} className="text-primary" />
-            <p className="text-xs font-bold tracking-widest text-muted-foreground uppercase">Welcome to 13 Moon Forge</p>
+        <div className="p-7 space-y-6">
+          <div className="text-center space-y-1">
+            <div className="w-12 h-12 rounded-full bg-primary/15 flex items-center justify-center mx-auto mb-3">
+              <Flame size={22} className="text-primary" />
+            </div>
+            <h2 className="text-2xl font-black tracking-tight">Welcome to Forge.</h2>
+            <p className="text-sm text-muted-foreground">What do you want to do first?</p>
           </div>
-          <h2 className="text-2xl font-black tracking-tight mb-1">What are you here to do?</h2>
-          <p className="text-sm text-muted-foreground mb-7">Pick a path and Forge will take you straight there.</p>
 
-          <div className="space-y-3">
-            {PATHS.map(p => {
-              const Icon = p.icon;
+          <div className="space-y-2">
+            {PATHS.map(path => {
+              const Icon = path.icon;
               return (
                 <button
-                  key={p.id}
-                  onClick={() => choose(p.href)}
-                  className={cn(
-                    "w-full text-left rounded-xl border p-5 transition-all group",
-                    p.border, p.bg,
-                  )}
+                  key={path.id}
+                  onClick={() => choose(path)}
+                  className="w-full flex items-center gap-3 p-3.5 rounded-xl border border-border hover:border-primary/40 hover:bg-primary/5 text-left transition-all group"
                 >
-                  <div className="flex items-start gap-4">
-                    <div className={cn("shrink-0 mt-0.5", p.color)}>
-                      <Icon size={22} />
-                    </div>
-                    <div>
-                      <p className="font-bold mb-0.5">{p.title}</p>
-                      <p className="text-sm text-muted-foreground leading-relaxed">{p.body}</p>
-                      <p className={cn("text-xs font-bold mt-2 group-hover:underline", p.color)}>{p.cta} →</p>
-                    </div>
+                  <div
+                    className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                    style={{ background: `${path.color}22` }}
+                  >
+                    <Icon size={16} style={{ color: path.color }} />
                   </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold">{path.title}</p>
+                    <p className="text-xs text-muted-foreground">{path.sub}</p>
+                  </div>
+                  <ArrowRight size={14} className="text-muted-foreground group-hover:text-foreground shrink-0 transition-colors" />
                 </button>
               );
             })}
           </div>
+
+          <button
+            onClick={dismiss}
+            className="w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            I'll explore on my own
+          </button>
         </div>
       </div>
     </div>

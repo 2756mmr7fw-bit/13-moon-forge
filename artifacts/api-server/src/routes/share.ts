@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db, sharedOutputs } from "@workspace/db";
-import { eq, and } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 
 const router = Router();
 
@@ -37,6 +37,29 @@ router.post("/share", async (req, res) => {
   } catch (err) {
     req.log.error({ err }, "share: create failed");
     res.status(500).json({ error: "Failed to create share" });
+  }
+});
+
+// GET /api/share/public — fetch all public shared outputs for gallery
+router.get("/share/public", async (req, res) => {
+  try {
+    const rows = await db
+      .select({
+        id: sharedOutputs.id,
+        moonId: sharedOutputs.moonId,
+        title: sharedOutputs.title,
+        content: sharedOutputs.content,
+        createdAt: sharedOutputs.createdAt,
+      })
+      .from(sharedOutputs)
+      .where(eq(sharedOutputs.isPublic, true))
+      .orderBy(desc(sharedOutputs.createdAt))
+      .limit(60);
+
+    res.json(rows);
+  } catch (err) {
+    req.log.error({ err }, "share/public: fetch failed");
+    res.status(500).json({ error: "Failed to load gallery" });
   }
 });
 

@@ -7,10 +7,11 @@ import {
   FileCode, CheckCircle2, ArrowRight, Loader2,
   Sparkles, Code2, Wand2, Layers, Scale, Crosshair,
   PlusCircle, FolderOpen, MonitorPlay, Monitor, Swords, GraduationCap,
-  Zap, TrendingUp,
+  Zap, TrendingUp, Flame, Brain,
 } from "lucide-react";
 import { useUser, useAuth } from "@clerk/react";
 import { useEffect, useState } from "react";
+import { useStreak } from "@/hooks/useStreak";
 
 const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -107,6 +108,7 @@ export default function Dashboard() {
 
   const firstName = isLoaded ? (user?.firstName ?? user?.username) : null;
   const moonUsage = useMoonUsage();
+  const streak = useStreak();
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -120,6 +122,22 @@ export default function Dashboard() {
           <p className="text-muted-foreground mt-1.5 text-base">
             What would you like to build today?
           </p>
+          {/* Streak */}
+          <div className="flex items-center gap-3 mt-3 flex-wrap">
+            {streak.streak > 0 && (
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-primary bg-primary/10 border border-primary/20 rounded-full px-3 py-1">
+                <Flame size={12} />
+                {streak.streak} day{streak.streak !== 1 ? "s" : ""} building
+              </div>
+            )}
+            {streak.daysSinceLast > 2 && streak.lastMoon && (
+              <Link href={streak.lastMoon.href}>
+                <div className="flex items-center gap-1.5 text-xs text-amber-400 bg-amber-400/10 border border-amber-400/20 rounded-full px-3 py-1 cursor-pointer hover:bg-amber-400/20 transition-colors">
+                  ⚡ Your project is waiting — pick up where you left off in {streak.lastMoon.label}
+                </div>
+              </Link>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-3">
           {quota && <QuotaWidget quota={quota} />}
