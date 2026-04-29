@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, DragEvent } from "react";
 import { useAuth } from "@clerk/react";
 import { HelpPanel } from "@/components/help-panel";
+import { ForgeAgentPanel } from "@/components/forge-agent-panel";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { useLocation } from "wouter";
@@ -9,6 +10,7 @@ import {
   LayoutTemplate, File, Plus, Trash2, ChevronRight, ChevronDown,
   Printer, Pencil, Check, X, Loader2, Flame, Send, Star, MoreHorizontal,
   FolderPlus, FilePlus, PackageOpen, Code2, Download, Search, Upload,
+  Link, Bot, Smartphone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -78,8 +80,15 @@ export default function Workspace() {
   const [showMenu, setShowMenu] = useState<number | null>(null);
   const [uploadingPdf, setUploadingPdf] = useState(false);
   const [forgingPdf, setForgingPdf] = useState(false);
+  const [showAgent, setShowAgent] = useState(false);
+  const [agentInitialFileId, setAgentInitialFileId] = useState<number | undefined>();
+  const [dragOver, setDragOver] = useState(false);
+  const [urlImportMode, setUrlImportMode] = useState(false);
+  const [urlInput, setUrlInput] = useState("");
+  const [importingUrl, setImportingUrl] = useState(false);
   const renameRef = useRef<HTMLInputElement>(null);
   const pdfInputRef = useRef<HTMLInputElement>(null);
+  const multiPdfRef = useRef<HTMLInputElement>(null);
   const [, navigate] = useLocation();
   const [searchQ, setSearchQ] = useState("");
   const [searchResults, setSearchResults] = useState<{ id: number; name: string; type: string; snippet: string; parentId: number | null }[]>([]);
@@ -187,6 +196,79 @@ export default function Workspace() {
       setUploadingPdf(false);
       if (pdfInputRef.current) pdfInputRef.current.value = "";
     }
+  }
+
+  async function uploadMultiplePdfs(files: FileList | File[]) {
+    const pdfs = Array.from(files).filter(f => f.type === "application/pdf");
+    if (pdfs.length === 0) return;
+    setUploadingPdf(true);
+    let uploaded = 0;
+    for (const file of pdfs) {
+      try {
+        const dataUri = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+        const headers = await authHeaders();
+        const res = await fetch(`${API_BASE}/api/workspace/upload-pdf`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ name: file.name, dataUri, parentId: activeParent }),
+        });
+        if (res.ok) {
+          const item: WItem = await res.json();
+          setItems(prev => [...prev, item]);
+          if (pdfs.length === 1) setSelected(item);
+          uploaded++;
+        }
+      } catch { /* continue */ }
+    }
+    setUploadingPdf(false);
+    if (uploaded > 0) {
+      toast({ title: `${uploaded} PDF${uploaded > 1 ? "s" : ""} uploaded`, description: "Open any PDF and click 'Forge It!' to analyze it." });
+    }
+    if (multiPdfRef.current) multiPdfRef.current.value = "";
+    if (pdfInputRef.current) pdfInputRef.current.value = "";
+  }
+
+  async function importFromUrl() {
+    const url = urlInput.trim();
+    if (!url || importingUrl) return;
+    setImportingUrl(true);
+    try {
+      const headers = await authHeaders();
+      const res = await fetch(`${API_BASE}/api/workspace/import-url`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ url, parentId: activeParent }),
+      });
+      if (!res.ok) {
+        const e = await res.json().catch(() => ({})) as { error?: string };
+        throw new Error(e.error ?? "Import failed");
+      }
+      const item: WItem = await res.json();
+      setItems(prev => [...prev, item]);
+      setSelected(item);
+      setUrlInput("");
+      setUrlImportMode(false);
+      toast({ title: `Imported: ${item.name}`, description: "PDF saved to your Workspace. Click 'Forge It!' to analyze it." });
+    } catch (err) {
+      toast({ variant: "destructive", title: "Import failed", description: err instanceof Error ? err.message : "Could not fetch that URL." });
+    } finally { setImportingUrl(false); }
+  }
+
+  function handleDragOver(e: DragEvent<HTMLDivElement>) {
+    if (e.dataTransfer.types.includes("Files")) { e.preventDefault(); setDragOver(true); }
+  }
+  function handleDragLeave(e: DragEvent<HTMLDivElement>) {
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOver(false);
+  }
+  async function handleDrop(e: DragEvent<HTMLDivElement>) {
+    e.preventDefault(); setDragOver(false);
+    const files = e.dataTransfer.files;
+    if (files.length > 0) await uploadMultiplePdfs(files);
   }
 
   async function forgePdf(item: WItem) {
@@ -504,7 +586,23 @@ ${markdownToHtml(selected.content ?? "")}
   }
 
   return (
-    <div className="flex gap-0 -mx-4 -mt-4 h-[calc(100vh-80px)] overflow-hidden rounded-xl border border-border">
+    <div
+      className={cn("flex gap-0 -mx-4 -mt-4 h-[calc(100vh-80px)] overflow-hidden rounded-xl border transition-colors",
+        dragOver ? "border-primary/60 bg-primary/5" : "border-border",
+      )}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {/* Drag-over overlay */}
+      {dragOver && (
+        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center pointer-events-none rounded-xl bg-primary/10 border-2 border-dashed border-primary/60">
+          <Upload size={40} className="text-primary mb-3 opacity-80" />
+          <p className="text-lg font-bold text-primary">Drop PDFs here</p>
+          <p className="text-sm text-muted-foreground mt-1">Multiple files supported</p>
+        </div>
+      )}
+
       {/* ── Left: File Tree ──────────────────────────────────────────────── */}
       <div className="w-64 shrink-0 border-r border-border bg-card flex flex-col overflow-hidden">
         {/* Header */}
@@ -558,8 +656,17 @@ ${markdownToHtml(selected.content ?? "")}
             ref={pdfInputRef}
             type="file"
             accept=".pdf,application/pdf"
+            multiple
             className="hidden"
-            onChange={e => { const f = e.target.files?.[0]; if (f) uploadPdf(f); }}
+            onChange={e => { if (e.target.files?.length) uploadMultiplePdfs(e.target.files); }}
+          />
+          <input
+            ref={multiPdfRef}
+            type="file"
+            accept=".pdf,application/pdf"
+            multiple
+            className="hidden"
+            onChange={e => { if (e.target.files?.length) uploadMultiplePdfs(e.target.files); }}
           />
           <div className="grid grid-cols-3 gap-1">
             {QUICK_CREATES.map(q => (
@@ -576,11 +683,58 @@ ${markdownToHtml(selected.content ?? "")}
               onClick={() => pdfInputRef.current?.click()}
               disabled={uploadingPdf}
               className="flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-primary/10 text-primary/70 hover:text-primary transition-colors text-center disabled:opacity-50"
+              title="Upload PDFs from your computer (multiple supported)"
             >
               {uploadingPdf ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
               <span className="text-[9px] leading-tight">Upload PDF</span>
             </button>
+            <button
+              onClick={() => setUrlImportMode(v => !v)}
+              className="flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-primary/10 text-primary/70 hover:text-primary transition-colors text-center"
+              title="Import a PDF from a URL"
+            >
+              <Link size={14} />
+              <span className="text-[9px] leading-tight">From URL</span>
+            </button>
+            <button
+              onClick={() => { setShowAgent(true); setSelected(null); }}
+              className="flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-primary/10 text-primary/70 hover:text-primary transition-colors text-center"
+              title="Open Forge Agent — AI that takes full control"
+            >
+              <Bot size={14} />
+              <span className="text-[9px] leading-tight">Forge Agent</span>
+            </button>
           </div>
+
+          {/* URL import input */}
+          {urlImportMode && (
+            <div className="mt-2 space-y-1.5">
+              <input
+                value={urlInput}
+                onChange={e => setUrlInput(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && importFromUrl()}
+                placeholder="https://example.com/doc.pdf"
+                className="w-full bg-muted border border-border rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-primary/50 placeholder:text-muted-foreground/60"
+                autoFocus
+              />
+              <div className="flex gap-1">
+                <button
+                  onClick={importFromUrl}
+                  disabled={!urlInput.trim() || importingUrl}
+                  className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg bg-primary text-white text-[10px] font-bold disabled:opacity-50 hover:opacity-90 transition-opacity"
+                >
+                  {importingUrl ? <Loader2 size={10} className="animate-spin" /> : <Link size={10} />}
+                  Import
+                </button>
+                <button
+                  onClick={() => { setUrlImportMode(false); setUrlInput(""); }}
+                  className="px-2.5 py-1.5 rounded-lg border border-border text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Tree / Search results */}
@@ -674,9 +828,23 @@ ${markdownToHtml(selected.content ?? "")}
         </div>
       </div>
 
-      {/* ── Right: Document Viewer ────────────────────────────────────────── */}
+      {/* ── Right: Document Viewer / Forge Agent ─────────────────────────── */}
       <div className="flex-1 flex flex-col overflow-hidden bg-background">
-        {selected && selected.type !== "folder" ? (
+        {/* Forge Agent Panel */}
+        {showAgent ? (
+          <ForgeAgentPanel
+            items={items}
+            initialFileId={agentInitialFileId}
+            onFileCreated={item => {
+              setItems(prev => {
+                const exists = prev.find(i => i.id === item.id);
+                return exists ? prev.map(i => i.id === item.id ? item : i) : [...prev, item];
+              });
+            }}
+            onOpenFile={item => { setSelected(item); setShowAgent(false); if (item.parentId) setExpanded(prev => new Set([...prev, item.parentId!])); }}
+            onClose={() => { setShowAgent(false); setAgentInitialFileId(undefined); }}
+          />
+        ) : selected && selected.type !== "folder" ? (
           <>
             {/* Doc toolbar */}
             <div className="flex items-center gap-3 px-5 py-3 border-b border-border bg-card shrink-0">
@@ -752,16 +920,27 @@ ${markdownToHtml(selected.content ?? "")}
                         )}
                         <div className="flex items-center gap-3 flex-wrap justify-center">
                           {isPdf && (
-                            <Button
-                              onClick={() => forgePdf(selected)}
-                              disabled={forgingPdf}
-                              className="bg-primary text-white gap-2 text-sm px-5 py-2.5 rounded-xl hover:opacity-90 disabled:opacity-60"
-                            >
-                              {forgingPdf
-                                ? <><Loader2 size={15} className="animate-spin mr-1" /> Forge is reading…</>
-                                : <><Flame size={15} className="mr-1" /> Forge It! — Let Forge Read This</>
-                              }
-                            </Button>
+                            <>
+                              <Button
+                                onClick={() => forgePdf(selected)}
+                                disabled={forgingPdf}
+                                className="bg-primary text-white gap-2 text-sm px-5 py-2.5 rounded-xl hover:opacity-90 disabled:opacity-60"
+                              >
+                                {forgingPdf
+                                  ? <><Loader2 size={15} className="animate-spin mr-1" /> Forge is reading…</>
+                                  : <><Flame size={15} className="mr-1" /> Forge It! — Analyze This PDF</>
+                                }
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => { setAgentInitialFileId(selected.id); setShowAgent(true); }}
+                                className="gap-2"
+                              >
+                                <Bot size={13} />
+                                Ask Forge About This
+                              </Button>
+                            </>
                           )}
                           <Button
                             variant="outline"
@@ -841,9 +1020,40 @@ ${markdownToHtml(selected.content ?? "")}
               </div>
               <h3 className="font-bold text-xl mb-2">Forge Workspace</h3>
               <p className="text-muted-foreground text-sm leading-relaxed mb-4">
-                Tell Forge what to create — folders, plans, blueprints, portfolios, goal sheets, anything. He'll build it and organize it for you.
+                Your failsafe safe. Forge creates, analyzes, and organizes everything — you own it forever.
               </p>
-              <p className="text-xs text-muted-foreground/70 mb-6">Think of this as your failsafe safe — we hold onto everything in case you lose it locally. Crashed laptop, accidental close, gone file — it's all here. We never delete your work without you choosing to.</p>
+
+              {/* Forge Agent CTA */}
+              <button
+                onClick={() => setShowAgent(true)}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/10 border border-primary/30 hover:border-primary/60 hover:bg-primary/15 transition-all mb-4 text-left"
+              >
+                <div className="w-9 h-9 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center shrink-0">
+                  <Bot size={16} className="text-primary" />
+                </div>
+                <div>
+                  <p className="font-bold text-sm text-primary">Open Forge Agent</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Import, analyze, create — Forge takes action</p>
+                </div>
+              </button>
+
+              {/* Getting PDFs */}
+              <div className="rounded-xl bg-muted/40 border border-border p-3 mb-4 text-left space-y-2">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Getting PDFs here</p>
+                <div className="flex items-start gap-2 text-xs text-muted-foreground">
+                  <Upload size={11} className="shrink-0 mt-0.5 text-primary/70" />
+                  <span><strong className="text-foreground">Computer:</strong> Drag PDFs here, or click Upload PDF (multiple OK)</span>
+                </div>
+                <div className="flex items-start gap-2 text-xs text-muted-foreground">
+                  <Link size={11} className="shrink-0 mt-0.5 text-primary/70" />
+                  <span><strong className="text-foreground">URL:</strong> Click "From URL" in the sidebar to import any public PDF</span>
+                </div>
+                <div className="flex items-start gap-2 text-xs text-muted-foreground">
+                  <Smartphone size={11} className="shrink-0 mt-0.5 text-primary/70" />
+                  <span><strong className="text-foreground">Phone:</strong> Install the mobile app → share PDFs from Files or email</span>
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-2 text-left">
                 {[
                   "Create a 90-day business plan",

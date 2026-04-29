@@ -5,12 +5,163 @@ import { eq, and, desc, isNull, isNotNull } from "drizzle-orm";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { isAdmin } from "./admin";
 import { createRequire } from "node:module";
+import * as https from "node:https";
+import * as http from "node:http";
 
 const _require = createRequire(import.meta.url);
 type PdfParseResult = { text: string; numpages: number; info: unknown };
 const pdfParse = _require("pdf-parse") as (buf: Buffer, opts?: unknown) => Promise<PdfParseResult>;
 
 const router = Router();
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function fetchUrl(url: string, redirects = 5): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    if (redirects === 0) return reject(new Error("Too many redirects"));
+    const mod = url.startsWith("https") ? https : http;
+    mod.get(url, { headers: { "User-Agent": "13MoonForge/1.0" } }, (res) => {
+      if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        return resolve(fetchUrl(res.headers.location, redirects - 1));
+      }
+      if (res.statusCode !== 200) return reject(new Error(`HTTP ${res.statusCode}`));
+      const chunks: Buffer[] = [];
+      res.on("data", (c: Buffer) => chunks.push(c));
+      res.on("end", () => resolve(Buffer.concat(chunks)));
+      res.on("error", reject);
+    }).on("error", reject);
+  });
+}
+
+type DocTypeInfo = { type: string; label: string; systemPrompt: string };
+
+function detectDocType(text: string, name: string): DocTypeInfo {
+  const t = text.toLowerCase();
+  const n = name.toLowerCase();
+
+  if (/\b(whereas|party agrees|hereby agree|in consideration of|terms and conditions|non.?disclosure|indemnif)\b/.test(t)
+    || /contract|agreement|nda|mou|terms/.test(n)) {
+    return {
+      type: "contract",
+      label: "Legal Contract / Agreement",
+      systemPrompt: `You are Forge, a sharp legal AI analyst. Analyze this contract for the user.
+
+Structure in Markdown:
+
+## What This Agreement Is
+2–3 sentences: who is involved, what they're agreeing to.
+
+## Key Terms
+Bullet the obligations, payment, duration, and deliverables for each party.
+
+## 🚩 Risk Flags
+Flag any clauses that could hurt the user — one-sided terms, broad indemnification, non-compete, IP assignment, auto-renewal traps, termination restrictions. Be specific: quote the clause and explain the risk.
+
+## ✅ Protections Present
+Any favorable or protective terms that are actually in there.
+
+## What's Missing
+What should be here but isn't? (limitation of liability, dispute resolution, etc.)
+
+## Forge's Verdict
+Your honest take: should they sign this as-is? What must they negotiate? What's the biggest risk?`,
+    };
+  }
+
+  if (/\b(invoice|bill to|amount due|payment due|subtotal|tax|total)\b/.test(t) || /invoice|receipt|bill/.test(n)) {
+    return {
+      type: "invoice",
+      label: "Invoice / Bill",
+      systemPrompt: `You are Forge, a sharp financial AI analyst. Extract and analyze this invoice.
+
+Structure in Markdown:
+
+## Invoice Summary
+| Field | Value |
+|---|---|
+| Vendor / From | |
+| Bill To | |
+| Invoice # | |
+| Invoice Date | |
+| Due Date | |
+| Total Amount | |
+| Payment Terms | |
+
+## Line Items
+List all services or products billed.
+
+## Forge's Notes
+- Anything unusual about the amounts or terms?
+- Any late fees or penalties mentioned?
+- Recommended action (pay / verify / dispute)?`,
+    };
+  }
+
+  if ((/\b(education|experience|skills|objective|summary)\b/.test(t) && /\b(resume|cv|curriculum|linkedin)\b/.test(t))
+    || /resume|cv/.test(n)) {
+    return {
+      type: "resume",
+      label: "Resume / CV",
+      systemPrompt: `You are Forge, a sharp hiring analyst. Analyze this resume.
+
+## Profile
+Who is this person? Their level, domain, and background in 2–3 sentences.
+
+## Strengths
+Top 3–5 standout positives.
+
+## Gaps & Weaknesses
+What's missing, weak, or could hurt their chances?
+
+## Best-Fit Roles
+Based on their background, what positions or industries fit them best?
+
+## Resume Quality
+Is the formatting, clarity, and content competitive? What should they improve before sending?
+
+## Forge's Verdict
+Would you advance this candidate? What's the most important thing they need to fix?`,
+    };
+  }
+
+  if (/\b(revenue|profit|loss|quarterly|annual|financial|balance sheet|income statement|cash flow|ebitda)\b/.test(t)
+    || /report|financial|annual/.test(n)) {
+    return {
+      type: "report",
+      label: "Business / Financial Report",
+      systemPrompt: `You are Forge, a sharp business analyst. Analyze this report.
+
+## Executive Summary
+The 3–5 most important facts from this report.
+
+## Key Metrics
+Table of the most important numbers, figures, or KPIs found in the document.
+
+## Trends & Patterns
+What directions are things moving? What's improving vs. declining?
+
+## Red Flags
+Anything concerning — numbers that don't add up, buried risks, or alarming trends?
+
+## Forge's Take
+Your honest assessment: what should leadership or the reader do with this information?`,
+    };
+  }
+
+  return {
+    type: "general",
+    label: "Document",
+    systemPrompt: `You are Forge, a sharp AI workspace assistant. The user has uploaded a PDF and wants a thorough analysis.
+
+Produce a well-organized analysis in Markdown. Include:
+- A bold summary of what this document is about (2–3 sentences)
+- Key points, findings, or clauses (use headers and bullets)
+- Any action items, deadlines, or important names/numbers you spot
+- A "Forge's Take" section at the end: your honest assessment and next steps
+
+Keep it sharp and practical. No filler. Format for readability.`,
+  };
+}
 
 // ─── Admin workspace seed ─────────────────────────────────────────────────────
 const CODEBASE_REF = `# 13 Moon Forge — Codebase Reference
@@ -552,21 +703,13 @@ router.post("/workspace/:id/forge-pdf", async (req, res) => {
     // Truncate to ~80k chars to stay within token limits
     const truncated = pdfText.length > 80000 ? pdfText.slice(0, 80000) + "\n\n[...document continues, truncated for length...]" : pdfText;
 
+    // Detect document type for specialized analysis
+    const docInfo = detectDocType(truncated, item.name);
+
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
-        {
-          role: "system",
-          content: `You are Forge, a sharp AI workspace assistant. The user has uploaded a PDF document and wants you to analyze it.
-
-Produce a thorough, well-organized analysis in Markdown. Include:
-- A bold summary of what this document is about (2–3 sentences)
-- Key points, findings, or clauses (use headers and bullets)
-- Any action items, deadlines, or important names/numbers you spot
-- A "Forge's Take" section at the end: your honest assessment, what to watch out for, and any next steps
-
-Keep it sharp, practical, and useful. No filler. Format for readability.`,
-        },
+        { role: "system", content: docInfo.systemPrompt },
         {
           role: "user",
           content: `Document name: "${item.name}"\n\nDocument content:\n\n${truncated}`,
@@ -575,7 +718,9 @@ Keep it sharp, practical, and useful. No filler. Format for readability.`,
       max_tokens: 2000,
     });
 
-    const analysis = completion.choices[0]?.message?.content ?? "";
+    const rawAnalysis = completion.choices[0]?.message?.content ?? "";
+    const typeTag = docInfo.type !== "general" ? `\n\n---\n*Detected type: ${docInfo.label}*` : "";
+    const analysis = rawAnalysis + typeTag;
 
     // Create a new workspace document with the analysis
     const docName = `${item.name.replace(/\.pdf$/i, "")} — Forge Analysis`;
@@ -593,6 +738,138 @@ Keep it sharp, practical, and useful. No filler. Format for readability.`,
   } catch (err) {
     req.log.error({ err }, "Failed to forge PDF");
     res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// POST /workspace/import-url — fetch a PDF from a public URL and save it
+router.post("/workspace/import-url", async (req, res) => {
+  const userId = req.userId;
+  const { url, parentId, name: customName } = req.body as { url: string; parentId?: number; name?: string };
+
+  if (!url || !/^https?:\/\//.test(url)) return res.status(400).json({ error: "A valid http/https URL is required" });
+
+  try {
+    const buffer = await fetchUrl(url);
+
+    const rawName = customName || url.split("/").pop()?.replace(/\?.*$/, "") || "imported";
+    const name = rawName.toLowerCase().endsWith(".pdf") ? rawName : rawName + ".pdf";
+    const dataUri = `data:application/pdf;base64,${buffer.toString("base64")}`;
+
+    const [item] = await db.insert(workspaceItemsTable).values({
+      userId,
+      type: "pdf",
+      name,
+      content: dataUri,
+      parentId: parentId ?? null,
+      icon: "file",
+      color: "#e8611a",
+    }).returning();
+
+    res.status(201).json(item);
+  } catch (err) {
+    req.log.error({ err }, "Failed to import PDF from URL");
+    res.status(500).json({ error: "Could not fetch that URL. Make sure it's a direct link to a publicly accessible PDF." });
+  }
+});
+
+// POST /workspace/agent — streaming Forge Agent with file context + action tokens
+router.post("/workspace/agent", async (req, res) => {
+  const userId = req.userId;
+  const { messages, files } = req.body as {
+    messages: Array<{ role: string; content: string }>;
+    files: Array<{ id: number; name: string; type: string }>;
+  };
+
+  const fileList = files?.length > 0
+    ? files.map(f => `  - [${f.type.toUpperCase()}] "${f.name}" (ID: ${f.id})`).join("\n")
+    : "  (workspace is empty)";
+
+  const systemPrompt = `You are Forge — an active AI workspace agent inside 13 Moon Forge. You don't just answer questions. You take real action.
+
+THE USER'S WORKSPACE RIGHT NOW (${files?.length ?? 0} files):
+${fileList}
+
+YOUR CAPABILITIES — you can do ALL of these, right now:
+1. Import a PDF from any public URL (you do it — they don't have to)
+2. Analyze any file in their workspace (trigger the analysis)
+3. Open a specific file in the editor
+4. Create and save a new document to their workspace
+5. Compare multiple PDFs (request multiple analyze actions)
+6. Guide them on getting PDFs from phone/computer/cloud storage
+
+HOW TO TRIGGER ACTIONS — put these EXACTLY on their own line in your response:
+- Import PDF from URL:      ACTION::{"a":"import","url":"[url]","name":"[filename.pdf]"}
+- Analyze a workspace file: ACTION::{"a":"analyze","fileId":[id],"fileName":"[name]"}
+- Open a file in editor:    ACTION::{"a":"open","fileId":[id],"fileName":"[name]"}
+- Create a new document:    ACTION::{"a":"create","name":"[filename]","content":"[full markdown content here]"}
+
+IMPORTANT RULES:
+- When a user gives you a URL → IMMEDIATELY trigger import, no confirmation needed
+- When asked to analyze → trigger the analyze action, don't just describe what you'd find
+- When creating a document → put the FULL content in the action, not a placeholder
+- Don't narrate the actions — they execute in real-time and the user sees them happen
+- After actions complete, give a brief summary of what you found/did and what's next
+- Be DIRECT. One sentence explanations, not paragraphs of setup
+
+GETTING PDFS ONTO THE PLATFORM — tell users EXACTLY:
+- From computer: "Drag them directly onto the Workspace, or click Upload PDF — you can select multiple files at once"
+- From phone: "Install the 13 Moon Forge mobile app, then share any PDF from your Files app or email directly into Forge"
+- From cloud storage: "Share me the direct link and I'll import it to your workspace right now"
+- From email: "Forward the email PDF attachment to yourself, download it, then drag it here"
+
+PERSONALITY:
+- Sharp, capable, direct. An agent, not a chatbot.
+- Surprise people — most AI just talks, you ACT
+- Short setup, big action. One focused question when needed, never three questions at once
+- When someone seems lost: "Want me to take over? Just say yes."`;
+
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+
+  try {
+    const stream = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: systemPrompt },
+        ...(messages ?? []).map(m => ({ role: m.role as "user" | "assistant", content: m.content })),
+      ],
+      stream: true,
+      max_tokens: 2000,
+    });
+
+    let lineBuffer = "";
+
+    const emitLine = (line: string) => {
+      const trimmed = line.trim();
+      if (trimmed.startsWith("ACTION::")) {
+        try {
+          const action = JSON.parse(trimmed.slice(8));
+          res.write(`data: ${JSON.stringify({ type: "action", ...action })}\n\n`);
+        } catch {
+          res.write(`data: ${JSON.stringify({ type: "chunk", content: line + "\n" })}\n\n`);
+        }
+      } else {
+        res.write(`data: ${JSON.stringify({ type: "chunk", content: line + "\n" })}\n\n`);
+      }
+    };
+
+    for await (const chunk of stream) {
+      const delta = chunk.choices[0]?.delta?.content ?? "";
+      if (!delta) continue;
+      lineBuffer += delta;
+      const lines = lineBuffer.split("\n");
+      lineBuffer = lines.pop() ?? "";
+      for (const line of lines) emitLine(line);
+    }
+    if (lineBuffer) emitLine(lineBuffer);
+
+    res.write(`data: ${JSON.stringify({ type: "done" })}\n\n`);
+    res.end();
+  } catch (err) {
+    req.log.error({ err }, "Forge Agent error");
+    res.write(`data: ${JSON.stringify({ type: "error", message: "Forge hit a snag. Try again." })}\n\n`);
+    res.end();
   }
 });
 
