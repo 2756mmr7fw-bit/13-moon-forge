@@ -4,6 +4,11 @@ import { workspaceItemsTable, workspaceItemVersionsTable } from "@workspace/db";
 import { eq, and, desc, isNull, isNotNull } from "drizzle-orm";
 import { openai } from "@workspace/integrations-openai-ai-server";
 import { isAdmin } from "./admin";
+import { createRequire } from "node:module";
+
+const _require = createRequire(import.meta.url);
+type PdfParseResult = { text: string; numpages: number; info: unknown };
+const pdfParse = _require("pdf-parse") as (buf: Buffer, opts?: unknown) => Promise<PdfParseResult>;
 
 const router = Router();
 
@@ -505,6 +510,113 @@ For folders: always return empty content string.`;
     res.status(201).json(item);
   } catch (err) {
     req.log.error({ err }, "Failed to forge workspace item");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// POST /workspace/:id/forge-pdf — read a PDF and have Forge analyze it, creates a new document
+router.post("/workspace/:id/forge-pdf", async (req, res) => {
+  const userId = req.userId;
+  const id = Number(req.params.id);
+  const { parentId } = req.body as { parentId?: number };
+
+  try {
+    const [item] = await db
+      .select()
+      .from(workspaceItemsTable)
+      .where(and(eq(workspaceItemsTable.id, id), eq(workspaceItemsTable.userId, userId)))
+      .limit(1);
+
+    if (!item) return res.status(404).json({ error: "Not found" });
+    if (!item.content?.startsWith("data:")) {
+      return res.status(400).json({ error: "Item has no binary content" });
+    }
+
+    // Decode base64 data URI to buffer
+    const base64 = item.content.split(",")[1] ?? "";
+    const buffer = Buffer.from(base64, "base64");
+
+    // Extract text from PDF
+    let pdfText = "";
+    try {
+      const parsed = await pdfParse(buffer);
+      pdfText = parsed.text?.trim() ?? "";
+    } catch {
+      return res.status(400).json({ error: "Could not read PDF — it may be scanned or image-based." });
+    }
+
+    if (!pdfText || pdfText.length < 20) {
+      return res.status(400).json({ error: "This PDF appears to be image-based or empty. Forge can only read text PDFs right now." });
+    }
+
+    // Truncate to ~80k chars to stay within token limits
+    const truncated = pdfText.length > 80000 ? pdfText.slice(0, 80000) + "\n\n[...document continues, truncated for length...]" : pdfText;
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: `You are Forge, a sharp AI workspace assistant. The user has uploaded a PDF document and wants you to analyze it.
+
+Produce a thorough, well-organized analysis in Markdown. Include:
+- A bold summary of what this document is about (2–3 sentences)
+- Key points, findings, or clauses (use headers and bullets)
+- Any action items, deadlines, or important names/numbers you spot
+- A "Forge's Take" section at the end: your honest assessment, what to watch out for, and any next steps
+
+Keep it sharp, practical, and useful. No filler. Format for readability.`,
+        },
+        {
+          role: "user",
+          content: `Document name: "${item.name}"\n\nDocument content:\n\n${truncated}`,
+        },
+      ],
+      max_tokens: 2000,
+    });
+
+    const analysis = completion.choices[0]?.message?.content ?? "";
+
+    // Create a new workspace document with the analysis
+    const docName = `${item.name.replace(/\.pdf$/i, "")} — Forge Analysis`;
+    const [newDoc] = await db.insert(workspaceItemsTable).values({
+      userId,
+      type: "document",
+      name: docName,
+      content: analysis,
+      parentId: parentId ?? item.parentId ?? null,
+      icon: "file-text",
+      color: "#e8611a",
+    }).returning();
+
+    res.status(201).json(newDoc);
+  } catch (err) {
+    req.log.error({ err }, "Failed to forge PDF");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// POST /workspace/upload-pdf — store an uploaded PDF as a workspace item
+router.post("/workspace/upload-pdf", async (req, res) => {
+  const userId = req.userId;
+  const { name, dataUri, parentId } = req.body as { name: string; dataUri: string; parentId?: number };
+
+  if (!name || !dataUri) return res.status(400).json({ error: "name and dataUri required" });
+
+  try {
+    const [item] = await db.insert(workspaceItemsTable).values({
+      userId,
+      type: "pdf",
+      name,
+      content: dataUri,
+      parentId: parentId ?? null,
+      icon: "file",
+      color: "#e8611a",
+    }).returning();
+
+    res.status(201).json(item);
+  } catch (err) {
+    req.log.error({ err }, "Failed to upload PDF");
     res.status(500).json({ error: "Internal server error" });
   }
 });
