@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "@clerk/react";
+import { HelpPanel } from "@/components/help-panel";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { useLocation } from "wouter";
@@ -510,13 +511,33 @@ ${markdownToHtml(selected.content ?? "")}
         <div className="p-3 border-b border-border">
           <div className="flex items-center justify-between">
             <h2 className="font-bold text-sm">Workspace</h2>
-            <button
-              onClick={exportAll}
-              title="Pack My Bags — download everything as a ZIP"
-              className="p-1 rounded-lg hover:bg-muted text-muted-foreground hover:text-primary transition-colors"
-            >
-              <PackageOpen size={14} />
-            </button>
+            <div className="flex items-center gap-1">
+              <HelpPanel
+                config={{
+                  title: "Your Workspace",
+                  moon: { name: "Cypress · Moon #8", color: "#10b981", tagline: "Build it. Save it. Own it." },
+                  what: "The Workspace is your secure vault. Every document, plan, or output you save here is stored in your account. Use it to organize your work across sessions — notes, project plans, AI outputs, uploaded PDFs, anything.",
+                  when: "Use the Workspace whenever you want to save, organize, or revisit your work. Files persist between sessions. You can upload PDFs, analyze them with AI, and pack your whole Workspace as a ZIP any time.",
+                  examples: [
+                    "Save a business plan for a food truck business I'm planning",
+                    "Upload a PDF contract and have the AI summarize the key risks",
+                    "Start a new project plan for my e-commerce idea",
+                  ],
+                  tips: [
+                    "Use Quick Creates (New Doc, New Plan, etc.) in the sidebar to start something fast",
+                    "Upload PDF then hit 'Forge It!' to get an AI summary of any document",
+                    "'Pack My Bags' (box icon) downloads your entire Workspace as a ZIP",
+                  ],
+                }}
+              />
+              <button
+                onClick={exportAll}
+                title="Pack My Bags — download everything as a ZIP"
+                className="p-1 rounded-lg hover:bg-muted text-muted-foreground hover:text-primary transition-colors"
+              >
+                <PackageOpen size={14} />
+              </button>
+            </div>
           </div>
           <p className="text-[10px] text-muted-foreground mt-0.5">Your failsafe safe — we hold it, you own it</p>
           {/* Search */}

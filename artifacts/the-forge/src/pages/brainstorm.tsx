@@ -11,6 +11,7 @@ import { TemplatesPanel } from "@/components/templates-panel";
 import { MoonOutputActions } from "@/components/moon-output-actions";
 import { useNarrationMode } from "@/hooks/useNarrationMode";
 import { NarrationBanner } from "@/components/narration-banner";
+import { HelpPanel } from "@/components/help-panel";
 
 interface Message {
   role: "user" | "assistant";
@@ -176,15 +177,35 @@ export default function Brainstorm() {
             </p>
           </div>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={reset}
-          className="text-muted-foreground hover:text-foreground gap-2"
-        >
-          <RotateCcw size={14} />
-          New Session
-        </Button>
+        <div className="flex items-center gap-2">
+          <HelpPanel
+            config={{
+              title: "Brainstorm with Flint",
+              moon: { name: "Flint · Moon #13", color: "#f59e0b", tagline: "Every great thing started as a spark." },
+              what: "Flint is your brainstorming partner. Tell him your rough idea — even half-formed — and he helps you stress-test it, name it, find the angle worth building, and figure out if it's something real.",
+              when: "Use Brainstorm when you have an idea but you're not sure what to do with it yet. Don't wait until you have it figured out — that's the whole point.",
+              examples: [
+                "I want to build a tool that helps small farmers track crop rotation — but I'm not sure if anyone would pay for it",
+                "I have this idea for a game about time travel but I can't figure out the core mechanic",
+                "What would make a loyalty app different from the ones that already exist?",
+              ],
+              tips: [
+                "Narration Mode (toggle above) makes Flint think out loud — great if you want to see his reasoning",
+                "Be messy. Half-baked ideas are fine — Flint is built for them",
+                "After brainstorming, try 'Build With Me' to turn the idea into an actual plan",
+              ],
+            }}
+          />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={reset}
+            className="text-muted-foreground hover:text-foreground gap-2"
+          >
+            <RotateCcw size={14} />
+            New Session
+          </Button>
+        </div>
       </div>
 
       {/* Restore last session banner */}
