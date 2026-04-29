@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { HelpPanel } from "@/components/help-panel";
 
 const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -398,7 +399,27 @@ export default function Connections() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">System Connections</h1>
+          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+            System Connections
+            <HelpPanel
+              config={{
+                title: "System Connections",
+                moon: { name: "Orion · Moon #3", color: "#8b5cf6", tagline: "Everything connected. Nothing hidden." },
+                what: "Connections shows the live status of everything wired into your workspace — your Moon subscriptions (and how many messages remain), your Coolify server, and your code source (GitHub, GitLab, or Bitbucket).",
+                when: "Use Connections to check if your subscriptions are active, how many messages you have left on each Moon, and whether your server and code source are connected.",
+                examples: [
+                  "Check if my Flint subscription is still active",
+                  "See how many messages I have left on Hawk",
+                  "Verify my Coolify server is connected properly",
+                ],
+                tips: [
+                  "Red/yellow Moon cards mean you're low or out of messages — go to Town Square to top up",
+                  "Connect Coolify (App Hub) to unlock App Monitor and deployment features",
+                  "Bundle subscriptions show Unlimited — no message counting needed",
+                ],
+              }}
+            />
+          </h1>
           <p className="text-sm text-muted-foreground mt-1">
             Every integration your workspace is wired into — live status, app health, and quota.
           </p>

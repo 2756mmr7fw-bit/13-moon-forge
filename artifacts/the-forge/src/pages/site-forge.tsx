@@ -11,6 +11,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useAuth } from "@clerk/react";
 import { Link } from "wouter";
+import { HelpPanel } from "@/components/help-panel";
 
 const HOSTING_PROVIDERS = [
   {
@@ -319,13 +320,31 @@ export default function SiteForge() {
           <div className="p-2.5 rounded-xl bg-violet-500/20 shrink-0">
             <Globe size={22} className="text-violet-400" />
           </div>
-          <div>
+          <div className="flex-1">
             <h1 className="text-2xl font-black">Site Forge</h1>
             <p className="text-sm text-muted-foreground">
               Build a professional business website in 60 seconds. You own it
               forever.
             </p>
           </div>
+          <HelpPanel
+            config={{
+              title: "Site Forge",
+              moon: { name: "Orion · Moon #3", color: "#8b5cf6", tagline: "Own your corner of the internet." },
+              what: "Site Forge builds you a complete, real business website from a short description. It generates the full HTML/CSS code — you download it and host it free with Cloudflare Pages, GitHub Pages, or any static host. No monthly fees, no lock-in.",
+              when: "Use Site Forge if you need a professional online presence for your business and don't want to pay $30–80/month forever just to rent a website. You own the output.",
+              examples: [
+                "A local plumbing company in Atlanta — residential and light commercial work, family owned",
+                "A freelance logo and brand design studio, primarily for small businesses and startups",
+                "A mobile pet grooming service — dogs and cats, appointment-based, Dallas/Fort Worth area",
+              ],
+              tips: [
+                "Fill in every field — the more detail you give, the more professional the result",
+                "After generating, click Download and host free with Cloudflare Pages (5 minute setup)",
+                "The code is yours — edit it in any code editor or hand it to a developer",
+              ],
+            }}
+          />
         </div>
 
         {phase === "form" && (

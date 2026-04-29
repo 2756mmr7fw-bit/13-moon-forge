@@ -8,6 +8,7 @@ import {
   Globe, HardDrive, CreditCard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { HelpPanel } from "@/components/help-panel";
 
 const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 const REFRESH_INTERVAL = 30;
@@ -448,7 +449,27 @@ export default function Monitor() {
             <Activity size={18} className="text-primary" />
           </div>
           <div>
-            <h1 className="text-xl font-bold">App Monitor</h1>
+            <h1 className="text-xl font-bold flex items-center gap-2">
+              App Monitor
+              <HelpPanel
+                config={{
+                  title: "App Monitor",
+                  moon: { name: "Cypress · Moon #8", color: "#10b981", tagline: "What you can't see, you can't fix." },
+                  what: "App Monitor shows the real-time health of your self-hosted apps and infrastructure — active apps, recent deployments, detected providers (VPS, CDN, DNS, etc.), live traffic, and system alerts.",
+                  when: "Check Monitor when you need to see if your apps are running, a deployment just happened, traffic is spiking, or something looks wrong. It auto-refreshes every 30 seconds.",
+                  examples: [
+                    "Check if my site is still running after a deployment",
+                    "See how much traffic my app got today",
+                    "Check if there are any alerts I should act on",
+                  ],
+                  tips: [
+                    "Connect your Coolify server first (App Hub → Connections) to see your real apps here",
+                    "The page auto-refreshes every 30 seconds — or use the Refresh button to pull fresh data now",
+                    "Green alerts are positive events; yellow are warnings; red means action needed",
+                  ],
+                }}
+              />
+            </h1>
             <p className="text-xs text-muted-foreground">
               {lastFetched ? `Updated ${lastFetched.toLocaleTimeString()}` : "Loading…"}
             </p>

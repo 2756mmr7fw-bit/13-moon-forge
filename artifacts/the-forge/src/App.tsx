@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Layout } from "@/components/layout";
 import { ProtectedRoute } from "@/components/protected-route";
+import { WelcomeTour } from "@/components/welcome-tour";
 
 // ── Eager — always needed immediately ──────────────────────────────────────
 import Landing from "@/pages/landing";
@@ -357,6 +358,7 @@ function ClerkProviderWithRoutes() {
         <ClerkQueryClientCacheInvalidator />
         <ClerkTokenInitializer />
         <ReferralClaimHandler />
+        <WelcomeTour />
         <TooltipProvider>
           <Router />
           <Toaster />

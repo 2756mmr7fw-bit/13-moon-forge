@@ -11,6 +11,7 @@ import {
 import { getUserId } from "@/lib/userId";
 import { SpeakButton } from "@/components/speak-button";
 import { TemplatesPanel } from "@/components/templates-panel";
+import { HelpPanel } from "@/components/help-panel";
 
 const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -81,7 +82,7 @@ export default function AskHawk() {
           style={{ boxShadow: "0 0 24px rgba(245, 158, 11, 0.35)" }}>
           <Crosshair size={22} className="text-white" />
         </div>
-        <div>
+        <div className="flex-1">
           <h1 className="text-2xl font-black tracking-tight flex items-center gap-3">
             Ask Hawk
             <Badge className="text-[10px] font-bold tracking-wider bg-amber-500 text-black border-0">MOON #2 · HAWK</Badge>
@@ -90,6 +91,24 @@ export default function AskHawk() {
             Hawk is The Finder. Tell Hawk what you need — a part, a tool, a library, a supplier, a resource — and Hawk finds it. Specific names. Real sources. Actual prices.
           </p>
         </div>
+        <HelpPanel
+          config={{
+            title: "Ask Hawk",
+            moon: { name: "Hawk · Moon #2", color: "#f59e0b", tagline: "The eyes of a predator, the patience of a hunter." },
+            what: "Hawk finds specific things for you — hardware parts, software libraries, suppliers, APIs, tools, materials, prices. He doesn't give you 'try Amazon' answers. He gives you the exact product, exact vendor, exact price.",
+            when: "Use Hawk when you need to source something real. Building hardware and need a specific part? Looking for a Godot plugin? Need a cheap SMS API? Hawk's got it.",
+            examples: [
+              "A 12V linear actuator, 100mm stroke, under $40, Arduino-compatible",
+              "A free open-source Godot 4 plugin for procedural terrain — actively maintained",
+              "Where to get custom PCBs in small batches in the US for under $50/10 boards",
+            ],
+            tips: [
+              "The more specific you are, the sharper Hawk's results — include budget, constraints, and what you've already tried",
+              "Fill in the optional fields (Budget, Project Type, Location) for much better results",
+              "Hawk gives you starting points — always verify prices and availability before buying",
+            ],
+          }}
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

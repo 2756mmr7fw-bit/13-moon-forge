@@ -7,13 +7,14 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import {
-  GraduationCap, BookOpenCheck, Lightbulb, Loader2, Copy, Check, ExternalLink, RotateCcw,
+  GraduationCap, BookOpenCheck, Lightbulb, Loader2, Copy, Check, ExternalLink, RotateCcw, HelpCircle, Send,
 } from "lucide-react";
 import { getUserId } from "@/lib/userId";
 import { SpeakButton } from "@/components/speak-button";
 import { TemplatesPanel } from "@/components/templates-panel";
 import { MoonOutputActions } from "@/components/moon-output-actions";
 import { getSkillLevel, getSkillMeta, SKILL_LEVELS, setSkillLevel, type SkillLevel } from "@/lib/skillLevel";
+import { HelpPanel } from "@/components/help-panel";
 
 const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -219,12 +220,93 @@ function WriteTutorial() {
   );
 }
 
+// ─── App Help ─────────────────────────────────────────────────────────────────
+function AppHelp() {
+  const [question, setQuestion] = useState("");
+  const s = useForgeStream("/api/forge/app-guide");
+
+  const quickQuestions = [
+    "Where should I start if I have a new idea?",
+    "What's the difference between Starters and Build With Me?",
+    "How do I set up App Hub with Coolify?",
+    "How does the Workspace inbox work?",
+    "What does Hawk do vs. what does Forge do?",
+    "How do I upload and analyze a PDF?",
+    "What is a Forge Score?",
+    "How do I connect my GitHub?",
+  ];
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="space-y-4">
+        <div className="p-4 rounded-xl bg-indigo-950/30 border border-indigo-900/30">
+          <div className="flex items-center gap-2 mb-2">
+            <HelpCircle size={14} className="text-indigo-400" />
+            <span className="text-xs font-bold text-indigo-400 uppercase tracking-wider">Sage knows this app inside-out</span>
+          </div>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Ask Sage anything about 13 Moon Forge — how to use any page, what any Moon does, how to set up self-hosting, or where to start. Sage will walk you through it step by step.
+          </p>
+        </div>
+
+        <div>
+          <Label className="text-xs text-muted-foreground mb-2 block">Your question about the app</Label>
+          <textarea
+            value={question}
+            onChange={e => setQuestion(e.target.value)}
+            onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); s.run({ question }); } }}
+            placeholder="How does App Hub work? What's the difference between Sage and Forge? Where do I start?"
+            className="w-full h-[110px] bg-background border border-border rounded-xl px-3 py-2.5 text-sm resize-none focus:outline-none focus:border-indigo-500/50 placeholder:text-muted-foreground/60 text-foreground"
+          />
+        </div>
+
+        <div>
+          <p className="text-xs text-muted-foreground mb-2">Quick questions:</p>
+          <div className="flex flex-wrap gap-1.5">
+            {quickQuestions.map(q => (
+              <button
+                key={q}
+                onClick={() => { setQuestion(q); s.run({ question: q }); }}
+                className="text-xs border border-border rounded-lg px-2.5 py-1 text-muted-foreground hover:text-foreground hover:bg-muted/30 hover:border-indigo-500/40 transition-colors"
+              >
+                {q}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <Button
+          onClick={() => s.run({ question })}
+          disabled={!question.trim() || s.status === "running"}
+          className="w-full gap-2 bg-indigo-600 hover:bg-indigo-500"
+        >
+          {s.status === "running"
+            ? <><Loader2 size={15} className="animate-spin" /> Sage is answering…</>
+            : <><Send size={15} /> Ask Sage</>
+          }
+        </Button>
+      </div>
+
+      <OutputPanel
+        output={s.output}
+        status={s.status}
+        subscribeUrl={s.subscribeUrl}
+        placeholder="Ask anything about the app above — Sage knows every page, every Moon, and every feature inside-out. He'll walk you through anything."
+        onReset={s.reset}
+        moonId="sage"
+        title="App Guide"
+      />
+    </div>
+  );
+}
+
 const TABS = [
+  { id: "app-help", label: "App Help",       icon: HelpCircle,   tag: "Ask Sage anything about this app" },
   { id: "explain",  label: "Explain It",     icon: Lightbulb,    tag: "Ask anything → real understanding" },
   { id: "tutorial", label: "Write Tutorial", icon: BookOpenCheck, tag: "Skill name → step-by-step tutorial" },
 ];
 
-export default function LearnWithSage() {
+export default function LearnWithSage({ defaultTab }: { defaultTab?: string }) {
   return (
     <div className="space-y-8">
       <div className="flex items-start gap-4">
@@ -232,18 +314,36 @@ export default function LearnWithSage() {
           style={{ boxShadow: "0 0 24px rgba(99, 102, 241, 0.35)" }}>
           <GraduationCap size={22} className="text-white" />
         </div>
-        <div>
+        <div className="flex-1">
           <h1 className="text-2xl font-black tracking-tight flex items-center gap-3">
             Learn with Sage
             <Badge className="text-[10px] font-bold tracking-wider bg-indigo-600 text-white border-0">MOON #7 · SAGE</Badge>
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Sage is The Teacher. Ask anything — a concept, a skill, a system. Sage explains it from the ground up and writes tutorials that actually work.
+            Sage is The Teacher. Ask anything about this app, a concept, a skill, or a system. Sage explains it clearly and writes tutorials that actually work.
           </p>
         </div>
+        <HelpPanel
+          config={{
+            title: "Learn with Sage",
+            moon: { name: "Sage · Moon #7", color: "#6366f1", tagline: "Knowledge is the tool that makes all other tools work." },
+            what: "Sage is your teacher and guide. Use 'App Help' to ask how any feature on this platform works. Use 'Explain It' to get plain-English explanations of any concept. Use 'Write Tutorial' to get a step-by-step walkthrough of any skill.",
+            when: "Confused about how something works? Start here. Not sure what any Moon does? Ask Sage. Need to learn a technical skill before you can build something? Sage writes the tutorial.",
+            examples: [
+              "How do I use the Workspace page?",
+              "Explain how REST APIs work like I've never coded before",
+              "Write a tutorial on how to build a landing page with HTML and CSS",
+            ],
+            tips: [
+              "The 'App Help' tab defaults open — that's where to ask questions about 13 Moon Forge itself",
+              "'Explain It' uses your skill level setting (Beginner / Intermediate / Expert) — set yours at the top",
+              "Sage's tutorials are designed to be run step by step — don't skip sections",
+            ],
+          }}
+        />
       </div>
 
-      <Tabs defaultValue="explain">
+      <Tabs defaultValue={defaultTab ?? "app-help"}>
         <TabsList className="flex-wrap h-auto gap-1 mb-6">
           {TABS.map(t => <TabsTrigger key={t.id} value={t.id} className="gap-1.5"><t.icon size={13} />{t.label}</TabsTrigger>)}
         </TabsList>
@@ -253,8 +353,9 @@ export default function LearnWithSage() {
               <t.icon size={13} className="text-indigo-400" />
               <span className="text-xs text-muted-foreground">{t.tag}</span>
             </div>
-            {t.id === "explain"  && <ExplainIt />}
-            {t.id === "tutorial" && <WriteTutorial />}
+            {t.id === "app-help"  && <AppHelp />}
+            {t.id === "explain"   && <ExplainIt />}
+            {t.id === "tutorial"  && <WriteTutorial />}
           </TabsContent>
         ))}
       </Tabs>

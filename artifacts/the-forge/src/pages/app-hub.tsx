@@ -17,6 +17,7 @@ import {
   Activity, Play, Square, RotateCcw, Clock, RocketIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { HelpPanel } from "@/components/help-panel";
 
 const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -876,6 +877,24 @@ export default function AppHub() {
                 <CheckCircle2 size={13} /> {serverInfo.name ?? "Server"} connected
               </span>
             )}
+            <HelpPanel
+              config={{
+                title: "App Hub",
+                moon: { name: "Orion · Moon #3", color: "#8b5cf6", tagline: "Your server. Your apps. Your rules." },
+                what: "App Hub lets you self-host your 13 Moon Forge apps on your own server. Pick a cheap VPS (as low as $5/month), connect it via Coolify, and deploy your apps there — so you own the infrastructure and pay compute directly.",
+                when: "Use App Hub when you want to run your subscribed apps on your own server. This is for people who want maximum control, lower long-term costs, and full ownership of their deployment.",
+                examples: [
+                  "Set up a $6/month Hetzner server and connect it",
+                  "Connect my existing Coolify instance to the Forge",
+                  "See what apps I can deploy to my server",
+                ],
+                tips: [
+                  "Coolify is free, open-source, and runs on any Ubuntu 22.04+ server — it's the easiest self-hosting setup",
+                  "Step 1: Pick a VPS. Step 2: Install Coolify. Step 3: Paste your API key here — done",
+                  "Once connected, your apps appear in App Monitor automatically",
+                ],
+              }}
+            />
           </div>
           <p className="text-sm text-muted-foreground mt-1">
             Your apps run on your server. You pay compute to your provider and app subscriptions to us — separately, monthly, no lock-in.
