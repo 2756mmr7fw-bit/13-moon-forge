@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { useListProjects, getListProjectsQueryKey } from "@workspace/api-client-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Anvil, Search, Loader2, PlusCircle, ArrowRight, Clock, Layers,
   Briefcase, Star, SortAsc, SortDesc, Flame, ChevronDown, Globe, Github,
+  GripVertical, RotateCcw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -29,6 +30,22 @@ function usePinned() {
   return { pinned, toggle };
 }
 
+function useCustomOrder() {
+  const key = "forge_project_order_v2";
+  const [order, setOrder] = useState<number[]>(() => {
+    try { return JSON.parse(localStorage.getItem(key) ?? "[]"); } catch { return []; }
+  });
+  const saveOrder = (ids: number[]) => {
+    localStorage.setItem(key, JSON.stringify(ids));
+    setOrder(ids);
+  };
+  const resetOrder = () => {
+    localStorage.removeItem(key);
+    setOrder([]);
+  };
+  return { order, saveOrder, resetOrder };
+}
+
 export default function Projects() {
   const [, setLocation] = useLocation();
   const [search, setSearch] = useState("");
@@ -37,10 +54,19 @@ export default function Projects() {
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [showSort, setShowSort] = useState(false);
   const { pinned, toggle } = usePinned();
+  const { order, saveOrder, resetOrder } = useCustomOrder();
+
+  // Drag state
+  const dragIdRef = useRef<number | null>(null);
+  const [draggingId, setDraggingId] = useState<number | null>(null);
+  const [dragOverId, setDragOverId] = useState<number | null>(null);
 
   const { data: projects, isLoading } = useListProjects({
     query: { queryKey: getListProjectsQueryKey() }
   });
+
+  const isSearching = !!(search || filter);
+  const hasCustomOrder = order.length > 0;
 
   const sorted = useMemo(() => {
     if (!projects) return [];
@@ -50,19 +76,57 @@ export default function Projects() {
       return true;
     });
 
-    list.sort((a, b) => {
-      let v = 0;
-      if (sort === "updated") v = new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
-      if (sort === "name") v = a.name.localeCompare(b.name);
-      if (sort === "pages") v = (a.pageCount ?? 0) - (b.pageCount ?? 0);
-      return sortDir === "asc" ? v : -v;
-    });
+    // Apply custom order when not searching
+    if (!isSearching && hasCustomOrder) {
+      const map = new Map(list.map(p => [p.id, p]));
+      const ordered = order.map(id => map.get(id)).filter(Boolean) as typeof list;
+      const newOnes = list.filter(p => !order.includes(p.id));
+      list = [...ordered, ...newOnes];
+    } else {
+      list.sort((a, b) => {
+        let v = 0;
+        if (sort === "updated") v = new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
+        if (sort === "name") v = a.name.localeCompare(b.name);
+        if (sort === "pages") v = (a.pageCount ?? 0) - (b.pageCount ?? 0);
+        return sortDir === "asc" ? v : -v;
+      });
+    }
 
     // Pinned always float to top
     const pinnedList = list.filter(p => pinned.includes(p.id));
     const unpinned = list.filter(p => !pinned.includes(p.id));
     return [...pinnedList, ...unpinned];
-  }, [projects, filter, search, sort, sortDir, pinned]);
+  }, [projects, filter, search, sort, sortDir, pinned, order, isSearching, hasCustomOrder]);
+
+  function handleDragStart(id: number) {
+    dragIdRef.current = id;
+    setDraggingId(id);
+  }
+
+  function handleDragOver(e: React.DragEvent, id: number) {
+    e.preventDefault();
+    setDragOverId(id);
+  }
+
+  function handleDrop(targetId: number) {
+    const fromId = dragIdRef.current;
+    if (!fromId || fromId === targetId) { cleanup(); return; }
+    const ids = sorted.map(p => p.id);
+    const fromIdx = ids.indexOf(fromId);
+    const toIdx = ids.indexOf(targetId);
+    if (fromIdx === -1 || toIdx === -1) { cleanup(); return; }
+    const newIds = [...ids];
+    newIds.splice(fromIdx, 1);
+    newIds.splice(toIdx, 0, fromId);
+    saveOrder(newIds);
+    cleanup();
+  }
+
+  function cleanup() {
+    dragIdRef.current = null;
+    setDraggingId(null);
+    setDragOverId(null);
+  }
 
   const SORT_LABELS: Record<SortKey, string> = { updated: "Last updated", name: "Name", pages: "Page count" };
 
@@ -175,24 +239,51 @@ export default function Projects() {
         </div>
       </div>
 
+      {/* Custom order indicator */}
+      {hasCustomOrder && !isSearching && (
+        <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/30 border border-border rounded-lg px-3 py-2">
+          <GripVertical size={12} className="text-primary/60" />
+          <span>Your custom order is active — drag any card to rearrange</span>
+          <button onClick={resetOrder} className="ml-auto flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors">
+            <RotateCcw size={11} /> Reset
+          </button>
+        </div>
+      )}
+
       {/* Grid */}
       {isLoading ? (
         <div className="flex justify-center p-24">
           <Loader2 className="w-10 h-10 animate-spin text-primary" />
         </div>
       ) : sorted.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
+          onDragEnd={cleanup}
+        >
           {sorted.map((project, index) => {
             const isPinned = pinned.includes(project.id);
+            const isBeingDragged = draggingId === project.id;
+            const isDropTarget = dragOverId === project.id && !isBeingDragged;
             return (
               <Card
                 key={project.id}
+                draggable
+                onDragStart={() => handleDragStart(project.id)}
+                onDragOver={e => handleDragOver(e, project.id)}
+                onDrop={() => handleDrop(project.id)}
+                onDragLeave={() => setDragOverId(null)}
                 className={cn(
-                  "bg-card border-border hover:border-primary/60 transition-all group overflow-hidden flex flex-col relative",
-                  isPinned && "border-primary/40 shadow-[0_0_16px_rgba(232,97,26,0.06)]"
+                  "bg-card border-border hover:border-primary/60 transition-all group overflow-hidden flex flex-col relative cursor-grab active:cursor-grabbing select-none",
+                  isPinned && "border-primary/40 shadow-[0_0_16px_rgba(232,97,26,0.06)]",
+                  isBeingDragged && "opacity-40 scale-95",
+                  isDropTarget && "border-primary border-2 shadow-[0_0_20px_rgba(232,97,26,0.2)]",
                 )}
                 style={{ animationDelay: `${index * 40}ms` }}
               >
+                {/* Drag handle */}
+                <div className="absolute top-2 left-2 z-10 opacity-0 group-hover:opacity-40 transition-opacity">
+                  <GripVertical size={14} className="text-muted-foreground" />
+                </div>
                 {isPinned && (
                   <div className="absolute top-3 right-3 z-10">
                     <Star className="w-3.5 h-3.5 text-primary fill-primary" />
