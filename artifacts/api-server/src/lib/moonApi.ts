@@ -5,6 +5,7 @@ const MOON_API_KEY = process.env.TPTS_MOON_API_KEY ?? process.env.TSQ_MOON_API_K
 
 import { db, userTptsLinks } from "@workspace/db";
 import { eq } from "drizzle-orm";
+import { isAdmin } from "../routes/admin";
 
 // Look up the TPTS email linked to a Forge user, or null if none stored.
 async function getLinkedTptsEmail(userId: string): Promise<string | null> {
@@ -40,8 +41,6 @@ const MOON_BASE = `${TSQ_BASE}/api/moon`;
 
 export const TPTS_INBOUND_KEY = (process.env.TPTS_INBOUND_KEY ?? "").trim();
 
-// Admin user IDs bypass quota deduction
-const ADMIN_USER_IDS = new Set(["54504320", "54489134"]);
 
 // Moons available in Forge Builder (per TPTS integration package)
 export const FORGE_MOONS = ["forge", "flint"] as const;
@@ -117,6 +116,11 @@ async function checkMoonAccess(
   fallback: string,
 ): Promise<MoonAccess> {
   const subscribeUrl = getMoonSubscribeUrl(primary);
+
+  // Admins always have full unlimited access — bypass all subscription checks
+  if (await isAdmin(userId)) {
+    return { allowed: true, moon: primary, isBundle: true, messagesRemaining: 999999, subscribeUrl };
+  }
 
   if (!MOON_API_KEY) {
     // No key configured — allow (dev mode)
@@ -210,7 +214,7 @@ export async function checkFlintAccess(userId: string): Promise<MoonAccess> {
  */
 export async function deductMoonMessage(userId: string, moonName: string): Promise<void> {
   if (!MOON_API_KEY) return;
-  if (ADMIN_USER_IDS.has(userId)) return;
+  if (await isAdmin(userId)) return;
 
   try {
     await fetch(`${MOON_BASE}/deduct`, {
