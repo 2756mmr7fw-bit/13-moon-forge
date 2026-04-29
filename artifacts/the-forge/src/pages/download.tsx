@@ -102,20 +102,23 @@ function WindowsSection() {
         <p className="text-xs text-muted-foreground">
           Lets Flint see your screen, control your mouse, and talk you through fixes in real time. Only install this when you need it for a fix session.
         </p>
-        <div className="flex items-center gap-3 rounded-lg border border-orange-500/20 bg-orange-500/5 px-4 py-3">
-          <span className="text-lg">🔧</span>
-          <div>
-            <p className="text-sm font-bold text-orange-300">Coming Soon</p>
-            <p className="text-xs text-muted-foreground mt-0.5">The Forge Remote Agent for Windows is in development. You'll be notified when it's ready.</p>
-          </div>
-        </div>
-        <div className="space-y-2">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">When it's live, here's how it works:</p>
+        <div className="rounded-lg border border-green-500/20 bg-green-500/5 p-3 space-y-3">
+          <p className="text-xs font-bold text-green-400">✓ Available now — Python version</p>
+          <a
+            href={`${BASE}/forge_agent.py`}
+            download="forge_agent.py"
+            className="flex items-center gap-2 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30 text-orange-300 rounded-lg px-4 py-2 text-sm font-semibold transition-colors"
+          >
+            <DownloadIcon size={14} /> Download forge_agent.py
+          </a>
           <div className="space-y-2">
-            <Step n={1}>Unzip the file and run <strong>forge_agent_setup.exe</strong> — Windows may show a SmartScreen warning, click "More info" then "Run anyway" (it's safe).</Step>
-            <Step n={2}>The agent opens a small window showing your <strong>Session Code</strong> — share that code with your Forge fix session.</Step>
-            <Step n={3}>Once connected, Flint can see your screen and help you fix things step by step.</Step>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">After downloading:</p>
+            <Step n={1}>Install Python if you don't have it — <strong>python.org/downloads</strong> (free, takes 2 min)</Step>
+            <Step n={2}>Open a terminal (search "cmd" in Windows) and run: <code className="bg-black/40 px-1.5 py-0.5 rounded text-green-300 text-xs">pip install websockets mss pyautogui pillow</code></Step>
+            <Step n={3}>Run: <code className="bg-black/40 px-1.5 py-0.5 rounded text-green-300 text-xs">python forge_agent.py</code> — a small window appears with your <strong>Session Code</strong></Step>
+            <Step n={4}>Enter that code in your Computer Fix session on the site — Flint can now see your screen.</Step>
           </div>
+          <p className="text-[11px] text-muted-foreground pt-1 border-t border-border">A one-click Windows installer (.exe) is coming soon — for now, the Python version works exactly the same way.</p>
         </div>
       </Card>
     </div>
@@ -141,20 +144,23 @@ function MacSection() {
         <p className="text-xs text-muted-foreground">
           Same idea as Windows — lets Flint see your screen during a fix session.
         </p>
-        <div className="flex items-center gap-3 rounded-lg border border-orange-500/20 bg-orange-500/5 px-4 py-3">
-          <span className="text-lg">🔧</span>
-          <div>
-            <p className="text-sm font-bold text-orange-300">Coming Soon</p>
-            <p className="text-xs text-muted-foreground mt-0.5">The Forge Remote Agent for Mac is in development. You'll be notified when it's ready.</p>
-          </div>
-        </div>
-        <div className="space-y-2">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">When it's live, here's how it works:</p>
+        <div className="rounded-lg border border-green-500/20 bg-green-500/5 p-3 space-y-3">
+          <p className="text-xs font-bold text-green-400">✓ Available now — Python version</p>
+          <a
+            href={`${BASE}/forge_agent.py`}
+            download="forge_agent.py"
+            className="flex items-center gap-2 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30 text-orange-300 rounded-lg px-4 py-2 text-sm font-semibold transition-colors"
+          >
+            <DownloadIcon size={14} /> Download forge_agent.py
+          </a>
           <div className="space-y-2">
-            <Step n={1}>Unzip and open <strong>ForgeAgent.app</strong>. macOS may say it can't be verified — go to <strong>System Settings → Privacy & Security</strong> and click "Open Anyway".</Step>
-            <Step n={2}>A small window shows your <strong>Session Code</strong>. Use it in your fix session.</Step>
-            <Step n={3}>Grant screen recording permission when macOS asks — this is what lets Flint see your screen.</Step>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">After downloading:</p>
+            <Step n={1}>Mac usually has Python 3 already. Open Terminal and check: <code className="bg-black/40 px-1.5 py-0.5 rounded text-green-300 text-xs">python3 --version</code></Step>
+            <Step n={2}>Install dependencies: <code className="bg-black/40 px-1.5 py-0.5 rounded text-green-300 text-xs">pip3 install websockets mss pyautogui pillow</code></Step>
+            <Step n={3}>Run: <code className="bg-black/40 px-1.5 py-0.5 rounded text-green-300 text-xs">python3 forge_agent.py</code> — a window shows your <strong>Session Code</strong></Step>
+            <Step n={4}>macOS will ask to grant Screen Recording permission — click Allow. Enter the code in your fix session.</Step>
           </div>
+          <p className="text-[11px] text-muted-foreground pt-1 border-t border-border">A packaged Mac .app is coming soon — the Python version works exactly the same way.</p>
         </div>
       </Card>
     </div>
@@ -227,20 +233,30 @@ function RemoteSection() {
           <h4 className="font-bold text-sm flex items-center gap-2">
             <Monitor size={15} className="text-blue-400" /> Windows
           </h4>
-          <div className="flex items-center justify-center gap-2 border border-orange-500/20 bg-orange-500/5 text-orange-300 rounded-lg px-4 py-2.5 text-sm font-semibold">
-            🔧 Coming Soon
-          </div>
-          <p className="text-xs text-muted-foreground">Windows 10 / 11 · 64-bit</p>
+          <a
+            href={`${BASE}/forge_agent.py`}
+            download="forge_agent.py"
+            className="flex items-center justify-center gap-2 bg-primary/10 hover:bg-primary/20 border border-primary/30 text-primary rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors"
+          >
+            <DownloadIcon size={14} /> Download (.py)
+          </a>
+          <p className="text-xs text-muted-foreground">Windows 10 / 11 · Requires Python 3.8+</p>
+          <p className="text-[11px] text-muted-foreground/60">One-click .exe installer coming soon</p>
         </Card>
 
         <Card>
           <h4 className="font-bold text-sm flex items-center gap-2">
             <Apple size={15} className="text-gray-300" /> Mac
           </h4>
-          <div className="flex items-center justify-center gap-2 border border-orange-500/20 bg-orange-500/5 text-orange-300 rounded-lg px-4 py-2.5 text-sm font-semibold">
-            🔧 Coming Soon
-          </div>
+          <a
+            href={`${BASE}/forge_agent.py`}
+            download="forge_agent.py"
+            className="flex items-center justify-center gap-2 bg-primary/10 hover:bg-primary/20 border border-primary/30 text-primary rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors"
+          >
+            <DownloadIcon size={14} /> Download (.py)
+          </a>
           <p className="text-xs text-muted-foreground">macOS 12+ · Apple Silicon + Intel</p>
+          <p className="text-[11px] text-muted-foreground/60">Packaged .app coming soon</p>
         </Card>
       </div>
 
