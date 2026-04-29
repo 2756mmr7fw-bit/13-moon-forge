@@ -7,7 +7,7 @@ import {
   Folder, FolderOpen, FileText, Target, Calendar, Briefcase,
   LayoutTemplate, File, Plus, Trash2, ChevronRight, ChevronDown,
   Printer, Pencil, Check, X, Loader2, Flame, Send, Star, MoreHorizontal,
-  FolderPlus, FilePlus, PackageOpen, Code2, Download, Search,
+  FolderPlus, FilePlus, PackageOpen, Code2, Download, Search, Upload,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -75,7 +75,10 @@ export default function Workspace() {
   const [renameVal, setRenameVal] = useState("");
   const [activeParent, setActiveParent] = useState<number | null>(null);
   const [showMenu, setShowMenu] = useState<number | null>(null);
+  const [uploadingPdf, setUploadingPdf] = useState(false);
+  const [forgingPdf, setForgingPdf] = useState(false);
   const renameRef = useRef<HTMLInputElement>(null);
+  const pdfInputRef = useRef<HTMLInputElement>(null);
   const [, navigate] = useLocation();
   const [searchQ, setSearchQ] = useState("");
   const [searchResults, setSearchResults] = useState<{ id: number; name: string; type: string; snippet: string; parentId: number | null }[]>([]);
@@ -153,6 +156,62 @@ export default function Workspace() {
     } catch {
       toast({ variant: "destructive", title: "Failed", description: "Forge couldn't create that. Try again." });
     } finally { setForging(false); }
+  }
+
+  async function uploadPdf(file: File) {
+    if (!file || file.type !== "application/pdf") return;
+    setUploadingPdf(true);
+    try {
+      const dataUri = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      const headers = await authHeaders();
+      const res = await fetch(`${API_BASE}/api/workspace/upload-pdf`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ name: file.name, dataUri, parentId: activeParent }),
+      });
+      if (!res.ok) throw new Error("Upload failed");
+      const item: WItem = await res.json();
+      setItems(prev => [...prev, item]);
+      setSelected(item);
+      if (item.parentId) setExpanded(prev => new Set([...prev, item.parentId!]));
+      toast({ title: `${file.name} saved`, description: "PDF is in your Workspace. Click 'Forge It!' to analyze it." });
+    } catch {
+      toast({ variant: "destructive", title: "Upload failed", description: "Could not save PDF. Try again." });
+    } finally {
+      setUploadingPdf(false);
+      if (pdfInputRef.current) pdfInputRef.current.value = "";
+    }
+  }
+
+  async function forgePdf(item: WItem) {
+    if (forgingPdf) return;
+    setForgingPdf(true);
+    try {
+      const headers = await authHeaders();
+      const res = await fetch(`${API_BASE}/api/workspace/${item.id}/forge-pdf`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ parentId: item.parentId }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error((err as { error?: string }).error ?? "Failed");
+      }
+      const newDoc: WItem = await res.json();
+      setItems(prev => [...prev, newDoc]);
+      setSelected(newDoc);
+      if (newDoc.parentId) setExpanded(prev => new Set([...prev, newDoc.parentId!]));
+      toast({ title: "Forge analysis ready!", description: `"${newDoc.name}" created in your Workspace.` });
+    } catch (err) {
+      toast({ variant: "destructive", title: "Couldn't read PDF", description: err instanceof Error ? err.message : "Try again." });
+    } finally {
+      setForgingPdf(false);
+    }
   }
 
   async function quickCreate(type: string, prompt: string | null) {
@@ -474,6 +533,13 @@ ${markdownToHtml(selected.content ?? "")}
 
         {/* Quick creates */}
         <div className="px-2 py-2 border-b border-border">
+          <input
+            ref={pdfInputRef}
+            type="file"
+            accept=".pdf,application/pdf"
+            className="hidden"
+            onChange={e => { const f = e.target.files?.[0]; if (f) uploadPdf(f); }}
+          />
           <div className="grid grid-cols-3 gap-1">
             {QUICK_CREATES.map(q => (
               <button
@@ -485,6 +551,14 @@ ${markdownToHtml(selected.content ?? "")}
                 <span className="text-[9px] leading-tight">{q.label}</span>
               </button>
             ))}
+            <button
+              onClick={() => pdfInputRef.current?.click()}
+              disabled={uploadingPdf}
+              className="flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-primary/10 text-primary/70 hover:text-primary transition-colors text-center disabled:opacity-50"
+            >
+              {uploadingPdf ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+              <span className="text-[9px] leading-tight">Upload PDF</span>
+            </button>
           </div>
         </div>
 
@@ -591,7 +665,7 @@ ${markdownToHtml(selected.content ?? "")}
                 <p className="text-[10px] text-muted-foreground capitalize">{selected.type} · {new Date(selected.updatedAt).toLocaleDateString()}</p>
               </div>
               <div className="flex items-center gap-2">
-                {selected.type === "file" && selected.content?.startsWith("data:") ? (
+                {(selected.type === "pdf" || selected.type === "file") && selected.content?.startsWith("data:") ? (
                   <Button
                     size="sm"
                     variant="outline"
@@ -628,40 +702,70 @@ ${markdownToHtml(selected.content ?? "")}
 
             {/* Doc content */}
             <div className="flex-1 overflow-y-auto">
-              {selected.type === "file" && selected.content?.startsWith("data:") ? (
-                // Binary file received via email — show download panel
-                <div className="flex flex-col items-center justify-center h-full gap-6 p-8">
-                  <div className="text-6xl">{selected.icon && selected.icon.length <= 2 ? selected.icon : "📁"}</div>
-                  <div className="text-center">
-                    <h3 className="font-bold text-lg">{selected.name}</h3>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {(() => {
-                        const mime = selected.content.split(";")[0].replace("data:", "");
-                        if (mime.includes("pdf")) return "PDF Document";
-                        if (mime.includes("zip")) return "ZIP Archive";
-                        if (mime.includes("word") || mime.includes("docx")) return "Word Document";
-                        return "Binary File";
-                      })()}
-                      {" · "}
-                      Received via email
-                    </p>
-                  </div>
-                  <Button
-                    onClick={() => {
-                      const a = document.createElement("a");
-                      a.href = selected.content ?? "";
-                      a.download = selected.name;
-                      a.click();
-                    }}
-                    className="gap-2"
-                  >
-                    <Download size={15} />
-                    Download {selected.name}
-                  </Button>
-                  <p className="text-xs text-muted-foreground/60 text-center max-w-xs">
-                    This file was emailed to your Forge address and saved here automatically.
-                  </p>
-                </div>
+              {(selected.type === "pdf" || selected.type === "file") && selected.content?.startsWith("data:") ? (
+                // Binary / PDF file — viewer with Forge analysis option
+                (() => {
+                  const mime = selected.content.split(";")[0].replace("data:", "");
+                  const isPdf = mime.includes("pdf") || selected.type === "pdf";
+                  return (
+                    <div className="flex flex-col h-full">
+                      {isPdf && (
+                        <iframe
+                          src={selected.content}
+                          className="w-full flex-1 border-0"
+                          title={selected.name}
+                        />
+                      )}
+                      <div className={`flex flex-col items-center gap-4 p-6 ${isPdf ? "border-t border-border bg-card/60" : "justify-center flex-1"}`}>
+                        {!isPdf && (
+                          <>
+                            <div className="text-5xl">📁</div>
+                            <div className="text-center">
+                              <h3 className="font-bold text-lg">{selected.name}</h3>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {mime.includes("zip") ? "ZIP Archive" : mime.includes("word") || mime.includes("docx") ? "Word Document" : "Binary File"}
+                                {" · "}{selected.type === "pdf" ? "Uploaded" : "Received via email"}
+                              </p>
+                            </div>
+                          </>
+                        )}
+                        <div className="flex items-center gap-3 flex-wrap justify-center">
+                          {isPdf && (
+                            <Button
+                              onClick={() => forgePdf(selected)}
+                              disabled={forgingPdf}
+                              className="bg-primary text-white gap-2 text-sm px-5 py-2.5 rounded-xl hover:opacity-90 disabled:opacity-60"
+                            >
+                              {forgingPdf
+                                ? <><Loader2 size={15} className="animate-spin mr-1" /> Forge is reading…</>
+                                : <><Flame size={15} className="mr-1" /> Forge It! — Let Forge Read This</>
+                              }
+                            </Button>
+                          )}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              const a = document.createElement("a");
+                              a.href = selected.content ?? "";
+                              a.download = selected.name;
+                              a.click();
+                            }}
+                            className="gap-2"
+                          >
+                            <Download size={13} />
+                            Download
+                          </Button>
+                        </div>
+                        {isPdf && !forgingPdf && (
+                          <p className="text-xs text-muted-foreground/60 text-center max-w-xs">
+                            Forge will read the full document and create a summary, key points, and analysis — saved right here in your Workspace.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()
               ) : editing ? (
                 <textarea
                   value={editContent}
