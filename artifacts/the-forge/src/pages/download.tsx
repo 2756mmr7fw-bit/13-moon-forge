@@ -102,15 +102,15 @@ function WindowsSection() {
         <p className="text-xs text-muted-foreground">
           Lets Flint see your screen, control your mouse, and talk you through fixes in real time. Only install this when you need it for a fix session.
         </p>
-        <a
-          href={`${BASE}/forge-agent-windows.zip`}
-          download
-          className="inline-flex items-center gap-2 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30 text-orange-300 rounded-lg px-4 py-2 text-sm font-semibold transition-colors"
-        >
-          <DownloadIcon size={14} /> Download Forge Agent for Windows
-        </a>
+        <div className="flex items-center gap-3 rounded-lg border border-orange-500/20 bg-orange-500/5 px-4 py-3">
+          <span className="text-lg">🔧</span>
+          <div>
+            <p className="text-sm font-bold text-orange-300">Coming Soon</p>
+            <p className="text-xs text-muted-foreground mt-0.5">The Forge Remote Agent for Windows is in development. You'll be notified when it's ready.</p>
+          </div>
+        </div>
         <div className="space-y-2">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">After downloading:</p>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">When it's live, here's how it works:</p>
           <div className="space-y-2">
             <Step n={1}>Unzip the file and run <strong>forge_agent_setup.exe</strong> — Windows may show a SmartScreen warning, click "More info" then "Run anyway" (it's safe).</Step>
             <Step n={2}>The agent opens a small window showing your <strong>Session Code</strong> — share that code with your Forge fix session.</Step>
@@ -141,15 +141,15 @@ function MacSection() {
         <p className="text-xs text-muted-foreground">
           Same idea as Windows — lets Flint see your screen during a fix session.
         </p>
-        <a
-          href={`${BASE}/forge-agent-mac.zip`}
-          download
-          className="inline-flex items-center gap-2 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30 text-orange-300 rounded-lg px-4 py-2 text-sm font-semibold transition-colors"
-        >
-          <DownloadIcon size={14} /> Download Forge Agent for Mac
-        </a>
+        <div className="flex items-center gap-3 rounded-lg border border-orange-500/20 bg-orange-500/5 px-4 py-3">
+          <span className="text-lg">🔧</span>
+          <div>
+            <p className="text-sm font-bold text-orange-300">Coming Soon</p>
+            <p className="text-xs text-muted-foreground mt-0.5">The Forge Remote Agent for Mac is in development. You'll be notified when it's ready.</p>
+          </div>
+        </div>
         <div className="space-y-2">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">After downloading:</p>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">When it's live, here's how it works:</p>
           <div className="space-y-2">
             <Step n={1}>Unzip and open <strong>ForgeAgent.app</strong>. macOS may say it can't be verified — go to <strong>System Settings → Privacy & Security</strong> and click "Open Anyway".</Step>
             <Step n={2}>A small window shows your <strong>Session Code</strong>. Use it in your fix session.</Step>
@@ -227,28 +227,20 @@ function RemoteSection() {
           <h4 className="font-bold text-sm flex items-center gap-2">
             <Monitor size={15} className="text-blue-400" /> Windows
           </h4>
-          <a
-            href={`${BASE}/forge-agent-windows.zip`}
-            download
-            className="flex items-center justify-center gap-2 bg-primary/10 hover:bg-primary/20 border border-primary/30 text-primary rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors"
-          >
-            <DownloadIcon size={14} /> Download (.zip)
-          </a>
-          <p className="text-xs text-muted-foreground">Windows 10 / 11 · 64-bit · ~15 MB</p>
+          <div className="flex items-center justify-center gap-2 border border-orange-500/20 bg-orange-500/5 text-orange-300 rounded-lg px-4 py-2.5 text-sm font-semibold">
+            🔧 Coming Soon
+          </div>
+          <p className="text-xs text-muted-foreground">Windows 10 / 11 · 64-bit</p>
         </Card>
 
         <Card>
           <h4 className="font-bold text-sm flex items-center gap-2">
             <Apple size={15} className="text-gray-300" /> Mac
           </h4>
-          <a
-            href={`${BASE}/forge-agent-mac.zip`}
-            download
-            className="flex items-center justify-center gap-2 bg-primary/10 hover:bg-primary/20 border border-primary/30 text-primary rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors"
-          >
-            <DownloadIcon size={14} /> Download (.zip)
-          </a>
-          <p className="text-xs text-muted-foreground">macOS 12+ · Apple Silicon + Intel · ~18 MB</p>
+          <div className="flex items-center justify-center gap-2 border border-orange-500/20 bg-orange-500/5 text-orange-300 rounded-lg px-4 py-2.5 text-sm font-semibold">
+            🔧 Coming Soon
+          </div>
+          <p className="text-xs text-muted-foreground">macOS 12+ · Apple Silicon + Intel</p>
         </Card>
       </div>
 
@@ -278,14 +270,10 @@ function RemoteSection() {
               </Step>
               <Step n={2}>Install the required libraries — open a terminal and run:</Step>
               <Code>pip install websockets mss pyautogui pillow sounddevice numpy</Code>
-              <Step n={3}>Download the agent script:</Step>
-              <a
-                href={`${BASE}/forge_agent.py`}
-                download
-                className="inline-flex items-center gap-2 border border-border hover:border-primary/40 rounded-lg px-3 py-2 text-xs font-mono text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <DownloadIcon size={12} /> forge_agent.py
-              </a>
+              <Step n={3}>Download the agent script (coming soon — available when the Remote Agent launches):</Step>
+              <div className="inline-flex items-center gap-2 border border-orange-500/20 bg-orange-500/5 rounded-lg px-3 py-2 text-xs font-mono text-orange-300/70">
+                🔧 forge_agent.py — Coming Soon
+              </div>
               <Step n={4}>Run it:</Step>
               <Code>python forge_agent.py</Code>
               <Step n={5}>A window shows your session code. Enter it in your Computer Fix session on the site.</Step>
