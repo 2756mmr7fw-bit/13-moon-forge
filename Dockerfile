@@ -6,19 +6,22 @@ WORKDIR /app
 FROM base AS deps
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY lib/db/package.json ./lib/db/
+COPY lib/api-zod/package.json ./lib/api-zod/
+COPY lib/api-spec/package.json ./lib/api-spec/
+COPY lib/integrations-openai-ai-server/package.json ./lib/integrations-openai-ai-server/
 COPY artifacts/the-forge/package.json ./artifacts/the-forge/
 COPY artifacts/api-server/package.json ./artifacts/api-server/
 RUN pnpm install
 
 # ─── Build frontend ──────────────────────────────────────────────────────────
 FROM deps AS web-build
-COPY lib/db ./lib/db
+COPY lib/ ./lib/
 COPY artifacts/the-forge ./artifacts/the-forge
 RUN pnpm --filter @workspace/the-forge run build
 
 # ─── Build API server ────────────────────────────────────────────────────────
 FROM deps AS api-build
-COPY lib/db ./lib/db
+COPY lib/ ./lib/
 COPY artifacts/api-server ./artifacts/api-server
 RUN pnpm --filter @workspace/api-server run build
 
@@ -32,6 +35,9 @@ ENV PORT=8080
 
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY lib/db/package.json ./lib/db/
+COPY lib/api-zod/package.json ./lib/api-zod/
+COPY lib/api-spec/package.json ./lib/api-spec/
+COPY lib/integrations-openai-ai-server/package.json ./lib/integrations-openai-ai-server/
 COPY artifacts/api-server/package.json ./artifacts/api-server/
 
 RUN pnpm install --prod --filter @workspace/api-server
