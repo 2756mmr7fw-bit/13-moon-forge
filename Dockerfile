@@ -8,7 +8,7 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY lib/db/package.json ./lib/db/
 COPY artifacts/the-forge/package.json ./artifacts/the-forge/
 COPY artifacts/api-server/package.json ./artifacts/api-server/
-RUN pnpm install --frozen-lockfile
+RUN pnpm install
 
 # ─── Build frontend ──────────────────────────────────────────────────────────
 FROM deps AS web-build
