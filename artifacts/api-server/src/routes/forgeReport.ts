@@ -4,7 +4,13 @@ import { eq, gte, count } from "drizzle-orm";
 import { Resend } from "resend";
 
 const router = Router();
-const resend = new Resend(process.env.RESEND_API_KEY);
+
+let _resend: Resend | null = null;
+function getResend(): Resend {
+  if (_resend) return _resend;
+  _resend = new Resend(process.env.RESEND_API_KEY);
+  return _resend;
+}
 
 // POST /api/forge-report — send a Forge activity digest to the user's email
 // Body: { email: string; firstName?: string }
@@ -113,7 +119,7 @@ router.post("/forge-report", async (req, res) => {
 </body>
 </html>`;
 
-    const { error } = await resend.emails.send({
+    const { error } = await getResend().emails.send({
       from:    "Forge <forge@13moonforge.ai>",
       to:      email,
       subject: `🔥 Your Forge Week — ${moonCount} sessions, ${fileCount} files`,
