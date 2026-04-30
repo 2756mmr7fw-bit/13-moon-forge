@@ -1,0 +1,77 @@
+failed to solve: failed to compute cache key: failed to calculate checksum of ref o1sqhnvqgf6qvly35bjs9fcjz::w1cxrizm2fappyezg399k6jgz: "/lib/db/drizzle": not found
+
+root@forge-server-1:~/forge-app# grep -n drizzle /root/forge-app/Dockerfile
+42:COPY lib/db/drizzle ./lib/db/drizzle
+root@forge-server-1:~/forge-app# cd /root/forge-app && git pull && docker compose build --no-cache && docker compose up -d
+remote: Enumerating objects: 12, done.
+remote: Counting objects: 100% (12/12), done.
+remote: Compressing objects: 100% (9/9), done.
+remote: Total 9 (delta 6), reused 0 (delta 0), pack-reused 0
+Unpacking objects: 100% (9/9), 468.22 KiB | 13.77 MiB/s, done.
+From /root/forge
+   6d55981..728f968  main       -> origin/main
+Updating 6d55981..728f968
+Fast-forward
+ Dockerfile                          |   1 -
+ .../IMG_3443_1777561215995.png      | Bin 0 -> 280214 bytes
+ .../IMG_3444_1777561543823.png      | Bin 0 -> 273545 bytes
+ 3 files changed, 1 deletion(-)
+ create mode 100644 attached_assets/IMG_3443_1777561215995.png
+ create mode 100644 attached_assets/IMG_3444_1777561543823.png
+WARN[0000] The "DATABASE_URL" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "SESSION_SECRET" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "MOON_API_KEY" variable is not set. Defaulting to a blank string. 
+[+] Building 5.4s (15/23)                               
+ => [internal] load local bake definitions         0.0s
+ => => reading from stdin 506B                     0.0s
+ => [internal] load build definition from Dockerf  0.0s
+ => => transferring dockerfile: 2.06kB             0.0s
+ => [internal] load metadata for docker.io/librar  1.0s
+ => [internal] load .dockerignore                  0.0s
+ => => transferring context: 171B                  0.0s
+ => [base 1/3] FROM docker.io/library/node:20-alp  1.6s
+ => => resolve docker.io/library/node:20-alpine@s  0.0s
+ => => sha256:fff4e2c1b189bf87d63ad8b 445B / 445B  0.2s
+ => => sha256:b2cbbfe903b08210057 1.26MB / 1.26MB  0.3s
+ => => sha256:4feea04c154301db6 43.23MB / 43.23MB  0.7s
+ => => extracting sha256:4feea04c154301db6f4a496e  0.7s
+ => => extracting sha256:b2cbbfe903b0821005780971  0.0s
+ => => extracting sha256:fff4e2c1b189bf87d63ad8bd  0.0s
+ => [internal] load build context                  0.0s
+ => => transferring context: 15.72kB               0.0s
+ => [base 2/3] RUN npm install -g pnpm@9           1.5s
+ => [base 3/3] WORKDIR /app                        0.0s 
+ => [deps 1/5] COPY package.json pnpm-workspace.y  0.0s
+ => [deps 2/5] COPY lib/db/package.json ./lib/db/  0.0s
+ => [runner  6/10] COPY artifacts/api-server/pack  0.0s
+ => [deps 3/5] COPY artifacts/the-forge/package.j  0.0s
+ => [deps 4/5] COPY artifacts/api-server/package.  0.0s
+ => ERROR [runner  7/10] RUN pnpm install --prod   1.0s
+ => CANCELED [deps 5/5] RUN pnpm install --frozen  1.0s
+------
+ > [runner  7/10] RUN pnpm install --prod --frozen-lockfile --filter @workspace/api-server:
+0.976  ERR_PNPM_LOCKFILE_CONFIG_MISMATCH  Cannot proceed with the frozen installation. The current "overrides" configuration doesn't match the value found in the lockfile
+0.976 
+0.976 Update your lockfile using "pnpm install --no-frozen-lockfile"
+------
+[+] build 0/1
+ ⠙ Image forge-app-forge Building                   5.4s
+Dockerfile:37
+
+--------------------
+
+  35 |     COPY artifacts/api-server/package.json ./artifacts/api-server/
+
+  36 |     
+
+  37 | >>> RUN pnpm install --prod --frozen-lockfile --filter @workspace/api-server
+
+  38 |     
+
+  39 |     COPY --from=api-build /app/artifacts/api-server/dist ./artifacts/api-server/dist
+
+--------------------
+
+failed to solve: process "/bin/sh -c pnpm install --prod --frozen-lockfile --filter @workspace/api-server" did not complete successfully: exit code: 1
+
+root@forge-server-1:~/forge-app#
