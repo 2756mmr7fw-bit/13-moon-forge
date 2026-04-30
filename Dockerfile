@@ -47,8 +47,8 @@ COPY artifacts/api-server/package.json ./artifacts/api-server/
 RUN pnpm install --prod --filter @workspace/api-server
 
 COPY --from=api-build /app/artifacts/api-server/dist ./artifacts/api-server/dist
-COPY --from=web-build /app/artifacts/the-forge/dist  ./artifacts/api-server/dist/public
+COPY --from=web-build /app/artifacts/the-forge/dist/public  ./artifacts/api-server/dist/public
 COPY lib/db/src ./lib/db/src
 
 EXPOSE 8080
-CMD ["node", "artifacts/api-server/dist/index.js"]
+CMD ["node", "--enable-source-maps", "artifacts/api-server/dist/index.mjs"]

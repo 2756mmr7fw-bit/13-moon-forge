@@ -4,12 +4,11 @@ services:
     restart: unless-stopped
     expose:
       - "8080"
+    env_file:
+      - .env
     environment:
       NODE_ENV: production
       PORT: 8080
-      DATABASE_URL: ${DATABASE_URL}
-      SESSION_SECRET: ${SESSION_SECRET}
-      MOON_API_KEY: ${MOON_API_KEY}
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.forge.rule=Host(`13moonforge.ai`) || Host(`www.13moonforge.ai`)"
@@ -18,7 +17,7 @@ services:
       - "traefik.http.routers.forge.tls.certresolver=letsencrypt"
       - "traefik.http.services.forge.loadbalancer.server.port=8080"
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8080/api/health"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/api/healthz"]
       interval: 30s
       timeout: 10s
       retries: 3
