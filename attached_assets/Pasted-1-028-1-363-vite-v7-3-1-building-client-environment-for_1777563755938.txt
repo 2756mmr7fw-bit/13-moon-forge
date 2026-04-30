@@ -1,0 +1,40 @@
+1.028 
+1.363 vite v7.3.1 building client environment for production...
+1.465 ✓ 0 modules transformed.
+1.470 ✗ Build failed in 66ms
+1.471 error during build:
+1.471 [vite:build-html] failed to resolve "extends":"../../tsconfig.base.json" in /app/artifacts/the-forge/tsconfig.json
+1.471 file: /app/artifacts/the-forge/index.html
+1.471     at resolveExtends (file:///app/node_modules/.pnpm/vite@7.3.1_@types+node@25.3.5_jiti@2.6.1_lightningcss@1.31.1_terser@5.46.1_tsx@4.21.0_yaml@2.8.2/node_modules/vite/dist/node/chunks/config.js:5809:8)
+1.471     at parseExtends (file:///app/node_modules/.pnpm/vite@7.3.1_@types+node@25.3.5_jiti@2.6.1_lightningcss@1.31.1_terser@5.46.1_tsx@4.21.0_yaml@2.8.2/node_modules/vite/dist/node/chunks/config.js:5775:71)
+1.471     at parse$13 (file:///app/node_modules/.pnpm/vite@7.3.1_@types+node@25.3.5_jiti@2.6.1_lightningcss@1.31.1_terser@5.46.1_tsx@4.21.0_yaml@2.8.2/node_modules/vite/dist/node/chunks/config.js:5677:23)
+1.471     at async loadTsconfigJsonForFile (file:///app/node_modules/.pnpm/vite@7.3.1_@types+node@25.3.5_jiti@2.6.1_lightningcss@1.31.1_terser@5.46.1_tsx@4.21.0_yaml@2.8.2/node_modules/vite/dist/node/chunks/config.js:6286:37)
+1.471     at async transformWithEsbuild (file:///app/node_modules/.pnpm/vite@7.3.1_@types+node@25.3.5_jiti@2.6.1_lightningcss@1.31.1_terser@5.46.1_tsx@4.21.0_yaml@2.8.2/node_modules/vite/dist/node/chunks/config.js:6086:55)
+1.471     at async Object.transform (file:///app/node_modules/.pnpm/vite@7.3.1_@types+node@25.3.5_jiti@2.6.1_lightningcss@1.31.1_terser@5.46.1_tsx@4.21.0_yaml@2.8.2/node_modules/vite/dist/node/chunks/config.js:6172:20)
+1.471     at async transform (file:///app/node_modules/.pnpm/rollup@4.59.0/node_modules/rollup/dist/es/shared/node-entry.js:21269:16)
+1.471     at async ModuleLoader.addModuleSource (file:///app/node_modules/.pnpm/rollup@4.59.0/node_modules/rollup/dist/es/shared/node-entry.js:21497:36)
+1.485 /app/artifacts/the-forge:
+1.485  ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @workspace/the-forge@0.0.0 build: `vite build --config vite.config.ts`
+1.485 Exit status 1
+------
+[+] build 0/1
+ ⠙ Image forge-app-forge Building                  21.5s
+Dockerfile:21
+
+--------------------
+
+  19 |     COPY lib/ ./lib/
+
+  20 |     COPY artifacts/the-forge ./artifacts/the-forge
+
+  21 | >>> RUN pnpm --filter @workspace/the-forge run build
+
+  22 |     
+
+  23 |     # ─── Build API server ────────────────────────────────────────────────────────
+
+--------------------
+
+failed to solve: process "/bin/sh -c pnpm --filter @workspace/the-forge run build" did not complete successfully: exit code: 1
+
+root@forge-server-1:~/forge-app#
