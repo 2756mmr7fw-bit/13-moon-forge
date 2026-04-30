@@ -39,7 +39,6 @@ RUN pnpm install --prod --frozen-lockfile --filter @workspace/api-server
 COPY --from=api-build /app/artifacts/api-server/dist ./artifacts/api-server/dist
 COPY --from=web-build /app/artifacts/the-forge/dist  ./artifacts/api-server/dist/public
 COPY lib/db/src ./lib/db/src
-COPY lib/db/drizzle ./lib/db/drizzle
 
 EXPOSE 8080
 CMD ["node", "artifacts/api-server/dist/index.js"]
