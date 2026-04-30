@@ -1,0 +1,61 @@
+failed to solve: process "/bin/sh -c pnpm install --prod --filter @workspace/api-server" did not complete successfully: exit code: 1
+
+root@forge-server-1:~/forge-app# cd /root/forge-app && docker compose build --no-cache && docker compose up -d
+WARN[0000] The "DATABASE_URL" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "SESSION_SECRET" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "MOON_API_KEY" variable is not set. Defaulting to a blank string. 
+[+] Building 3.6s (18/26)                               
+ => [internal] load local bake definitions         0.0s
+ => => reading from stdin 506B                     0.0s
+ => [internal] load build definition from Dockerf  0.0s
+ => => transferring dockerfile: 2.38kB             0.0s
+ => [internal] load metadata for docker.io/librar  0.4s
+ => [internal] load .dockerignore                  0.0s
+ => => transferring context: 171B                  0.0s
+ => [internal] load build context                  0.0s
+ => => transferring context: 93.36kB               0.0s
+ => CACHED [base 1/3] FROM docker.io/library/node  0.0s
+ => => resolve docker.io/library/node:20-alpine@s  0.0s
+ => [base 2/3] RUN npm install -g pnpm@9           1.5s
+ => [base 3/3] WORKDIR /app                        0.0s
+ => [deps 1/8] COPY package.json pnpm-workspace.y  0.0s
+ => [deps 2/8] COPY lib/db/package.json ./lib/db/  0.0s
+ => [deps 3/8] COPY lib/api-zod/package.json ./li  0.0s
+ => [deps 4/8] COPY lib/api-spec/package.json ./l  0.0s
+ => [deps 5/8] COPY lib/integrations-openai-ai-se  0.0s
+ => [runner  9/13] COPY artifacts/api-server/pack  0.0s
+ => [deps 6/8] COPY artifacts/the-forge/package.j  0.0s
+ => CANCELED [runner 10/13] RUN pnpm install --pr  1.3s
+ => [deps 7/8] COPY artifacts/api-server/package.  0.0s
+ => ERROR [deps 8/8] RUN pnpm install              1.2s
+------
+ > [deps 8/8] RUN pnpm install:
+0.676 Scope: all 7 workspace projects
+1.097 /app/artifacts/the-forge:
+1.097  ERR_PNPM_WORKSPACE_PKG_NOT_FOUND  In artifacts/the-forge: "@workspace/api-client-react@workspace:*" is in the dependencies but no package named "@workspace/api-client-react" is present in the workspace
+1.097 
+1.097 This error happened while installing a direct dependency of /app/artifacts/the-forge
+1.097 
+1.097 Packages found in the workspace: 
+------
+[+] build 0/1
+ ⠙ Image forge-app-forge Building                   3.7s
+Dockerfile:14
+
+--------------------
+
+  12 |     COPY artifacts/the-forge/package.json ./artifacts/the-forge/
+
+  13 |     COPY artifacts/api-server/package.json ./artifacts/api-server/
+
+  14 | >>> RUN pnpm install
+
+  15 |     
+
+  16 |     # ─── Build frontend ──────────────────────────────────────────────────────────
+
+--------------------
+
+failed to solve: process "/bin/sh -c pnpm install" did not complete successfully: exit code: 1
+
+root@forge-server-1:~/forge-app#
