@@ -1,0 +1,57 @@
+failed to solve: process "/bin/sh -c pnpm install --frozen-lockfile" did not complete successfully: exit code: 1
+
+root@forge-server-1:~/forge-app# cd /root/forge-app && docker compose build --no-cache && docker compose up -d
+WARN[0000] The "DATABASE_URL" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "SESSION_SECRET" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "MOON_API_KEY" variable is not set. Defaulting to a blank string. 
+[+] Building 3.1s (15/23)                               
+ => [internal] load local bake definitions         0.0s
+ => => reading from stdin 506B                     0.0s
+ => [internal] load build definition from Dockerf  0.0s
+ => => transferring dockerfile: 2.03kB             0.0s
+ => [internal] load metadata for docker.io/librar  0.3s
+ => [internal] load .dockerignore                  0.0s
+ => => transferring context: 171B                  0.0s
+ => CACHED [base 1/3] FROM docker.io/library/node  0.0s
+ => => resolve docker.io/library/node:20-alpine@s  0.0s
+ => [internal] load build context                  0.0s
+ => => transferring context: 15.72kB               0.0s
+ => [base 2/3] RUN npm install -g pnpm@9           1.5s
+ => [base 3/3] WORKDIR /app                        0.0s
+ => [deps 1/5] COPY package.json pnpm-workspace.y  0.0s
+ => [deps 2/5] COPY lib/db/package.json ./lib/db/  0.0s
+ => [runner  6/10] COPY artifacts/api-server/pack  0.0s
+ => [deps 3/5] COPY artifacts/the-forge/package.j  0.0s
+ => [deps 4/5] COPY artifacts/api-server/package.  0.0s
+ => ERROR [runner  7/10] RUN pnpm install --prod   1.0s
+ => CANCELED [deps 5/5] RUN pnpm install           1.1s
+------                                                  
+ > [runner  7/10] RUN pnpm install --prod --filter @workspace/api-server:
+0.967 /app/artifacts/api-server:
+0.967  ERR_PNPM_WORKSPACE_PKG_NOT_FOUND  In artifacts/api-server: "@workspace/api-zod@workspace:*" is in the dependencies but no package named "@workspace/api-zod" is present in the workspace
+0.967 
+0.967 This error happened while installing a direct dependency of /app/artifacts/api-server
+0.967 
+0.967 Packages found in the workspace: 
+------
+[+] build 0/1
+ ⠙ Image forge-app-forge Building                   3.1s
+Dockerfile:37
+
+--------------------
+
+  35 |     COPY artifacts/api-server/package.json ./artifacts/api-server/
+
+  36 |     
+
+  37 | >>> RUN pnpm install --prod --filter @workspace/api-server
+
+  38 |     
+
+  39 |     COPY --from=api-build /app/artifacts/api-server/dist ./artifacts/api-server/dist
+
+--------------------
+
+failed to solve: process "/bin/sh -c pnpm install --prod --filter @workspace/api-server" did not complete successfully: exit code: 1
+
+root@forge-server-1:~/forge-app#
