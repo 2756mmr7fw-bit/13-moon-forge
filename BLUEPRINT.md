@@ -366,6 +366,85 @@ It's not astrology. It's not telling people what they can and can't do. It's a r
 
 ---
 
+## The People's Town Square — The Full Ecosystem
+
+The Forge is one building in a larger town. The 13 Moon Forge and all 12 apps are part of one family: **People's Town Square**. Each app is its own place — its own purpose, its own front door — but they share the same soul, the same calendar, the same users, and the same infrastructure.
+
+This is not a collection of separate products. It is one interconnected world.
+
+**What this means for users:**
+- One account, all apps. Log into any app in the Town Square and you're recognized everywhere.
+- The moon phase is the same across every app. The rhythm is shared.
+- Your profile, your history, your preferences follow you from app to app.
+- If one app does something, another app can know about it.
+
+**What this means for you as the builder:**
+- Change the shared design once — every app updates.
+- Change the moon calendar logic once — every app reflects it.
+- Fix a bug in the authentication layer once — every app is fixed.
+- Deploy everything with one command.
+
+---
+
+## The Monorepo — How the Web Is Built
+
+This is the technical soul of the Town Square. Everything lives in one repository. One home. One deployment pipeline.
+
+**The structure:**
+```
+people's-town-square/
+├── artifacts/          ← Every app lives here
+│   ├── the-forge/      ← Already built and running
+│   ├── forge-mobile/   ← Already built and running
+│   ├── api-server/     ← The central hub — already built
+│   ├── app-3/          ← Next app coming in
+│   ├── app-4/
+│   └── ... (12 apps total)
+│
+├── lib/                ← Shared code — change once, update everywhere
+│   ├── moon-calendar/  ← The 13 Moon logic — one source of truth
+│   ├── ui/             ← Shared design system (buttons, colors, layouts)
+│   ├── auth/           ← Shared authentication
+│   ├── api-client/     ← Already built — how apps talk to the server
+│   ├── db/             ← Already built — the database layer
+│   └── types/          ← Shared data shapes used by all apps
+│
+└── scripts/            ← Tools that help manage all of it
+```
+
+**The central API server is the nervous system.**
+All 12 apps talk to one API. They don't each have their own backend. They share one. When the API learns something new, every app benefits. When a user does something in one app, the API knows, and any other app can respond to it.
+
+**How "change everything at once" actually works:**
+
+1. You change something in `lib/ui/` — the shared button color, the shared header
+2. You push to Forgejo (your own Git server)
+3. Forgejo automatically builds every app that uses that library
+4. Every app is deployed to your Hetzner server with the new change
+5. Done. All 12 apps updated. One push.
+
+**How bringing in the 12 existing Replit apps works:**
+
+For each app:
+1. We copy the code from its Replit into the monorepo under `artifacts/`
+2. We identify what it shares with other apps (auth, design, moon logic) and move that into `lib/`
+3. We add a Dockerfile (same pattern as the Forge)
+4. We add a subdomain in Traefik (`app-name.13moonforge.ai` or its own domain)
+5. It's live on your server and connected to everything else
+
+The first app takes the longest because we're establishing the pattern. The second app takes half the time. By the fifth app, it's routine.
+
+**The domain structure of the Town Square:**
+Every app in the family gets its own address, all served from the same Hetzner server:
+```
+13moonforge.ai          — The Forge (live now)
+git.13moonforge.ai      — Your Forgejo Git server (deployed, waiting for DNS)
+[app].13moonforge.ai    — Each app in the Town Square
+```
+Or if individual apps have their own domains, Traefik routes those too — same server, different front doors.
+
+---
+
 ## The First 30 Days — Launch Strategy
 
 The goal of the first 30 days is not traffic. It is **10 real people having a real experience.**
