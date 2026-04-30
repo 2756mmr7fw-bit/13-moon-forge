@@ -40,6 +40,7 @@ import memoryRouter from "./memory";
 import pulseRouter from "./pulse";
 import scoreRouter from "./score";
 import referralRouter from "./referral";
+import hetznerRouter from "./hetzner";
 
 const router: IRouter = Router();
 
@@ -84,5 +85,6 @@ router.use(memoryRouter);
 router.use(pulseRouter);
 router.use(scoreRouter);
 router.use(referralRouter);
+router.use(hetznerRouter);
 
 export default router;

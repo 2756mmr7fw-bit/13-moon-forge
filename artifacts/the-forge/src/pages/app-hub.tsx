@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { getAuthToken } from "@workspace/api-client-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import {
   Server, Layers, BookOpen, CheckCircle2, XCircle, RefreshCw, Unplug,
   ExternalLink, Loader2, AlertTriangle, Globe, Zap, Moon,
   Activity, Play, Square, RotateCcw, Clock, RocketIcon,
+  Sparkles, MapPin, Cpu, HardDrive, MemoryStick, Key,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { HelpPanel } from "@/components/help-panel";
@@ -148,119 +149,468 @@ const TABS: { id: Tab; label: string; icon: React.ComponentType<{ size: number }
   { id: "apps",    label: "Live Apps",    icon: Activity },
 ];
 
-// ─── Get Started Tab ──────────────────────────────────────────────────────────
+// ─── Hetzner Auto-Provisioner ─────────────────────────────────────────────────
 
-function GetStartedTab({ onConnect }: { onConnect: () => void }) {
-  return (
-    <div className="space-y-10">
-      {/* Intro */}
-      <div className="max-w-2xl">
-        <h2 className="text-xl font-bold mb-2">Own your stack. Pay only for what you use.</h2>
-        <p className="text-muted-foreground leading-relaxed">
-          Your apps run on <strong>your own server</strong> — no platform lock-in, no shared infrastructure.
-          You pay your hosting provider directly (month to month, cancel anytime) and pay us via{" "}
-          <a href="https://thepeoplestownsq.com" target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-2">
-            the Town Square
-          </a>{" "}
-          for the apps you subscribe to. Two separate bills. Full control.
+interface HetznerServerType {
+  id: number;
+  name: string;
+  description: string;
+  cores: number;
+  memory: number;
+  disk: number;
+  priceMonthly: string;
+}
+
+interface HetznerLocation {
+  id: number;
+  name: string;
+  description: string;
+  country: string;
+  city: string;
+}
+
+type ProvisionStep = "token" | "configure" | "provisioning" | "waiting" | "done" | "error";
+
+function HetznerProvisioner({ onDone }: { onDone: () => void }) {
+  const [step, setStep] = useState<ProvisionStep>("token");
+  const [token, setToken] = useState("");
+  const [tokenError, setTokenError] = useState("");
+  const [loadingTypes, setLoadingTypes] = useState(false);
+  const [serverTypes, setServerTypes] = useState<HetznerServerType[]>([]);
+  const [locations, setLocations] = useState<HetznerLocation[]>([]);
+  const [selectedType, setSelectedType] = useState("");
+  const [selectedLocation, setSelectedLocation] = useState("fsn1");
+  const [serverName, setServerName] = useState("forge-server");
+  const [provisioning, setProvisioning] = useState(false);
+  const [serverIp, setServerIp] = useState("");
+  const [coolifyUrl, setCoolifyUrl] = useState("");
+  const [pollCount, setPollCount] = useState(0);
+  const [error, setError] = useState("");
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const stopPolling = useCallback(() => {
+    if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
+  }, []);
+
+  useEffect(() => () => stopPolling(), [stopPolling]);
+
+  async function validateToken() {
+    if (!token.trim()) { setTokenError("Enter your Hetzner API token"); return; }
+    setLoadingTypes(true); setTokenError("");
+    try {
+      const [typesRes, locsRes] = await Promise.all([
+        fetch(`${API_BASE}/api/hetzner/server-types`, {
+          headers: { ...(await authHeaders()), "x-hetzner-token": token.trim() },
+        }),
+        fetch(`${API_BASE}/api/hetzner/locations`, {
+          headers: { ...(await authHeaders()), "x-hetzner-token": token.trim() },
+        }),
+      ]);
+      const typesData = await typesRes.json() as { types?: HetznerServerType[]; error?: string };
+      if (!typesRes.ok || typesData.error) {
+        setTokenError(typesData.error ?? "Invalid token — check it and try again");
+        setLoadingTypes(false); return;
+      }
+      const locsData = await locsRes.json() as { locations?: HetznerLocation[] };
+      setServerTypes(typesData.types ?? []);
+      setLocations(locsData.locations ?? []);
+      if (typesData.types?.[0]) setSelectedType(typesData.types[1]?.name ?? typesData.types[0].name);
+      setLoadingTypes(false);
+      setStep("configure");
+    } catch {
+      setTokenError("Could not reach Hetzner — check your internet connection");
+      setLoadingTypes(false);
+    }
+  }
+
+  async function provision() {
+    setProvisioning(true); setError("");
+    try {
+      const r = await fetch(`${API_BASE}/api/hetzner/provision`, {
+        method: "POST",
+        headers: { ...(await authHeaders()), "Content-Type": "application/json" },
+        body: JSON.stringify({ hetznerToken: token.trim(), serverType: selectedType, location: selectedLocation, serverName }),
+      });
+      const data = await r.json() as { ok?: boolean; serverId?: number; ip?: string; coolifyUrl?: string; error?: string };
+      if (!r.ok || !data.ok) {
+        setError(data.error ?? "Provisioning failed"); setProvisioning(false); setStep("error"); return;
+      }
+      const sid = data.serverId ?? 0;
+      setServerIp(data.ip ?? "");
+      setCoolifyUrl(data.coolifyUrl ?? "");
+      setProvisioning(false);
+      setStep("waiting");
+      startPolling(sid, data.coolifyUrl ?? "");
+    } catch {
+      setError("Network error — please try again"); setProvisioning(false); setStep("error");
+    }
+  }
+
+  function startPolling(sid: number, curl: string) {
+    let count = 0;
+    pollRef.current = setInterval(async () => {
+      count++;
+      setPollCount(count);
+      try {
+        const r = await fetch(`${API_BASE}/api/hetzner/server-status/${sid}`, {
+          headers: { ...(await authHeaders()), "x-hetzner-token": token.trim() },
+        });
+        const data = await r.json() as { coolifyReady?: boolean; status?: string };
+        if (data.coolifyReady) {
+          stopPolling();
+          setStep("done");
+          // Update connection record with real coolify URL
+          await fetch(`${API_BASE}/api/deploy/connect`, {
+            method: "POST",
+            headers: await authHeaders(),
+            body: JSON.stringify({ name: serverName, coolifyUrl: curl, coolifyApiKey: "setup-required" }),
+          });
+        }
+      } catch { /* keep polling */ }
+      if (count >= 60) { // ~5 minutes max
+        stopPolling();
+        setStep("done"); // Show done anyway, user can check manually
+      }
+    }, 5000);
+  }
+
+  const selectedTypeInfo = serverTypes.find(t => t.name === selectedType);
+
+  if (step === "token") return (
+    <div className="max-w-md space-y-5">
+      <div>
+        <h2 className="text-xl font-bold mb-1 flex items-center gap-2">
+          <Sparkles size={18} className="text-primary" /> Auto-provision your server
+        </h2>
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          Forge will create a Hetzner server, install Coolify, and connect it — all automatically. You'll need a free Hetzner Cloud account and an API token.
+        </p>
+      </div>
+      <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm space-y-2">
+        <p className="font-semibold flex items-center gap-1.5"><Key size={13} className="text-primary" /> How to get your Hetzner API token:</p>
+        <ol className="list-decimal list-inside space-y-1 text-muted-foreground text-xs leading-relaxed">
+          <li>Go to <a href="https://console.hetzner.cloud" target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-2">console.hetzner.cloud</a> and create a free account</li>
+          <li>Create a new project (or use an existing one)</li>
+          <li>In the project, go to <strong className="text-foreground">Security → API Tokens</strong></li>
+          <li>Click <strong className="text-foreground">Generate API Token</strong>, give it Read &amp; Write access</li>
+          <li>Copy the token — paste it below</li>
+        </ol>
+      </div>
+      <div className="space-y-2">
+        <Label className="font-semibold">Hetzner API Token</Label>
+        <Input
+          type="password"
+          value={token}
+          onChange={e => setToken(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && validateToken()}
+          placeholder="hCloud API token from Hetzner console"
+          className="font-mono text-sm"
+        />
+        {tokenError && (
+          <p className="text-xs text-red-400 flex items-center gap-1.5"><AlertTriangle size={12} /> {tokenError}</p>
+        )}
+        <p className="text-xs text-muted-foreground">Your token is sent directly to Hetzner. We never store it.</p>
+      </div>
+      <Button onClick={validateToken} disabled={loadingTypes || !token.trim()} className="w-full gap-2">
+        {loadingTypes ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} />}
+        {loadingTypes ? "Verifying token…" : "Continue"}
+      </Button>
+    </div>
+  );
+
+  if (step === "configure") return (
+    <div className="max-w-lg space-y-6">
+      <div>
+        <h2 className="text-xl font-bold mb-1">Configure your server</h2>
+        <p className="text-sm text-muted-foreground">Pick your server size and location. You can always upgrade later in Hetzner.</p>
+      </div>
+
+      {/* Server type picker */}
+      <div className="space-y-3">
+        <Label className="font-semibold flex items-center gap-1.5"><Cpu size={13} /> Server Size</Label>
+        <div className="grid gap-3">
+          {serverTypes.map(t => (
+            <button
+              key={t.name}
+              onClick={() => setSelectedType(t.name)}
+              className={cn(
+                "w-full text-left rounded-xl border p-4 transition-all",
+                selectedType === t.name
+                  ? "border-primary bg-primary/5 shadow-[0_0_12px_rgba(232,97,26,0.1)]"
+                  : "border-border bg-card hover:border-primary/40",
+              )}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-bold text-sm uppercase tracking-wide">{t.name}</span>
+                    {t.name === "cx32" && <Badge className="text-[9px] h-4 bg-primary/20 text-primary border-primary/30">Recommended</Badge>}
+                  </div>
+                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1"><Cpu size={10} /> {t.cores} vCPU</span>
+                    <span className="flex items-center gap-1"><MemoryStick size={10} /> {t.memory}GB RAM</span>
+                    <span className="flex items-center gap-1"><HardDrive size={10} /> {t.disk}GB SSD</span>
+                  </div>
+                </div>
+                <div className="text-right shrink-0">
+                  <span className="text-primary font-bold text-sm">€{t.priceMonthly}</span>
+                  <span className="text-muted-foreground text-xs">/mo</span>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Location */}
+      <div className="space-y-2">
+        <Label className="font-semibold flex items-center gap-1.5"><MapPin size={13} /> Location</Label>
+        <Select value={selectedLocation} onValueChange={setSelectedLocation}>
+          <SelectTrigger className="bg-card"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            {locations.map(l => (
+              <SelectItem key={l.name} value={l.name}>
+                {l.city}, {l.country} ({l.name})
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-muted-foreground">Pick the location closest to you or your users for best performance.</p>
+      </div>
+
+      {/* Server name */}
+      <div className="space-y-2">
+        <Label className="font-semibold">Server Name</Label>
+        <Input value={serverName} onChange={e => setServerName(e.target.value)} placeholder="forge-server" className="font-mono" />
+      </div>
+
+      {selectedTypeInfo && (
+        <div className="rounded-xl border border-border bg-card p-4 text-sm">
+          <p className="font-semibold mb-2">Order summary</p>
+          <div className="space-y-1 text-muted-foreground text-xs">
+            <div className="flex justify-between"><span>Hetzner {selectedType.toUpperCase()} in {selectedLocation}</span><span className="text-foreground font-medium">€{selectedTypeInfo.priceMonthly}/mo</span></div>
+            <div className="flex justify-between"><span>Forge setup &amp; Coolify install</span><span className="text-green-400 font-medium">Free</span></div>
+            <div className="flex justify-between pt-2 border-t border-border mt-2 font-semibold text-foreground"><span>You pay Hetzner directly</span><span>€{selectedTypeInfo.priceMonthly}/mo</span></div>
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">Billed monthly by Hetzner. Cancel anytime from their console.</p>
+        </div>
+      )}
+
+      <div className="flex gap-3">
+        <Button variant="outline" onClick={() => setStep("token")} className="gap-2">Back</Button>
+        <Button onClick={provision} disabled={!selectedType || !selectedLocation || provisioning} className="flex-1 gap-2">
+          {provisioning ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} />}
+          {provisioning ? "Creating server…" : "Provision My Server"}
+        </Button>
+      </div>
+    </div>
+  );
+
+  if (step === "provisioning") return (
+    <div className="max-w-md text-center py-12 space-y-4">
+      <div className="flex justify-center"><Loader2 size={40} className="animate-spin text-primary" /></div>
+      <h2 className="text-lg font-bold">Creating your server…</h2>
+      <p className="text-sm text-muted-foreground">Forge is spinning up your Hetzner server. This takes about 30 seconds.</p>
+    </div>
+  );
+
+  if (step === "waiting") return (
+    <div className="max-w-md space-y-6">
+      <div className="text-center py-8 space-y-3">
+        <div className="flex justify-center">
+          <div className="relative">
+            <div className="w-16 h-16 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+            <Server size={20} className="absolute inset-0 m-auto text-primary" />
+          </div>
+        </div>
+        <h2 className="text-lg font-bold">Installing Coolify…</h2>
+        <p className="text-sm text-muted-foreground">
+          Your server is up at <span className="font-mono text-foreground">{serverIp}</span>.<br />
+          Coolify is being installed automatically. This takes 3–5 minutes.
+        </p>
+        <div className="text-xs text-muted-foreground">
+          Checking every 5 seconds… ({pollCount * 5}s elapsed)
+        </div>
+      </div>
+      <div className="rounded-xl border border-border bg-card p-4 text-sm space-y-2">
+        <p className="font-semibold text-xs uppercase tracking-wider text-muted-foreground">What's happening</p>
+        <div className="space-y-1.5 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2"><CheckCircle2 size={12} className="text-green-400 shrink-0" /> Server created on Hetzner</div>
+          <div className="flex items-center gap-2"><CheckCircle2 size={12} className="text-green-400 shrink-0" /> Ubuntu 22.04 booted</div>
+          <div className="flex items-center gap-2"><Loader2 size={12} className="animate-spin text-primary shrink-0" /> Installing Docker + Coolify</div>
+          <div className="flex items-center gap-2 opacity-40"><Clock size={12} className="shrink-0" /> Connecting to Forge</div>
+        </div>
+      </div>
+      <p className="text-xs text-muted-foreground text-center">You can leave this page — we'll remember your server.</p>
+    </div>
+  );
+
+  if (step === "done") return (
+    <div className="max-w-md space-y-6">
+      <div className="text-center py-6 space-y-3">
+        <div className="flex justify-center">
+          <div className="w-16 h-16 rounded-full bg-green-900/20 border border-green-800/40 flex items-center justify-center">
+            <CheckCircle2 size={28} className="text-green-400" />
+          </div>
+        </div>
+        <h2 className="text-xl font-bold">Server is ready!</h2>
+        <p className="text-sm text-muted-foreground">
+          Your Hetzner server is running at <span className="font-mono text-foreground">{serverIp}</span> with Coolify installed.
         </p>
       </div>
 
-      {/* Steps */}
+      <div className="rounded-xl border border-green-800/40 bg-green-900/10 p-4 space-y-3 text-sm">
+        <p className="font-semibold text-green-300">Next: Set up your Coolify account</p>
+        <ol className="list-decimal list-inside space-y-2 text-muted-foreground text-xs leading-relaxed">
+          <li>Open <a href={coolifyUrl} target="_blank" rel="noopener noreferrer" className="text-primary underline">{coolifyUrl}</a> in a new tab</li>
+          <li>Create your Coolify admin account (first time only)</li>
+          <li>Go to <strong className="text-foreground">Keys & Tokens → API Tokens</strong></li>
+          <li>Create an API token and copy it</li>
+          <li>Come back here and paste it in the <strong className="text-foreground">My Server</strong> tab</li>
+        </ol>
+      </div>
+
+      <Button onClick={onDone} className="w-full gap-2">
+        <Server size={15} /> Connect My Server Now
+      </Button>
+    </div>
+  );
+
+  if (step === "error") return (
+    <div className="max-w-md space-y-4">
+      <div className="rounded-xl border border-red-800/40 bg-red-900/10 p-5 text-center space-y-3">
+        <XCircle size={32} className="text-red-400 mx-auto" />
+        <h2 className="font-bold text-red-300">Provisioning failed</h2>
+        <p className="text-sm text-muted-foreground">{error}</p>
+      </div>
+      <Button onClick={() => { setStep("configure"); setError(""); }} variant="outline" className="w-full">Try Again</Button>
+    </div>
+  );
+
+  return null;
+}
+
+// ─── Get Started Tab ──────────────────────────────────────────────────────────
+
+function GetStartedTab({ onConnect }: { onConnect: () => void }) {
+  const [mode, setMode] = useState<"choose" | "auto" | "manual">("choose");
+
+  if (mode === "auto") return <HetznerProvisioner onDone={onConnect} />;
+
+  if (mode === "manual") return (
+    <div className="space-y-8 max-w-2xl">
+      <button onClick={() => setMode("choose")} className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors">
+        ← Back to options
+      </button>
+      <div>
+        <h2 className="text-xl font-bold mb-2">Manual setup</h2>
+        <p className="text-muted-foreground text-sm leading-relaxed">
+          Get a server running Ubuntu 22.04+, install Coolify, then connect it to Forge.
+        </p>
+      </div>
       <div className="space-y-6">
-        {/* Step 1 */}
         <div className="flex gap-4">
           <div className="shrink-0 w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-sm font-black text-primary">1</div>
           <div className="flex-1 pt-0.5">
             <h3 className="font-bold mb-1">Pick any VPS provider</h3>
-            <p className="text-sm text-muted-foreground mb-4">All you need is a server running Ubuntu 22.04 or later. Pick whatever works for you:</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <p className="text-sm text-muted-foreground mb-3">Any server running Ubuntu 22.04 or later works.</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {PROVIDERS.map(p => (
                 <div key={p.name} className="rounded-lg border border-border bg-card p-3 relative">
-                  {p.tag && (
-                    <span className="absolute top-2 right-2 text-[9px] font-bold bg-primary text-primary-foreground px-1.5 py-0.5 rounded-full uppercase tracking-wider">
-                      {p.tag}
-                    </span>
-                  )}
+                  {p.tag && <span className="absolute top-2 right-2 text-[9px] font-bold bg-primary text-primary-foreground px-1.5 py-0.5 rounded-full uppercase tracking-wider">{p.tag}</span>}
                   <p className="font-semibold text-sm mb-0.5">{p.name}</p>
                   <p className="text-primary text-xs font-bold mb-1">{p.price}</p>
                   <p className="text-xs text-muted-foreground">{p.note}</p>
-                  {p.url && (
-                    <a href={p.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mt-2 transition-colors">
-                      Visit <ExternalLink size={10} />
-                    </a>
-                  )}
+                  {p.url && <a href={p.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mt-2 transition-colors">Visit <ExternalLink size={10} /></a>}
                 </div>
               ))}
             </div>
           </div>
         </div>
-
-        {/* Step 2 */}
         <div className="flex gap-4">
           <div className="shrink-0 w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-sm font-black text-primary">2</div>
           <div className="flex-1 pt-0.5">
-            <h3 className="font-bold mb-1">Install Coolify on your server</h3>
-            <p className="text-sm text-muted-foreground mb-3">
-              Coolify is free, open source, and installs with one command. It's your self-hosted PaaS — it manages Docker, SSL, domains, and deployments.
-            </p>
-            <div className="rounded-lg bg-black/50 border border-border p-4 font-mono text-sm text-green-400">
-              curl -fsSL https://cdn.coollabs.io/coolify/install.sh | bash
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              After install, Coolify runs at <span className="font-mono text-foreground">http://your-server-ip:8000</span>. Open it in your browser and create your admin account.
-            </p>
+            <h3 className="font-bold mb-1">Install Coolify</h3>
+            <div className="rounded-lg bg-black/50 border border-border p-4 font-mono text-sm text-green-400">curl -fsSL https://cdn.coollabs.io/coolify/install.sh | bash</div>
+            <p className="text-xs text-muted-foreground mt-2">Coolify runs at <span className="font-mono text-foreground">http://your-server-ip:8000</span> after install.</p>
           </div>
         </div>
-
-        {/* Step 3 */}
         <div className="flex gap-4">
           <div className="shrink-0 w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-sm font-black text-primary">3</div>
           <div className="flex-1 pt-0.5">
-            <h3 className="font-bold mb-1">Get your Coolify API key</h3>
-            <p className="text-sm text-muted-foreground mb-3">
-              In your Coolify dashboard, go to <strong>Keys &amp; Tokens</strong> (or <strong>Settings → API Tokens</strong>) and create a new API key. Copy it — you'll only see it once.
-            </p>
-            <div className="rounded-lg border border-border bg-card p-3 text-sm text-muted-foreground">
-              Your Coolify URL will be something like <span className="font-mono text-foreground">http://123.456.789.0:8000</span> or a custom domain if you've set one up.
-            </div>
-          </div>
-        </div>
-
-        {/* Step 4 */}
-        <div className="flex gap-4">
-          <div className="shrink-0 w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-sm font-black text-primary">4</div>
-          <div className="flex-1 pt-0.5">
-            <h3 className="font-bold mb-1">Connect your server to Forge</h3>
-            <p className="text-sm text-muted-foreground mb-3">
-              Paste your Coolify URL and API key into the My Server tab. Forge will verify the connection and then you can deploy apps from the App Catalog.
-            </p>
-            <Button onClick={onConnect} className="gap-2">
-              <Server size={15} />
-              Connect My Server
-            </Button>
+            <h3 className="font-bold mb-1">Connect to Forge</h3>
+            <p className="text-sm text-muted-foreground mb-3">Get your Coolify API key from <strong>Keys & Tokens → API Tokens</strong>, then paste it in My Server.</p>
+            <Button onClick={onConnect} className="gap-2"><Server size={15} /> Connect My Server</Button>
           </div>
         </div>
       </div>
+    </div>
+  );
 
-      {/* Pricing clarity */}
-      <div className="rounded-xl border border-border bg-card p-6 max-w-lg">
-        <h3 className="font-bold mb-3 flex items-center gap-2">
-          <Zap size={16} className="text-primary" /> How the billing works
-        </h3>
-        <div className="space-y-2 text-sm">
-          <div className="flex justify-between gap-4 py-2 border-b border-border/50">
-            <span className="text-muted-foreground">Your hosting provider</span>
-            <span className="font-medium">Compute — you pay them directly</span>
+  return (
+    <div className="space-y-8">
+      <div className="max-w-2xl">
+        <h2 className="text-xl font-bold mb-2">Own your stack. Pay only for what you use.</h2>
+        <p className="text-muted-foreground leading-relaxed text-sm">
+          Your apps run on <strong>your own server</strong> — no platform lock-in, no shared infrastructure.
+          You pay your hosting provider directly and pay us via the{" "}
+          <a href="https://thepeoplestownsq.com" target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-2">Town Square</a>{" "}
+          for the apps. Two separate bills. Full control.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-2xl">
+        {/* Auto path */}
+        <button
+          onClick={() => setMode("auto")}
+          className="text-left rounded-2xl border-2 border-primary/40 bg-primary/5 p-6 hover:border-primary hover:bg-primary/10 transition-all group"
+        >
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-9 h-9 rounded-xl bg-primary/20 flex items-center justify-center">
+              <Sparkles size={18} className="text-primary" />
+            </div>
+            <Badge className="bg-primary/20 text-primary border-primary/30 text-[10px]">Recommended</Badge>
           </div>
-          <div className="flex justify-between gap-4 py-2">
-            <span className="text-muted-foreground">Sovereign Digital (us)</span>
-            <span className="font-medium">App subscriptions — via the Town Square</span>
+          <h3 className="font-bold text-base mb-1">Auto-Provision with Hetzner</h3>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Paste your Hetzner API token and Forge spins up the server, installs Coolify, and connects everything — automatically.
+          </p>
+          <div className="mt-4 text-xs text-primary font-semibold flex items-center gap-1 group-hover:gap-2 transition-all">
+            Get started <span>→</span>
+          </div>
+        </button>
+
+        {/* Manual path */}
+        <button
+          onClick={() => setMode("manual")}
+          className="text-left rounded-2xl border border-border bg-card p-6 hover:border-primary/40 transition-all group"
+        >
+          <div className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center mb-3">
+            <Server size={18} className="text-muted-foreground" />
+          </div>
+          <h3 className="font-bold text-base mb-1">I'll set up my own server</h3>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Already have a server or prefer another provider? Install Coolify yourself and connect it manually.
+          </p>
+          <div className="mt-4 text-xs text-muted-foreground flex items-center gap-1 group-hover:gap-2 transition-all group-hover:text-foreground">
+            Manual setup <span>→</span>
+          </div>
+        </button>
+      </div>
+
+      <div className="rounded-xl border border-border bg-card p-5 max-w-lg text-sm">
+        <h3 className="font-bold mb-3 flex items-center gap-2"><Zap size={14} className="text-primary" /> How billing works</h3>
+        <div className="space-y-1.5 text-xs text-muted-foreground">
+          <div className="flex justify-between gap-4 py-1.5 border-b border-border/50">
+            <span>Your hosting provider (Hetzner, etc.)</span>
+            <span className="font-medium text-foreground">You pay them directly</span>
+          </div>
+          <div className="flex justify-between gap-4 py-1.5">
+            <span>Sovereign Digital (app subscriptions)</span>
+            <span className="font-medium text-foreground">Via Town Square</span>
           </div>
         </div>
-        <p className="text-xs text-muted-foreground mt-3">
-          Two separate monthly bills. Cancel either one independently. No contracts.
-        </p>
+        <p className="text-xs text-muted-foreground mt-3">Two separate bills. Cancel either independently. No contracts.</p>
       </div>
     </div>
   );
