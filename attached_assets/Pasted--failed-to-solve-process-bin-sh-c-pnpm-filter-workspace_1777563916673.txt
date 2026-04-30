@@ -1,0 +1,62 @@
+
+failed to solve: process "/bin/sh -c pnpm --filter @workspace/the-forge run build" did not complete successfully: exit code: 1
+
+root@forge-server-1:~/forge-app# cd /root/forge-app && docker compose build --no-cache && docker compose up -d
+WARN[0000] The "DATABASE_URL" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "SESSION_SECRET" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "MOON_API_KEY" variable is not set. Defaulting to a blank string. 
+[+] Building 52.5s (30/30) FINISHED                     
+ => [internal] load local bake definitions         0.0s
+ => => reading from stdin 506B                     0.0s
+ => [internal] load build definition from Dockerf  0.0s
+ => => transferring dockerfile: 2.56kB             0.0s
+ => [internal] load metadata for docker.io/librar  0.3s
+ => [internal] load .dockerignore                  0.0s
+ => => transferring context: 171B                  0.0s
+ => CACHED [base 1/3] FROM docker.io/library/node  0.0s
+ => => resolve docker.io/library/node:20-alpine@s  0.0s
+ => [internal] load build context                  0.0s
+ => => transferring context: 19.19kB               0.0s
+ => [base 2/3] RUN npm install -g pnpm@9           1.6s
+ => [base 3/3] WORKDIR /app                        0.0s
+ => [deps 1/9] COPY package.json pnpm-workspace.y  0.0s
+ => [deps 2/9] COPY lib/db/package.json ./lib/db/  0.0s
+ => [deps 3/9] COPY lib/api-zod/package.json ./li  0.0s
+ => [deps 4/9] COPY lib/api-spec/package.json ./l  0.0s
+ => [deps 5/9] COPY lib/api-client-react/package.  0.0s
+ => [deps 6/9] COPY lib/integrations-openai-ai-se  0.0s
+ => [runner 10/14] COPY artifacts/api-server/pack  0.0s
+ => [deps 7/9] COPY artifacts/the-forge/package.j  0.0s
+ => [runner 11/14] RUN pnpm install --prod --fil  11.3s
+ => [deps 8/9] COPY artifacts/api-server/package.  0.0s
+ => [deps 9/9] RUN pnpm install                   17.1s
+ => [web-build 1/4] COPY tsconfig.base.json ./     0.7s
+ => [web-build 2/4] COPY lib/ ./lib/               0.0s
+ => [api-build 3/4] COPY artifacts/api-server ./a  0.1s
+ => [web-build 3/4] COPY artifacts/the-forge ./ar  0.1s
+ => [api-build 4/4] RUN pnpm --filter @workspace/  1.8s
+ => [web-build 4/4] RUN pnpm --filter @workspace/  9.6s
+ => [runner 12/14] COPY --from=api-build /app/art  1.1s
+ => [runner 13/14] COPY --from=web-build /app/art  0.0s
+ => [runner 14/14] COPY lib/db/src ./lib/db/src    0.0s
+ => exporting to image                            22.6s
+ => => exporting layers                           16.3s
+ => => exporting manifest sha256:f10718fd4253f50a  0.0s
+ => => exporting config sha256:c1ba77cd8ca700460d  0.0s
+ => => exporting attestation manifest sha256:2af0  0.0s
+ => => exporting manifest list sha256:8b5df0998cb  0.0s
+ => => naming to docker.io/library/forge-app-forg  0.0s
+ => => unpacking to docker.io/library/forge-app-f  6.2s
+ => resolving provenance for metadata file         0.0s
+[+] build 1/1
+ ✔ Image forge-app-forge Built                     52.5s
+WARN[0000] The "DATABASE_URL" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "SESSION_SECRET" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "MOON_API_KEY" variable is not set. Defaulting to a blank string. 
+[+] up 3/4
+ ✔ Network forge-app_default      Created           0.0s
+ ✔ Volume forge-app_postgres_data Created           0.0s
+ ✔ Container forge-app-db-1       Healthy          11.0s
+ ⠸ Container forge-app-forge-1    Starting         10.9s
+Error response from daemon: failed to set up container networking: driver failed programming external connectivity on endpoint forge-app-forge-1 (884e9037560db47bb68dd026ccd906ff25074b5e74d093bfda8e3e987c9b4205): Bind for 0.0.0.0:8080 failed: port is already allocated
+root@forge-server-1:~/forge-app#
