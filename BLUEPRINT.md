@@ -368,14 +368,16 @@ It's not astrology. It's not telling people what they can and can't do. It's a r
 
 ## The People's Town Square — The Full Ecosystem
 
-The Forge is one building in a larger town. The 13 Moon Forge and all 12 apps are part of one family: **People's Town Square**. Each app is its own place — its own purpose, its own front door — but they share the same soul, the same calendar, the same users, and the same infrastructure.
+The Forge is one building in a larger town. The 13 Moon Forge and all 12 apps are part of one family: **People's Town Square**. Each app has its own domain, its own identity, its own purpose — but they share the same soul, the same calendar, the same users, and the same infrastructure.
 
-This is not a collection of separate products. It is one interconnected world.
+This is not a collection of separate products. It is one interconnected world with many front doors.
 
 **What this means for users:**
-- One account, all apps. Log into any app in the Town Square and you're recognized everywhere.
+- Create an account at any app in the Town Square — you have an account at all of them. Instantly. No re-registering.
+- Log in once, stay logged in everywhere across every domain.
 - The moon phase is the same across every app. The rhythm is shared.
 - Your profile, your history, your preferences follow you from app to app.
+- Every app has free features. Every app has paid features. One subscription unlocks the paid tier across the entire Town Square — not just one app.
 - If one app does something, another app can know about it.
 
 **What this means for you as the builder:**
@@ -383,6 +385,37 @@ This is not a collection of separate products. It is one interconnected world.
 - Change the moon calendar logic once — every app reflects it.
 - Fix a bug in the authentication layer once — every app is fixed.
 - Deploy everything with one command.
+
+---
+
+## Unified Identity — One Account, Every Domain
+
+This is the technical heart of the Town Square. The auth system (Clerk) already supports this — it is called multi-domain SSO, and it works across completely separate domains.
+
+**How it works for a user:**
+
+1. Someone lands on `anyapp.com` — one of the 12 apps
+2. They create a free account
+3. That account is instantly valid at all 12 domains — they don't know or care how
+4. They visit `otherapp.com` — they're already logged in
+5. They upgrade to a paid plan on any app — that upgrade unlocks paid features on every app
+
+**How it works technically:**
+
+Clerk (already running in the Forge) supports "satellite domains" — every app points at the same Clerk instance. One user record. One session. Works across any number of domains. This is already built into the auth layer we have.
+
+**The subscription model across the ecosystem:**
+
+```
+Free tier:     Sign up once → access to free features at all 12 apps
+Paid tier:     Subscribe once → paid features unlock everywhere
+               One price. One decision. Everything opens.
+```
+
+This is the model that makes the Town Square sticky. Users don't just subscribe to one tool — they subscribe to the whole world. Canceling means losing access everywhere. That's not a hostage situation — it's a genuine value that scales with the size of the Town Square. The more apps, the more valuable one subscription becomes.
+
+**Revenue implication:**
+The subscription isn't "$X for this app." It's "$X for the Town Square." As the family of apps grows, that price point becomes more defensible and more obviously worth it. Adding a new app doesn't just add users — it increases the value of every existing subscription.
 
 ---
 
