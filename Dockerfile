@@ -16,12 +16,14 @@ RUN pnpm install
 
 # ─── Build frontend ──────────────────────────────────────────────────────────
 FROM deps AS web-build
+COPY tsconfig.base.json ./
 COPY lib/ ./lib/
 COPY artifacts/the-forge ./artifacts/the-forge
 RUN pnpm --filter @workspace/the-forge run build
 
 # ─── Build API server ────────────────────────────────────────────────────────
 FROM deps AS api-build
+COPY tsconfig.base.json ./
 COPY lib/ ./lib/
 COPY artifacts/api-server ./artifacts/api-server
 RUN pnpm --filter @workspace/api-server run build
