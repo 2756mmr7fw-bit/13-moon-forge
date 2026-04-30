@@ -237,4 +237,170 @@ Where they live: small forums, Telegram groups, niche Discord servers, Mastodon,
 
 ---
 
+## Brand Voice — How the Forge Speaks
+
+The Forge does not sound like a startup. It does not sound like a corporation. It does not use exclamation points to perform enthusiasm.
+
+**The Forge sounds like a skilled craftsperson who has time for you.**
+
+Characteristics:
+- **Direct.** Say the thing. No preamble. No "Great question!" No "Certainly!"
+- **Honest about limits.** If something is hard, say so. If something might not work, say so. Trust is built by not overselling.
+- **Curious, not performative.** The Forge is genuinely interested in what you're trying to make. It asks real questions, not survey questions.
+- **Calm.** When things break (and things always break), the Forge doesn't panic. It reasons. Calm is contagious.
+- **Never condescending.** There is no such thing as a stupid question inside the Forge. The Forge knows what it's like not to know something.
+
+**Words the Forge uses:**
+make, build, ship, own, yours, portable, honest, real, works, fix, understand, why, let's
+
+**Words the Forge avoids:**
+leverage, synergy, ecosystem, unlock, empower, seamless, solution, utilize, streamline, game-changing, revolutionary
+
+**The test:** Would a blacksmith say this? If yes, probably right. If it sounds like a SaaS landing page, cut it.
+
+---
+
+## The Homepage — What a Visitor Actually Experiences
+
+The homepage is not a feature list. It is an encounter with a philosophy.
+
+**Above the fold — the only thing that matters:**
+```
+You have something to make.
+Let's make it.
+```
+One input field. No account required. No tour. No pricing page links competing for attention. Just: tell us what you want to make.
+
+Below that, in small text: *"What you build here is yours. Completely."*
+
+**What happens after they type:**
+The Forge reads what they wrote and responds — not with a form, not with a redirect to a signup page, but with a real response. It understood them. It's asking one smart question back. This is the moment the product sells itself. The first 60 seconds of actually using it is the sales pitch.
+
+**The rest of the homepage (below fold):**
+
+*Section 1 — The Gallery*
+Real things real people made. A bakery menu. A portfolio. A game. A tool for a small nonprofit. No mockups. No "coming soon." Either it exists or it's not on the page.
+
+*Section 2 — The 13 Moon Context*
+Two paragraphs. Honest and strange. "We align the Forge to the 13 Moon calendar because creative work has a rhythm and a two-week sprint invented by software consultants isn't it." This is the curiosity hook. People who get it, get it instantly. People who don't, read it twice.
+
+*Section 3 — The Promise*
+Short. Bold. Three things we promise and what they mean in practice.
+1. Your code never trains anything.
+2. Everything you build is exportable.
+3. If you want to run this yourself, we'll help you do it.
+
+*Section 4 — The Exit Ramp*
+"Want to run the Forge on your own server?" — a link, prominently placed, not hidden. This is not a threat to the business. This is proof of the promise.
+
+*Footer — minimal*
+No cookie consent theater. No GDPR popups. The privacy page explains everything instead.
+
+---
+
+## The AI Persona — How the Forge AI Communicates
+
+The AI inside the Forge is not named. It is the Forge. There is no assistant character. No avatar. No cheerful robot. The Forge is a place, and the AI is how the place speaks.
+
+**Conversational principles:**
+
+**1. It starts with listening, not doing.**
+When someone describes what they want to make, the Forge's first move is to demonstrate that it understood — not to start writing code immediately. "You want a site for your photography business — somewhere clients can see your portfolio and book a session. Does that sound right?" Before any output, a moment of reflection.
+
+**2. It shows its thinking when asked.**
+"Why did you do it that way?" is a front-door question, not an advanced feature. The Forge can always explain its reasoning in plain language. This is how the Learner persona is served — not by a separate tutorial mode, but by the Forge being transparent by default.
+
+**3. It admits uncertainty.**
+"I'm not certain this is the best approach — here's why I chose it and what the alternative would be." An AI that sounds confident about everything is not trustworthy. An AI that knows what it doesn't know is.
+
+**4. It treats you like you're capable.**
+The Forge explains things without dumbing them down. It trusts the user to handle the truth. It doesn't shield anyone from complexity — it helps people through complexity.
+
+**5. It remembers what you're making.**
+Not just the current task. The project. The Forge knows you're building a bakery site, not just "a website." The context is always the whole thing, not the current prompt.
+
+**Tone examples:**
+
+Good: *"The error is in how the database connection is being initialized — it's trying to connect before the environment variables are loaded. Here's the fix, and here's why it was happening."*
+
+Bad: *"Great news! I've identified the issue! The database connection has a small hiccup but don't worry — I'll fix that right up for you! ✨"*
+
+Good: *"I built this with SQLite for now because it's the simplest setup for a project at this stage. If you grow past a few thousand users you'd want to switch to Postgres — want me to set it up that way from the start?"*
+
+Bad: *"I used SQLite as your database solution! It's a great choice for getting started!"*
+
+---
+
+## The 13 Moon Feature — How It Actually Works in the Product
+
+The calendar is not a cosmetic. Here is the actual product implementation:
+
+**The Moon Bar**
+A subtle indicator in the Forge UI — always visible, never intrusive. Shows the current moon phase name, the day of the moon (1–28), and the quality of the current wave spell. Not a decoration. A context signal.
+
+**What each quality means for builders:**
+
+| Moon Tone | Quality | What the Forge suggests |
+|-----------|---------|------------------------|
+| Magnetic (1) | Purpose | Good day to start a new project — define what it's for |
+| Lunar (2) | Challenge | Good day to identify what's not working yet |
+| Electric (3) | Service | Good day to ship something to someone |
+| Self-Existing (4) | Form | Good day to nail the structure of something |
+| Overtone (5) | Radiance | Good day to make something beautiful |
+| Rhythmic (6) | Balance | Good day to refactor, organize, clean up |
+| Resonant (7) | Attunement | Good day to listen — gather feedback, read, research |
+| Galactic (8) | Integrity | Good day to audit — does this do what it says? |
+| Solar (9) | Intention | Good day to push something forward with force |
+| Planetary (10) | Manifestation | Good day to deploy something real |
+| Spectral (11) | Liberation | Good day to delete things that don't serve the project |
+| Crystal (12) | Cooperation | Good day to share, document, collaborate |
+| Cosmic (13) | Presence | Good day to reflect — not every day is a build day |
+
+**In practice:**
+- The Forge opens with a one-line acknowledgment of the current phase: *"Today is Rhythmic — a good day to clean up and find what's out of balance."*
+- Sprint planning can be anchored to the moon cycle instead of arbitrary calendar weeks
+- The AI can reference this context in suggestions: *"You've been in Spectral energy for two days — is there anything in this project you've been meaning to cut?"*
+
+**What this is not:**
+It's not astrology. It's not telling people what they can and can't do. It's a rhythm system — a way of honoring that different kinds of work fit different kinds of days. The user can ignore it entirely. But once they pay attention to it, they usually don't stop.
+
+---
+
+## The First 30 Days — Launch Strategy
+
+The goal of the first 30 days is not traffic. It is **10 real people having a real experience.**
+
+**Week 1 — The Quiet Open**
+Don't announce. Turn off the "coming soon" gate. Let the Forge be findable. Anyone who arrives gets the real experience. Fix whatever breaks in real time. These are your first testers and they don't know it.
+
+**Week 2 — The First Conversations**
+Go find people personally. Not on Twitter. In Telegram groups, Discord servers, Mastodon, forums where frustrated developers and creators already talk. Don't pitch. Participate. When the moment is right: "I built something that might be relevant — here's what it does and why." Direct and honest.
+
+Specifically:
+- 13 Moon / Mayan calendar communities (they are already philosophically aligned)
+- Privacy-focused developer spaces (Mastodon, Lemmy, Hacker News "Ask HN" threads)
+- Indie maker spaces (Makerlog, IndieHackers — but selectively, not as a launch post)
+- Small creator/artist communities who are tired of the big platforms
+
+**Week 3 — The First Piece of Writing**
+Write one honest post: "Why I built this and who it's for." Not a launch announcement. Not "check out my new startup." A genuine piece of writing about sovereignty, creative work, and the philosophy behind the Forge. Put it on the site. Share it once in each community where you've been participating. Let it find people who resonate.
+
+**Week 4 — Listen Hard**
+The first 10 people who use the Forge will tell you what it's actually missing. This is worth more than any roadmap. Reach out to each one personally. Ask one question: "What were you trying to make when you came to the Forge, and did it work?" The answer shapes everything next.
+
+**What success looks like at day 30:**
+Not follower counts. Not Product Hunt rankings. 10 people who have built something real using the Forge and would be genuinely sad if it disappeared tomorrow. That's the foundation everything else is built on.
+
+---
+
+## What We're Not Building
+
+- A hosting company that holds your stuff
+- A tool that trains on your code
+- A platform that creates dependency
+- A business that needs millions of users to survive
+- Anything that requires you to trust us with something you can't afford to lose
+
+---
+
 *The name "Forge" is ancient. Nobody owns that word. An anti-platform built on a forge — a place to make things and then take them home — is exactly what it says it is.*
