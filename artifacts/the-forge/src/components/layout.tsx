@@ -59,6 +59,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/build-with-me", label: "Build With Me",  icon: Flame,          tip: "Tell Forge what you want to build — get a step-by-step Moon plan" },
     { href: "/gallery",       label: "Forge Gallery",  icon: Grid3X3,        tip: "See what people have built with Forge — public shared outputs" },
     { href: "/town-square",   label: "Town Square",    icon: Users,          tip: "The full family of apps — one account, one subscription, twelve tools" },
+    { href: "/academy",       label: "Forge Academy",  icon: GraduationCap,  tip: "The coding school — sovereign coders, not order takers. First lesson free." },
   ];
 
   const toolItems: NavItem[] = [

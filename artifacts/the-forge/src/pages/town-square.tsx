@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import {
   Flame, Users, Tv, BookOpen, Wrench, Film, Shield,
   XCircle, Phone, Wallet, Scissors, PenLine, ArrowRight,
-  Moon, Star,
+  Moon, Star, GraduationCap,
 } from "lucide-react";
 
 interface TownApp {
@@ -270,6 +270,30 @@ export default function TownSquare() {
             </span>
           </div>
         </div>
+
+        {/* Academy Featured Banner */}
+        <Link href="/academy">
+          <div className="group mb-12 rounded-2xl border border-orange-500/30 bg-gradient-to-r from-orange-500/10 to-orange-500/5 p-6 cursor-pointer hover:border-orange-500/50 transition-all duration-200">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-orange-500/20 flex items-center justify-center shrink-0">
+                  <GraduationCap size={24} className="text-orange-400" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-black text-white text-lg">Forge Academy</span>
+                    <Badge className="bg-green-500/15 text-green-400 border border-green-500/30 text-[10px] h-5">Live</Badge>
+                  </div>
+                  <p className="text-sm text-orange-400 font-medium mb-1">More free thinkers. Fewer order takers.</p>
+                  <p className="text-sm text-zinc-400">The coding school for people who want to build something that belongs to them. First lesson free. $504 total. No subscription.</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5 text-sm font-medium text-zinc-400 group-hover:text-orange-400 transition-colors shrink-0">
+                Explore the school <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
+              </div>
+            </div>
+          </div>
+        </Link>
 
         {/* Live */}
         {live.length > 0 && (
