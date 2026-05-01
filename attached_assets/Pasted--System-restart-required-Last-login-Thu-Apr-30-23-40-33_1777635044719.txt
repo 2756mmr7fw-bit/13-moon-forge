@@ -1,0 +1,36 @@
+* System restart required ***
+Last login: Thu Apr 30 23:40:33 2026 from 174.230.198.42
+root@forge-server-1:~# find / -name "docker-compose.yml" 2>/dev/null
+/root/forgejo/docker-compose.yml
+/root/forge-app/docker-compose.yml
+/root/webhook/docker-compose.yml
+/data/coolify/proxy/docker-compose.yml
+/data/coolify/source/docker-compose.yml
+/var/lib/docker/rootfs/overlayfs/6ffb7f3d2050f355849d75b19917cbaa67dfb1232033bf886045cdc298dc0b29/app/node_modules/knex/scripts/stress-test/docker-compose.yml
+/var/lib/docker/rootfs/overlayfs/6ffb7f3d2050f355849d75b19917cbaa67dfb1232033bf886045cdc298dc0b29/app/node_modules/knex/scripts/docker-compose.yml
+/var/lib/docker/rootfs/overlayfs/6ffb7f3d2050f355849d75b19917cbaa67dfb1232033bf886045cdc298dc0b29/app/node_modules/@pm2/io/docker-compose.yml
+/var/lib/docker/rootfs/overlayfs/0af08bedd3e7752e8305da4778755a66d5688a8b8a0c582be2d352170c680442/var/www/html/vendor/nubs/random-name-generator/docker-compose.yml
+/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/46/fs/var/www/html/vendor/nubs/random-name-generator/docker-compose.yml
+/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/74/fs/app/node_modules/knex/scripts/stress-test/docker-compose.yml
+/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/74/fs/app/node_modules/knex/scripts/docker-compose.yml
+/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/74/fs/app/node_modules/@pm2/io/docker-compose.yml
+/tmp/forge-staging/13-moon-forge/docker-compose.yml
+root@forge-server-1:~# cd /root/forge-app && docker compose up -d
+[+] up 2/2
+ ✔ Container forge-app-db-1                Healthy 10.6s
+ ✔ Container fad5a3d7af33_forge-app-for... Started  0.1s
+root@forge-server-1:~/forge-app# cd /root/forgejo && docker compose up -d
+[+] up 1/1
+ ✔ Container forgejo Running                        0.0s
+root@forge-server-1:~/forgejo# cd /root/webhook && docker compose up -d
+[+] up 1/1
+ ✔ Container webhook-webhook-1 Started              0.2s
+root@forge-server-1:~/webhook# cd /root/forge-app && docker compose up -d
+[+] up 2/2
+ ✔ Container forge-app-db-1                 Healthy 0.5s
+ ✔ Container fad5a3d7af33_forge-app-forge-1 Running 0.0s
+root@forge-server-1:~/forge-app# systemctl is-enabled docker
+enabled
+root@forge-server-1:~/forge-app# systemctl enable dockerSynchronizing state of docker.service with SysV service script with /usr/lib/systemd/systemd-sysv-install.
+Executing: /usr/lib/systemd/systemd-sysv-install enable docker
+root@forge-server-1:~/forge-app#
