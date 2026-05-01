@@ -7,17 +7,35 @@
 
 ## What This School Is
 
-Forge Academy exists to take people further than they thought they could go.
+Forge Academy exists to build sovereign coders.
 
-Not further than average. Further than *they* thought. The person who looked at a game they love and thought "I could never make something like that." The person who had an app idea they gave up on because they didn't know where to start. The person who wanted to build something for their community, their family, their business — and didn't believe they had what it takes to do it.
+Not better employees. Not faster order takers. Not people who wait for a ticket to tell them what to build next. Sovereign coders — people who think for themselves, build what they decide to build, own everything they make, and answer to no one about how they spend their time or what they create with their hands.
 
-That person is who this school is for.
+The world has enough people who can follow instructions. It needs more people who can look at a problem nobody solved yet and build the solution from scratch. More people who don't need permission to start. More people who don't need a corporation to give their work value — because they already know it has value, and they know how to put it in front of the people who need it.
 
-The Academy is a coding school — two years of real, structured learning that takes a complete beginner from knowing nothing to building and selling real software. But the curriculum is not the point. The point is what comes out the other end: someone who built the thing they thought was beyond them. A game. An app. A tool. A business. Whatever it was they quietly wanted to make and didn't believe they could.
+That is what this school is designed to produce.
 
-By the time a student finishes, that thing exists. It is live on the internet. It has a URL. Someone can pay for it. The student built every line of it themselves.
+---
 
-That is what further than you thought you could go actually looks like.
+The path here is real, structured learning — from complete beginner to a developer who can build and ship anything. A website, an app, a game, a business. But the curriculum is not the point. The curriculum is how you get to the point.
+
+The point is what comes out the other end.
+
+A free thinker who used to be an order taker. Someone who looked at a game they loved and thought "I could never make something like that" — and then made something like that. Someone who had an idea they gave up on because they didn't know where to start — and now knows exactly where to start, and how to finish. Someone who wanted to build something for their community, their family, their business — and did.
+
+By the time a student finishes, that thing exists. It is live on the internet. It has a URL. It can earn. The student built every line of it themselves. It belongs to them completely.
+
+That is what a sovereign coder looks like. That is who this school is building.
+
+---
+
+The highest credential this school gives is not Journeyman. It is not Master. It is Sovereign — a recognition reserved for the developer who has built multiple things that earn, given back to the people coming behind them, and achieved the kind of independence where nobody controls what they make or who they serve.
+
+Every level of the Academy points toward that. The first lesson points toward that. The design brief, the three builds, the Final Project, the Open Shop, the referral pipeline that takes nothing — all of it is building toward one outcome:
+
+A person who can build anything. Who owns everything they build. Who answers to no one. Who brings the next person along.
+
+More free thinkers. Fewer order takers. That is the mission of this school.
 
 ---
 
