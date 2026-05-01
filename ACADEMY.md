@@ -480,40 +480,46 @@ That is the entire model. Read, ask, build, confirm, advance. The book provides 
 
 ---
 
-## The Timeline — Honest and Realistic
+## The Measure Is Work, Not Time
 
-There is no deadline in the Academy. Levels do not expire. Students do not fall behind.
+The Academy does not measure progress in months. It measures progress in work done.
 
-What exists instead of a deadline is a readiness standard: you move to the next level when you understand the current one well enough to use it without looking everything up. Not memorized — understood. There is a difference. A student who can explain what a loop does in plain English and write one without copying a tutorial is ready to move on. A student who can run the code but can't explain why it works is not — and that's not a failure, it's a signal to spend more time there.
+A student who does Lesson 1, takes a month off, comes back and does Lesson 1 again, and then does Lesson 2 has not fallen behind. They paid for the work. They did the work. They learned something, left, came back, made sure it was still solid, and moved forward. That is not a student in trouble. That is a student being careful. The calendar played no role in the evaluation.
 
-That said, most students working 8–12 hours a week — consistently, not in sprints — move through the curriculum at roughly this pace:
+There are no deadlines. Levels do not expire. Nothing times out. The measure at every stage is one question: *can you do this without looking it up?* If yes, move on. If not, spend more time there. Time is irrelevant to that question.
+
+**What the Academy hopes:**
+
+A student working 8–12 hours a week consistently — not in sprints, consistently — can move through all 12 levels and into the Master track in roughly a year. That is the hope. It is not a requirement. A student who beats it builds their skills faster and gets there sooner. A student who goes past it is not penalized in any way — not by the credential, not by the community, not by the Forge. The work they do is still the work they do. The credential still means what it means. The time it took has nothing to do with it.
+
+**The rough shape of the curriculum for a student working consistently:**
 
 ```
-Level 1–2    1–2 months     Context, history, companies, how everything works
-Level 3      1 month        First real code. First webpage.
-Level 4      1–2 months     CSS. Layout. The website starts to look real.
-Level 5      2–4 months     JavaScript. The longest level for most people.
-Level 6      2–3 months     First App. Complete and yours.
-─────────────────────────────────────────────────────────────────
-                            = roughly 8–14 months total for Year One
-─────────────────────────────────────────────────────────────────
-Level 7      2–3 months     Servers and APIs. The back end.
-Level 8      2–3 months     Databases. How data actually persists.
-Level 9      2–3 months     Full stack. Everything connected.
-Level 10     1–2 months     Git. Professional practice. Game begins.
-Level 11     2–3 months     Deployment. Everything goes live.
-Level 12     3–4 months     Capstone. Website, app, and game — finished.
-─────────────────────────────────────────────────────────────────
-                            = roughly 12–18 months total for Year Two
-─────────────────────────────────────────────────────────────────
-Master                      Real-world work + The Final Project (~1 year)
+Level 1–2    A few weeks to a couple of months     Context, history, how everything works
+Level 3      A few weeks to a month                First real code. First webpage.
+Level 4      A few weeks to a couple of months     CSS. Layout. The site starts to look real.
+Level 5      One to four months                    JavaScript. The longest level for most.
+Level 6      One to three months                   First app. Complete and yours.
+───────────────────────────────────────────────────────────────────────────────────
+                    Year One hope: all of the above
+───────────────────────────────────────────────────────────────────────────────────
+Level 7      One to three months                   Servers and APIs. The back end.
+Level 8      One to three months                   Databases. How data persists.
+Level 9      One to three months                   Full stack. Everything connected.
+Level 10     A few weeks to two months             Git. Professional practice.
+Level 11     One to three months                   Deployment. Everything goes live.
+Level 12     Two to four months                    Capstone. All three builds finished.
+───────────────────────────────────────────────────────────────────────────────────
+                    Year Two hope: all of the above
+───────────────────────────────────────────────────────────────────────────────────
+Master                                             The Final Project. (~1 year hope)
 ```
 
-**Total realistic range: 2.5 to 4 years for a complete beginner working at a sustainable pace.**
+These ranges are observations, not schedules. They describe what students who are working consistently tend to experience. A student who goes faster is not cutting corners — they genuinely understood it and moved on. A student who goes slower is not failing — they are being honest with themselves about what they know and what they don't. That honesty is what the readiness check protects.
 
-Two years is possible. Three years is more common for someone who wants to truly understand what they're doing, not just finish the levels. Four years is not a failure — it's what learning looks like when someone has a life, a job, and real responsibilities alongside their studies.
+The student who spends four months on JavaScript and comes out the other side with real understanding is better prepared for everything that follows than the student who spent two months and moved on while still shaky. Those gaps follow you. Real understanding doesn't.
 
-The important thing is this: a student who spends three years actually understanding the material will be a stronger developer than a student who rushed through in two years and has gaps they can feel but can't name. Those gaps follow you. Real understanding doesn't.
+**One year is our hope. Beat it or go past it — neither one works against you.**
 
 ---
 
@@ -547,15 +553,17 @@ The Academy places you correctly. Then it moves you forward from there.
 
 ---
 
-# YEAR ONE — Levels 1 through 6
+# THE FIRST HALF — Levels 1 through 6
 
-**The promise of Year One:** A complete beginner, working consistently, will end Year One able to build things that look real, work in a browser, and are ready to show anyone. They will have a website they're proud of and a working app they chose to make.
+*We hope this takes about a year. It might take less. It might take more. The calendar is not the measure — the work is. "Year One" is a label for this body of work, not a deadline.*
 
-**The honest limit of Year One:** A Year One student cannot yet build a back end. They cannot yet work with a real database. They cannot yet take something from their computer and put it on the internet on their own. That is Year Two's job. Year One's job is to make the front end real and the logic solid.
+**What finishing the First Half means:** A complete beginner who works through Levels 1–6 will be able to build things that look real, run in a browser, and are ready to show anyone. They will have a website they're proud of and a working app they chose to make.
+
+**The honest limit of the First Half:** A student who finishes Level 6 cannot yet build a back end. They cannot yet work with a real database. They cannot yet take something from their computer and put it on the internet without help. That is the Second Half's job. The First Half's job is to make the front end real and the logic solid.
 
 ---
 
-## Month 1–2 — Level 1 and Level 2
+## Level 1 and Level 2
 ### Context, History, and How the World Works
 
 Before a student writes a single line of code, they understand the world they're entering.
@@ -604,15 +612,15 @@ Every piece of software a student has ever used was built by someone. Level 1 na
 - What HTML, CSS, and JavaScript are — one honest sentence each, before touching any of them
 - Why websites are made of plain text files that any human can open and read
 
-**Where a student is at the end of Month 2:**
+**Where a student is at the end of Level 2:**
 
-They haven't written code yet. That's intentional. They understand the world they're building for, the companies that built the tools they'll use, the history of the craft, and how a website actually gets from a server to a screen. When they write their first line of code in Month 3, they'll understand what it's doing and why.
+They haven't written code yet. That's intentional. They understand the world they're building for, the companies that built the tools they'll use, the history of the craft, and how a website actually gets from a server to a screen. When they write their first line of code in Level 3, they'll understand what it's doing and why.
 
 This context is what separates someone who can code from someone who understands code.
 
 ---
 
-## Month 3 — Level 3
+## Level 3
 ### The First Real Code and the First Webpage
 
 This is the month every developer remembers.
@@ -641,16 +649,16 @@ This is the month every developer remembers.
 
 **Website milestone:** The student has a webpage. Three lines of HTML. Their name. It's theirs. It works.
 
-**Where a student is at the end of Month 3:**
+**Where a student is at the end of Level 3:**
 
 They've written code and run it. They've built a webpage and opened it in a browser. They know what a variable is, what a condition is, and what HTML is for. The machine no longer feels like a black box. It feels like something they could learn to talk to.
 
 ---
 
-## Month 4 — Level 4
+## Level 4
 ### CSS — Making It Look Real
 
-The website has existed since Month 3 as text on a white page. Level 4 changes that.
+The website has existed since Level 3 as text on a white page. Level 4 changes that.
 
 **What's covered:**
 
@@ -677,13 +685,13 @@ The website has existed since Month 3 as text on a white page. Level 4 changes t
 
 **Website milestone:** By the end of Level 4, the student has a real website. Not three lines of HTML — a real page with a header, navigation, sections, styled text, and a layout that looks intentional. It works on a phone. It could pass for something a professional made.
 
-**Where a student is at the end of Month 4:**
+**Where a student is at the end of Level 4:**
 
-The student has something they can show someone without apologizing for how it looks. This is a real milestone. Most people learning to code go months without having anything they're proud to share. By Month 4 in the Academy, they have a website that looks like something.
+The student has something they can show someone without apologizing for how it looks. This is a real milestone. Most people learning to code go months without having anything they're proud to share. By Level 4 in the Academy, they have a website that looks like something.
 
 ---
 
-## Months 5–6 — Level 5
+## Level 5
 ### JavaScript — Making It Do Things
 
 This is the level where many self-taught developers get stuck and quit. The Academy is built around making sure that doesn't happen — not by making JavaScript easier, but by making it make sense.
@@ -729,19 +737,19 @@ JavaScript is the first language students learn that has real logic in it. HTML 
 
 **Website milestone:** The website responds. A menu opens and closes. A form validates itself before submitting. A button changes something on the page. The website is no longer a static document — it's interactive.
 
-**The honest truth about Month 5–6:**
+**The honest truth about Level 5:**
 
 JavaScript is hard in a way that HTML and CSS are not. There will be errors that don't make sense. There will be moments where it works and the student doesn't know why. There will be frustrating sessions where something simple takes two hours.
 
 This is normal. This is what learning to code actually feels like. The Academy prepares students for this explicitly — not by promising it will be easy, but by teaching them that confusion is information. An error message is the computer trying to tell you what went wrong. Learning to read error messages is one of the most important skills in all of programming.
 
-**Where a student is at the end of Month 6:**
+**Where a student is at the end of Level 5:**
 
-The student can write real JavaScript. They can make a webpage respond to user input. They can write a function, call it from a button click, change what the page shows based on a condition. They can debug something that isn't working by reading the error and reasoning through it. This is the hardest part of Year One, and they've made it through.
+The student can write real JavaScript. They can make a webpage respond to user input. They can write a function, call it from a button click, change what the page shows based on a condition. They can debug something that isn't working by reading the error and reasoning through it. This is the hardest part of the First Half, and they've made it through.
 
 ---
 
-## Months 7–8 — Level 6
+## Level 6
 ### First App
 
 Level 6 puts everything from Levels 3–5 together into a complete, working application.
@@ -778,7 +786,7 @@ By the end of Level 6, the student has a real, working web application. It:
 
 This app can be shown to anyone. It could be used by real people today. It doesn't have a back end, which limits what it can do — but within those limits, it is complete.
 
-**Where a student is at the end of Year One:**
+**Where a student is at the end of the First Half:**
 
 The student can build real things that look good and work. Specifically:
 - They have a styled personal website they're proud of
@@ -786,25 +794,27 @@ The student can build real things that look good and work. Specifically:
 - They understand HTML, CSS, and JavaScript
 - They can debug front-end code
 - They know the vocabulary of the industry — what a server is, what a database is, what an API is, even if they haven't built with them yet
-- They cannot yet build a back end or a database — that is Year Two
+- They cannot yet build a back end or a database — that is the Second Half
 
-**What they can do with Year One skills:**
+**What they can do with these skills:**
 
-A Year One graduate can take freelance work in front-end development. Simple websites, landing pages, web redesigns. Real money for real work. Some Year One students will start earning before Year One is done. The skills are real and the market pays for them.
-
----
+A student who finishes the First Half can take freelance work in front-end development. Simple websites, landing pages, web redesigns. Real money for real work. Some students start earning before they finish the First Half. The skills are real and the market pays for them — regardless of how long it took to earn them.
 
 ---
 
-# YEAR TWO — Levels 7 through 12
+---
 
-**The promise of Year Two:** A student who completed Year One and works consistently through Year Two will end it as a full-stack developer — able to build anything that runs on the web, deploy it, and get it in front of real users. Their website, app, and game will all be live on the internet at real URLs. They will be qualified for junior developer roles or independent freelance work at a higher rate.
+# THE SECOND HALF — Levels 7 through 12
 
-**The honest limit of Year Two:** A Year Two graduate is not a senior developer. That takes years of professional experience on hard problems with real stakes. The Academy does not promise to produce seniors. It produces people who can function as professionals — which is the foundation seniors stand on.
+*We hope this takes about a year too. Same answer: it might take less, it might take more. No deadline. The work is what it is, and it takes as long as it takes to do it right.*
+
+**What finishing the Second Half means:** A student who works through Levels 7–12 will finish as a full-stack developer — able to build anything that runs on the web, deploy it, and put it in front of real users. Their website, their app, and their game will all be live at real URLs. They will be qualified for junior developer roles or independent freelance work at a higher rate.
+
+**The honest limit of the Second Half:** A graduate of all 12 levels is not a senior developer. That takes years of professional experience on hard problems with real stakes. The Academy does not promise to produce seniors. It produces people who can function as professionals — which is exactly the foundation that seniors stand on.
 
 ---
 
-## Months 9–10 — Level 7
+## Level 7
 ### Servers and APIs — The Other Half of Everything
 
 Every time a student has ever submitted a form, logged into an account, or seen content that updated without refreshing — a back end made that possible. Level 7 makes the invisible visible.
@@ -835,13 +845,13 @@ Every time a student has ever submitted a form, logged into an account, or seen 
 
 **Game connection:** Online leaderboards. Save states that survive across devices. Multiplayer (a future project, not a Level 7 project — but students can now see how it would work).
 
-**Where a student is at the end of Month 10:**
+**Where a student is at the end of Level 7:**
 
 The student can build a front end and a back end and make them talk to each other. This is one of the most significant milestones in learning to code — the moment the student stops building toys and starts building systems.
 
 ---
 
-## Months 11–12 — Level 8
+## Level 8
 ### Databases — Where Data Lives
 
 Every account a person has ever created, every post they've ever saved, every score they've ever earned — all of it lives in a database. Level 8 is where students learn to build and use one.
@@ -871,13 +881,13 @@ Every account a person has ever created, every post they've ever saved, every sc
 
 **Game connection:** Player profiles stored in a database. A high score table that persists. Saved game state accessible from any device.
 
-**Where a student is at the end of Month 12:**
+**Where a student is at the end of Level 8:**
 
 The student can build and query a real database. They can connect it to a real back end. They understand how data is stored, retrieved, and organized. They're two-thirds of the way through the most technically demanding part of the curriculum and they've made it through both the hardest conceptual shifts.
 
 ---
 
-## Months 13–14 — Level 9
+## Level 9
 ### Full Stack — Everything Connected
 
 Level 9 is the level where it all comes together.
@@ -911,13 +921,13 @@ By the end of Level 9, the student's app is a real, complete, full-stack web app
 
 This is the biggest milestone in the Academy before the capstone. The student built a full-stack app from their own idea, using every layer of the web stack.
 
-**Where a student is at the end of Month 14:**
+**Where a student is at the end of Level 9:**
 
 The student is a full-stack developer in every meaningful sense. They can build the front end, the back end, and the database. They understand how they connect. They can debug across all three layers. The remaining levels are about professional practice, deployment, and finishing.
 
 ---
 
-## Months 15–16 — Level 10
+## Level 10
 ### Git — The Professional's Most Important Tool
 
 Every working developer uses Git. Every one of them. It is the single most universal tool in software development.
@@ -952,13 +962,13 @@ Every working developer uses Git. Every one of them. It is the single most unive
 
 The game starts here. In a Git repository. With a README. Managed like a professional software project from the first commit. By the time the game is done in Level 12, it will have a complete, readable history of how it was built.
 
-**Where a student is at the end of Month 16:**
+**Where a student is at the end of Level 10:**
 
 The student uses Git naturally. They commit when they finish something. They branch when they're trying something risky. They read the log when something breaks. Git is no longer a scary thing — it's a habit, like saving a file.
 
 ---
 
-## Months 17–20 — Level 11
+## Level 11
 ### Deployment — The Moment It Becomes Real
 
 Deployment is what separates software that works on one person's computer from software that anyone in the world can use. Level 11 is the level where everything goes live.
@@ -998,13 +1008,13 @@ Level 11 ends with the student's three builds all live on the internet at the sa
 
 This is the day the student becomes someone who has shipped. Not practiced shipping. Actually shipped. That is the line that separates developers who have something to show from developers who are still getting ready.
 
-**Where a student is at the end of Month 20:**
+**Where a student is at the end of Level 11:**
 
 The student has three live, working products on the internet. They know how to deploy software. They understand DNS, HTTPS, environment variables, and production servers. They have faced a real production issue — because everyone does — and resolved it. They are ready for the capstone.
 
 ---
 
-## Months 21–24 — Level 12
+## Level 12
 ### The Capstone — Finish What You Started or Start Something New
 
 Level 12 is the final level of the Academy curriculum. The capstone is the student's choice.
@@ -1462,6 +1472,44 @@ What it does not include:
 **If $49 per month is a hardship:**
 
 The Academy is built for people who have been underserved by expensive education. If the subscription price is a genuine barrier, email Sovereign Digital. There is no formal scholarship application. No essay. No proof of income required. A direct, honest conversation is enough. The Academy would rather have a committed student at a reduced rate than have cost be the reason someone never started.
+
+---
+
+## The Moon Check-In — Making Sure the Subscription Is Working for You
+
+The Academy subscription runs in Moons. One Moon is 28 days — one full cycle of the 13 Moon calendar. That is the billing rhythm: not an arbitrary calendar month, but a Moon.
+
+At the end of every Moon, the Forge looks at each student's account. Not to evaluate them. Not to judge how far they got. To check one thing: *is this subscription doing something for you?*
+
+**What the check looks at:**
+
+Did the student open the curriculum at least once this Moon? Did they have a conversation with Moon AI? Did they do any work on any of the three builds? Did they participate in the community?
+
+Not all of these. Any of these. The bar is: did the student engage with the Academy at all during this Moon?
+
+**If yes:**
+
+Nothing happens. The next Moon begins. The student continues their work.
+
+**If no:**
+
+The Forge sends one message. Not an automated marketing email. A real note:
+
+*"You've been with us for a Moon and it looks like you haven't had a chance to open the curriculum yet. That's completely okay — life gets in the way. We just want to make sure the subscription is actually useful to you. If now isn't the right time, you can pause or cancel without losing your progress. If you're ready to start, here's where you left off."*
+
+No pressure. No guilt. No streak broken. Just the Forge checking in, because the subscription costs money and Sovereign Digital believes that money should be earning its place every single Moon.
+
+**Why this matters:**
+
+Most subscription services want students to keep paying even when they're not using the product. The Forge takes the opposite position. A student who is paying for a Moon but not using the Academy is not getting what they paid for. The Forge would rather prompt that student — give them the chance to re-engage or pause — than quietly collect money while they drift.
+
+The check-in is not a threat. It is the Forge doing what a good school does: noticing when a student is absent and reaching out before they're gone.
+
+**Pausing:**
+
+Any student can pause their subscription at any time. Pausing freezes billing for up to three Moons. Their account, progress, and work are preserved exactly as left. After three Moons, billing resumes automatically unless they cancel — and they are notified one Moon before that happens.
+
+A student who pauses is not gone. They are just between Moons.
 
 ---
 
