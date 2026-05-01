@@ -1258,7 +1258,7 @@ Masters who are active in the community earn something the referral pipeline tra
 
 **Free forever:**
 
-The community chat is free to every Academy student. No tier required. A student on the free level who hasn't paid for the Academy subscription still has access to the community. The community is not a perk — it is part of the school.
+The community chat is free to every Academy student. No section purchase required to participate. A student who has only completed the First Lesson — before buying any section — still has access to the community. The community is not a perk — it is part of the school.
 
 ---
 
@@ -1449,67 +1449,126 @@ The self-paced model is the accessibility feature. There is no cohort moving at 
 
 ---
 
-## What the Academy Costs — The Honest Price
+## What the Academy Costs — You Buy the Work, Not the Clock
 
-The Academy subscription is $49 per month. That is the only recurring cost.
+The Academy does not charge by the month. It charges by the work.
 
-What it includes:
-- Full access to all 12 levels of the curriculum
-- Moon AI tutoring — unlimited conversations, every hour of every day
-- The Teachers Board
-- The community chat room
-- The Student Dashboard with progress tracking and build history
-- The readiness check advancement system
-- Access to the credential registry upon graduation
+Students buy a section of the curriculum. They complete it — at their own pace, on their own schedule, in their own time. When they pass the readiness check and finish the section, they decide whether to buy the next one. There is no monthly bill running in the background while they're busy. There is no subscription draining money during a hard week. They paid for a section. They own that section. They move forward when they're ready.
 
-What it does not include:
-- The books — students buy their own copies. Most are free online. The ones that cost money are under $40. Over the full two years, total book cost is under $100.
-- The optional video courses — purchased separately, once, directly from the creator. Recommended but not required.
-- External tools — VS Code, GitHub, Godot, and Figma are all free. The student installs them on their own machine.
-
-**The total investment over two years:** $49 × 24 months = $1,176 in subscription fees, plus roughly $100 in books, plus whatever optional video courses a student chooses. A student who uses only the free books and free videos completes the full curriculum for $1,176 — less than a single semester at most community colleges, and with more to show for it at the end.
-
-**If $49 per month is a hardship:**
-
-The Academy is built for people who have been underserved by expensive education. If the subscription price is a genuine barrier, email Sovereign Digital. There is no formal scholarship application. No essay. No proof of income required. A direct, honest conversation is enough. The Academy would rather have a committed student at a reduced rate than have cost be the reason someone never started.
+At your own pace means at your own pace. Not a pace set by a calendar. Not a pace set by anyone else. Theirs.
 
 ---
 
-## The Moon Check-In — Making Sure the Subscription Is Working for You
+**The Sections and What They Cost:**
 
-The Academy subscription runs in Moons. One Moon is 28 days — one full cycle of the 13 Moon calendar. That is the billing rhythm: not an arbitrary calendar month, but a Moon.
+**The First Lesson — Free**
+The design brief conversation. The one question: *What do you want to build?* The document that becomes the north star for everything that follows. No account required. No credit card. Just the conversation.
 
-At the end of every Moon, the Forge looks at each student's account. Not to evaluate them. Not to judge how far they got. To check one thing: *is this subscription doing something for you?*
+---
 
-**What the check looks at:**
+**Section 1 — Levels 1 and 2 — $29**
+*Context, History, and First Tools*
+Before writing a line of code, the student understands the world they're entering. Who built the internet, how it works, what the major companies are, and why the tools exist. By the end they have a GitHub account, VS Code installed, and their first commit live. They understand what a developer is and what they're about to become.
 
-Did the student open the curriculum at least once this Moon? Did they have a conversation with Moon AI? Did they do any work on any of the three builds? Did they participate in the community?
+Includes: curriculum access for Levels 1 and 2, Moon AI tutoring for these levels, Teachers Board, community chat.
 
-Not all of these. Any of these. The bar is: did the student engage with the Academy at all during this Moon?
+---
 
-**If yes:**
+**Section 2 — Levels 3 and 4 — $49**
+*HTML, CSS, and the First Real Website*
+The student writes real code for the first time. Their personal website goes from blank to live — structured in HTML, styled in CSS, and ready to show anyone. By the end it looks like something they made on purpose.
 
-Nothing happens. The next Moon begins. The student continues their work.
+Includes: curriculum access for Levels 3 and 4, Moon AI tutoring for these levels.
 
-**If no:**
+Prerequisite: readiness check passed for Section 1.
 
-The Forge sends one message. Not an automated marketing email. A real note:
+---
 
-*"You've been with us for a Moon and it looks like you haven't had a chance to open the curriculum yet. That's completely okay — life gets in the way. We just want to make sure the subscription is actually useful to you. If now isn't the right time, you can pause or cancel without losing your progress. If you're ready to start, here's where you left off."*
+**Section 3 — Levels 5 and 6 — $79**
+*JavaScript and the First App*
+The big level. The hardest stretch for most students. JavaScript introduces a completely different kind of thinking — logic, decisions, state, behavior. When it lands, everything changes. By the end the student has a complete, working web application they chose to build, running in any browser, saving real data.
 
-No pressure. No guilt. No streak broken. Just the Forge checking in, because the subscription costs money and Sovereign Digital believes that money should be earning its place every single Moon.
+Includes: curriculum access for Levels 5 and 6, Moon AI tutoring for these levels.
 
-**Why this matters:**
+Prerequisite: readiness check passed for Section 2.
 
-Most subscription services want students to keep paying even when they're not using the product. The Forge takes the opposite position. A student who is paying for a Moon but not using the Academy is not getting what they paid for. The Forge would rather prompt that student — give them the chance to re-engage or pause — than quietly collect money while they drift.
+---
 
-The check-in is not a threat. It is the Forge doing what a good school does: noticing when a student is absent and reaching out before they're gone.
+**Section 4 — Levels 7, 8, and 9 — $99**
+*The Back End — Servers, Databases, Full Stack*
+The other half of everything. A server that receives requests and sends responses. A real database that stores information permanently. A full-stack application where the front end and back end talk to each other. By the end the student can build something that actually persists — not just in a browser session, but for real.
 
-**Pausing:**
+Includes: curriculum access for Levels 7–9, Moon AI tutoring for these levels.
 
-Any student can pause their subscription at any time. Pausing freezes billing for up to three Moons. Their account, progress, and work are preserved exactly as left. After three Moons, billing resumes automatically unless they cancel — and they are notified one Moon before that happens.
+Prerequisite: readiness check passed for Section 3.
 
-A student who pauses is not gone. They are just between Moons.
+---
+
+**Section 5 — Levels 10, 11, and 12 — $99**
+*Professional Practice — Git, Deployment, and the Capstone*
+Git as a professional tool, not just a place to upload code. Deployment — the moment something goes from "running on my computer" to "live on the internet for anyone." And the Capstone: all three builds — website, app, game — finished and deployed at real URLs. Journeyman status earned.
+
+Includes: curriculum access for Levels 10–12, Moon AI tutoring for these levels.
+
+Prerequisite: readiness check passed for Section 4.
+
+---
+
+**Master Track — $149**
+*The Final Project — The Thing That Graduates You*
+One year (as a hope) of real work on one real product. Something that runs, that could sell, that belongs entirely to the student. Moon AI throughout. Community of fellow Masters. The Forge credential and registry listing upon completion.
+
+Includes: Master track curriculum, Moon AI tutoring for the Master Final, credential and registry listing upon graduation.
+
+Prerequisite: Journeyman status — Section 5 complete.
+
+---
+
+**The total if a student completes everything:** $29 + $49 + $79 + $99 + $99 + $149 = **$504.**
+
+Plus roughly $100 in books. Plus whatever optional video courses a student chooses — all one-time purchases, none required.
+
+A complete Forge Academy education, from absolute beginner to Master, costs less than $650 in curriculum. Less than a single college course at most institutions. With more to show for it at the end than any course produces.
+
+**If any section price is a hardship:**
+
+Email Sovereign Digital. No application. No essay. No proof of income. A direct conversation. The Academy would rather have a committed student paying less than have the price be the reason someone never started.
+
+---
+
+## The Moon Check-In — Are You Getting What You Paid For?
+
+Every section of the Academy comes with Moon access — Moon AI tutoring tied to that section's work. A Moon is 28 days: one full cycle of the 13 Moon calendar. That is the natural rhythm of the Forge.
+
+The Forge tracks one thing across every active section: *is the student engaging with the work?*
+
+Not how fast. Not how far. Just: are they in there?
+
+**What the Forge looks at each Moon:**
+
+Did the student open the curriculum? Have a Moon AI conversation? Work on a build? Ask a question in the community?
+
+Any of these. Not all of them. Just: was there contact with the work this Moon?
+
+**If yes:** Nothing happens. They continue at their pace.
+
+**If no:** The Forge reaches out. One real message, not an automated email:
+
+*"You've had this section for a Moon and it looks like you haven't had a chance to dig in yet. That's completely okay — life doesn't pause for a course. We just want to make sure you're getting what you paid for. If you're stuck on where to start, here's exactly where you left off. If now isn't the right time, your progress will be here when you're ready."*
+
+No pressure. No guilt. No deadline attached. Just the Forge noticing — the way a good teacher notices when a student hasn't been in class — and saying something before the student drifts so far that coming back feels hard.
+
+**If a student keeps returning to the same concept:**
+
+That is not a problem. That is a signal. If the Forge sees a student has visited the same chapter multiple times, attempted the readiness check more than twice, or asked Moon AI the same core question in different ways — that is a student who needs a different angle, not more time. Moon AI shifts approach automatically. If that doesn't resolve it, the community is one message away from someone who has been through exactly this.
+
+Returning to a concept until it sticks is not going backward. It is what learning actually looks like. The section does not expire because a student spent more time on one chapter. They paid for understanding. They get as many Moons as understanding takes.
+
+**If a student finishes a section and doesn't buy the next one:**
+
+That is their right. They completed the work. They own it. Their progress, their builds, their design brief — all preserved. If they come back in three months and want to buy Section 3, Section 2 is still done and waiting. They pick up exactly where they left off.
+
+The Forge may check in after a Moon: *"You finished Section 2 — congratulations on real work done. Section 3 is here when you're ready. No rush."* One message. Then silence unless they reach out.
 
 ---
 
@@ -1590,17 +1649,25 @@ It does not read the student's code on their personal machine. It does not acces
 
 ---
 
-## If You Leave — Your Work Is Yours
+## If You Stop — Your Work Is Yours, Permanently
 
-A student who cancels their Academy subscription does not lose their work.
+There is no subscription to cancel. A student who steps away from the Academy does not lose anything.
 
-Before cancelling, the student can export everything — their design brief, their project history, their three builds, their credential if earned, their community history. It belongs to them.
+Every section a student has purchased and completed is permanently theirs. The curriculum they worked through, the readiness checks they passed, the builds they made — none of it is tied to an ongoing payment. They paid for the section. They completed the section. It is done and it belongs to them.
 
-After cancelling, the account goes into suspended state. Nothing is deleted. They have a full year to return before any data removal is considered — and even then, Sovereign Digital sends one email notification first. Responding to that email preserves the account indefinitely.
+Their Forge account stays open indefinitely. Their design brief is there. Their three builds are there. Their project history is there. Their community access stays active as long as they want it.
 
-A student who comes back pays the standard rate. No rejoining penalty. No lost progress. Moon AI picks up exactly where they left off.
+**If they want to continue:**
 
-A student who spent six months working through the first five levels, built a real website, and then had to leave did real work. The Forge does not erase it because they stopped paying. It was theirs when they made it. It stays theirs.
+They buy the next section when they're ready. Their completed sections are already done — the prerequisite checks show what they've passed. Moon AI knows their history and picks up in context. Nothing is repeated unless they want it to be.
+
+**Exporting their work:**
+
+At any time, a student can export everything — their design brief, their project history, their builds, their credential if earned. It belongs to them whether they ever return or not.
+
+**The principle:**
+
+A student who spent three months working through Section 2, built a real website, and then had to step away for a year did real work. That work doesn't expire. It doesn't disappear. When they come back — a month later, a year later — Section 2 is still done, their website is still theirs, and Section 3 is waiting whenever they decide they're ready.
 
 ---
 
@@ -1680,7 +1747,7 @@ Journeymen and Masters retain community access permanently. The `#masters` chann
 
 **Moon AI after graduation:**
 
-Graduates retain Moon AI access for the lifetime of their Forge subscription. A Master who graduated two years ago and is now working on a new project can still ask Moon AI for help. The tutoring relationship does not expire with the diploma.
+Graduates retain Moon AI access as long as they maintain a Forge account. A Master who graduated and is now working on a new project can still ask Moon AI for help. The tutoring relationship does not expire with the diploma.
 
 **Curriculum updates:**
 
