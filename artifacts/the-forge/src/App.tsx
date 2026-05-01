@@ -59,6 +59,7 @@ const Starters         = lazy(() => import("@/pages/starters"));
 const BuildWithMe      = lazy(() => import("@/pages/build-with-me"));
 const Gallery          = lazy(() => import("@/pages/gallery"));
 const Promise          = lazy(() => import("@/pages/promise"));
+const TownSquare       = lazy(() => import("@/pages/town-square"));
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
@@ -316,6 +317,7 @@ function Router() {
                     <Route path="/starters"              component={Starters} />
                     <Route path="/build-with-me"         component={BuildWithMe} />
                     <Route path="/gallery"               component={Gallery} />
+                    <Route path="/town-square"           component={TownSquare} />
                     <Route component={NotFound} />
                   </Switch>
                 </ProtectedRoute>

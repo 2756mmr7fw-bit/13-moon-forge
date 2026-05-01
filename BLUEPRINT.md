@@ -419,6 +419,73 @@ The subscription isn't "$X for this app." It's "$X for the Town Square." As the 
 
 ---
 
+## The 12 Apps — The Full Family
+
+These are the 12 apps of People's Town Square. Each one is a tool for people who work with their hands, think with their own minds, and are done waiting for permission.
+
+---
+
+### 1. The Forge — `13moonforge.ai`
+**Status: Live**
+AI-powered builder for the small creator. You have something to make. Let's make it. The front door to the whole family.
+
+---
+
+### 2. TPTS — People's Town Square
+Like Facebook, but for the farmer, the tradesperson, the working man and woman. A way to advertise yourself and find others — the blacksmith, the beekeeper, the mechanic, the herbalist. Voluntarist. Anarchist in the best sense. No algorithm deciding who gets seen. For dirty hands and clean ones alike. Find people with farms. Start your business. Get visible.
+
+---
+
+### 3. Town Square Press TV
+For the independent journalist and the podcaster. Like YouTube before Google bought it and turned it into a filter. Free speech. Real speech. If you have something to say and you're willing to put your name on it, you have a platform here. No demonetization for opinions. No shadow banning. No terms of service written by lawyers to protect advertisers.
+
+---
+
+### 4. Town Square Press
+For the independent writer. Publish your e-book, your comic book, your poetry, your manifesto, your research. Everything having to do with the written word. You wrote it, you own it, you set the price. We take a small cut. You keep the rest.
+
+---
+
+### 5. 13 Moon Inventors Workshop
+Helping us get our freedom back. The old inventions that got locked away. The new ones that never got funding. The ideas that need a place to breathe. This is where you describe what you want to build and the Workshop helps you figure out how to actually build it — sourcing parts, drawing diagrams, finding precedents, connecting you with others working on similar problems.
+
+---
+
+### 6. Town Square TV
+For the independent filmmaker. Takes the art back from Hollywood. Films about real things that happened — the USS Liberty, the things that never made the news. Also: drama, comedy, documentary, short film — anything made outside the machine. Find a filmmaker. Fund a film. Watch something true.
+
+---
+
+### 7. 13 Moon Antivirus
+A real antivirus at a fraction of Norton's price — with more to offer. Built for people who want their computer protected without being nickeled and dimed. You know what you're getting and why.
+
+---
+
+### 8. 13 Moon Refusal
+Know what you're putting in your body and in your home. Every ingredient. Every additive. Every chemical behind a name you can't pronounce. When people know, they refuse. When they refuse, companies change. This is the tool that starts that chain.
+
+---
+
+### 9. 13 Moon Call Guardian
+Protects you from scammers, spam callers, and anyone trying to waste your time. Simple, effective, yours.
+
+---
+
+### 10. 13 Moon Ledger
+Financial freedom for real people. Budget. Track. Fix your credit. Get out of debt. Set your goals and work toward them with a tool that tells you the truth about where you stand and what it takes to get where you want to go.
+
+---
+
+### 11. 13 Moon Film Editor
+Built originally for personal use. Became something worth sharing. A video editing tool that does what you need without the subscription price of Adobe or the learning curve of Premiere. Independent filmmakers, podcasters, content creators — yours.
+
+---
+
+### 12. 13 Moon EzQuill
+Like DocuSign, but smarter and cheaper. Saves your most repeated personal information and fills it in automatically on any document — name, address, signature, all of it. You review. You sign where indicated. Everything else is done. Seconds, not minutes.
+
+---
+
 ## The Monorepo — How the Web Is Built
 
 This is the technical soul of the Town Square. Everything lives in one repository. One home. One deployment pipeline.
@@ -426,13 +493,21 @@ This is the technical soul of the Town Square. Everything lives in one repositor
 **The structure:**
 ```
 people's-town-square/
-├── artifacts/          ← Every app lives here
-│   ├── the-forge/      ← Already built and running
-│   ├── forge-mobile/   ← Already built and running
-│   ├── api-server/     ← The central hub — already built
-│   ├── app-3/          ← Next app coming in
-│   ├── app-4/
-│   └── ... (12 apps total)
+├── artifacts/                    ← Every app lives here
+│   ├── the-forge/                ← Live at 13moonforge.ai
+│   ├── forge-mobile/             ← Mobile app, running
+│   ├── api-server/               ← Central nervous system, running
+│   ├── tpts/                     ← People's Town Square (social)
+│   ├── press-tv/                 ← Town Square Press TV
+│   ├── press/                    ← Town Square Press (publishing)
+│   ├── inventors-workshop/       ← 13 Moon Inventors Workshop
+│   ├── town-square-tv/           ← Town Square TV (film)
+│   ├── antivirus/                ← 13 Moon Antivirus
+│   ├── refusal/                  ← 13 Moon Refusal
+│   ├── call-guardian/            ← 13 Moon Call Guardian
+│   ├── ledger/                   ← 13 Moon Ledger
+│   ├── film-editor/              ← 13 Moon Film Editor
+│   └── ezquill/                  ← 13 Moon EzQuill
 │
 ├── lib/                ← Shared code — change once, update everywhere
 │   ├── moon-calendar/  ← The 13 Moon logic — one source of truth
