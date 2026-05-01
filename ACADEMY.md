@@ -1143,7 +1143,247 @@ The best Final Projects are the ones that solve a problem the student actually h
 
 ---
 
-## The Final Word on the Academy
+## The Student Dashboard — What You See When You Log In
+
+When an Academy student opens the Forge, their dashboard has four things on it.
+
+**1. Their Design Brief**
+The document from the first free lesson. The name of what they're building. The one-sentence description. The core function. The vision of done. Always visible. Always the north star. As the student progresses, Forge adds a note to each level: *"Here's how what you learned this level connects to your project."* The curriculum always points back to the thing they said they wanted to make.
+
+**2. Their Three Builds**
+Three cards — Website, App, Game. Each one shows the current state of that build: what level it was last worked on, what it looks like right now, a link to the live version if it's deployed. The student can click into any one of them and pick up exactly where they left off or take what they just learned and improve it.
+
+**3. Their Level and Progress**
+A clear indicator of where they are — which level, which chapter of the book, which challenge they're working on. Not a percentage bar. Not a streak counter. A simple honest marker: *Level 5 — Chapter 6 of Eloquent JavaScript — Functions challenge in progress.*
+
+**4. The Community**
+A preview of the community chat — recent questions, recent builds shared, recent conversations. One click to jump in.
+
+That is the entire dashboard. Nothing else. No gamification. No badges for logging in seven days in a row. No leaderboards. Just the work, the progress, and the community.
+
+---
+
+## The Community — The Academy Chat Room
+
+The Academy community is a chat room. Free. Open to every Academy student regardless of level or payment tier.
+
+It lives inside the Forge — not on Discord, not on a third-party platform, not somewhere else a student has to go. It is built into the product. Students who are logged into the Forge are a single click from the community.
+
+**What it is:**
+
+A real-time chat room where students ask questions, share what they built, talk through ideas, and help each other. Organized into a small number of rooms so conversations don't get buried:
+
+- **#general** — anything goes, introductions, off-topic, community
+- **#questions** — stuck on something, need a second pair of eyes
+- **#show-your-work** — share a build, a milestone, a deployed project
+- **#game-track** — specifically for students in the game track
+- **#tools-and-setup** — VS Code config, terminal issues, Git problems, tool questions
+- **#masters** — a room specifically for Journeyman and Master graduates
+
+**Who's in it:**
+
+Every Academy student. Journeymen who graduated and stayed. Masters who are building their Final Projects or already shipped. Sovereign Digital monitors for quality but does not moderate aggressively — the community governs itself through usefulness.
+
+**The rule:**
+
+No question is too simple. Every developer, at every level, was once stuck on exactly the question a beginner is asking now. The Academy community treats that as a fact, not a philosophy. A student who asks "why does my loop not stop?" gets a real answer, not a link to Google.
+
+**Masters in the chat:**
+
+Masters who are active in the community earn something the referral pipeline tracks. A Master who consistently helps other students is the first person Sovereign Digital recommends when a client comes looking for a developer. Helping the community is not just the right thing to do — it builds a reputation inside the Forge that turns into real work.
+
+**Free forever:**
+
+The community chat is free to every Academy student. No tier required. A student on the free level who hasn't paid for the Academy subscription still has access to the community. The community is not a perk — it is part of the school.
+
+---
+
+## How Advancement Works — The Readiness Check
+
+Students do not advance by finishing a chapter. They advance by being ready.
+
+The readiness standard is: *you can explain it in plain English and use it without looking it up.* Moon AI enforces this standard through a short conversation at the end of every chapter — not a quiz, not a test, a conversation.
+
+**What the check looks like:**
+
+When a student finishes a chapter and feels ready to move on, they tell Moon AI. Moon AI asks three things:
+
+*1. Explain it to me like I've never heard of it.*
+The student explains the concept in their own words. Not the book's words. Theirs. Moon AI listens and asks a follow-up question about the part that's easiest to gloss over.
+
+*2. Show me.*
+Moon AI gives the student a small, specific challenge — something that can be built in 15–30 minutes using exactly what the chapter covered. Not a tutorial. Not something they've seen before. Something new that requires applying the concept. The student builds it and shares it.
+
+*3. Connect it.*
+Moon AI asks how this concept connects to the student's design brief — the thing they said they wanted to build in the first lesson. The student explains the connection. If they can't, Moon AI helps them find it. By the end of this, the concept is no longer abstract — it's something that moves them toward their actual goal.
+
+If all three land, the student advances. If something is unclear, Moon AI identifies exactly what's still fuzzy and gives the student one more targeted exercise — not the whole chapter again, just the specific piece that needs more time. Then they check again.
+
+**No shame in the check:**
+
+The check is not a judgment. It is the most useful thing a tutor can do — catch the gap before the next concept builds on it. A developer who advances to Level 6 with a shaky understanding of closures will struggle in Level 7 through no fault of Level 7. The readiness check is what prevents that.
+
+---
+
+## When Life Happens — Returning After a Pause
+
+Students pause. Life intervenes. The Academy expects this and plans for it.
+
+A student's account never expires. Their progress is saved at the exact chapter and challenge where they stopped. Their three builds are preserved. Their design brief is still there. Their community history is still there.
+
+When a student returns after a pause — a week, a month, six months — Moon AI welcomes them back with a brief re-entry conversation:
+
+*"You were working on Chapter 6 of Eloquent JavaScript — functions. It's been a while. Let's spend ten minutes making sure that's still solid before we move forward."*
+
+Not a lecture. Not a reset. A quick check that the foundation is still there before building on top of it. If it is, they pick up where they stopped. If some of it has faded, Moon AI targets exactly what needs refreshing — not the whole chapter, just what's needed.
+
+**No penalty for pausing.**
+
+There are no streaks to protect. No punishments for missing days. No system that makes a student feel behind. The Academy is self-paced, and "self-paced" means the student's pace — not an artificial one designed to keep them logging in.
+
+---
+
+## The Credential Registry — How Verification Works
+
+When a student earns Journeyman or Master status, their credential is entered into the Forge Academy Registry — a public page at `13moonforge.ai/academy/registry`.
+
+**What the registry shows:**
+
+Every graduate, listed publicly with:
+- Their name (or chosen display name)
+- Their credential level — Journeyman or Master
+- The date they earned it
+- A link to the work that earned it — their three builds for Journeyman, their Final Project for Master
+- A unique credential URL that anyone can visit to verify it is real
+
+**How verification works:**
+
+A Journeyman tells a potential client: *"I'm certified by Forge Academy."* The client visits `13moonforge.ai/academy/registry/[credential-id]`. They see the credential, the date, and the actual live projects the student built to earn it. The projects are real. The code is real. The work is visible.
+
+This is not a certificate in a PDF. It is a live record of demonstrated ability. A client who looks up a Forge Academy credential sees not just that someone graduated — they see *what they built to graduate.*
+
+**What this means for the student:**
+
+Their credential is only as strong as the work behind it. The Forge does not issue credentials for completion — it issues them for capability. A student who earned Journeyman has three live projects. A Master has those plus a Final Project that is deployed and generating at least some revenue. The credential links to all of it. It cannot be faked.
+
+---
+
+## The Master Referral Pipeline — How It Actually Works
+
+When Sovereign Digital has a client looking for a developer, Masters are the first people offered the work. Here is the exact process.
+
+**Step 1 — The Master Profile**
+
+After earning Master status, every graduate fills out a profile in the Forge's Master directory:
+- What kind of work they want to take on (websites, apps, games, specific industries)
+- Their hourly rate or project rate
+- Their availability (full-time, part-time, occasional)
+- Their three strongest skills
+- A link to their Final Project and their three builds
+
+This profile is private — visible to Sovereign Digital and to clients who are matched with them, not publicly browsed.
+
+**Step 2 — The Client Comes In**
+
+When someone contacts 13 Moon Forge looking for a developer, Sovereign Digital asks three questions:
+- What do you need built?
+- What is your budget?
+- What is your timeline?
+
+**Step 3 — The Match**
+
+Based on the client's answers, Sovereign Digital identifies the two or three Masters whose profiles best match the work. They are contacted in order of match quality and community activity — Masters who are active in the chat, who have helped other students, and whose recent work is strongest get first priority.
+
+**Step 4 — The Introduction**
+
+The matched Master is introduced to the client by Sovereign Digital. The introduction includes a brief description of the Master's work and a link to their credential and builds. From there, the Master and client negotiate directly. Sovereign Digital is not involved in the contract or the payment.
+
+**Step 5 — The Record**
+
+After the project is complete, Sovereign Digital asks both the client and the Master for a brief note on how it went. This feedback is kept internally and used to improve future matching. A Master who consistently delivers quality work moves to the top of the matching order for future clients.
+
+**What Sovereign Digital takes:**
+
+Nothing from the referral itself. The Master earns 100% of what the client pays them. Sovereign Digital's return is a stronger reputation for the Academy — every Master who does excellent work for a referred client makes the next client more likely to trust the next referral.
+
+---
+
+## The Video Library — One-Time Purchases, Owned Forever
+
+The books are the spine of the curriculum. The video library is the supplement — optional, purchased once, owned permanently. No monthly subscription. No platform that can revoke access.
+
+The Academy recommends these for students who learn better by watching someone build before they build themselves. Every course listed below maps directly to a level in the curriculum and a chapter in the corresponding book.
+
+---
+
+**Levels 3–6 — HTML, CSS, and JavaScript**
+
+**Wes Bos — Beginner JavaScript** (~$97 one-time at `wesbos.com`)
+Wes Bos has been teaching web development for over a decade. This course covers JavaScript from the ground up — the same material as Eloquent JavaScript, taught on video with real projects. The student reads the book and watches Wes build. Two different angles on the same concept land twice as well.
+
+**Wes Bos — JavaScript30** (Free at `javascript30.com`)
+Thirty JavaScript projects built in thirty days. No frameworks. No libraries. Just the language and a blank file. Every project in this course is small, complete, and satisfying. A Level 5 or Level 6 student who works through JavaScript30 alongside Eloquent JavaScript will finish with a GitHub full of real, working projects and a fluency in JavaScript that tutorials alone cannot produce.
+
+**Wes Bos — CSS Flexbox** (Free) and **CSS Grid** (~$60 one-time)
+The two layout systems that run the modern web. These courses are short, dense, and immediately applicable. A Level 4 student who watches them alongside Shay Howe's book will understand CSS layout more thoroughly than most self-taught developers ever do.
+
+---
+
+**Levels 7–9 — The Back End**
+
+**Kyle Simpson — You Don't Know JS Video Series** (~$39 per course on Frontend Masters)
+Kyle Simpson wrote the books. He also recorded video versions of the same material. Purchased individually from Frontend Masters — not a subscription. The video version of YDKJS is the closest thing to sitting in a room while the book's author explains it to you in real time.
+
+---
+
+**Levels 10–12 — Game Development**
+
+**GDQuest — Godot Courses** (one-time purchase at `gdquest.com`)
+GDQuest is run by a small team that actively contributes to Godot's development. Their courses are the most respected Godot education available — precise, practical, and built by people who understand the engine at a deep level. The Academy recommends their introductory and 2D game courses for the game track. Purchased once, owned permanently, directly from the creators.
+
+---
+
+**Free Video Resources — Always Available**
+
+These YouTube channels are permanent free references. No purchase required. Students can watch these at any level, any time.
+
+- **Traversy Media** — Brad Traversy covers the full web stack clearly and without condescension. The best free overview of every topic in the curriculum.
+- **The Coding Train** — Daniel Shiffman, author of The Nature of Code. His work on game logic, simulation, and creative coding is unlike anything else available. Essential for the game track.
+- **Kevin Powell** — The best CSS educator on the internet. Students who struggle with layout watch Kevin Powell. It works.
+- **Fireship** — Short, dense explainers on concepts the student just read about. Three minutes and the concept clicks. Supplement to the book, not a replacement.
+
+---
+
+**The Full Learning Stack — Four Layers**
+
+For any concept in the curriculum, a student has four resources:
+
+1. **The Book** — read the chapter, the primary source
+2. **The Video** — watch someone build with it (Wes Bos, GDQuest, or YouTube)
+3. **Moon AI** — ask when stuck, get a different angle until it lands
+4. **Build** — do it yourself, which is the only thing that makes it permanent
+
+No student who uses all four layers fails to understand the concept. The four layers exist because people learn differently. The book works for some. The video works for others. Moon AI fills the gaps for everyone. The build makes it real for all of them.
+
+---
+
+## Accessibility — Learning for Everyone
+
+The Academy is built for anyone who can read. That means it has to work for people who read differently, see differently, and think differently.
+
+**Dyslexia and reading differences:**
+Moon AI can present any concept in audio-first format — talking the student through it rather than presenting dense text. The books are the primary curriculum, but Moon AI can narrate, summarize, and explain any chapter conversationally for students who process spoken material better than written.
+
+**Vision impairment:**
+The Forge is built with screen reader compatibility as a baseline requirement, not an afterthought. The Academy's interface — the dashboard, the community chat, the readiness check — works with assistive technology.
+
+**English as a second language:**
+Moon AI can teach in any language it knows, which covers the major languages spoken in the communities the Forge is built to serve. A student who is more comfortable asking questions in Spanish asks in Spanish. Moon AI answers in Spanish. The books are in English — Moon AI bridges the gap by explaining concepts in the student's language, then connecting them to the English terminology they'll encounter in the real tools and real documentation.
+
+**Pace differences:**
+The self-paced model is the accessibility feature. There is no cohort moving at a fixed speed. There is no lecture happening right now that a student is missing. Every student moves at the pace that works for their life, their brain, and their circumstances. That is not a concession — it is the design.
+
+---
 
 The Forge Academy is not a coding bootcamp. Bootcamps promise jobs. The Academy promises skills — real, durable, professionally tested skills that a student earns through two years of consistent work and proves through a real commercial product.
 
