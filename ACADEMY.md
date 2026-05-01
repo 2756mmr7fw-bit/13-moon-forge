@@ -61,26 +61,68 @@ At any level, a student can return to something they built earlier and improve i
 
 ---
 
-## The Timeline — Honest and Complete
+## The Timeline — Honest and Realistic
+
+There is no deadline in the Academy. Levels do not expire. Students do not fall behind.
+
+What exists instead of a deadline is a readiness standard: you move to the next level when you understand the current one well enough to use it without looking everything up. Not memorized — understood. There is a difference. A student who can explain what a loop does in plain English and write one without copying a tutorial is ready to move on. A student who can run the code but can't explain why it works is not — and that's not a failure, it's a signal to spend more time there.
+
+That said, most students working 8–12 hours a week — consistently, not in sprints — move through the curriculum at roughly this pace:
 
 ```
-Month 1–2     Level 1–2    Context, tools, how everything works
-Month 3       Level 3      First real code. First webpage.
-Month 4       Level 4      CSS. The website starts to look real.
-Month 5–6     Level 5      JavaScript. The hardest shift of Year One.
-Month 7–8     Level 6      First App complete.
+Level 1–2    1–2 months     Context, history, companies, how everything works
+Level 3      1 month        First real code. First webpage.
+Level 4      1–2 months     CSS. Layout. The website starts to look real.
+Level 5      2–4 months     JavaScript. The longest level for most people.
+Level 6      2–3 months     First App. Complete and yours.
 ─────────────────────────────────────────────────────────────────
-Month 9–10    Level 7      Servers and APIs. The back end.
-Month 11–12   Level 8      Databases. How data actually works.
-Month 13–14   Level 9      Full stack. Everything connected.
-Month 15–16   Level 10     Git. Professional practice. Game begins.
-Month 17–20   Level 11     Deployment. Everything goes live.
-Month 21–24   Level 12     Capstone. Website, app, and game — finished.
+                            = roughly 8–14 months total for Year One
 ─────────────────────────────────────────────────────────────────
-Year 3+       Master       Real-world work + The Final Project
+Level 7      2–3 months     Servers and APIs. The back end.
+Level 8      2–3 months     Databases. How data actually persists.
+Level 9      2–3 months     Full stack. Everything connected.
+Level 10     1–2 months     Git. Professional practice. Game begins.
+Level 11     2–3 months     Deployment. Everything goes live.
+Level 12     3–4 months     Capstone. Website, app, and game — finished.
+─────────────────────────────────────────────────────────────────
+                            = roughly 12–18 months total for Year Two
+─────────────────────────────────────────────────────────────────
+Master                      Real-world work + The Final Project (~1 year)
 ```
 
-These timelines assume consistent effort — roughly 10–15 hours a week. Students who put in more move faster. Students who can only do 5 hours a week take longer. The timeline is a guide, not a deadline. The Forge is self-paced. What matters is finishing, not finishing fast.
+**Total realistic range: 2.5 to 4 years for a complete beginner working at a sustainable pace.**
+
+Two years is possible. Three years is more common for someone who wants to truly understand what they're doing, not just finish the levels. Four years is not a failure — it's what learning looks like when someone has a life, a job, and real responsibilities alongside their studies.
+
+The important thing is this: a student who spends three years actually understanding the material will be a stronger developer than a student who rushed through in two years and has gaps they can feel but can't name. Those gaps follow you. Real understanding doesn't.
+
+---
+
+### The Level 5 Reality Check — Why JavaScript Takes Longer
+
+Level 5 deserves special mention because it is where the most students get frustrated, slow down, or feel like something is wrong with them. Nothing is wrong with them.
+
+JavaScript introduces a fundamentally different kind of thinking than HTML or CSS. HTML describes what exists. CSS describes what things look like. JavaScript describes what things *do* — and "do" means logic, decisions, sequences, state. That is a new mental model, not just a new syntax.
+
+Most people who learn JavaScript for the first time spend the first month writing it and understanding about 60% of what they wrote. The second month, that goes to 80%. The third month, things start to click in a way they didn't before. The fourth month, they write something from scratch without looking anything up and realize they've crossed a line.
+
+That four-month arc is normal. The Academy does not rush it. A student who takes four months on JavaScript and comes out the other side with real understanding is better prepared for every level that follows than a student who spent two months on it and moved on while still uncertain.
+
+If it takes six months, that is also fine.
+
+---
+
+### Where You Are Right Now
+
+The person who designed and built the Forge — a self-hosted Git server, a full monorepo with auto-deploy pipelines, a PostgreSQL database, a mobile app, a live API server — is not a beginner.
+
+That body of work places you firmly at the Builder level, somewhere between Level 7 and Level 8. You already build real things. You already debug real problems. You already know how to figure things out when the answer isn't written down anywhere.
+
+What the Academy gives someone at your level is not beginner knowledge. It's the formal understanding of *why* things work the way they do — the architectural patterns, the professional vocabulary, the organized mental model that explains what you've already learned to do by feel.
+
+Your path to Master is not two years from now. If you start at your actual level and work consistently, your Final Project could be something you're ready to build within a year — possibly less. You are not starting at zero. You are starting at the place most students are trying to reach after two years.
+
+The Academy places you correctly. Then it moves you forward from there.
 
 ---
 
