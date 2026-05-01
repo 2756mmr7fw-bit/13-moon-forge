@@ -159,6 +159,112 @@ The mocks make the tools familiar before the stakes are real. When the student g
 
 ---
 
+## The Full Tool Stack — Every Tool, Every Student
+
+The mock is the on-ramp. The real tool is the destination.
+
+Every student who finishes the Academy has not just learned to code — they have learned to work like a professional developer. That means knowing the tools professionals use, not just the concepts. By the time a student earns Journeyman status, they have accounts, installations, and real working experience with every tool on this list.
+
+---
+
+### Code Editors
+
+**VS Code** (primary)
+Microsoft's free, open-source code editor — the most used in the world. Students start with the Forge's mock VS Code interface, then install the real application and configure it as their daily workspace. By Level 6, every project the student builds lives in a real VS Code window on their machine.
+
+*Why VS Code:* Free. Works on every operating system. Has extensions for every language and framework. Used at startups and at Google. The same editor whether you're a beginner or a senior engineer.
+
+**Awareness of others:** Students are also introduced to — but not required to master — Vim (the terminal editor that never goes away), Neovim (the modern version beloved by developers who want full keyboard control), and JetBrains IDEs (the professional suite used by Java and Kotlin developers). A Journeyman knows these exist, knows what they are for, and can make an informed choice about their own setup.
+
+---
+
+### Version Control
+
+**Git** (the tool itself — Level 10)
+Installed on the student's machine. Used from the terminal and from inside VS Code. Every project in the Academy lives in a Git repository by Level 10.
+
+**GitHub** (cloud hosting)
+Every student creates a real GitHub account. Their public profile becomes their professional portfolio — the place a potential client or employer goes to see what they have actually built. By graduation, a student's GitHub shows twelve levels of real work, three complete builds, and a commit history that tells the story of two years of learning.
+
+**Forgejo** (self-hosted — `git.13moonforge.ai`)
+Because the Academy is built on sovereign infrastructure, students also learn to push to a self-hosted Git server. They use the Forge's own Forgejo instance as a secondary remote. This teaches them that Git is not GitHub — it is a tool that works with any server, anywhere. A developer who knows this is not dependent on any single platform.
+
+---
+
+### The Terminal
+
+Students use a real terminal on their own machine by Level 7. Before that, they practice in the Forge's mock terminal. After Level 7, the real terminal is open every time they code — not because they are forced to use it, but because it becomes the fastest way to do most things.
+
+*Mac:* Terminal or iTerm2
+*Windows:* Windows Terminal with WSL (Windows Subsystem for Linux)
+*Linux:* Already there
+
+By graduation, a student is comfortable with: navigating the file system, running scripts, managing processes, using Git from the command line, connecting to remote servers with SSH, and reading error output without panic.
+
+---
+
+### Languages
+
+Every student graduates with working knowledge of:
+
+- **HTML** — the structure of every webpage ever made
+- **CSS** — the visual layer of everything on the web
+- **JavaScript** — the language that makes everything interactive and runs on both front end and back end
+- **Node.js** — JavaScript on the server
+- **SQL** — the language for talking to every relational database that exists
+
+*Awareness of others:* Students are introduced to Python (the most popular language for beginners and data science), TypeScript (JavaScript with types — what the Forge itself is built in), and Swift/Kotlin (iOS and Android development). They are not required to build in these languages at Journeyman level — but they know what they are, why they exist, and how to start learning them if a project requires it.
+
+---
+
+### Databases
+
+**PostgreSQL** (primary)
+The most powerful open-source relational database in the world. Students install it locally, connect it to their apps, and use it for all three of their major builds. By Level 9, querying a PostgreSQL database feels as natural as writing a JavaScript function.
+
+*Awareness of others:* Students understand the difference between relational databases (PostgreSQL, MySQL, SQLite) and document databases (MongoDB). They know which to reach for and why.
+
+---
+
+### Game Engines
+
+**Godot** (primary — game track)
+Every student in the game track installs the real Godot. Not just the web version — the full application on their machine. They learn the scene system, the node architecture, GDScript (Godot's built-in language, which reads like Python), and how to export a finished game for the web. By the end of Level 12, the student's game was built in Godot and is running on itch.io.
+
+*Why Godot:* Free. Open source. No royalties, no fees, no license to manage. The game the student builds is entirely theirs — no engine company takes a cut. Epic takes 5% on Unreal above a threshold. Unity's pricing history has made it untrustworthy. Godot belongs to the community.
+
+*Awareness of others:* Students understand where Unity and Unreal Engine fit in the industry — which types of games are built on each, what kind of companies use them, and how Godot compares. They can speak intelligently about all three, even if they build primarily in Godot.
+
+---
+
+### Design
+
+**Figma** (basic, introduced at Level 4)
+The industry-standard design tool. Free for individuals. Students use it to sketch their website and app designs before they build them — the professional workflow of planning what something looks like before writing the code that produces it. By Level 6, a student knows how to create a simple layout in Figma and translate it to CSS.
+
+---
+
+### AI Tools
+
+**Forge / Moon AI** (primary)
+The student's coding tutor, available every hour of every day. Students learn early how to use Moon AI well — asking specific questions, providing context, not outsourcing their thinking but using AI as a thinking partner. This is a skill in itself. Developers who use AI well are faster and more effective. Developers who use AI as a crutch produce code they can't explain.
+
+*The Academy rule on AI:* If you can't explain why the code works, you don't own it yet. Moon AI is there to help you understand, not to write your homework.
+
+**Awareness of others:** Students are shown how GitHub Copilot, ChatGPT, and Claude work as developer tools. Not because the Academy endorses any of them, but because a working developer will encounter all of them and needs to know how to evaluate what they produce.
+
+---
+
+### The Well-Rounded Developer
+
+When a student finishes the Academy, they do not specialize in one tool and struggle with everything else. They have real experience across the full professional stack — editors, version control, the terminal, languages, databases, game engines, design, and AI assistance.
+
+That breadth is what makes a Journeyman employable as a freelancer rather than as a narrow specialist. A client who needs a website, an app, and eventually a game can hire one person who knows all three environments. That person is a Forge Academy Journeyman.
+
+The mock environments make the tools familiar without fear. The real tools make the student a professional. Every student gets both.
+
+---
+
 ## The Books — The Spine of the Curriculum
 
 The Academy does not teach from videos. It teaches from books.
