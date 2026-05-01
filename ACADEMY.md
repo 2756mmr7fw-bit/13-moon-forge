@@ -1439,6 +1439,251 @@ The self-paced model is the accessibility feature. There is no cohort moving at 
 
 ---
 
+## What the Academy Costs — The Honest Price
+
+The Academy subscription is $49 per month. That is the only recurring cost.
+
+What it includes:
+- Full access to all 12 levels of the curriculum
+- Moon AI tutoring — unlimited conversations, every hour of every day
+- The Teachers Board
+- The community chat room
+- The Student Dashboard with progress tracking and build history
+- The readiness check advancement system
+- Access to the credential registry upon graduation
+
+What it does not include:
+- The books — students buy their own copies. Most are free online. The ones that cost money are under $40. Over the full two years, total book cost is under $100.
+- The optional video courses — purchased separately, once, directly from the creator. Recommended but not required.
+- External tools — VS Code, GitHub, Godot, and Figma are all free. The student installs them on their own machine.
+
+**The total investment over two years:** $49 × 24 months = $1,176 in subscription fees, plus roughly $100 in books, plus whatever optional video courses a student chooses. A student who uses only the free books and free videos completes the full curriculum for $1,176 — less than a single semester at most community colleges, and with more to show for it at the end.
+
+**If $49 per month is a hardship:**
+
+The Academy is built for people who have been underserved by expensive education. If the subscription price is a genuine barrier, email Sovereign Digital. There is no formal scholarship application. No essay. No proof of income required. A direct, honest conversation is enough. The Academy would rather have a committed student at a reduced rate than have cost be the reason someone never started.
+
+---
+
+## The Honor Code — The Work Has to Be Yours
+
+The Forge Academy credential means something because it represents real demonstrated ability. That only holds if the work behind it is real.
+
+**The AI rule:**
+
+Moon AI is a tutor, not a ghostwriter. Using Moon AI to understand a concept, debug a problem, get a different explanation of something confusing, or talk through an approach — that is the correct use of Moon AI. That is what it is there for.
+
+Using Moon AI to write the code while the student submits it as their own, to pass the readiness check by feeding it the answers, or to complete a project without being able to explain how any of it works — that is the line. Not because the Academy is against AI tools. Because a developer who can't explain their code is not a developer yet. They have produced an artifact that belongs to someone else. The credential would be a lie.
+
+The readiness check is designed to catch this. A student who had Moon AI write their JavaScript functions will not be able to explain in plain English why the function works, write a new one on the spot for a slightly different problem, or connect the concept to their design brief without help. The check cannot be passed without the knowledge. The knowledge can only come from doing the work.
+
+**On copying other people's code:**
+
+Every developer studies other people's code. Reading open source code, understanding how a well-written function works, adapting an approach from a Stack Overflow answer — this is normal professional practice. The line is the same: if a student can explain what the code does and why it's built the way it is, they have learned from it. If they cannot, they have copied it.
+
+The three builds and the Final Project must be the student's own work. They can be inspired by anything. They cannot be someone else's project with the name changed.
+
+**What happens if a student is caught:**
+
+The credential is not issued. The student is told specifically what was found and why it disqualifies the submission. They are given the option to redo the work — legitimately. The Academy's goal is not punishment. The goal is that every person who earns a credential from Forge Academy actually earned it. That is worth protecting.
+
+---
+
+## When You're Genuinely Stuck — Long-Term Blocks
+
+The readiness check prevents advancing before a student is ready. But some students hit a concept that resists them for weeks. JavaScript closures. Asynchronous code. Database relationships. These are concepts that have stopped many developers in their tracks.
+
+The Academy's answer to a long-term block is not to lower the standard. It is to change the angle.
+
+**What Moon AI does when a student is stuck for more than a week on the same concept:**
+
+Moon AI identifies this automatically — the student's conversation history shows repeated attempts at the same readiness check, repeated questions about the same topic, and a pattern of not advancing. When that pattern appears, Moon AI shifts approach entirely:
+
+- *A different analogy* — the concept explained through cooking, or construction, or music, or whatever domain the student has shown familiarity with
+- *A smaller target* — instead of mastering the full concept, Moon AI breaks it into its smallest components and checks each one individually until the exact gap is found
+- *A different medium* — Moon AI recommends a specific video from the library that approaches the concept differently from the book
+- *Time away* — sometimes Moon AI suggests working on something else entirely for a week. A different chapter, a different build. The brain often solves in the background what it cannot solve head-on.
+
+**The community path:**
+
+If Moon AI's shifting approaches are not moving things forward, the student posts in `#questions`. Journeymen and Masters who have passed through that exact concept are in that chat. Someone who was stuck on closures for three weeks and then suddenly understood them is more useful to a stuck student than any AI explanation — because they remember what it felt like not to get it, and they remember the exact moment it landed. That is why the community exists.
+
+---
+
+## The Portfolio — Everything You Build
+
+The three builds — website, app, game — are the core of the student's portfolio. They are not the only things the student will build.
+
+Over two years, a student who works through the curriculum builds dozens of smaller projects: the JavaScript30 exercises, the readiness check mini-builds, the level challenges, the experiments, the things made just to see if they could. The Forge keeps all of it.
+
+**What's private and what's public:**
+
+By default, everything is private. The student controls what appears in the public registry. The three builds can be made public when ready. The Final Project, when submitted for the Master credential, becomes public in the registry. Everything else — the experiments, the failed attempts, the half-finished ideas — stays private unless the student chooses otherwise.
+
+**The `#show-your-work` channel:**
+
+Students who want feedback on a work in progress share it in the community chat. This is not a public portfolio — it is a peer conversation. Nothing shared there is indexed or made part of a student's public profile without their explicit action.
+
+**What the portfolio proves:**
+
+When a student graduates as a Journeyman, their public portfolio shows three live projects. When a client visits the credential registry, they see all three — not screenshots, not designs, not mockups. Live URLs. The work is running on the internet and it speaks for itself.
+
+---
+
+## How Moon AI Knows Where You Are
+
+Inside the Academy, Moon AI is connected to the student's Forge account. It knows which level they are working on, which chapter they are reading, which challenges they have completed and which they have not yet passed, their design brief, and the structured history of their sessions — what concepts were covered, what the student found difficult, and what approaches were already tried.
+
+This is not magic. It is a structured record that Moon AI reads at the start of every session. When a student says "I still don't understand closures," Moon AI knows this is the third time they've asked, knows what analogies were tried before, and tries something genuinely different — not the same explanation again.
+
+**What Moon AI does not do:**
+
+It does not read the student's code on their personal machine. It does not access their GitHub account without their explicit action. It does not share a student's struggles with anyone. When a student pastes code into a Moon AI conversation, that code is seen only by Moon AI and used only to help that student in that moment.
+
+---
+
+## If You Leave — Your Work Is Yours
+
+A student who cancels their Academy subscription does not lose their work.
+
+Before cancelling, the student can export everything — their design brief, their project history, their three builds, their credential if earned, their community history. It belongs to them.
+
+After cancelling, the account goes into suspended state. Nothing is deleted. They have a full year to return before any data removal is considered — and even then, Sovereign Digital sends one email notification first. Responding to that email preserves the account indefinitely.
+
+A student who comes back pays the standard rate. No rejoining penalty. No lost progress. Moon AI picks up exactly where they left off.
+
+A student who spent six months working through the first five levels, built a real website, and then had to leave did real work. The Forge does not erase it because they stopped paying. It was theirs when they made it. It stays theirs.
+
+---
+
+## The First 30 Days — A Concrete Picture
+
+A student who enrolls on Day 1 and puts in an honest two hours a day will reach the end of Level 2 within the first month.
+
+**Week 1 — Level 1 — Context and History**
+
+The student is not yet writing code. They are learning how the industry works — how the internet was built, who built it, why it matters, and what they are about to enter. By the end of Week 1, the student understands the difference between a front end and a back end, knows what a browser actually does, and has passed their first readiness check.
+
+**Week 2 — Level 2 — The Landscape and the Major Players**
+
+The student learns about the companies whose tools they will use — GitHub, Google, Mozilla, Epic, Valve, and others. Not as trivia. As context for why these tools exist and who is behind them. Moon AI teaches them how to read documentation and navigate the internet as a developer.
+
+By the end of Week 2, the student has a GitHub account. They have VS Code installed. They have made their first commit — a `README.md` with their name and a one-sentence description of what they are building. It is live on GitHub. It is real.
+
+**Weeks 3–4 — Level 3 — The First Webpage**
+
+The student writes HTML for the first time. Not a tutorial they follow blindly. A real page — their own. The beginning of the website build that will grow with them through the entire curriculum.
+
+By the end of Week 4, the student has a live webpage with their name on it, written in HTML they understand, committed to GitHub, and deployed on the internet. Not perfect. Not beautiful. But real, live, and theirs.
+
+They have passed three readiness checks, made their first commits, set up their tools, and have a design brief with the name of the thing they are building for the next two years. That is the first 30 days.
+
+---
+
+## What Journeyman Means in the Real World
+
+The Forge Academy credential does not come with a job attached. The Academy is honest about this.
+
+**What a Journeyman can do:**
+
+A Journeyman who graduates has three live projects — a website, an app, a game. They can read and write HTML, CSS, and JavaScript. They can build and deploy a back end. They can design and query a database. They can use Git professionally. They can navigate the terminal. They can build in Godot. That is a real skill set.
+
+**Freelancing:**
+
+The most direct path for a Journeyman is freelancing. Small businesses need websites. Local organizations need apps. Clients who cannot afford a $150/hour agency but can pay $40/hour for a skilled independent developer exist in every city. A Journeyman who charges $35–50/hour and works 25 hours a week makes $45,000–$65,000 per year from their laptop. That is not a ceiling. It is a floor.
+
+After the first client, the second is easier. After the second, they have a track record. Track records compound.
+
+**Employment:**
+
+A Journeyman who wants a traditional job has a portfolio of live work. The Academy does not place graduates with employers. It produces graduates who can show real work — which is what employers are actually evaluating. Not every employer will recognize the Forge Academy credential. All of them can recognize a GitHub account with two years of real commits and three deployed projects, and a developer who can write code in front of them without hesitation.
+
+**What the credential does not guarantee:**
+
+A job. A salary. A placement. The Academy guarantees the skill — verifiable, demonstrated, real. What the graduate does with it is their life.
+
+---
+
+## What the Academy Is Not
+
+This is worth stating plainly. The market is full of schools that overpromise.
+
+**Not a bootcamp.** Bootcamps run 12–16 weeks, move at a fixed speed, and promise job placement. The Academy runs two years, moves at the student's speed, and promises skills. Different things for different people.
+
+**Not a job guarantee.** Employers make their own decisions. The Academy produces graduates who are qualified to apply and have real work to show. What happens in a hiring process is between the graduate and the employer.
+
+**Not an accredited institution.** The Forge Academy credential is issued by Sovereign Digital LLC. It is not recognized by any government body or university as transferable credit. A student who wants an accredited degree should pursue that separately — and may find the Forge Academy a more useful preparation for it than they expected.
+
+**Not a framework school.** React, Vue, Angular, Next.js, Svelte — the JavaScript framework ecosystem changes every few years. The Academy teaches JavaScript deeply. A graduate who understands JavaScript can learn any framework. The Academy does not chase the framework of the year.
+
+**Not a placement agency.** There is no recruiter. There is no corporate partnership pipeline. There is the Master referral system for client work — which is different from employment placement and operates on entirely different terms.
+
+**Not a school that teaches everything.** Two years is enough to become a capable, freelancing, employable developer. It is not enough to know everything. No school can teach everything. The Academy teaches the foundation well enough that graduates can keep learning on their own — which is what every working developer does for their entire career.
+
+---
+
+## The Industry Always Changes — Staying Current After Graduation
+
+The tools that exist when a student starts the Academy may not be the dominant tools when they graduate. The Academy prepares students for this by teaching concepts before tools. A developer who understands why something works is prepared for any new tool that implements it differently. A developer who only knows one specific tool becomes obsolete when the tool does.
+
+**After graduation:**
+
+Journeymen and Masters retain community access permanently. The `#masters` channel stays open. As the industry changes, graduates share what they are learning, what new tools they are evaluating, and what is proving durable versus what is fading. The community is a living education long after the curriculum ends.
+
+**Moon AI after graduation:**
+
+Graduates retain Moon AI access for the lifetime of their Forge subscription. A Master who graduated two years ago and is now working on a new project can still ask Moon AI for help. The tutoring relationship does not expire with the diploma.
+
+**Curriculum updates:**
+
+Sovereign Digital reviews the Academy curriculum annually. When a tool is replaced by something better or a new concept becomes essential, the curriculum updates. Graduates who want to learn the new material access updated levels at no extra cost.
+
+---
+
+## Financial Independence — What This School Makes Possible
+
+The Academy's deepest promise is economic. Not academic.
+
+**The freelance floor:**
+
+A Journeyman charging $35/hour and working 25 hours a week with two steady clients makes $45,500 per year. That is arithmetic, not aspiration. Clients who need websites, maintenance, small apps, and ongoing support exist in every market. A Journeyman who spends six months after graduation building a client base — starting small, doing good work, getting referrals — is typically billing $50–75/hour within a year. That is $60,000–$90,000/year working for themselves, without a boss, without a commute, and without a corporate environment that can lay them off.
+
+**The product path:**
+
+A Master who builds a Final Project that solves a real problem and sells it at $15/month to 100 users makes $1,500/month in recurring revenue. That is $18,000/year from one product running whether they are at their desk or not. The next product adds to it. The one after that adds more.
+
+A developer with three products at 100 users each makes $54,000/year in product revenue before doing a single hour of client work. That is what the Master track points at — not a job, but a business. A business that runs on code the developer wrote, serves users who chose to pay for it, and belongs entirely to the person who built it.
+
+**What this requires:**
+
+Two years of consistent work, one concept at a time, without shortcuts. The math at the end only works if the foundation is real. The Academy is how the foundation gets built.
+
+---
+
+## The 13 Moon Philosophy — Why This School Exists
+
+Forge Academy does not exist because there was a gap in the coding bootcamp market.
+
+It exists because the People's Town Square exists — and the Town Square was built on a belief: that the tools people use to communicate, create, organize, and build their lives should belong to them and serve them, not extract from them.
+
+The 13 Moon framework is a way of thinking about time, cycles, and sovereignty. Thirteen months of twenty-eight days each — a calendar that moves with the natural world rather than against it. A structure that invites people to pay attention to where they are in a cycle rather than where a clock says they should be. It is a framework for people who believe that time belongs to them, not to a system built by someone else.
+
+The Academy brings this into software education because software education, as it is mostly practiced, does not serve the people who most need it. Expensive bootcamps. University degrees with six-figure price tags. Tutorial platforms built for people who already have a head start.
+
+The Academy is for the person who has never touched a line of code, cannot afford a bootcamp, and was told — explicitly or by the silence of systems that never included them — that this world was not for them.
+
+That person can learn to build. The Academy is how.
+
+And when they build something — when they ship a live product that solves a real problem — they are not just a developer. They are a sovereign creator. Someone who can make the thing, own the thing, sell the thing, and keep everything it earns. No platform taking 30%. No employer setting the terms. No permission required from anyone.
+
+That is what the 13 Moon philosophy means in this context. Not a spiritual claim. An economic and political one. The tools of creation belong in the hands of the people who use them.
+
+The Academy is how people get those tools.
+
+---
+
+## The Final Word on the Academy
+
 The Forge Academy is not a coding bootcamp. Bootcamps promise jobs. The Academy promises skills — real, durable, professionally tested skills that a student earns through two years of consistent work and proves through a real commercial product.
 
 The difference between a bootcamp graduate and a Forge Academy Master is not the credential. It's the portfolio. A bootcamp graduate has a certificate and a few tutorial projects. A Forge Academy Master has a live website, a live app, a live game, and a Final Project that is on the internet, has at least one user, and could have a paying customer by the end of the week.
