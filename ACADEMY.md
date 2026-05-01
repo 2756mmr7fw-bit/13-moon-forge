@@ -1165,6 +1165,38 @@ The best Final Projects are the ones that solve a problem the student actually h
 
 ---
 
+## What Happens If You Finish It and Hate It
+
+It happens. A student reaches the end of the Master track, ships the Final Project, and looks at it and thinks: this isn't what I wanted to make. This isn't good enough. This isn't me.
+
+That is allowed. That is, in fact, one of the most useful things that can happen to a developer.
+
+**The answer is simple: build another one.**
+
+The Academy doesn't close when a student finishes their Final Project. The Forge is still there. Moon AI is still there. The community is still there. A student who ships a Final Project and immediately wants to start something better is not failing the Master track — they're demonstrating exactly the kind of judgment the Master track was designed to develop. You can only recognize the gap between what you made and what you meant to make once you've made something. That recognition is growth.
+
+So they start over. New brief. New project. Same support. The credential tied to the first project still stands — the work that earned it was real and it counted. The new project is simply the next thing. Some students ship three or four products by the time they're done with the Master track. Every one of them belongs to them entirely.
+
+---
+
+**But here is what was always true:**
+
+The project is the final. The diploma follows the work.
+
+But the learning — the two years of building, failing, rebuilding, debugging at midnight, showing work in the community chat, having Moon AI explain the same concept five different ways until it landed — that learning didn't require a diploma. It was already done. It is already permanent. No one can take back what a person learned by doing the work.
+
+A student who finishes Level 12 and decides not to submit a Final Project for the Master credential is still a developer. They still built three live projects. They still know how to read a codebase, write a server, design a database, deploy an application, and build a game. The credential is a recognition of that. The skill is the real thing.
+
+The Academy was never really about the diploma.
+
+It was about finding out what you were made of.
+
+Two years of consistent work, on something you chose, toward something you cared about, without anyone setting the pace for you or holding your hand through the hard parts — that reveals something. Every student who comes out the other side of it knows something about themselves they didn't know on Day 1. They know they can start something from nothing and bring it into existence. That is not a small thing. Most people never find out if they can do that.
+
+The ones who come through Forge Academy know.
+
+---
+
 ## The Student Dashboard — What You See When You Log In
 
 When an Academy student opens the Forge, their dashboard has four things on it.
