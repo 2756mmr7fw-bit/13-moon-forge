@@ -4,7 +4,7 @@ import {
   Flame, FolderKanban, PlusCircle, CreditCard, ExternalLink,
   Sparkles, Code2, Wand2, Layers, Scale, Crosshair, Activity,
   GraduationCap, ArrowRightLeft, Wrench, BookOpen, Archive, Gamepad2, Rocket, LogOut,
-  Shield, Github, Package, User, Users, LogIn, Menu, X, Settings, KeyRound, ShieldAlert, PlugZap, Swords, Monitor, MonitorPlay, Globe, Download, Wifi, LayoutTemplate, PencilLine, Mail, Search, Grid3X3,
+  Shield, Github, Package, User, Users, LogIn, Menu, X, Settings, KeyRound, ShieldAlert, PlugZap, Swords, Monitor, MonitorPlay, Globe, Download, Wifi, LayoutTemplate, PencilLine, Mail, Search, Grid3X3, Server, Upload,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LogoMark, LogoWordmark } from "@/components/logo";
@@ -85,6 +85,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/migration",  label: "Migration Status",    icon: ArrowRightLeft,  tip: "Check the progress of an ongoing migration"                        },
     { href: "/leaving",    label: "Leaving Replit/Heroku",icon: LogOut,         tip: "Guides for escaping cloud platforms to your own server"            },
     { href: "/sovereign",  label: "Self-Hosting Guide",  icon: Shield,          tip: "The 13-point standard for truly owning your stack"                 },
+    { href: "/forge-hosting", label: "Forge Hosting",     icon: Server,          tip: "All your apps — deployed, managed, and live on your own server"   },
+    { href: "/forge-drop",    label: "Forge Drop",        icon: Upload,          tip: "Send files to any app in the ecosystem — zip, video, PDF, images"  },
     { href: "/app-hub",    label: "Deploy Apps",         icon: Layers,          tip: "Deploy apps to your Coolify server with one click"                 },
     { href: "/registry",   label: "App Directory",       icon: Package,         tip: "Browse and submit self-hostable open-source apps"                  },
     { href: "/secrets",    label: "API Keys",            icon: KeyRound,        tip: "Securely store passwords, API keys, and tokens"                    },
