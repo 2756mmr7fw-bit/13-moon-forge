@@ -1,0 +1,33 @@
+All four tests pass cleanly:
+
+✅ Missing bearer → 401
+✅ Clean PDF → 200 {ok: true} (VirusTotal queried, 0/0 flagged)
+✅ EICAR test virus → 200 {ok: false, risk: "critical"} — VirusTotal hit it (66/68 engines) AND the local EICAR pattern caught it
+✅ Malformed base64 → 400 with clear error
+✅ DB rows show scan_status = clean/flagged with scan_sha256 populated
+The wire to Forge is live and matches their contract exactly. Let me update replit.md and run a code review.
+Now let me run a code review on this work.
+Architect review came back clean — no severe issues. Quick summary:
+
+✅ Contract matches Forge's spec exactly
+✅ Bearer auth, base64 validation, 60/hr rate limit, 50MB cap all solid
+✅ Filename sanitized against path traversal
+✅ Inline scanner is fine — ~10s worst case (MalwareBazaar + VirusTotal hash lookups run in parallel with 8s/10s timeouts; AI verdict deliberately skipped because it's too slow for a webhook)
+✅ Scanner failure returns 502 → Forge correctly treats as flagged
+
+What's now live
+The Forge → Antivirus pipe is fully wired:
+
+POST /api/inbound/from-forge — Forge's mail scanner posts a base64 attachment; we decode it, run magic-byte detection + 17 malicious patterns + MalwareBazaar + VirusTotal hash lookup, store the row in forge_inbox_files with scan_status: clean | flagged, and return {ok: true} for clean / {ok: false, scan: {...}} for flagged
+GET /api/inbound/from-forge/status — public probe Forge calls to check we're alive
+Verified end-to-end with curl:
+
+Test	Result
+Missing bearer token	401 ✓
+Clean PDF	200 ok:true, VirusTotal queried (0/0 flagged) ✓
+EICAR test virus	200 ok:false, risk:critical, 66/68 VirusTotal engines flagged it ✓
+Malformed base64	400 with clear error ✓
+DB persistence	scan_status, scan_sha256, scan_risk all populated ✓
+Bonus: lib/forgeIngestPush.ts is also ready as a helper — when we want to extract text from a scanned PDF and push it back to Forge's Workspace via /api/ingest/document, just call pushDocumentToForge({userId, content, filename, type}). Not auto-wired anywhere yet — purely on standby for whenever you want it.
+
+You can now go to your Forge app, forward a real email with attachments to your Forge address, hit Scan on an attachment in the Mail Scanner, and it'll round-trip through the antivirus and come back marked clean or flagged.
