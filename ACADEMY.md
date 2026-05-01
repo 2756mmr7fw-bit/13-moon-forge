@@ -7,13 +7,67 @@
 
 ## What This School Is
 
-Forge Academy is a two-year coding school built inside the 13 Moon Forge ecosystem. It exists for one reason: to take a person who has never written a line of code and turn them into a developer who can build, ship, and sell real software.
+Forge Academy exists to take people further than they thought they could go.
 
-Not a developer who finished a course. Not a developer who can copy tutorials. A developer who looks at a problem, knows how to approach it, builds a solution, puts it on the internet, and charges for it.
+Not further than average. Further than *they* thought. The person who looked at a game they love and thought "I could never make something like that." The person who had an app idea they gave up on because they didn't know where to start. The person who wanted to build something for their community, their family, their business — and didn't believe they had what it takes to do it.
 
-That takes two years of real work. This document is honest about what that looks like — month by month, level by level — and what a student can realistically expect to be able to do at each stage.
+That person is who this school is for.
 
-At the end of the Academy, there is a final project. Not a test. Not a portfolio piece. A real product — the student's own idea, built by the student's own hands, supported by Moon AI and the Academy community, and ready to be sold the day it's finished. That is the graduation requirement and the graduation gift.
+The Academy is a coding school — two years of real, structured learning that takes a complete beginner from knowing nothing to building and selling real software. But the curriculum is not the point. The point is what comes out the other end: someone who built the thing they thought was beyond them. A game. An app. A tool. A business. Whatever it was they quietly wanted to make and didn't believe they could.
+
+By the time a student finishes, that thing exists. It is live on the internet. It has a URL. Someone can pay for it. The student built every line of it themselves.
+
+That is what further than you thought you could go actually looks like.
+
+---
+
+## The First Lesson — Free, Before Anything Else
+
+The first lesson costs nothing. No subscription. No credit card. Just a conversation with Moon AI.
+
+Moon AI asks one question: *What do you want to build?*
+
+Not "what do you want to learn." Not "what programming language interests you." What do you want to exist in the world that doesn't exist yet — or doesn't exist the way you'd make it?
+
+Maybe it's a game. Maybe it's an app that solves a problem nobody has solved for people like them. Maybe it's a tool for their job, their neighborhood, their church, their family. Maybe it's a website for a business they want to start. Maybe they don't know yet — and Moon AI helps them figure it out through the conversation.
+
+By the end of the first lesson, the student has:
+
+**A name.** Whatever they're building has a working title. Something to call it.
+
+**A one-sentence description.** What it does. Who it's for. Why it matters.
+
+**A core mechanic or function.** The one thing it does at its heart — the game loop, the main feature, the problem it solves. Everything else grows from this.
+
+**A vision of done.** What does it look like when it's finished? Where does someone go to use it or buy it? What does the student feel when they ship it?
+
+This document — the student's design brief — lives inside the Forge forever. It is the north star for the entire curriculum. Every level connects back to it. Every concept the student learns, they can see how it moves them closer to the thing they designed on Day 1.
+
+By Level 12, that thing is done.
+
+Not a version of it. Not a prototype. The thing itself — built, deployed, and ready to generate real revenue for the person who made it.
+
+---
+
+### What "Anything" Means
+
+The first lesson is not just for game developers. The student who wants to build a game will design their game. The student who wants to build an app will design their app. The student who isn't sure yet will have a conversation with Moon AI until something real emerges — because everyone has something they want to exist that doesn't yet.
+
+Examples of what students have designed in the first lesson:
+
+- A mobile game where the player navigates a character through a city they recognize
+- A scheduling app for a small business that was doing everything on paper
+- A community platform for a neighborhood that had no central place to connect
+- A learning tool for a subject they struggled with in school
+- A portfolio and store for handmade goods a family member was selling through word of mouth
+- A resource tracker for a trade — roofing, electrical, landscaping — where nothing on the market fit
+- A game that tells a story they wanted to tell
+
+None of these were built yet on Day 1. By graduation, all of them could be live and generating revenue.
+
+The Academy does not decide what a student builds. The Academy builds the student who can build anything.
+
+---
 
 ---
 
