@@ -157,25 +157,46 @@ The Academy teaches Levels 1 through 12. Completing Level 12 makes you a **Journ
 
 ---
 
-### The Four Stages and Their Timeline
+### Who Can Join
 
-**Stage 1 — Beginner (Levels 1–3)**
-*Estimated time: 3–6 months at consistent pace*
-
-Before the code. Understanding what a computer actually is.
-
-- Level 1: What is a computer doing when you click something? Files, folders, programs — in plain English
-- Level 2: How the internet works — what happens between typing a URL and seeing a page
-- Level 3: Your first HTML — making something appear in a browser with your own hands
-
-Homework at this stage: real exploration tasks. Find three things on your computer you didn't know were there. Look at the source code of a website you use every day. Change one thing on a webpage using your browser's developer tools and see what happens.
-
-The goal of Beginner is one thing: make the machine feel less like magic and more like a tool. Tools can be understood. Tools can be learned. That shift is the first real lesson.
+If you can read and write, you can start. That's the only requirement. No age limit. No prior experience. No technical background needed. A 12-year-old and a 65-year-old start at the same Level 1 and the Forge treats them both like they're capable — because they are.
 
 ---
 
+### The Four Stages and Their Timeline
+
+```
+Levels 1–6    Year One    Beginner → Apprentice
+Levels 7–12   Year Two    Builder → Journeyman
+─────────────────────────────────────────────────
++ ~1 year of constant real-world practice
+
+= Master
+```
+
+Two years of consistent work through the Academy earns you Journeyman — enough to build real things professionally, take real clients, and solve problems on your own. One more year of building hard in the real world, on projects that challenge you, is what turns Journeyman into Master.
+
+This isn't a guarantee. It's what consistent effort actually produces. Some people move faster. Some slower. The timeline is honest, not a sales pitch.
+
+---
+
+**Year One — Levels 1 through 6**
+
+The first year takes you from knowing nothing to writing real interactive code.
+
+**Stage 1 — Beginner (Levels 1–3)**
+
+Before the code. Understanding what a computer actually is.
+
+- Level 1: What is a computer doing when you click something? Files, folders, programs — in plain English. No jargon.
+- Level 2: How the internet works — what happens between typing a URL and seeing a page
+- Level 3: Your first HTML — making something appear in a browser with your own hands
+
+Homework: real exploration tasks. Find three things on your computer you didn't know were there. Look at the source code of a website you use every day. Change one thing on a live webpage using your browser's developer tools and see what breaks.
+
+The goal of Beginner is one thing: make the machine feel less like magic and more like a tool. Tools can be understood. Tools can be learned. That shift in how you see the machine is the first real lesson — and once it happens, it doesn't go back.
+
 **Stage 2 — Apprentice (Levels 4–6)**
-*Estimated time: 6–12 months at consistent pace*
 
 First real code. Making things that look like something and then making them respond.
 
@@ -183,62 +204,51 @@ First real code. Making things that look like something and then making them res
 - Level 5: JavaScript fundamentals — variables, conditions, loops, in plain English before code
 - Level 6: Making pages interactive — buttons that do things, forms that check themselves, pages that remember
 
-Homework at this stage: every assignment ships something. A styled personal page that looks right on a phone. A working tip calculator. A form that won't let you submit it empty.
+Homework: every assignment ships something. A styled personal page that looks right on a phone. A working tip calculator. A form that won't let you submit it empty.
 
-The goal of Apprentice is to build the muscle memory of the problem-solving loop: write something, see what breaks, understand why, fix it, move forward. That loop is the core skill of every developer at every level.
+The goal of Apprentice is to build the muscle memory of the problem-solving loop: write something, see what breaks, understand why, fix it, move forward. That loop is the core skill of every developer at every level — from the person on Day 1 to the person with 20 years of experience.
 
 ---
 
-**Stage 3 — Builder (Levels 7–9)**
-*Estimated time: 12–18 months at consistent pace*
+**Year Two — Levels 7 through 12**
 
-The back end. Where data lives and how the internet actually works under the surface.
+The second year takes you from writing code to shipping real software that other people can actually use.
+
+**Stage 3 — Builder (Levels 7–9)**
+
+The back end. Where data lives and how the internet really works under the surface.
 
 - Level 7: Servers and APIs — what's happening on the other side of every form you've ever submitted
-- Level 8: Databases — storing things that persist, getting them back out, understanding why this matters
-- Level 9: Connecting front to back — making a full application where the two sides talk to each other
+- Level 8: Databases — storing things that survive a page refresh, getting them back out, understanding why this matters
+- Level 9: Connecting front to back — building a full application where the two sides talk to each other
 
-Homework at this stage: a guestbook that actually saves entries. A simple login system. A personal project of your own choosing that has a front end, a back end, and a database.
+Homework: a guestbook that actually saves entries. A simple login system. A personal project of your own choosing that has a front end, a back end, and a database — something you decided to make.
 
 The goal of Builder is full-stack thinking — the ability to hold the whole picture in your head and understand how every piece connects to every other piece.
 
----
-
 **Stage 4 — Journeyman (Levels 10–12)**
-*Estimated time: 6–12 months at consistent pace*
 
-Shipping real things. Version control, deployment, professional practices.
+Shipping real things. Professional tools and practices.
 
-- Level 10: Git — what it is, why every real developer uses it, how to stop being afraid of it
-- Level 11: Deployment — taking something off your local machine and putting it on the real internet for real people to use
-- Level 12: A complete project, start to finish — scoped, built, shipped, documented, and ready to show anyone
+- Level 10: Git — what it is, why every working developer uses it, how to stop being afraid of it
+- Level 11: Deployment — taking something off your machine and putting it on the real internet for real people to use
+- Level 12: A complete project, start to finish — scoped, planned, built, shipped, and ready to show anyone
 
-Homework at this stage: one real thing that anyone in the world can visit. Not a tutorial project. Your project. Something you decided to make and made.
+Homework: one real thing that anyone in the world can visit. Not a tutorial project. Yours. Something you decided to make and made all the way through.
 
-**Completing Level 12 earns Journeyman status.** You are a working developer. You can build real things. You can take on real work. The credential is real because the projects behind it are real.
+**Completing Level 12 earns Journeyman status.** You are a working developer. You can build real things. You can take on real clients. The credential is real because the projects behind it are real.
 
 ---
 
-### The Full Timeline
+### From Journeyman to Master
 
-At a consistent pace — not every day, but regularly, in a rhythm that fits a real life:
+After Level 12, the classroom ends and the real education begins.
 
-```
-Levels 1–3   (Beginner)     3–6 months
-Levels 4–6   (Apprentice)   6–12 months
-Levels 7–9   (Builder)      12–18 months
-Levels 10–12 (Journeyman)   6–12 months
+Master is not a certificate the Academy can give you. It has to be earned in the world — on projects that don't have instructions, for clients who don't know what they want, debugging things that weren't supposed to break, building things nobody has built quite this way before.
 
-Total: 2–4 years to Journeyman
-───────────────────────────────────────
-+ 5 years of constant real-world practice
+One year of that — consistent, challenging, real-world work — is what turns a Journeyman into a Master. Not calendar time. Work time. The developer who builds something every week for a year, takes on hard problems, and doesn't stop when it gets difficult. That's what makes a Master.
 
-= Master
-```
-
-Master is not a level the Academy awards. It can't be. Mastery comes from the work you do after the Academy — the problems you've never seen before, the projects that don't go as planned, the codebases you inherit from other people, the clients who change their mind at the worst possible time. Five years of that, on top of what the Academy builds, is what makes a Master.
-
-The Academy's job is to get someone to Journeyman. Everything after that is built in the world.
+By the end of Levels 1–12 and one hard year of real work, a student has everything they need to do their own work — independently, professionally, for themselves or for anyone who hires them.
 
 ---
 
@@ -289,15 +299,36 @@ This data never resets. Come back after a year away and the Forge knows exactly 
 
 ---
 
-### The Journeyman Certificate
+### What You Get When You Finish Level 12
 
-Completing Level 12 earns a certificate — a real, shareable credential with a unique public URL. It links to the actual projects built across all 12 levels. Not a badge. A portfolio. Proof that the work was done.
+Earning Journeyman status is real. The perks reflect that.
 
-When a student earns Journeyman status:
-- Their name (if they choose) goes in the Academy Hall — a public record of people who started at zero and finished
-- They receive a permanent discount on the Forge builder subscription — they've earned it
-- They're invited to mentor newer students — teaching is how knowledge sticks
-- They get credit toward contributing their own lessons if they have expertise to share
+**The Journeyman Certificate**
+A real, shareable credential with a unique public URL — not a digital badge, a portfolio page. It links to every project built across all 12 levels with a timestamp showing when each was completed. Anyone the graduate sends it to can see the actual work, not just a claim.
+
+**A Permanent Home in the Academy Hall**
+A public record at `13moonforge.ai/graduates` — real names, real completion dates, real project links. Students choose whether to be listed. Those who are listed can point anyone to it as proof of what they built.
+
+**Lifetime Forge Discount**
+Journeyman graduates receive a permanent 30% discount on any Forge subscription — forever, not just for the first year. They earned it. The Forge wants to keep them building.
+
+**Free Month of Forge Pro**
+The month they graduate, they get Forge Pro at no cost. An invitation to start building real things with the full tool now that they have the skills to use it.
+
+**The Journeyman Badge**
+A verified badge that follows them across every Town Square app. Visible on their profile everywhere in the ecosystem. When another person in the Town Square sees it, they know what it means.
+
+**Featured in the Forge Gallery**
+Their Level 12 capstone project — the thing they built start to finish — gets submitted to the Forge Gallery. Real proof that the workshop works. With permission, it's one of the first things a new visitor sees.
+
+**Early Access to New Features**
+Journeyman graduates get early access to new Forge tools and new Town Square apps before they're public. They helped prove the Academy works — they should see what's coming first.
+
+**The Right to Teach**
+Graduates are invited to mentor students who are earlier in the curriculum — through the Academy community, not as a support obligation but as an opportunity. Teaching is how knowledge gets solid. If a graduate wants to contribute a lesson in an area of deep expertise, they can submit it for review and get paid for it if it's published.
+
+**The Honest Thing to Say About These Perks**
+None of them are gimmicks. Each one exists because it's genuinely useful to someone who just spent two years building toward something real. The discount is real. The portfolio is real. The badge means something in the Town Square because the Town Square is a real community. These are the perks that a craftsperson would actually want — not confetti and a trophy.
 
 ---
 
@@ -331,7 +362,7 @@ The free Beginner stage is not a demo. Someone who finishes Level 3 understands 
 
 ---
 
-*"The goal of Forge Academy isn't to make people dependent on the Forge forever. It's to give someone the ability to build the thing they've always wanted to build and never had the tools to make. When they earn Journeyman, they're a working developer. The five years after that — that's on them. That's where Masters are made."*
+*"Two years of honest work through the Academy. One more year building hard in the real world. That's the path. At the end of it, you can build anything you can think of — for yourself, for clients, for the world. The Forge gets you there. Where you go after is yours."*
 
 ---
 
