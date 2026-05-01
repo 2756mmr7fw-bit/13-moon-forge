@@ -89,73 +89,105 @@ The student watches, asks, and then closes the board and writes it themselves. T
 
 ---
 
-## The Mock Environments — Learn the Tools Before You Touch the Real Ones
+## Teaching on the Real Tools
 
-One of the most common reasons people quit learning to code is not the code itself — it's the tools. GitHub looks like a cockpit. VS Code has a hundred buttons. The terminal gives no indication that it is working or waiting or broken. Godot opens with a 3D viewport and a menu bar with forty items.
+The Forge Academy does not simulate anyone's software. It teaches students on the actual tools — the same ones professional developers use every day.
 
-A student who encounters these tools cold, before they understand why any of it exists, gets overwhelmed and associates that overwhelm with coding itself. It is not coding that defeated them. It is the interface.
+When it is time to learn Git, the student downloads Git. When it is time to learn Godot, the student downloads Godot. When it is time to open a GitHub account, they open a real one. Moon AI walks them through every step of every tool they encounter — not in a simulated environment, but in the real application, on the student's own machine.
 
-The Forge Academy solves this with Mock Environments — simulated versions of the real tools, built inside the Forge, that students can explore and practice in before ever touching the actual application.
+This approach is cleaner in every way:
 
----
-
-### Mock Terminal
-
-The first tool every developer has to face is the terminal — the command line. It looks like 1985 and gives almost no feedback about whether what you typed was right or wrong. Students who have never used one find it genuinely intimidating.
-
-The Forge Mock Terminal looks and behaves exactly like a real terminal. It accepts commands, prints realistic output, and responds to mistakes the way a real terminal does — with error messages that students learn to read and understand. The difference is that nothing can actually go wrong. There is no real file system to accidentally delete. There is no real server to crash.
-
-By the time a student opens a real terminal for the first time, they have already typed `ls`, `cd`, `mkdir`, `rm`, and `git commit` dozens of times in the mock. The terminal no longer feels foreign. It feels like somewhere they have been before.
+- The student learns the real interface from the first day they open it
+- Nothing they learn is a simulation that has to be "unlearned" later
+- The tools belong to the companies that built them — the Academy uses them, not copies of them
+- Students build real familiarity with software that has real communities, real documentation, and real job listings that ask for it by name
 
 ---
 
-### Mock Code Editor — VS Code Interface
+### Student Choice — Learn the Tools You Want to Use
 
-VS Code is the most used code editor on earth. It was created by Microsoft, it is free, and every professional developer has at least seen it. It is also full of panels, sidebars, extensions, color themes, keybindings, and settings that mean nothing to someone who just wants to write their first function.
+Not every developer uses the same tools. That is not a problem — it is the point.
 
-The Forge Mock Editor gives students a VS Code-styled interface — the same dark theme, the same file explorer on the left, the same terminal panel at the bottom, the same color-coded syntax highlighting — in a clean version with only what the current level requires visible. As students advance, more of the real interface becomes available. By Level 6, the mock editor matches the real VS Code layout almost exactly, and the transition to the real application is nearly seamless.
+When a student reaches the level where a tool matters, Moon AI presents the options and explains what each one is for. The student chooses. Moon AI teaches them on what they chose.
 
-Students write their actual homework in this editor. It is not a demo — it is their workspace. The mock interface is the workspace, and it grows with them.
+**"I want to learn Godot."**
+Moon AI walks them through downloading Godot, opening it for the first time, understanding the interface panel by panel, and building their first scene. Every question the student asks — "what does this button do?", "why does my character fall through the floor?", "how do I add a script?" — is answered in the context of the real Godot, open in front of them.
 
----
+**"I'd rather use Unity."**
+Moon AI teaches Unity. Same depth, same patience, same chapter-by-chapter approach. The student learns Unity on Unity.
 
-### Mock GitHub
+**"I want to use GitHub."**
+Moon AI walks them through creating an account, making their first repository, their first commit, their first push. Real actions, real account, real green squares on their contribution graph.
 
-GitHub is where most of the world's code lives. It is the social network of developers, the backup system for every serious project, and the place where employers go to see what a developer has actually built. Learning to use it is not optional for anyone who wants to work professionally.
+**"I prefer Forgejo — I want to self-host."**
+Moon AI walks them through the Forge's own Forgejo instance at `git.13moonforge.ai`, or through setting up their own. The workflow is identical to GitHub. The philosophy is sovereignty.
 
-It is also deeply confusing to someone who has never used version control. Repositories, branches, commits, pull requests, forks, issues — none of these words mean anything until you have used them.
+**"I like VS Code."**
+Moon AI guides them through installing it, configuring it, installing the extensions that matter for their current level, and using it as their daily workspace.
 
-The Forge Mock GitHub gives students a GitHub-styled interface — the same repository view, the same commit history, the same file browser, the same green contribution graph — that they can practice in before creating a real GitHub account. Students create mock repositories, make mock commits, view mock diffs, and open mock pull requests. Forge walks them through each action as if it were a real workflow, because the workflow is identical to the real one.
-
-When a student creates their real GitHub account and pushes their first real commit, they have already done it twenty times. The only difference is that this time it counts.
-
----
-
-### Mock Forgejo — Your Git Server
-
-Because the Forge's own code lives on a self-hosted Forgejo instance at `git.13moonforge.ai`, Academy students also get a mock version of Forgejo — the same interface they will use when they graduate to pushing real code to their own projects on the Forge's infrastructure. Students who learn here are learning the actual workflow of the platform they are building on.
+**"I want to try Neovim."**
+Moon AI teaches Neovim. The student who wants full keyboard control and a terminal-native workflow gets that. It takes longer to get comfortable. It is worth it for the right person.
 
 ---
 
-### Mock Godot — Game Engine Introduction
+### How Moon AI Teaches Inside a Real Tool
 
-Godot is one of the most important game engines in the world — free, open source, and used by thousands of indie developers to build real commercial games. The Academy's game track leads students toward it. But opening Godot for the first time without context is like sitting in the cockpit of an airplane and being told to fly.
+The student has the real application open on their screen. Moon AI is open in the Forge on another screen, or on their phone, or in a split view.
 
-The Forge Mock Godot environment introduces the Godot interface — the scene panel, the inspector, the script editor, the node hierarchy — through guided exploration before the student installs the real application. Forge walks them through what each panel is for, why the node system works the way it does, and what a basic scene looks like when it is wired together correctly.
+Moon AI does not take over the student's computer. It describes. It guides. It answers.
 
-By the time a student opens the real Godot for the first time, they recognize every panel. The layout is familiar. The vocabulary makes sense. The learning curve drops dramatically.
+*"Open Godot. In the Scene panel on the left, right-click and choose 'Add Child Node.' Search for CharacterBody2D and select it. That node is what Godot uses for characters that move and collide with things. Now — what do you see in the inspector on the right?"*
 
-*Note: Godot also has an official web-based version that runs directly in a browser. Academy students in the game track will be given the option to use the real Godot in the browser as soon as they are ready — the mock environment is the on-ramp, not the destination.*
+The student follows the instruction in the real Godot. They ask questions in real time. Moon AI responds to what they are actually seeing, not a simplified version of it. When something goes wrong — and it will — Moon AI reads the error with them and explains what it means.
+
+This is pair programming with a mentor who knows every tool on the list and never has somewhere else to be.
 
 ---
 
-### The Mock Environment Philosophy
+### The Tool List — What Every Student Will Know
 
-Every mock environment in the Forge Academy exists for one reason: to remove the tool as a barrier to learning.
+By the end of the Academy, every student has real, hands-on experience with:
 
-The code is hard enough. The concepts take real effort. The debugging takes patience. A student should not also be fighting an unfamiliar interface at the same time they are trying to understand what a closure is.
+**Code Editors**
+- VS Code (default recommendation — free, used everywhere)
+- Their own choice if they want something different — Neovim, Zed, or any editor that works for them
 
-The mocks make the tools familiar before the stakes are real. When the student graduates to the real tool — the real terminal, the real VS Code, the real GitHub, the real Godot — they are walking into somewhere they have already been. The tool gets out of the way and the learning can happen.
+**Version Control**
+- Git — installed and used from the terminal
+- GitHub — real account, real repositories, real commit history that tells the story of two years of work
+- Forgejo — the Forge's own self-hosted Git server, because a developer who knows only GitHub is dependent on GitHub
+
+**The Terminal**
+- Real terminal on their own machine by Level 7
+- Comfortable navigating, running scripts, using Git, and SSHing into a remote server by graduation
+
+**Languages**
+- HTML, CSS, JavaScript, Node.js, SQL — built, used, and understood across all three major projects
+
+**Databases**
+- PostgreSQL — their primary database, used in the app build
+- Awareness of MongoDB, SQLite, and when each one makes sense
+
+**Game Engines**
+- Godot (default recommendation — free, open source, no royalties, belongs to the community)
+- Unity or Unreal if the student chooses — Moon AI teaches whichever they pick
+
+**Design**
+- Figma — free for individuals, used to plan layouts before building them
+
+**AI Tools**
+- Moon AI / Forge — their primary coding tutor and thinking partner throughout the Academy
+- Awareness of GitHub Copilot, ChatGPT, and Claude as professional tools — how to use them well and what to watch out for
+
+---
+
+### What This Means for the Companies Whose Tools Are Taught
+
+Every tool the Academy teaches gains a new user who actually understands it.
+
+A student who learned Godot through the Academy is not a person who downloaded Godot, got confused, and uninstalled it. They are a person who built a complete game in Godot, published it to itch.io, and knows the engine well enough to teach someone else. That is the most valuable kind of user a software platform can have.
+
+The Academy does not compete with GitHub, Godot, VS Code, or any of the tools it teaches. It builds the audience those tools need most: people who know how to use them, value them, and will keep using them for the rest of their careers.
 
 ---
 
