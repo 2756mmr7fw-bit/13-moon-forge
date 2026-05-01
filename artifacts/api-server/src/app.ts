@@ -1,6 +1,5 @@
 import express, { type Express } from "express";
 import cors from "cors";
-import path from "path";
 import compression from "compression";
 import pinoHttp from "pino-http";
 import { clerkMiddleware, getAuth } from "@clerk/express";
@@ -13,6 +12,9 @@ import { trackRequest, trackRlHit } from "./lib/trafficTracker";
 import { incrementUsage } from "./routes/quota";
 
 const app: Express = express();
+
+// Trust the reverse proxy (Replit's load balancer sets X-Forwarded-For)
+app.set("trust proxy", 1);
 
 app.use(
   pinoHttp({
@@ -122,21 +124,7 @@ app.use("/api/payments/checkout", authLimiter);
 
 app.use("/api", router);
 
-if (process.env["NODE_ENV"] === "production") {
-  const staticDir = path.join(__dirname, "public");
-  app.use(express.static(staticDir, {
-    maxAge: "7d",
-    immutable: true,
-    setHeaders(res, filePath) {
-      if (filePath.endsWith(".html")) {
-        res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-      }
-    },
-  }));
-  app.get("/{*splat}", (_req, res) => {
-    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-    res.sendFile(path.join(staticDir, "index.html"));
-  });
-}
+// The frontend (the-forge) is a separate artifact served by Vite.
+// The API server only handles /api routes — no static file fallback needed.
 
 export default app;
