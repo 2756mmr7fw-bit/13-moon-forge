@@ -159,7 +159,21 @@ The Academy teaches Levels 1 through 12. Completing Level 12 makes you a **Journ
 
 ### Who Can Join
 
-If you can read and write, you can start. That's the only requirement. No age limit. No prior experience. No technical background needed. A 12-year-old and a 65-year-old start at the same Level 1 and the Forge treats them both like they're capable — because they are.
+If you can read and write, you can start. That's the only requirement. No age limit. No prior experience. No technical background needed. A 12-year-old and a 65-year-old start at the same assessment and the Forge puts them exactly where they belong — because the goal is to learn, not to perform humility.
+
+**The Placement Assessment**
+
+Nobody should have to sit through what they already know. Before a student begins, the Forge asks a short series of real questions — not multiple choice, not a quiz — more like a conversation. What have you built before? What tools have you used? Can you explain what a variable is in your own words? Have you ever looked at a webpage's source code?
+
+From that conversation, the Forge places the student at their actual starting level. A complete beginner starts at Level 1. Someone with some experience might start at Level 4 or Level 6. Someone who's been building real things — deploying apps, working with databases, writing code that other people use — might start at Level 8 or 9 to fill in the formal gaps and round out what they know.
+
+The placement isn't a judgment. It's a service. The Academy's job is to move you forward from where you actually are, not where a syllabus assumes you should be.
+
+**The Builder Who Wants to Learn Too**
+
+The person who designed the Forge — who built a live app, a self-hosted Git server, a full monorepo with auto-deploy pipelines, a mobile app, a PostgreSQL database — is not a beginner. That's Builder-level work, somewhere around Level 7 or 8. The gaps at that level aren't in what's possible — they're in the underlying patterns, the formal practices, the deeper architecture that explains *why* things work the way they do.
+
+The Academy is for that person too. The Forge's founder is one of its first students. That's not a liability — it's proof. If the tool teaches the person who built it, it teaches anyone.
 
 ---
 
@@ -279,11 +293,23 @@ Every lesson uses the Forge's own tools. You write HTML in the Forge. You deploy
 
 ### Who Makes the Lessons
 
-Ezekiel writes them. The same voice and plain language that runs through everything else in the Forge — direct, calm, never condescending, always honest about why something works the way it does. Lessons are written as real explanations, not documentation.
+The Moon AI writes them.
 
-The Forge AI then personalizes delivery for each student — adjusting the depth of explanation based on how they're engaging, offering a different angle if the first one isn't landing, catching when someone is stuck before they give up. The core curriculum is human. The personalization is AI. The quality comes from the combination.
+Not placeholders. Not outlines waiting to be filled in. Complete lessons — explanations, examples, homework, follow-up — generated from the curriculum structure laid out in this blueprint and delivered to each student as something that feels personal, because it is. The AI isn't reading from a static page. It's writing for the person in front of it, at the level they're actually at, in language that matches what they already know.
 
-As the Academy grows, experienced members of the Town Square community can contribute lessons in areas of deep expertise — reviewed, edited to match the voice, and published. The standard for every lesson is simple: would a real person with real experience explain it this way? If not, rewrite it.
+This is possible because the same Moon AI that powers the rest of the Forge — answering questions, building projects, debugging code — can turn the curriculum structure (the 12 levels, the progression, what each level covers) into real teaching. The structure is the human part. The delivery is AI.
+
+**Why this is better than hand-written lessons:**
+
+A hand-written lesson says the same thing to everyone. If it doesn't land, the student is stuck until someone rewrites it. The AI has unlimited ways to explain something. If the first explanation doesn't work, it tries a different angle — a different metaphor, a simpler example, a different order. It doesn't run out of patience. It doesn't have a bad day. It doesn't skip the question that's embarrassing to ask.
+
+The AI also learns across students. When many people get stuck at the same point in Level 5, the lesson adjusts. The curriculum gets sharper over time without anyone manually editing it.
+
+**What the human layer looks like:**
+
+Ezekiel designs the curriculum structure — what each level covers, in what order, what the homework should produce. That structure is the blueprint the AI works from. It's reviewed periodically to make sure the AI's lessons are hitting the right notes and using the right language. The standard is simple: would a real person with real experience explain it this way? If yes, it ships. If not, the structure gets refined until it does.
+
+As the Town Square community grows, experienced members can flag gaps, suggest topics, and contribute structure — but the writing and delivery stays AI-powered. One consistent voice. Infinitely patient. Available at 2am when the lesson finally makes sense.
 
 ---
 
