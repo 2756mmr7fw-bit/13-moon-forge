@@ -118,7 +118,7 @@ The blueprint for each persona's entry:
 The core loop is effortless: come in, describe what you want, build it, deploy it to your server, walk away owning it. No rough edges. The Dreamer and the Solver can both do this without help.
 
 **Phase 2 — The Forge Teaches**
-Learning mode. The Forge explains its reasoning. The Learner has a path from "I don't know anything" to "I built something real." This is also what makes the Forge viral — people show their friends what they made.
+Learning mode. The Forge explains its reasoning. The Learner has a path from "I don't know anything" to "I built something real." This is where Forge Academy lives. See the dedicated section below.
 
 **Phase 3 — The Forge Runs on Your Server**
 The Forge itself becomes self-hostable. One command, any machine:
@@ -129,6 +129,131 @@ All AI integrations configurable (bring your own keys or run local models via Ol
 
 **Phase 4 — The Network**
 A directory of what the Forge has helped people create. Not a marketplace — proof of life. Real things, real people, real ownership. This is how the community forms without forcing it.
+
+---
+
+## Forge Academy — Learning to Code, K–12 and Beyond
+
+The Forge doesn't just build things. It teaches.
+
+Forge Academy is the built-in school inside the Forge. Anyone, starting from absolute zero, can walk in and walk out a real programmer. Not someday. Now. At their own pace, on their own terms, picking up exactly where they left off.
+
+---
+
+### The Idea
+
+Most coding courses treat you like a student in a classroom — fixed schedule, fixed pace, fixed curriculum. You either keep up or you fall behind. The Forge does the opposite. It knows where you are. It meets you there. It waits for you.
+
+The model is kindergarten through 12th grade. Not because the content is childlike — because the structure makes sense. You don't take algebra before arithmetic. You don't write functions before you understand variables. The curriculum has a natural order and the Forge respects it. But you move through it whenever you move through it. A lesson a day. A lesson a week. A lesson at 2am when the house is quiet. The Forge remembers.
+
+---
+
+### How It Works
+
+**Grade K–2: Before the Code**
+This is where everyone starts, no matter how intimidated they are. No code yet. Just concepts.
+- What is a computer actually doing when you click something?
+- What is a file? What is a folder? What is a program?
+- What does "run" mean? What does "error" mean?
+- Homework: change your desktop background using only the file system, no GUI
+
+The goal of these first lessons is to make the machine feel less like magic and more like a tool. Tools can be understood. Tools can be mastered. That shift in how someone sees their computer is the first real lesson.
+
+**Grade 3–5: First Real Code**
+HTML and CSS. Making things that look like something.
+- "This is how every website you've ever looked at is made"
+- Build a personal page — your name, your photo, something you like
+- Understand what a tag is, what a style is, what the browser actually does with your file
+- Homework: make your page look different on a phone than on a computer
+
+Everything is real. No fake exercises. Every lesson produces something you can show someone.
+
+**Grade 6–8: Making Things That Do Things**
+JavaScript. Making the page respond. Making decisions. Making things happen.
+- Variables, conditions, loops — in plain English first, then code
+- "Make a button that changes color when you click it"
+- "Make a page that remembers something between visits"
+- "Make a form that checks if you filled it out right before sending"
+- Homework: build a simple tip calculator
+
+By the end of middle school, the student has built real interactive things. They understand why code works, not just that it works.
+
+**Grade 9–10: The Back End**
+Where the data lives. How the internet actually works. Servers, databases, APIs.
+- What happens between when you click "submit" and when you see "your order was placed"
+- Build a simple API
+- Store something in a database and get it back out
+- Connect the front end to the back end — make one talk to the other
+- Homework: build a guestbook that actually saves entries
+
+**Grade 11–12: Ship Real Things**
+Putting it all together. Version control. Deployment. Real projects.
+- Git: what it is, why it matters, how to use it without fear
+- Deploy something to a real server — not localhost, the actual internet
+- Build a full small project from idea to live URL
+- Code review: understanding why the way you wrote something matters
+- Homework: publish one real thing that anyone in the world can visit
+
+**Post-Graduate: The Forge's Deep Tracks**
+For those who want to go further.
+- TypeScript, React, mobile apps
+- Docker, self-hosting, infrastructure
+- AI integration — making your own tools that use AI
+- Open source contribution — how to give back and build a reputation
+
+---
+
+### What Makes This Different From Every Other Coding Course
+
+**The Forge remembers where you left off — exactly.**
+Not "continue where you left off" in the Netflix sense. Exactly. If you stopped mid-lesson on a Tuesday and come back three weeks later, the Forge knows what you'd finished, what you'd submitted, what you'd struggled with, and what the next step is. You don't re-orient. You just continue.
+
+**Homework is real, not theoretical.**
+Every homework assignment produces something that exists. Something you can share. Something you can build on. There are no practice problems that don't connect to anything. Every exercise is a brick in something real.
+
+**The Forge explains, it doesn't lecture.**
+When you're stuck, you don't search Stack Overflow. You ask the Forge. "Why does this not work?" and the Forge explains — not with documentation quotes, but in the same plain language the lesson used. It knows what you know and what you don't. It explains at the right level.
+
+**You can go at any speed.**
+Some people will move through K–12 in a year. Some in five years. Some will take three months just to feel comfortable with HTML and that's fine. There's no cohort, no deadline, no one ahead of you to feel bad about. The only comparison is you from last month.
+
+**The Forge adapts to how you learn.**
+If you're someone who learns by seeing the whole picture first, the Forge shows you the finished product before explaining each piece. If you learn by doing, you get the exercise first and the explanation comes when you're stuck. The Forge figures this out from how you're engaging and adjusts without asking.
+
+---
+
+### The Curriculum Is the Forge Itself
+
+Every lesson in Forge Academy is built with the Forge's tools. When you get to the lesson on HTML, you write your HTML in the Forge. When you get to the lesson on deployment, you deploy using the Forge's deployment tools. The school is also the workshop.
+
+This is not incidental. It means:
+- Students graduate knowing how to use the best tool for the work they want to do
+- The Forge gets demonstrated value from every lesson — the student sees what it can do
+- There's no gap between "what I learned" and "the tool I use to do the work"
+
+---
+
+### The Progress Model
+
+Forge tracks three things per student:
+
+1. **Completed lessons** — what you've fully finished
+2. **Submitted homework** — what you've actually built, not just watched
+3. **Understood concepts** — inferred from how you engage with exercises and how you ask questions
+
+When you return after any gap of time — a day, a month, a year — the Forge opens with: "You're in Grade 7, lesson 4 — we were working on making a form validate before it submits. Want to pick up there?" One sentence. No re-orientation needed.
+
+---
+
+### Revenue
+
+Forge Academy is a value-add to the existing subscription. Subscribers get the full K–12 curriculum. Non-subscribers get the first few lessons — enough to know the Forge can actually teach them — and then hit a soft gate.
+
+This is not a separate product. It is the reason the Forge subscription becomes more valuable over time. A tool that can also teach you how to use it — and eventually how to build things without it — is a tool worth paying for.
+
+---
+
+*"The goal of Forge Academy isn't to make people dependent on the Forge forever. It's to give someone the ability to build the thing they've always wanted to build and never had the tools to make. When they graduate, they're a developer. Everything after that is theirs."*
 
 ---
 
