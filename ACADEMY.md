@@ -1206,12 +1206,68 @@ The student's final project is listed in the Forge Academy Hall — the public g
 - 30% lifetime discount on all Forge services
 - Free month of Forge Pro
 - Master badge across all 13 Town Square apps
-- Right to teach — Masters who want to contribute Academy lessons can write them (reviewed by Sovereign Digital, delivered by Moon AI)
+- Right to contribute — Masters who want to write Academy lessons can submit them. If a lesson is accepted and added to the curriculum, it carries the Master's name. That is not a job. It is a contribution. It is also one of the paths that leads to Sovereign.
 - Early access to every new Town Square app before public launch
 - A seat at the table — Masters are invited to give input on Academy curriculum decisions
 
 **The referral:**
 The Forge actively refers paying work to Masters. Not a guarantee — a genuine effort. When a client comes to 13 Moon Forge looking for a developer, the first people offered the work are Academy Masters. Their final project is their portfolio piece. Their Forge credential is their reference.
+
+---
+
+## The Path Beyond Master — What the Sovereign Credential Is
+
+Sovereign is not a level you complete. It is a recognition you earn — recognized first by the community, and confirmed by Sovereign Digital when the evidence is undeniable.
+
+You cannot apply for it. There is no test, no submission form, no committee that reviews your application. Sovereign is what happens when a Master keeps going long after graduation and builds a life that speaks for itself.
+
+---
+
+**What a Sovereign has done:**
+
+A Sovereign has built multiple things that earn. Not one Final Project — multiple products, tools, or services that generate real income. The products are live. Real people pay for them. The income is not a side note — it is the foundation of how that person lives and works.
+
+A Sovereign has achieved real independence. Nobody controls their schedule. Nobody approves their ideas. Nobody gives them permission to build the next thing. They wake up and decide what they are building today. The economic independence is not a goal they are working toward — it is the reality they are living in.
+
+A Sovereign has given back. They brought someone along. They reviewed a peer's work and made it better. They contributed a curriculum lesson that helped a student at Level 5 understand something they couldn't explain before. They answered questions in the community at 10pm because they remembered what it felt like to be stuck. Sovereign is not a solo achievement. It is an achievement that includes the people behind you.
+
+---
+
+**How you get there — the activities on the path:**
+
+These are not requirements. They are not assignments. They are the experiences that almost every Sovereign has gone through on the way — because they are the experiences that grow a Master into something more.
+
+**Reviewing a peer's work.**
+A Master who looks closely at another developer's code sees things they would never see in their own. Why did they structure it this way? What does that decision cost them? What would I do differently — and is my way actually better? The act of reviewing is not a service you provide. It is a mirror you look into. A student at any level can ask for a peer review. A Master who agrees to give one is doing it because it sharpens them.
+
+**Competing against peers.**
+The Academy runs live build competitions — a real brief, real time, real code, judged by the community. First, second, and third are recognized. Nobody has to enter. But the Master who enters a competition and loses learns something that winning cannot teach — and the Master who wins learns where the bar actually is. Both of them are better for it. Competition is optional. It is also one of the fastest growth experiences this school offers.
+
+**Collaborative builds.**
+As the student body grows, the Academy pairs Masters at random for shared projects. Two people who did not choose each other. One brief. One deadline. The collaboration is not designed to be comfortable. Working with someone else's decisions, style, and pace is exactly the kind of challenge that turns a developer who builds alone into a developer who can build with anyone.
+
+**Contributing curriculum.**
+A Master who has learned something — really learned it, not just done it but understood it — and can explain it clearly enough that a student at Level 5 can follow it has something worth writing down. Submitted lessons are reviewed by Sovereign Digital. Accepted lessons go into the curriculum with the contributor's name on them. This is not freelance work. This is service. It is also a permanent mark on the school that this person was here and left it better than they found it.
+
+---
+
+**What Sovereign recognition looks like:**
+
+The community notices first. A developer whose work keeps showing up, whose reviews sharpen other people's thinking, whose contributions show up in the curriculum, whose products are building real income — the community knows who they are before Sovereign Digital makes it official.
+
+When Sovereign Digital recognizes a Sovereign, it is not a certificate. It is a public acknowledgment — name, products, the things they built for the community, the people they brought along. It lives in the Forge's Sovereign Registry alongside the Credential Registry — a permanent record that this person reached the highest standard this school recognizes.
+
+A Sovereign carries the mark across every 13 Town Square app. They are listed in the Academy as an example of what the school builds. Their name is the answer to the question every new student asks: *"What does someone who finishes this school actually become?"*
+
+---
+
+**The honest statement about Sovereign:**
+
+Most Masters will not reach Sovereign. Not because they failed — because Sovereign is rare by design. It requires a level of output, independence, and contribution that takes years of deliberate effort after graduation. A Master is a serious accomplishment. A Sovereign is what happens when a Master doesn't stop.
+
+The school is not trying to manufacture Sovereigns. It is trying to build the kind of person who, given enough time and enough work, could become one. Every level, every build, every readiness check, every Open Shop brief, every peer review, every competition — all of it is building toward a person who has the tools, the habits, and the character to get there.
+
+More free thinkers. Fewer order takers. That is the mission. Sovereign is what the mission looks like when it fully succeeds.
 
 ---
 
