@@ -215,6 +215,25 @@ Every trade has a history. Coding has one of the most interesting ones on earth.
 - The people who built the internet, the web, the languages — real humans solving real problems, not mythical geniuses
 - Why there are hundreds of programming languages, what they're each for, and how a developer knows which one to reach for
 
+*The companies — who built the world students are learning to enter:*
+
+Every tool, every website, every app a student has ever used was built by a company or a person. Level 1 introduces the major players — not as corporations to admire, but as context for understanding where the industry came from and how it works.
+
+- **Microsoft** — built Windows and Office, now owns GitHub and VS Code (the most used code editor on earth), and runs Azure, one of the three clouds everything runs on. Also created TypeScript, which is how the Forge is built.
+- **Apple** — built the Mac, the iPhone, and iOS. Developers who build iPhone apps use Swift, a language Apple created. The App Store is how most mobile software reaches people — and Apple takes 30%.
+- **Google** — built the search engine, Chrome, Android, YouTube, and Google Cloud. Created Go (a programming language) and contributes massively to open source. Also owns the most used AI research organization on earth.
+- **Meta (Facebook)** — built Facebook, Instagram, and WhatsApp. Created React, the most popular way to build web interfaces in the world today — which is also what the Forge is built with.
+- **Amazon** — started as a bookstore, became the backbone of the internet. AWS (Amazon Web Services) powers a significant portion of every website a person visits. If AWS goes down, half the internet goes with it.
+- **Epic Games** — built Fortnite and the Unreal Engine, one of the two dominant game engines on earth. Unreal is free to use. Epic has spent years fighting Apple's 30% cut in court.
+- **Unity** — the other dominant game engine. Powers the majority of indie games. Changed their pricing model in 2023 in a way that enraged developers — a case study in why a tool's business model matters as much as its features.
+- **Valve / Steam** — built the dominant PC gaming marketplace. Created the Source engine (Half-Life, Portal, Counter-Strike). Run by almost no management structure — one of the most unusual successful companies in tech.
+- **id Software** — built Doom and Quake, released the source code for free, and in doing so taught an entire generation of developers how games work. John Carmack is one of the most important programmers in history.
+- **The open source world** — Linux (the operating system running most servers on earth, including the Forge's server), Mozilla (Firefox, the open-source browser), the Apache Foundation, the Linux Foundation. Software that nobody owns and everyone uses.
+- **Indie developers** — one person, one game, one app, no company. Minecraft was built by one person. So was Stardew Valley. So was Dwarf Fortress. This is the category the Academy exists to grow.
+
+*Why this matters for a student:*
+Understanding who built what — and how they built it — is what turns a student into someone who thinks like an industry insider before they've written their hundredth line of code. It also makes clear that the biggest, most used software in the world was built by people, not by magic. People who started exactly where the student is starting.
+
 *The theory:*
 - What is a computer actually doing? Not the marketing version — the real version. Instructions, memory, ones and zeros, in plain English.
 - What is a programming language? How does something you type turn into something a machine does?
@@ -226,7 +245,7 @@ Every trade has a history. Coding has one of the most interesting ones on earth.
 - What is a browser's developer tools and how to open them on any website right now
 - The Forge as your workshop — everything needed is already here, nothing to install
 
-*Homework:* Research one programming language that interests you — not necessarily the one you'll learn, just one that caught your eye. Write one paragraph in plain English: what was it made for and who made it?
+*Homework:* Pick one company from the list above. Research how they got started, what language they built their first product in, and one thing they built that you've actually used. Write three sentences about it.
 
 ---
 
@@ -322,6 +341,36 @@ Shipping real things. Professional tools and practices.
 Homework: one real thing that anyone in the world can visit. Not a tutorial project. Yours. Something you decided to make and made all the way through.
 
 **Completing Level 12 earns Journeyman status.** You are a working developer. You can build real things. You can take on real clients. The credential is real because the projects behind it are real.
+
+---
+
+### Where It All Points — The Video Game
+
+A student who reaches Level 12 should be able to look at a video game and think: *I could build something like that.*
+
+Not "I might someday maybe be able to." Actually think it. Because by Level 12, they have every skill it takes.
+
+A video game is not magic. It is:
+- A front end — the screen, the graphics, the interface (Levels 4–6)
+- Logic — decisions, conditions, movement, scoring, what happens when you win or lose (Levels 5–6)
+- Data — saved games, high scores, player profiles that persist (Levels 7–8)
+- A back end — multiplayer, leaderboards, accounts (Levels 8–9)
+- Deployment — putting it somewhere other people can actually play (Level 11)
+- A complete project — scoped, built, finished (Level 12)
+
+By Level 12, a student has built every one of those pieces. Not in a game — but in real projects that required the same skills. The gap between "I've built a full-stack web app" and "I can build a game" is smaller than most people think. The logic is the same. The tools are often the same. The confidence is what changes.
+
+The Academy introduces game development concepts across the curriculum — not as a separate track, but woven in. How does Doom's movement engine work? How does Minecraft store a world? How does a leaderboard decide who's on top? These aren't trivia questions. They're the same problems students are already solving, explained through a lens that makes the work feel exciting.
+
+**The Forge Academy Game Track (within Levels 10–12)**
+
+Students who want to go specifically into game development get a dedicated path inside the final stage:
+- Introduction to game loops — the heartbeat of every game ever made
+- Collision detection — how a game knows when something hit something else
+- Sprite and tile systems — how 2D games are built from small pieces
+- Building a complete small game — playable, shareable, actually fun
+
+This isn't a separate curriculum. It's the same Journeyman work, applied to games. A student who finishes the game track has a game in the gallery. A real one. One that works.
 
 ---
 
