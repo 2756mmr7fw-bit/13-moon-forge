@@ -194,9 +194,48 @@ This isn't a guarantee. It's what consistent effort actually produces. Some peop
 
 ---
 
+### The Three Builds — What Every Student Leaves With
+
+Every student who finishes the Academy leaves with three things they built themselves:
+
+**1. Their Website** — started in Level 3, grown across all 12 levels into a real, live, professional site with their name on it. Could be a portfolio, a business, a blog, a store — whatever they decided to make. It lives at a real URL. It can earn them real money.
+
+**2. Their App** — started in Level 5, fully functional by Level 9, deployed in Level 11. A real web application that stores data, has real users, and does something useful. Could be a tool, a service, a productivity app — their idea, their code, their product.
+
+**3. Their Game** — started in Level 10, complete by Level 12. A real, playable game. Small by commercial standards, but finished — and finished matters more than big. Could be listed on itch.io the day it's done. Could be the foundation of something much larger.
+
+Every one of these is the student's intellectual property. Not a tutorial project. Not an exercise. Theirs. To sell, to show, to build a career on, or to keep building.
+
+---
+
+### How Every Level Works — The Mix
+
+No level teaches just one thing. Every lesson connects to all three builds.
+
+A lesson on JavaScript loops (Level 5) teaches:
+- How a website uses a loop to display a list of articles
+- How an app uses a loop to process form entries
+- How a game uses a loop to move an enemy across the screen
+
+The same concept. Three different contexts. A student never has to wonder "when would I ever use this?" — they're already using it in three places.
+
+This also means every level advances all three builds at once. After Level 6, the website looks real, the app foundation is in place, and the student understands the logic that games are built from. Nothing is siloed. Everything connects.
+
+---
+
+### The Return and Improve Rule
+
+At any level, a student can go back to something they built earlier and make it better with what they know now.
+
+The Level 3 website was three lines of HTML. By Level 7, it can have a real back end. By Level 9, it can have a database behind it. By Level 11, it's deployed at a real domain. The student decides whether to keep building the original or start something new. Both are valid. The Forge remembers every version.
+
+This isn't optional extra credit. It's how real developers work. Nobody builds something once and never touches it again. A project grows with the person who made it.
+
+---
+
 **Year One — Levels 1 through 6**
 
-The first year takes you from knowing nothing to writing real interactive code.
+The first year takes you from knowing nothing to writing real interactive code and having the first version of your website and the foundation of your app.
 
 **Stage 1 — Beginner (Levels 1–3)**
 
@@ -302,45 +341,153 @@ The goal of the Beginner stage is one thing: make the machine feel like a tool t
 
 **Stage 2 — Apprentice (Levels 4–6)**
 
-First real code. Making things that look like something and then making them respond.
+The Apprentice stage is where things start to look real and behave like real software. Every lesson advances the website, lays the foundation of the app, and introduces the logic that games are built on.
 
-- Level 4: CSS — making your HTML look like a real page, not a document from 1994
-- Level 5: JavaScript fundamentals — variables, conditions, loops, in plain English before code
-- Level 6: Making pages interactive — buttons that do things, forms that check themselves, pages that remember
+---
 
-Homework: every assignment ships something. A styled personal page that looks right on a phone. A working tip calculator. A form that won't let you submit it empty.
+**Level 4 — Making It Look Real**
 
-The goal of Apprentice is to build the muscle memory of the problem-solving loop: write something, see what breaks, understand why, fix it, move forward. That loop is the core skill of every developer at every level — from the person on Day 1 to the person with 20 years of experience.
+*What's being taught:* CSS — the language that makes a page look like a real product instead of a text document.
+
+*Website build:* The Level 3 personal page gets a full visual treatment. Real layout. Real colors. Real typography. Looks right on a phone and a computer. By the end of Level 4, a student has a website they're not embarrassed to share.
+
+*App foundation:* Understanding how visual design connects to code — how a button is styled, how a form looks trustworthy, how layout communicates what something is for.
+
+*Game connection:* How game UI works — health bars, score displays, menus — are all CSS and layout concepts applied to a different canvas.
+
+*Homework:* Make your website look like something a professional would charge for. It doesn't have to be perfect. It has to be intentional.
+
+---
+
+**Level 5 — Making It Do Things**
+
+*What's being taught:* JavaScript — the language that makes everything interactive.
+
+*The concepts, in order:* Variables, conditions, loops, functions. Each one explained in plain English before a single line of code. Each one demonstrated in all three contexts — website, app, and game — at the same time.
+
+*Website build:* The website now responds. A navigation menu that opens and closes. A button that does something when clicked. A form that checks if it's filled out correctly before it submits.
+
+*App foundation:* The core logic of the app takes shape. What happens when a user clicks something? What happens when they submit information? What should the app remember?
+
+*Game connection:* Movement. A character that responds to a keypress. A score that goes up. A game over condition. These are the same JavaScript concepts — applied to a canvas instead of a webpage.
+
+*Homework:* Add one thing to your website that wasn't possible without JavaScript. Something that responds to the person using it.
+
+---
+
+**Level 6 — First App**
+
+*What's being taught:* Local storage, state management, and building something that works as a complete tool.
+
+*Website build:* The website can now save preferences. Remember what the visitor last looked at. Feel like a real product visit to visit.
+
+*App milestone — First App complete:* By the end of Level 6, the student has a working app. It runs in the browser. It does something useful. It saves information between sessions. It could be a to-do list, a budget tracker, a personal journal, a recipe box — whatever the student chose to make. It works. It's theirs.
+
+*Game connection:* The app-building skills map directly to game systems. A to-do list is a quest log. A budget tracker is an inventory system. A journal is a player diary. Students start to see these connections themselves.
+
+*Homework:* Finish your first app. It doesn't need a back end yet. It needs to do the one thing it's supposed to do, reliably, every time someone uses it.
 
 ---
 
 **Year Two — Levels 7 through 12**
 
-The second year takes you from writing code to shipping real software that other people can actually use.
+The second year takes everything built in Year One and makes it real — real back end, real database, real deployment, real game. By the end, all three builds are live on the internet and could start earning money the day they're published.
 
 **Stage 3 — Builder (Levels 7–9)**
 
-The back end. Where data lives and how the internet really works under the surface.
+---
 
-- Level 7: Servers and APIs — what's happening on the other side of every form you've ever submitted
-- Level 8: Databases — storing things that survive a page refresh, getting them back out, understanding why this matters
-- Level 9: Connecting front to back — building a full application where the two sides talk to each other
+**Level 7 — How the Back End Works**
 
-Homework: a guestbook that actually saves entries. A simple login system. A personal project of your own choosing that has a front end, a back end, and a database — something you decided to make.
+*What's being taught:* Servers and APIs — the invisible half of every app ever built.
 
-The goal of Builder is full-stack thinking — the ability to hold the whole picture in your head and understand how every piece connects to every other piece.
+*The concepts:* What is a server? What is an API? What happens between "submit" and "your data was saved"? Every student has used dozens of back ends without knowing it. Level 7 makes the invisible visible.
+
+*Website build:* The website can now send and receive data. A contact form that actually sends an email. A page that loads content from a real source instead of being hard-coded.
+
+*App build:* The first app gets a real back end. It no longer saves only to the browser — it saves to a server. Now two people on different computers can use the same app.
+
+*Game connection:* Online leaderboards, saved game state, multiplayer — all back end concepts. A game that saves your score to a server is the same architecture as an app that saves your budget.
+
+*Homework:* Add one server-side feature to your app. Something that would have been impossible with only front-end code.
+
+---
+
+**Level 8 — Databases**
+
+*What's being taught:* Where data actually lives, how it's organized, and how to get it back out.
+
+*The concepts:* Tables, rows, queries. Storing a user. Storing a post. Storing a score. Getting them back in the right order. Understanding why databases exist and what the world would look like without them.
+
+*Website build:* The website can now have real content that lives in a database. A blog where posts are stored and retrieved. A gallery where images are listed from a database. Content that can be added without editing code.
+
+*App build:* The app now has a real database behind it. User accounts. Persistent records. Data that survives a server restart.
+
+*Game build:* Player profiles. High score tables. Saved game state across devices. All of this is database work.
+
+*Homework:* Add a database to something you've already built. Take one thing that was hard-coded and make it dynamic — stored, retrieved, real.
+
+---
+
+**Level 9 — Full Stack — Everything Connected**
+
+*What's being taught:* Bringing front end and back end together into one complete working system.
+
+*App milestone — Full App complete:* By the end of Level 9, the student's app is fully connected. Front end talks to back end. Back end talks to database. User accounts work. Data persists. It is, by every meaningful definition, a real web application. It could be launched to the public today.
+
+*Website build:* The website is now fully dynamic. A real CMS behind it. Real user-generated content if the student wants it. A contact form with a real database behind it.
+
+*Game connection:* Understanding how a multiplayer game keeps two players in sync — the same client-server architecture the student just built for their app.
+
+*Homework:* Make your full app work end to end. Sign up. Log in. Do the thing the app is for. Log out. Come back and see that everything is still there.
+
+---
 
 **Stage 4 — Journeyman (Levels 10–12)**
 
-Shipping real things. Professional tools and practices.
+---
 
-- Level 10: Git — what it is, why every working developer uses it, how to stop being afraid of it
-- Level 11: Deployment — taking something off your machine and putting it on the real internet for real people to use
-- Level 12: A complete project, start to finish — scoped, planned, built, shipped, and ready to show anyone
+**Level 10 — Git and Professional Practice**
 
-Homework: one real thing that anyone in the world can visit. Not a tutorial project. Yours. Something you decided to make and made all the way through.
+*What's being taught:* Version control — the one tool every professional developer uses every day.
 
-**Completing Level 12 earns Journeyman status.** You are a working developer. You can build real things. You can take on real clients. The credential is real because the projects behind it are real.
+*The concepts:* What is a repository? What is a commit? What is a branch? How do you go back to a version that worked? How do developers work on the same code without destroying each other's work?
+
+*All three builds:* Everything the student has built goes into a real Git repository. Every project gets a proper version history. The student can now work like a professional — trying things, saving working states, going back if something breaks.
+
+*Game build begins:* The game project starts here, in a Git repository, managed like a real software project from day one.
+
+*Homework:* Put all three of your builds into Git repositories. Write a real README for each one — what it is, what it does, how to run it.
+
+---
+
+**Level 11 — Deployment — Live on the Internet**
+
+*What's being taught:* Taking something off a local machine and putting it where anyone in the world can use it.
+
+*Website milestone — Live:* The student's website is deployed to a real domain. It has a URL they can give anyone. It loads fast. It works on every device. It is, without qualification, a real website on the real internet.
+
+*App milestone — Live:* The app is deployed. Real users can sign up. Real data is stored. The thing the student built in nine levels of work is now a product.
+
+*Game build continues:* The game gets its first deployment — to itch.io, a game platform where indie developers publish their games. The same day it's deployed, it's available to millions of people.
+
+*Homework:* Deploy all three builds. Send the links to someone who doesn't know you built them and see what they say.
+
+---
+
+**Level 12 — The Capstone — Finish What You Started or Start Something New**
+
+*What's being taught:* Scoping, planning, building, and shipping a complete project from beginning to end.
+
+*The choice:* At Level 12, the student chooses. They can take one of their three builds and make it the best version it can be — fully designed, fully functional, polished enough to charge for. Or they can start something new, applying everything from Levels 1 through 11 to a fresh idea.
+
+*The game:* The Level 12 game milestone is a complete, playable game. Not a prototype. A game with a beginning, a middle, and an end — or an infinite loop if it's that kind of game. Something with a title screen, a score, a way to win or lose, and a share link. Something a student can list on itch.io the day they finish.
+
+*The standard:* By Level 12, a Journeyman's work should be able to earn real money. A website built at Level 12 is worth charging for. An app built at Level 12 can be subscribed to. A game built at Level 12 can be sold.
+
+*Homework:* Ship it. That's the whole assignment. Whatever you built — ship it. Put it in the world. Let people use it.
+
+**Completing Level 12 earns Journeyman status.** You are a working developer. You have a website, an app, and a game — all live, all yours, all capable of earning. The credential is real because the work behind it is real.
 
 ---
 
