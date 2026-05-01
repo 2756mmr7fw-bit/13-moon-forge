@@ -39,6 +39,40 @@ More free thinkers. Fewer order takers. That is the mission of this school.
 
 ---
 
+## Why This School Was Built — The Problem With the Path We Were Sold
+
+Most people who want to learn technology get told the same thing: go to college.
+
+So they go. They take out $40,000, $80,000, $120,000 in loans. They spend four years in classrooms studying things that were outdated before they walked in the door. They graduate with a degree, a title, and a debt that will follow them for the next decade — sometimes two. And then they apply for jobs. Entry-level jobs. Jobs that pay $45,000 a year with a boss, a cubicle, a manager above that manager, and no ownership of anything they produce. The degree was supposed to be the key. The job is the door it opened. And behind that door is another system they don't control, working on things they didn't choose, for an income that someone else sets.
+
+That is the path we were sold. Go to college. Get a degree. Find a job. Work for thirty years. Retire.
+
+The people who designed that path did not design it for your benefit.
+
+---
+
+The debt is not accidental. Student loan debt in the United States alone has crossed $1.7 trillion. The average borrower graduates owing $37,000. Graduate school pushes that to $80,000, $100,000, $150,000. Thirty percent of borrowers are still paying at age forty. Some are still paying at fifty. The degree becomes a financial anchor around the neck of the person who was told it was a ladder.
+
+And for what? For the right to apply for someone else's job. For a credential that only has value if an employer decides to recognize it. The diploma is not yours — it is a permission slip. Permission to be considered. Permission to be interviewed. Permission to be hired, managed, let go, and replaced when it suits someone else's spreadsheet.
+
+This school was not built because there was a gap in the bootcamp market.
+
+It was built because that path is broken and most people know it — and nobody has built a real alternative for the people who want out of it entirely.
+
+---
+
+The person this school was built for is not someone who failed in that system. It is someone who looked at it clearly and said: I want something different. I want to build something that belongs to me. I want income that doesn't depend on whether someone decided to keep me on this month. I want to make something real — something I can point to and say I built that, I own that, that earns while I sleep.
+
+That person exists in enormous numbers. They have ideas. They have drive. They have things they want to make. What they don't have is a school that speaks to them — because every school that exists is still pointing toward the same door.
+
+This school points somewhere else.
+
+$504 total for the full curriculum — no ongoing subscription, no income share agreement, no percentage of your future earnings going back to an institution. You buy the work in sections. You own what you complete. When you finish, the product you built is yours — permanently and entirely — and it already exists in the market. Nobody owns a piece of it. Nobody can take it. Nobody sets the terms of what you do with it.
+
+That is the alternative. That is why this school exists.
+
+---
+
 ## The First Lesson — Free, Before Anything Else
 
 The first lesson costs nothing. No subscription. No credit card. Just a conversation with Moon AI.
