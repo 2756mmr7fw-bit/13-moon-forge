@@ -1056,6 +1056,56 @@ Three builds. All live. All theirs. All capable of generating income. The creden
 
 ---
 
+## The Open Shop — Real Work for Real People
+
+When the student body is large enough and the Forge has seen enough completed builds to trust the quality, the Academy opens its doors to anyone in the world who needs a website or an app built.
+
+Free. No charge to the person who needs it. Built by students who are ready.
+
+This is the shop class model. People drop cars at the automotive class because the students need real engines to work on — not simulated ones, not toy ones. Real engines with real problems that have to actually run when finished. The Forge does the same thing for software. A small business that needs a website, a community organization that needs an app, a person with an idea they can't afford to hire a developer to build — they submit a brief. Students build it. The work becomes theirs to use.
+
+---
+
+**Who participates:**
+
+Not every student. The Forge decides who is ready. A student who has completed their curriculum to a standard the Forge believes in — who has built things that work, that are clean, that a real person could actually use — gets invited into the Open Shop program. Before that point, they are still learning. The Open Shop is where that learning meets the world.
+
+Every student who reaches this threshold will complete at least one Open Shop build. It is not optional. It is a required part of the path to Journeyman. Not because the Academy needs the labor — because the student needs the experience. There is no simulation that replicates what happens when a real person is going to use what you built.
+
+---
+
+**How it works:**
+
+Someone submits a brief — what they need, who it's for, what it should do. The Forge reviews it and opens it to eligible students. Every student who wants to take it on builds their version. When the builds are ready, the person who submitted the brief reviews all of them and chooses the one they want.
+
+That work becomes theirs. They own it. They can use it, modify it, build on it. It is a complete piece of software built specifically for them — at no cost.
+
+---
+
+**What happens when more than one student builds for the same person:**
+
+The one that's chosen gets chosen. The ones that aren't chosen don't lose anything — not progress, not standing, not their place in the curriculum. There is no fail grade for not being picked.
+
+What they get is something no lesson can give them: a direct comparison. They can see the build that was chosen. They can see what they would do differently now that they know what the person preferred. That is not failure — that is professional development. Every working developer has submitted something that didn't get chosen. Learning to look at what did get chosen and understand why is a skill in itself.
+
+The student whose build was selected has something no other student has yet: a real person who looked at real options and chose their work. That goes in the portfolio. It goes in the credential. It's different from everything else they've built because someone else decided it was the best one.
+
+---
+
+**What this does for the school:**
+
+Every person whose website or app was built by a Forge student is a permanent part of the school's reputation. They didn't get a tutorial project. They didn't get a mock build. They got real software, built by a real student, that they are using in the real world. When someone asks how they got their website, they will say where it came from.
+
+That is not a marketing strategy. That is the school doing what it said it would do — producing developers capable of building real things — and the proof walking around in the world.
+
+---
+
+**When the Open Shop opens:**
+
+Not on day one. When the Forge has enough students completing their builds at a quality level that the school is confident in what it's putting in front of real people. The reputation of every student who participates in the Open Shop is the reputation of the school. The school will not open the shop before it's ready to be proud of every build that comes out of it.
+
+---
+
 # THE MASTER FINAL — The Project That Graduates You
 
 The Academy curriculum ends at Level 12. Master is what comes after — and it has different rules.
