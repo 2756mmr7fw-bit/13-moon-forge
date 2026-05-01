@@ -61,6 +61,99 @@ At any level, a student can return to something they built earlier and improve i
 
 ---
 
+## The Books — The Spine of the Curriculum
+
+The Academy does not teach from videos. It teaches from books.
+
+Every level of the Academy is built around a real, respected textbook. The student gets the book — free online or as a physical copy they buy once and keep forever. Forge knows the book chapter by chapter. The student reads. When something doesn't click, they ask Forge. Forge explains that exact concept from that exact chapter in a new way until it lands. When the student finishes a chapter, Forge gives them a challenge built from what that chapter covered. They build something small. Forge checks it — not for a grade, but to confirm real understanding before they move forward.
+
+No subscription to a video platform. No monthly fee for course access. The books are free or a one-time purchase. The student owns them permanently.
+
+---
+
+### The Complete Book List — Level by Level
+
+---
+
+**Levels 3–4 — HTML and CSS**
+
+**"Learn to Code HTML & CSS"** by Shay Howe
+Free at `learn.shayhowe.com` — Creative Commons license. Available to read in full online at no cost. Clear, well-structured, used by thousands of self-taught developers. Covers exactly what Levels 3 and 4 require — HTML structure, CSS styling, layout, and responsive design. Students who want a physical copy can print it or find it cheaply used.
+
+---
+
+**Levels 5–6 — JavaScript**
+
+**"Eloquent JavaScript"** (3rd Edition) by Marijn Haverbeke
+Free at `eloquentjavascript.net` — Creative Commons license. Print copy is approximately $20 on Amazon, and it is worth every dollar. This is the most respected free JavaScript book in existence — used by developers all over the world, referenced by professionals, and honest about difficulty in a way that most beginner books are not. It does not talk down to the reader. It expects them to think. That is exactly what the Academy expects too.
+
+Covers: values, variables, conditions, loops, functions, data structures, objects, the Document Object Model, and building small programs from scratch. Every concept in Levels 5 and 6 maps directly to a chapter in this book.
+
+*If videos exist:* Marijn has given talks available on YouTube. They are supplemental — the book itself is complete and self-contained. No video purchase is required.
+
+---
+
+**Levels 7–9 — The Back End and Full Stack**
+
+**"You Don't Know JS Yet"** (2nd Edition) by Kyle Simpson
+Free on GitHub at `github.com/getify/You-Dont-Know-JS` — print editions available through O'Reilly. This is a series of six short books that go deep into how JavaScript actually works — not just how to use it. It covers the things that trip up developers who learned from tutorials: scope, closures, the `this` keyword, prototypes, and asynchronous programming. These are exactly the concepts that separate a developer who can write JavaScript from a developer who understands it.
+
+Levels 7–9 use this series alongside Mozilla's MDN Web Docs (the official, free reference for every web technology that exists) for Node.js, APIs, and database fundamentals.
+
+*If videos exist:* Kyle Simpson has taught video courses through Frontend Masters. If a student wants them, they are a one-time course purchase — not a monthly subscription. The books are complete without them. The videos are an option, not a requirement.
+
+---
+
+**Level 10 — Git**
+
+**"Pro Git"** (2nd Edition) by Scott Chacon and Ben Straub
+Free at `git-scm.com/book` — Creative Commons license. Print is approximately $20. This is the official Git book — written by the people who work on Git, free forever, updated regularly, available in multiple languages. Every professional developer who uses Git seriously has referenced this book. Level 10 works through the chapters that matter most: how Git stores data, how branching works, how to fix mistakes, how to collaborate.
+
+No videos needed. The book is clear enough to stand alone.
+
+---
+
+**Levels 10–12 — Game Programming**
+
+**"Game Programming Patterns"** by Robert Nystrom
+Free at `gameprogrammingpatterns.com` — print is approximately $40. This book does something rare: it explains the patterns that games are built from in plain English, with clear examples, without requiring the student to already know game development. Game loops, state machines, component systems, collision architecture — each one explained as a pattern the student has already seen in a different context. The game track in Levels 10–12 follows this book's structure directly.
+
+*Print note:* The print edition of this book is worth buying. Robert Nystrom spent years writing it and the physical version is well-made. It sits on the desk of professional game developers. A student who buys it is putting a professional reference on their shelf, not just completing a level.
+
+---
+
+### The Master Class Book
+
+**"Clean Code: A Handbook of Agile Software Craftsmanship"** by Robert C. Martin
+
+This is the book for the Master track. One-time purchase, approximately $35–$40. Not available free — and worth every dollar.
+
+"Clean Code" is the most referenced book in professional software development. It is not about learning to code. It is about learning to code *well* — in a way that other professionals respect, that future developers (including yourself, six months later) can read and understand, and that holds up when real stakes are involved.
+
+It covers: naming things properly, writing functions that do one thing and do it clearly, handling errors without hiding them, writing code that can be tested, and the discipline of leaving code cleaner than you found it. These are the things that separate a developer who finishes things from a developer who builds things that last.
+
+Every developer who has read this book remembers reading it. It changes how you look at code you wrote before. A Master who finishes this book and applies it to their Final Project is writing code at a professional standard — not just code that works, but code that other professionals would not be embarrassed to inherit.
+
+*Companion book (optional, also one-time):* **"The Pragmatic Programmer"** by David Thomas and Andrew Hunt. If "Clean Code" is about how to write good code, "The Pragmatic Programmer" is about how to think like a professional who is in it for the long haul — how to learn, how to stay current, how to approach a career in development with integrity. Many developers consider these two books the most important they ever read. Together they cost about $80. Both are a one-time purchase. Both are permanent.
+
+---
+
+### How Forge Works With the Books
+
+The student has the book open. Forge knows the book.
+
+When the student starts a new chapter, Forge gives them a brief orientation — what this chapter is going to cover, why it matters, and what to watch for as they read. Not a summary. An orientation. The student still reads every word.
+
+When the student finishes reading and has questions, they come to Forge. Forge does not repeat what the book said. It finds a different angle, a different example, a different way in — until the concept clicks.
+
+When the student is ready to practice, Forge gives them a challenge that uses exactly what the chapter covered. They build something. Forge reviews it — not to grade it, but to confirm that the understanding is real and not just surface-level.
+
+When the challenge is done and the understanding is solid, the student moves to the next chapter.
+
+That is the entire model. Read, ask, build, confirm, advance. The book provides the structure. Forge provides the conversation. The student provides the work.
+
+---
+
 ## The Timeline — Honest and Realistic
 
 There is no deadline in the Academy. Levels do not expire. Students do not fall behind.
