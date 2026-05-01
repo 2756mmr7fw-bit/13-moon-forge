@@ -245,11 +245,53 @@ When you return after any gap of time — a day, a month, a year — the Forge o
 
 ---
 
-### Revenue
+### Pricing — Its Own Subscription, Its Own Value
 
-Forge Academy is a value-add to the existing subscription. Subscribers get the full K–12 curriculum. Non-subscribers get the first few lessons — enough to know the Forge can actually teach them — and then hit a soft gate.
+Forge Academy is **not** bundled with the main Forge subscription. It stands alone. This matters for two reasons:
 
-This is not a separate product. It is the reason the Forge subscription becomes more valuable over time. A tool that can also teach you how to use it — and eventually how to build things without it — is a tool worth paying for.
+**For the student:** They may only want to learn. They shouldn't have to pay for a full builder subscription just to take a class. A student who can't code yet has no use for deployment tools and AI code generation — they're not there yet. Make it easy to say yes to the thing they actually need.
+
+**For you:** The AI time, the curriculum serving, the progress tracking — these cost real money per user. Bundling it would mean subsidizing every learner's AI usage inside the general subscription price. That's not sustainable. A separate subscription means the price covers what's actually being consumed.
+
+---
+
+**The pricing structure:**
+
+```
+Free:              Grades K–2 — the first 8 lessons, no account required
+                   Enough to know this is real. Enough to get hooked.
+
+Academy:           $9/month — or $79/year (saves two months)
+                   Full K–12 curriculum
+                   Homework review and AI feedback on your submissions
+                   Progress saved forever — come back anytime, pick up exactly where you left off
+                   Certificate of completion at each grade band
+
+Academy + Forge:   $24/month — or $199/year
+                   Everything in Academy plus the full Forge builder subscription
+                   For students who are ready to start building real things
+                   One account, both tools, discounted from buying separately
+```
+
+---
+
+**Why $9:**
+
+The honest math: $9/month is a tank of gas, a streaming service, two fast food meals. For that, someone learns to code — a skill that changes what's possible for the rest of their life. The price should feel like nothing compared to the value. It also needs to actually cover the AI costs per active learner plus a margin that keeps the lights on. $9 does both.
+
+**Why a year option:**
+
+Learning takes time. A monthly subscription creates anxiety — "am I learning fast enough to justify paying this month?" A year option removes that. Pay once, learn at whatever pace is real to your life. $79 is less than a single college textbook.
+
+**The bundle discount is real:**
+
+$9 Academy + $19 Forge = $28 separately. The bundle at $24 saves $4/month. That's not a gimmick — it's an acknowledgment that the two tools are better together and the student who's ready to build deserves a reward for that readiness.
+
+---
+
+**What the free tier is for:**
+
+The free 8 lessons are not a demo. They're a complete beginning. A person who finishes grade K–2 understands how computers work and has written their first lines of HTML. That's real. That's theirs forever. If they want more, they pay. If they walk away having learned something real and never pay — that's still a win. That's the Forge's reputation being built one person at a time.
 
 ---
 
