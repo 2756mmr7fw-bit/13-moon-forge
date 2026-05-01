@@ -61,6 +61,8 @@ const Gallery          = lazy(() => import("@/pages/gallery"));
 const Promise          = lazy(() => import("@/pages/promise"));
 const TownSquare       = lazy(() => import("@/pages/town-square"));
 const Academy          = lazy(() => import("@/pages/academy"));
+const ForgeHosting     = lazy(() => import("@/pages/forge-hosting"));
+const ForgeDrop        = lazy(() => import("@/pages/forge-drop"));
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
@@ -320,6 +322,8 @@ function Router() {
                     <Route path="/build-with-me"         component={BuildWithMe} />
                     <Route path="/gallery"               component={Gallery} />
                     <Route path="/town-square"           component={TownSquare} />
+                    <Route path="/forge-hosting"         component={ForgeHosting} />
+                    <Route path="/forge-drop"            component={ForgeDrop} />
                     <Route component={NotFound} />
                   </Switch>
                 </ProtectedRoute>
