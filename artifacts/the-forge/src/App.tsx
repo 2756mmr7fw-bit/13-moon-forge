@@ -63,6 +63,7 @@ const TownSquare       = lazy(() => import("@/pages/town-square"));
 const Academy          = lazy(() => import("@/pages/academy"));
 const ForgeHosting     = lazy(() => import("@/pages/forge-hosting"));
 const ForgeDrop        = lazy(() => import("@/pages/forge-drop"));
+const MailScanner      = lazy(() => import("@/pages/mail-scanner"));
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
@@ -324,6 +325,7 @@ function Router() {
                     <Route path="/town-square"           component={TownSquare} />
                     <Route path="/forge-hosting"         component={ForgeHosting} />
                     <Route path="/forge-drop"            component={ForgeDrop} />
+                    <Route path="/mail-scanner"          component={MailScanner} />
                     <Route component={NotFound} />
                   </Switch>
                 </ProtectedRoute>

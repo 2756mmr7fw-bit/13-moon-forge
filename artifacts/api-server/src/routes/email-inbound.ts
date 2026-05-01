@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { forgeMailbox, workspaceItemsTable } from "@workspace/db";
+import { forgeMailbox, forgeMailAttachments, workspaceItemsTable } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
 
 const router = Router();
@@ -71,8 +71,9 @@ router.post("/inbound/email", async (req, res) => {
       return res.json({ ok: true, note: "no matching forge address" });
     }
 
-    // ── Save attachments to Workspace ─────────────────────────────────────────
-    const savedFiles: string[] = [];
+    // ── Pre-process attachments ───────────────────────────────────────────────
+    const savedFiles: string[]                                            = [];
+    const pendingAtts: { filename: string; mime: string; content: string; sizeBytes: number }[] = [];
 
     for (const att of attachments) {
       const filename: string = att.filename ?? att.name ?? "attachment";
@@ -81,9 +82,11 @@ router.post("/inbound/email", async (req, res) => {
 
       if (!content) continue;
 
-      // Store as data URI in workspace content — frontend can decode/download
-      const dataUri = `data:${mime};base64,${content}`;
+      const sizeBytes = Math.round((content.length * 3) / 4);
+      pendingAtts.push({ filename, mime, content, sizeBytes });
 
+      // Also mirror into Workspace for backwards compatibility
+      const dataUri = `data:${mime};base64,${content}`;
       await db.insert(workspaceItemsTable).values({
         userId,
         type:    "file",
@@ -105,14 +108,29 @@ router.post("/inbound/email", async (req, res) => {
       ? `${bodyText}${attachmentSummary}`
       : attachmentSummary || "(No message body)";
 
-    await db.insert(forgeMailbox).values({
+    const [message] = await db.insert(forgeMailbox).values({
       userId,
       fromName:    fromName || fromAddr || "Email",
       fromAddress: fromAddr,
       subject:     subject + (savedFiles.length > 0 ? ` [${savedFiles.length} file${savedFiles.length > 1 ? "s" : ""} saved]` : ""),
       body:        fullBody,
       folder:      "inbox",
-    });
+    }).returning();
+
+    // ── Record each attachment for the mail scanner ───────────────────────────
+    if (message && pendingAtts.length > 0) {
+      for (const att of pendingAtts) {
+        await db.insert(forgeMailAttachments).values({
+          messageId: message.id,
+          userId,
+          filename:  att.filename,
+          mime:      att.mime,
+          sizeBytes: att.sizeBytes,
+          content:   att.content,
+          scanStatus: "pending",
+        });
+      }
+    }
 
     res.json({ ok: true, filesaved: savedFiles.length });
   } catch (err: any) {

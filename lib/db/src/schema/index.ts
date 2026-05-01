@@ -4,6 +4,7 @@ export * from "./deploy";
 export * from "./usage";
 export * from "./workspace";
 export * from "./mailbox";
+export * from "./mailAttachments";
 export * from "./userLinks";
 export * from "./moonEntitlements";
 export * from "./chatSessions";
