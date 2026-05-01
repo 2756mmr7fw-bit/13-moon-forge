@@ -60,6 +60,7 @@ const BuildWithMe      = lazy(() => import("@/pages/build-with-me"));
 const Gallery          = lazy(() => import("@/pages/gallery"));
 const Promise          = lazy(() => import("@/pages/promise"));
 const TownSquare       = lazy(() => import("@/pages/town-square"));
+const Academy          = lazy(() => import("@/pages/academy"));
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
@@ -270,6 +271,7 @@ function Router() {
               {/* ── Public routes ── */}
               <Route path="/pricing" component={Pricing} />
               <Route path="/promise" component={Promise} />
+              <Route path="/academy" component={Academy} />
               <Route path="/payment/success" component={PaymentSuccess} />
               <Route path="/download" component={Download} />
               <Route path="/remote/:sessionId" component={RemoteViewer} />
