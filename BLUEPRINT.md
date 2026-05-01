@@ -137,107 +137,143 @@ A directory of what the Forge has helped people create. Not a marketplace — pr
 
 ---
 
-## Forge Academy — Learning to Code, K–12 and Beyond
+## Forge Academy — From Absolute Zero to Journeyman
 
 The Forge doesn't just build things. It teaches.
 
-Forge Academy is the built-in school inside the Forge. Anyone, starting from absolute zero, can walk in and walk out a real programmer. Not someday. Now. At their own pace, on their own terms, picking up exactly where they left off.
+Forge Academy is the built-in school inside the Forge. Anyone — starting from zero, knowing nothing, intimidated by everything — can walk in and walk out a working developer. At their own pace. On their own terms. Picking up exactly where they left off every single time.
+
+The Forge starts at Level 1. Not Level 3. Not "some prior experience required." Level 1, lesson 1, no prerequisites. That's the promise and it doesn't bend.
 
 ---
 
-### The Idea
+### The Craft Model — How Developers Have Always Been Made
 
-Most coding courses treat you like a student in a classroom — fixed schedule, fixed pace, fixed curriculum. You either keep up or you fall behind. The Forge does the opposite. It knows where you are. It meets you there. It waits for you.
+Coding isn't a subject. It's a trade. You learn it the way any trade has ever been learned: you start as a beginner, you practice until you're an apprentice, you build real things until you're a journeyman, and then — only after years of working in the real world — you become a master.
 
-The model is kindergarten through 12th grade. Not because the content is childlike — because the structure makes sense. You don't take algebra before arithmetic. You don't write functions before you understand variables. The curriculum has a natural order and the Forge respects it. But you move through it whenever you move through it. A lesson a day. A lesson a week. A lesson at 2am when the house is quiet. The Forge remembers.
+The Academy teaches Levels 1 through 12. Completing Level 12 makes you a **Journeyman** — someone who can build real things professionally, take on real clients, and solve problems independently. That credential means something because it's earned.
+
+**Master** is what comes after. Five years of constant, real-world practice on top of everything the Academy teaches. Not a class you finish. A way of working you grow into. The Academy doesn't promise to make Masters — it promises to build the foundation that Masters stand on.
 
 ---
 
-### The Curriculum
+### The Four Stages and Their Timeline
 
-**Grade K–2: Before the Code**
-No code yet. Just understanding the machine.
-- What is a computer actually doing when you click something?
-- What is a file? What is a folder? What is a program?
-- What does "run" mean? What does "error" mean?
-- Homework: explore your computer's file system and find three things you never knew were there
+**Stage 1 — Beginner (Levels 1–3)**
+*Estimated time: 3–6 months at consistent pace*
 
-The goal is to make the machine feel less like magic and more like a tool. Tools can be understood. Tools can be mastered.
+Before the code. Understanding what a computer actually is.
 
-**Grade 3–5: First Real Code**
-HTML and CSS. Making things that look like something.
-- "This is how every website you've ever looked at is made"
-- Build a personal page — your name, your photo, something you like
-- Understand what a tag is, what a style is, what the browser does with your file
-- Homework: make your page look different on a phone than on a computer
+- Level 1: What is a computer doing when you click something? Files, folders, programs — in plain English
+- Level 2: How the internet works — what happens between typing a URL and seeing a page
+- Level 3: Your first HTML — making something appear in a browser with your own hands
 
-Everything is real. No fake exercises. Every lesson produces something you can show someone.
+Homework at this stage: real exploration tasks. Find three things on your computer you didn't know were there. Look at the source code of a website you use every day. Change one thing on a webpage using your browser's developer tools and see what happens.
 
-**Grade 6–8: Making Things That Do Things**
-JavaScript. Making the page respond.
-- Variables, conditions, loops — in plain English first, then in code
-- Make a button that changes color when you click it
-- Make a page that remembers something between visits
-- Make a form that checks if you filled it out right before sending
-- Homework: build a working tip calculator
+The goal of Beginner is one thing: make the machine feel less like magic and more like a tool. Tools can be understood. Tools can be learned. That shift is the first real lesson.
 
-By the end of middle school, the student has built real interactive things. They understand why code works, not just that it works.
+---
 
-**Grade 9–10: The Back End**
-Where the data lives. How the internet actually works.
-- What happens between "submit" and "your order was placed"
-- Build a simple API
-- Store something in a database and get it back out
-- Connect a front end to a back end — make one talk to the other
-- Homework: build a guestbook that actually saves entries
+**Stage 2 — Apprentice (Levels 4–6)**
+*Estimated time: 6–12 months at consistent pace*
 
-**Grade 11–12: Ship Real Things**
-Putting it all together.
-- Git: what it is, why it matters, how to use it without fear
-- Deploy something to a real server — not localhost, the actual internet
-- Build a full small project from idea to live URL
-- Code review: understanding why the way you wrote something matters
-- Homework: publish one real thing that anyone in the world can visit
+First real code. Making things that look like something and then making them respond.
 
-**Post-Graduate: Deep Tracks**
-For those who want to keep going.
-- TypeScript, React, mobile apps
-- Docker, self-hosting, infrastructure
-- AI integration — making your own tools that use AI
-- Open source contribution — how to give back and build a reputation
+- Level 4: CSS — making your HTML look like a real page, not a document from 1994
+- Level 5: JavaScript fundamentals — variables, conditions, loops, in plain English before code
+- Level 6: Making pages interactive — buttons that do things, forms that check themselves, pages that remember
+
+Homework at this stage: every assignment ships something. A styled personal page that looks right on a phone. A working tip calculator. A form that won't let you submit it empty.
+
+The goal of Apprentice is to build the muscle memory of the problem-solving loop: write something, see what breaks, understand why, fix it, move forward. That loop is the core skill of every developer at every level.
+
+---
+
+**Stage 3 — Builder (Levels 7–9)**
+*Estimated time: 12–18 months at consistent pace*
+
+The back end. Where data lives and how the internet actually works under the surface.
+
+- Level 7: Servers and APIs — what's happening on the other side of every form you've ever submitted
+- Level 8: Databases — storing things that persist, getting them back out, understanding why this matters
+- Level 9: Connecting front to back — making a full application where the two sides talk to each other
+
+Homework at this stage: a guestbook that actually saves entries. A simple login system. A personal project of your own choosing that has a front end, a back end, and a database.
+
+The goal of Builder is full-stack thinking — the ability to hold the whole picture in your head and understand how every piece connects to every other piece.
+
+---
+
+**Stage 4 — Journeyman (Levels 10–12)**
+*Estimated time: 6–12 months at consistent pace*
+
+Shipping real things. Version control, deployment, professional practices.
+
+- Level 10: Git — what it is, why every real developer uses it, how to stop being afraid of it
+- Level 11: Deployment — taking something off your local machine and putting it on the real internet for real people to use
+- Level 12: A complete project, start to finish — scoped, built, shipped, documented, and ready to show anyone
+
+Homework at this stage: one real thing that anyone in the world can visit. Not a tutorial project. Your project. Something you decided to make and made.
+
+**Completing Level 12 earns Journeyman status.** You are a working developer. You can build real things. You can take on real work. The credential is real because the projects behind it are real.
+
+---
+
+### The Full Timeline
+
+At a consistent pace — not every day, but regularly, in a rhythm that fits a real life:
+
+```
+Levels 1–3   (Beginner)     3–6 months
+Levels 4–6   (Apprentice)   6–12 months
+Levels 7–9   (Builder)      12–18 months
+Levels 10–12 (Journeyman)   6–12 months
+
+Total: 2–4 years to Journeyman
+───────────────────────────────────────
++ 5 years of constant real-world practice
+
+= Master
+```
+
+Master is not a level the Academy awards. It can't be. Mastery comes from the work you do after the Academy — the problems you've never seen before, the projects that don't go as planned, the codebases you inherit from other people, the clients who change their mind at the worst possible time. Five years of that, on top of what the Academy builds, is what makes a Master.
+
+The Academy's job is to get someone to Journeyman. Everything after that is built in the world.
 
 ---
 
 ### What Makes This Different
 
+**The Forge starts where you actually are.**
+Level 1. No assumed knowledge. The grandma with a napkin idea and the self-taught person who knows a little and wants to know more both start at the same place — and the Forge figures out quickly what you already know and stops explaining things you don't need explained.
+
 **The Forge remembers exactly where you left off.**
-Not approximately. If you stopped mid-lesson three weeks ago, the Forge knows what you finished, what you submitted, what you struggled with, and what the next step is. One sentence. You continue.
+Not approximately. If you stopped in the middle of Level 8 three months ago, the Forge opens with: *"You're in Level 8, lesson 3 — we were connecting your front end to the database. Want to pick up there?"* One sentence. No re-orientation.
 
-**Homework is real, not theoretical.**
-Every assignment produces something that exists. Something you can share. Every exercise is a brick in something real.
+**Homework builds something real every time.**
+No practice problems that don't connect to anything. Every assignment is a brick in something real that you own when the lesson is over.
 
-**The Forge explains, it doesn't lecture.**
-When you're stuck, you ask the Forge. It explains in the same plain language the lesson used — at the right level for where you are, not where the textbook assumes you should be.
+**The Forge explains. It doesn't lecture.**
+When you're stuck, you ask. The Forge explains at the level you're actually at — not where the curriculum assumes you should be.
 
 **No pace pressure.**
-Some people finish K–12 in a year. Some take five. There's no cohort, no deadline, no one ahead of you. The only comparison is you from last month.
-
-**The Forge adapts to how you learn.**
-If you learn by seeing the whole picture first, you get the finished product before the explanation. If you learn by doing, you get the exercise first. The Forge figures this out from how you engage and adjusts without asking.
+Some people finish in two years. Some take six. There's no cohort, no deadline, no one ahead of you to feel bad about. The only comparison is you from last month.
 
 ---
 
 ### The Curriculum Is the Forge Itself
 
-Every lesson in Forge Academy uses the Forge's tools. When you study HTML, you write it in the Forge. When you study deployment, you deploy with the Forge. The school is the workshop. Students graduate knowing how to use the best tool for the work they want to do.
+Every lesson uses the Forge's own tools. You write HTML in the Forge. You deploy with the Forge. When you finish Level 12, you don't just know how to code — you know how to use the best builder tool available. The school and the workshop are the same place.
 
 ---
 
 ### Who Makes the Lessons
 
-The curriculum is built by Ezekiel first — the same voice and plain language that runs through everything else in the Forge. Lessons are written as real explanations, not documentation. Then the Forge AI extends and personalizes each lesson based on the student's level. The core curriculum is human-authored. The personalization is AI-assisted. The quality comes from the combination.
+Ezekiel writes them. The same voice and plain language that runs through everything else in the Forge — direct, calm, never condescending, always honest about why something works the way it does. Lessons are written as real explanations, not documentation.
 
-As the Academy grows, guest instructors from the Town Square community can contribute lessons in areas of deep expertise — reviewed and published the same way. The standard for every lesson is: would a real person with real experience explain it this way? If not, rewrite it.
+The Forge AI then personalizes delivery for each student — adjusting the depth of explanation based on how they're engaging, offering a different angle if the first one isn't landing, catching when someone is stuck before they give up. The core curriculum is human. The personalization is AI. The quality comes from the combination.
+
+As the Academy grows, experienced members of the Town Square community can contribute lessons in areas of deep expertise — reviewed, edited to match the voice, and published. The standard for every lesson is simple: would a real person with real experience explain it this way? If not, rewrite it.
 
 ---
 
@@ -246,55 +282,56 @@ As the Academy grows, guest instructors from the Town Square community can contr
 The Forge tracks three things per student:
 
 1. **Completed lessons** — what you've fully finished
-2. **Submitted homework** — what you've actually built, not just watched
-3. **Understood concepts** — inferred from how you engage, how you ask questions, where you get stuck
+2. **Submitted homework** — what you've actually built, not just read
+3. **Understood concepts** — inferred from how you engage, where you slow down, what questions you ask
 
-When you return after any gap of time — a day, a month, a year — the Forge opens with: *"You're in Grade 7, lesson 4 — we were working on making a form validate before it submits. Want to pick up there?"* One sentence. No re-orientation needed.
+This data never resets. Come back after a year away and the Forge knows exactly where you are.
 
 ---
 
-### The Graduate Story
+### The Journeyman Certificate
 
-Finishing Grade 12 means something. When a student completes the final grade:
-- They receive a certificate of completion — a real, shareable credential with a unique URL that proves what they built
+Completing Level 12 earns a certificate — a real, shareable credential with a unique public URL. It links to the actual projects built across all 12 levels. Not a badge. A portfolio. Proof that the work was done.
+
+When a student earns Journeyman status:
 - Their name (if they choose) goes in the Academy Hall — a public record of people who started at zero and finished
-- They get a permanent discount on the Forge builder subscription — they've earned it, and the Forge wants to keep them building
-- They're invited to mentor newer students in the Town Square community — teaching is how knowledge sticks
-
-The certificate links to the actual projects they shipped across K–12. It's not a badge. It's a portfolio.
+- They receive a permanent discount on the Forge builder subscription — they've earned it
+- They're invited to mentor newer students — teaching is how knowledge sticks
+- They get credit toward contributing their own lessons if they have expertise to share
 
 ---
 
 ### Academy Pricing
 
-Forge Academy is its own subscription, separate from the main Forge. This matters for two reasons.
+Forge Academy is its own subscription, separate from the main Forge builder.
 
-**For the student:** A learner who can't code yet has no use for deployment tools and AI code generation. Don't make them pay for things they're not ready for. Make it easy to say yes to the thing they actually need.
+**For the student:** A beginner has no use for deployment tools and AI code generation yet. Don't make them pay for things they're not ready for. Make it easy to say yes to the thing they actually need.
 
-**For the business:** AI tutoring per learner costs real money. Bundling it into the general subscription would quietly subsidize every learner's usage. Separate subscription, separate cost, sustainable economics.
+**For the business:** AI tutoring per learner costs real money. Bundling it into the general subscription subsidizes every learner's usage invisibly. Separate subscription, separate cost, honest economics.
 
 ```
-Free:              Grades K–2 — the first 8 lessons, no account required
-                   A complete beginning, not a teaser
+Free:              Levels 1–3 — the full Beginner stage, no account required
+                   A complete first chapter, not a teaser
+                   Finish it and you understand computers and have written real HTML
 
 Academy:           $9/month — or $79/year (saves two months)
-                   Full K–12 curriculum
-                   AI feedback on homework submissions
-                   Progress saved forever
-                   Certificate of completion at each grade band
+                   Full Levels 1–12 curriculum through Journeyman
+                   AI feedback on every homework submission
+                   Progress saved forever — come back anytime
+                   Journeyman certificate upon completion
                    Access to the Academy community
 
 Academy + Forge:   $24/month — or $199/year
                    Everything in Academy plus the full Forge builder subscription
                    One account, both tools, discounted from buying separately
-                   ($9 Academy + $19 Forge = $28 separately — bundle saves $4/month)
+                   ($9 + $19 = $28 separately — bundle saves $4/month)
 ```
 
-The free 8 lessons are not a demo. A person who finishes Grade K–2 understands how computers work. That's real and it's theirs forever. If they pay, good. If they walk away having learned something and never pay — that's the Forge's reputation being built one person at a time.
+The free Beginner stage is not a demo. Someone who finishes Level 3 understands how computers and the internet work and has written their first real HTML. That's theirs. If they pay to continue, good. If they walk away having learned something real and never pay — that's the Forge's reputation being built one person at a time.
 
 ---
 
-*"The goal of Forge Academy isn't to make people dependent on the Forge forever. It's to give someone the ability to build the thing they've always wanted to build and never had the tools to make. When they graduate, they're a developer. Everything after that is theirs."*
+*"The goal of Forge Academy isn't to make people dependent on the Forge forever. It's to give someone the ability to build the thing they've always wanted to build and never had the tools to make. When they earn Journeyman, they're a working developer. The five years after that — that's on them. That's where Masters are made."*
 
 ---
 
