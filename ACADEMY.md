@@ -265,6 +265,20 @@ The mock environments make the tools familiar without fear. The real tools make 
 
 ---
 
+## On Copyright, the Tools, and the Books
+
+The Forge Academy is not competing with GitHub, VS Code, Godot, Eloquent JavaScript, or any of the tools and books it teaches. It is doing the opposite.
+
+Every student who goes through the Academy creates a real GitHub account. They install the real VS Code. They download the real Godot. They read the real books — and the ones that cost money, they buy. The Academy is not a replacement for any of these things. It is the reason a person goes and gets them.
+
+This is free advertising for every platform and author the Academy teaches. A student who had never heard of Godot before enrolling will have a Godot account, a real project, and a deep familiarity with the engine by the time they finish the game track. That is a customer Godot did not have before. The Academy made them one.
+
+The same is true for the books. Forge does not reproduce the text of Eloquent JavaScript or Clean Code. It teaches the concepts those books contain — which is what every teacher, tutor, professor, and study group has done with every textbook in history. The difference between explaining a concept from a book and copying the book is the same difference that has made education legal since the beginning of education. And for the authors, a student who understands and values a book is far more likely to buy the physical copy, recommend it to others, and credit it for their growth. That is not copyright infringement. That is the best possible outcome for an author.
+
+The Academy's relationship with every tool and book it teaches is the same: we explain it, we respect it, we send students to it, and we create new people who value it. That is not a legal gray area. That is how learning has always worked.
+
+---
+
 ## The Books — The Spine of the Curriculum
 
 The Academy does not teach from videos. It teaches from books.
