@@ -27,12 +27,19 @@ interface ForgeMessage {
 type Folder = "inbox" | "starred" | "trash";
 
 async function apiFetch(path: string, opts: RequestInit = {}) {
-  const res = await fetch(`${API}${path}`, {
-    headers: { "Content-Type": "application/json", ...(opts.headers ?? {}) },
-    ...opts,
-  });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 12000);
+  try {
+    const res = await fetch(`${API}${path}`, {
+      headers: { "Content-Type": "application/json", ...(opts.headers ?? {}) },
+      signal: controller.signal,
+      ...opts,
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 export default function ForgeInbox() {
@@ -41,12 +48,14 @@ export default function ForgeInbox() {
   const [messages, setMessages] = useState<ForgeMessage[]>([]);
   const [selected, setSelected] = useState<ForgeMessage | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
   const forgeEmail = user ? `${user.id}@forge.13moonforge.ai` : "—";
 
   const load = useCallback(async () => {
     setLoading(true);
+    setError(null);
     setSelected(null);
     try {
       const endpoint = folder === "inbox" ? "/api/mailbox"
@@ -54,7 +63,11 @@ export default function ForgeInbox() {
         : "/api/mailbox/trash";
       const data = await apiFetch(endpoint);
       setMessages(data);
-    } catch {
+    } catch (err: any) {
+      const msg = err?.name === "AbortError"
+        ? "Request timed out — the server took too long to respond."
+        : "Could not load messages. Check your connection and try again.";
+      setError(msg);
       setMessages([]);
     } finally {
       setLoading(false);
@@ -179,6 +192,20 @@ export default function ForgeInbox() {
           {loading ? (
             <div className="flex-1 flex items-center justify-center text-muted-foreground">
               <Loader2 size={20} className="animate-spin" />
+            </div>
+          ) : error ? (
+            <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground p-8 text-center gap-3">
+              <Mail size={32} className="opacity-20" />
+              <div>
+                <p className="text-sm font-medium text-destructive">Failed to load</p>
+                <p className="text-xs mt-1 opacity-70">{error}</p>
+              </div>
+              <button
+                onClick={load}
+                className="flex items-center gap-1.5 text-xs text-primary hover:underline mt-1"
+              >
+                <RefreshCw size={12} /> Try again
+              </button>
             </div>
           ) : messages.length === 0 ? (
             <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground p-8 text-center gap-3">
