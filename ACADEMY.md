@@ -1235,19 +1235,21 @@ A Sovereign has given back. They brought someone along. They reviewed a peer's w
 
 **How you get there — the activities on the path:**
 
-These are not requirements. They are not assignments. They are the experiences that almost every Sovereign has gone through on the way — because they are the experiences that grow a Master into something more.
+These are not requirements. They are not assignments. They are optional. But here is what they have in common: every one of them exists to help someone else get further. That is not a coincidence. That is the point.
+
+A Sovereign is not someone who climbed to the top alone. A Sovereign is someone who climbed and then turned around and pulled. The activities on this path are the turning around. You benefit too — your thinking sharpens, your perspective deepens, your own code gets clearer when you explain someone else's. But that is a byproduct. The reason you do these things is the person behind you who is trying to get where you are.
 
 **Reviewing a peer's work.**
-A Master who looks closely at another developer's code sees things they would never see in their own. Why did they structure it this way? What does that decision cost them? What would I do differently — and is my way actually better? The act of reviewing is not a service you provide. It is a mirror you look into. A student at any level can ask for a peer review. A Master who agrees to give one is doing it because it sharpens them.
+A student who is stuck on something they cannot name — a structure that feels wrong, code that works but doesn't make sense, a design that doesn't hold — can ask for a peer review. When a Journeyman or Master agrees to give one, they are not doing a favor. They are doing something harder: looking at someone else's work with enough care to see what it needs, and explaining it in a way that actually moves that person forward. The review is not about showing what you know. It is about getting that student one step closer to where you are.
 
 **Competing against peers.**
-The Academy runs live build competitions — a real brief, real time, real code, judged by the community. First, second, and third are recognized. Nobody has to enter. But the Master who enters a competition and loses learns something that winning cannot teach — and the Master who wins learns where the bar actually is. Both of them are better for it. Competition is optional. It is also one of the fastest growth experiences this school offers.
+The Academy runs live build competitions — a real brief, a real clock, real code, judged by the community. First, second, and third are recognized. Nobody has to enter. But when experienced developers compete openly, two things happen: the people competing find out where the bar actually is, and everyone watching sees what is possible. A student at Level 6 who watches a Master build in real time learns more in an hour than they could learn from a week of tutorials. The competition lifts the room — not just the competitors.
 
 **Collaborative builds.**
-As the student body grows, the Academy pairs Masters at random for shared projects. Two people who did not choose each other. One brief. One deadline. The collaboration is not designed to be comfortable. Working with someone else's decisions, style, and pace is exactly the kind of challenge that turns a developer who builds alone into a developer who can build with anyone.
+As the student body grows, the Academy pairs developers at random for shared projects. Two people who did not choose each other. One brief. One deadline. The pairing is sometimes a Journeyman and a Master working side by side on the same codebase. That pairing is not accidental. A Journeyman working alongside someone further along gets pulled forward faster than they would go alone. The Master is not tutoring — they are building. But building alongside someone who can see how they make decisions is one of the most effective forms of teaching that exists.
 
 **Contributing curriculum.**
-A Master who has learned something — really learned it, not just done it but understood it — and can explain it clearly enough that a student at Level 5 can follow it has something worth writing down. Submitted lessons are reviewed by Sovereign Digital. Accepted lessons go into the curriculum with the contributor's name on them. This is not freelance work. This is service. It is also a permanent mark on the school that this person was here and left it better than they found it.
+A Master who has learned something — really learned it, not just done it but understood it — and can explain it clearly enough that a student at Level 5 can follow it has something worth writing down. Submitted lessons are reviewed by Sovereign Digital. Accepted lessons go into the curriculum with the contributor's name on them. This is not freelance work. This is not a job posting. This is the work of making sure the student who comes after you does not have to struggle the same way you did — because you wrote down what you finally understood, and now it is part of the school forever.
 
 ---
 
