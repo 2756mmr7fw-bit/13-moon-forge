@@ -1,5 +1,8 @@
 # 13 Moon Forge — Master Blueprint
 
+**Sovereign Digital LLC**
+Last updated: May 2026
+
 ---
 
 ## The One Sentence
@@ -80,19 +83,21 @@ This is what no other tool has. It's also the curiosity hook — nobody else is 
 
 **The Gallery** — real things people built in the Forge. No mockups. Actual deployed projects. Proof the workshop works.
 
-**The Forge Letter** — a short, irregular dispatch. Not a newsletter. More like a transmission. What's being made. What the moon phase means for builders. Who's doing interesting work.
+**The Forge Letter** — a short, irregular dispatch. Not a newsletter. More like a transmission. What's being made. What the moon phase means for builders this cycle. One person who built something real and what it took. Published when there's something worth saying — not on a schedule. Readers who find it will share it because it doesn't feel like marketing.
 
-**Open Builds** — with permission, people can share their build sessions. Watching the AI and a human build something together in real time is compelling.
+**Open Builds** — with permission, people can share their build sessions. Watching the AI and a human build something together in real time is compelling. Not a tutorial. An honest record of how something got made.
 
 **The Philosophy Page** — a clear, honest statement of values. No buzzwords. Just: here's what we believe, here's why we built this, here's who it's for. People who resonate will share it without being asked.
 
-**The README is the Manifesto** — the GitHub/Forgejo README isn't documentation. It's the story. The first thing anyone sees when they find the repo answers: what is this, why does it exist, and who is it for. Not installation instructions. Not feature lists. The story. Installation comes after the reader already cares.
+**The README is the Manifesto** — the Forgejo README isn't documentation. It's the story. The first thing anyone sees when they find the repo answers: what is this, why does it exist, and who is it for. Not installation instructions. Not feature lists. The story. Installation comes after the reader already cares.
 
 ---
 
 ## The Mobile App
 
-There is already a mobile Forge. That's not a footnote — that's huge. The person who has an idea at 2am shouldn't have to open a laptop. Building from your phone, checking on a deployed project from your phone, getting a notification that your moon phase is shifting into creation mode — this is a first-class experience, not a stripped-down version. The mobile app deserves its own design language and onboarding that meets people where they are.
+There is already a mobile Forge. That's not a footnote — that's huge. The person who has an idea at 2am shouldn't have to open a laptop. Building from your phone, checking on a deployed project from your phone, getting a notification that your moon phase is shifting into creation mode — this is a first-class experience, not a stripped-down version.
+
+The mobile app's role in the Town Square grows over time. It starts as a mobile window into the Forge. Eventually it becomes the mobile window into every app in the family — one app on your phone, every service inside it. The mobile app deserves its own design language and onboarding that meets people where they are.
 
 ---
 
@@ -118,7 +123,7 @@ The blueprint for each persona's entry:
 The core loop is effortless: come in, describe what you want, build it, deploy it to your server, walk away owning it. No rough edges. The Dreamer and the Solver can both do this without help.
 
 **Phase 2 — The Forge Teaches**
-Learning mode. The Forge explains its reasoning. The Learner has a path from "I don't know anything" to "I built something real." This is where Forge Academy lives. See the dedicated section below.
+Learning mode. The Forge explains its reasoning. The Learner has a path from "I don't know anything" to "I built something real." This is where Forge Academy lives.
 
 **Phase 3 — The Forge Runs on Your Server**
 The Forge itself becomes self-hostable. One command, any machine:
@@ -148,54 +153,54 @@ The model is kindergarten through 12th grade. Not because the content is childli
 
 ---
 
-### How It Works
+### The Curriculum
 
 **Grade K–2: Before the Code**
-This is where everyone starts, no matter how intimidated they are. No code yet. Just concepts.
+No code yet. Just understanding the machine.
 - What is a computer actually doing when you click something?
 - What is a file? What is a folder? What is a program?
 - What does "run" mean? What does "error" mean?
-- Homework: change your desktop background using only the file system, no GUI
+- Homework: explore your computer's file system and find three things you never knew were there
 
-The goal of these first lessons is to make the machine feel less like magic and more like a tool. Tools can be understood. Tools can be mastered. That shift in how someone sees their computer is the first real lesson.
+The goal is to make the machine feel less like magic and more like a tool. Tools can be understood. Tools can be mastered.
 
 **Grade 3–5: First Real Code**
 HTML and CSS. Making things that look like something.
 - "This is how every website you've ever looked at is made"
 - Build a personal page — your name, your photo, something you like
-- Understand what a tag is, what a style is, what the browser actually does with your file
+- Understand what a tag is, what a style is, what the browser does with your file
 - Homework: make your page look different on a phone than on a computer
 
 Everything is real. No fake exercises. Every lesson produces something you can show someone.
 
 **Grade 6–8: Making Things That Do Things**
-JavaScript. Making the page respond. Making decisions. Making things happen.
-- Variables, conditions, loops — in plain English first, then code
-- "Make a button that changes color when you click it"
-- "Make a page that remembers something between visits"
-- "Make a form that checks if you filled it out right before sending"
-- Homework: build a simple tip calculator
+JavaScript. Making the page respond.
+- Variables, conditions, loops — in plain English first, then in code
+- Make a button that changes color when you click it
+- Make a page that remembers something between visits
+- Make a form that checks if you filled it out right before sending
+- Homework: build a working tip calculator
 
 By the end of middle school, the student has built real interactive things. They understand why code works, not just that it works.
 
 **Grade 9–10: The Back End**
-Where the data lives. How the internet actually works. Servers, databases, APIs.
-- What happens between when you click "submit" and when you see "your order was placed"
+Where the data lives. How the internet actually works.
+- What happens between "submit" and "your order was placed"
 - Build a simple API
 - Store something in a database and get it back out
-- Connect the front end to the back end — make one talk to the other
+- Connect a front end to a back end — make one talk to the other
 - Homework: build a guestbook that actually saves entries
 
 **Grade 11–12: Ship Real Things**
-Putting it all together. Version control. Deployment. Real projects.
+Putting it all together.
 - Git: what it is, why it matters, how to use it without fear
 - Deploy something to a real server — not localhost, the actual internet
 - Build a full small project from idea to live URL
 - Code review: understanding why the way you wrote something matters
 - Homework: publish one real thing that anyone in the world can visit
 
-**Post-Graduate: The Forge's Deep Tracks**
-For those who want to go further.
+**Post-Graduate: Deep Tracks**
+For those who want to keep going.
 - TypeScript, React, mobile apps
 - Docker, self-hosting, infrastructure
 - AI integration — making your own tools that use AI
@@ -203,95 +208,89 @@ For those who want to go further.
 
 ---
 
-### What Makes This Different From Every Other Coding Course
+### What Makes This Different
 
-**The Forge remembers where you left off — exactly.**
-Not "continue where you left off" in the Netflix sense. Exactly. If you stopped mid-lesson on a Tuesday and come back three weeks later, the Forge knows what you'd finished, what you'd submitted, what you'd struggled with, and what the next step is. You don't re-orient. You just continue.
+**The Forge remembers exactly where you left off.**
+Not approximately. If you stopped mid-lesson three weeks ago, the Forge knows what you finished, what you submitted, what you struggled with, and what the next step is. One sentence. You continue.
 
 **Homework is real, not theoretical.**
-Every homework assignment produces something that exists. Something you can share. Something you can build on. There are no practice problems that don't connect to anything. Every exercise is a brick in something real.
+Every assignment produces something that exists. Something you can share. Every exercise is a brick in something real.
 
 **The Forge explains, it doesn't lecture.**
-When you're stuck, you don't search Stack Overflow. You ask the Forge. "Why does this not work?" and the Forge explains — not with documentation quotes, but in the same plain language the lesson used. It knows what you know and what you don't. It explains at the right level.
+When you're stuck, you ask the Forge. It explains in the same plain language the lesson used — at the right level for where you are, not where the textbook assumes you should be.
 
-**You can go at any speed.**
-Some people will move through K–12 in a year. Some in five years. Some will take three months just to feel comfortable with HTML and that's fine. There's no cohort, no deadline, no one ahead of you to feel bad about. The only comparison is you from last month.
+**No pace pressure.**
+Some people finish K–12 in a year. Some take five. There's no cohort, no deadline, no one ahead of you. The only comparison is you from last month.
 
 **The Forge adapts to how you learn.**
-If you're someone who learns by seeing the whole picture first, the Forge shows you the finished product before explaining each piece. If you learn by doing, you get the exercise first and the explanation comes when you're stuck. The Forge figures this out from how you're engaging and adjusts without asking.
+If you learn by seeing the whole picture first, you get the finished product before the explanation. If you learn by doing, you get the exercise first. The Forge figures this out from how you engage and adjusts without asking.
 
 ---
 
 ### The Curriculum Is the Forge Itself
 
-Every lesson in Forge Academy is built with the Forge's tools. When you get to the lesson on HTML, you write your HTML in the Forge. When you get to the lesson on deployment, you deploy using the Forge's deployment tools. The school is also the workshop.
+Every lesson in Forge Academy uses the Forge's tools. When you study HTML, you write it in the Forge. When you study deployment, you deploy with the Forge. The school is the workshop. Students graduate knowing how to use the best tool for the work they want to do.
 
-This is not incidental. It means:
-- Students graduate knowing how to use the best tool for the work they want to do
-- The Forge gets demonstrated value from every lesson — the student sees what it can do
-- There's no gap between "what I learned" and "the tool I use to do the work"
+---
+
+### Who Makes the Lessons
+
+The curriculum is built by Ezekiel first — the same voice and plain language that runs through everything else in the Forge. Lessons are written as real explanations, not documentation. Then the Forge AI extends and personalizes each lesson based on the student's level. The core curriculum is human-authored. The personalization is AI-assisted. The quality comes from the combination.
+
+As the Academy grows, guest instructors from the Town Square community can contribute lessons in areas of deep expertise — reviewed and published the same way. The standard for every lesson is: would a real person with real experience explain it this way? If not, rewrite it.
 
 ---
 
 ### The Progress Model
 
-Forge tracks three things per student:
+The Forge tracks three things per student:
 
 1. **Completed lessons** — what you've fully finished
 2. **Submitted homework** — what you've actually built, not just watched
-3. **Understood concepts** — inferred from how you engage with exercises and how you ask questions
+3. **Understood concepts** — inferred from how you engage, how you ask questions, where you get stuck
 
-When you return after any gap of time — a day, a month, a year — the Forge opens with: "You're in Grade 7, lesson 4 — we were working on making a form validate before it submits. Want to pick up there?" One sentence. No re-orientation needed.
-
----
-
-### Pricing — Its Own Subscription, Its Own Value
-
-Forge Academy is **not** bundled with the main Forge subscription. It stands alone. This matters for two reasons:
-
-**For the student:** They may only want to learn. They shouldn't have to pay for a full builder subscription just to take a class. A student who can't code yet has no use for deployment tools and AI code generation — they're not there yet. Make it easy to say yes to the thing they actually need.
-
-**For you:** The AI time, the curriculum serving, the progress tracking — these cost real money per user. Bundling it would mean subsidizing every learner's AI usage inside the general subscription price. That's not sustainable. A separate subscription means the price covers what's actually being consumed.
+When you return after any gap of time — a day, a month, a year — the Forge opens with: *"You're in Grade 7, lesson 4 — we were working on making a form validate before it submits. Want to pick up there?"* One sentence. No re-orientation needed.
 
 ---
 
-**The pricing structure:**
+### The Graduate Story
+
+Finishing Grade 12 means something. When a student completes the final grade:
+- They receive a certificate of completion — a real, shareable credential with a unique URL that proves what they built
+- Their name (if they choose) goes in the Academy Hall — a public record of people who started at zero and finished
+- They get a permanent discount on the Forge builder subscription — they've earned it, and the Forge wants to keep them building
+- They're invited to mentor newer students in the Town Square community — teaching is how knowledge sticks
+
+The certificate links to the actual projects they shipped across K–12. It's not a badge. It's a portfolio.
+
+---
+
+### Academy Pricing
+
+Forge Academy is its own subscription, separate from the main Forge. This matters for two reasons.
+
+**For the student:** A learner who can't code yet has no use for deployment tools and AI code generation. Don't make them pay for things they're not ready for. Make it easy to say yes to the thing they actually need.
+
+**For the business:** AI tutoring per learner costs real money. Bundling it into the general subscription would quietly subsidize every learner's usage. Separate subscription, separate cost, sustainable economics.
 
 ```
 Free:              Grades K–2 — the first 8 lessons, no account required
-                   Enough to know this is real. Enough to get hooked.
+                   A complete beginning, not a teaser
 
 Academy:           $9/month — or $79/year (saves two months)
                    Full K–12 curriculum
-                   Homework review and AI feedback on your submissions
-                   Progress saved forever — come back anytime, pick up exactly where you left off
+                   AI feedback on homework submissions
+                   Progress saved forever
                    Certificate of completion at each grade band
+                   Access to the Academy community
 
 Academy + Forge:   $24/month — or $199/year
                    Everything in Academy plus the full Forge builder subscription
-                   For students who are ready to start building real things
                    One account, both tools, discounted from buying separately
+                   ($9 Academy + $19 Forge = $28 separately — bundle saves $4/month)
 ```
 
----
-
-**Why $9:**
-
-The honest math: $9/month is a tank of gas, a streaming service, two fast food meals. For that, someone learns to code — a skill that changes what's possible for the rest of their life. The price should feel like nothing compared to the value. It also needs to actually cover the AI costs per active learner plus a margin that keeps the lights on. $9 does both.
-
-**Why a year option:**
-
-Learning takes time. A monthly subscription creates anxiety — "am I learning fast enough to justify paying this month?" A year option removes that. Pay once, learn at whatever pace is real to your life. $79 is less than a single college textbook.
-
-**The bundle discount is real:**
-
-$9 Academy + $19 Forge = $28 separately. The bundle at $24 saves $4/month. That's not a gimmick — it's an acknowledgment that the two tools are better together and the student who's ready to build deserves a reward for that readiness.
-
----
-
-**What the free tier is for:**
-
-The free 8 lessons are not a demo. They're a complete beginning. A person who finishes grade K–2 understands how computers work and has written their first lines of HTML. That's real. That's theirs forever. If they want more, they pay. If they walk away having learned something real and never pay — that's still a win. That's the Forge's reputation being built one person at a time.
+The free 8 lessons are not a demo. A person who finishes Grade K–2 understands how computers work. That's real and it's theirs forever. If they pay, good. If they walk away having learned something and never pay — that's the Forge's reputation being built one person at a time.
 
 ---
 
@@ -304,13 +303,13 @@ The free 8 lessons are not a demo. They're a complete beginning. A person who fi
 ### The Git Migration Path
 
 **Step 1 — Run your own Git server (Forgejo)**
-Forgejo (fitting name) runs on your Hetzner server at `git.13moonforge.ai`. This is your primary home. The canonical place the code lives.
+Forgejo runs on the Hetzner server at `git.13moonforge.ai`. This is the primary home. The canonical place the code lives. Already done.
 
 **Step 2 — Mirror to GitHub for discovery**
-GitHub has millions of developers. Keep a mirror there — automatically synced from Forgejo — but your primary URL is yours. GitHub becomes a window, not the house.
+GitHub has millions of developers. Keep a mirror there — automatically synced from Forgejo — but the primary URL is yours. GitHub becomes a window, not the house.
 
 **Step 3 — Your own Docker registry**
-Releases published to Docker Hub under `13moonforge/forge` — or your own registry on Hetzner. The install chain has no GitHub dependency:
+Releases published to Docker Hub under `13moonforge/forge` — or a private registry on Hetzner. The install chain has no GitHub dependency:
 ```bash
 docker pull 13moonforge/forge
 ```
@@ -343,30 +342,163 @@ In plain English:
 
 ---
 
-## How We Get Paid
+## How We Get Paid — The Full Picture
 
-**The core model: Open software, paid experience**
+**The core model: Open software, paid experience.**
 The code is free. The hosted Forge — with the AI already set up, the server already running, the onboarding smooth — that's what people pay for. The software being free makes people trust you. Trust converts to paying customers.
 
-**Revenue streams:**
+---
 
-**1. Subscriptions** (already built — Creator / Pro / Studio via Square)
-Paying for access to the AI on the hosted Forge. The AI calls cost real money. Subscriptions cover that plus server costs plus time. Framing: you're not charging for the software. You're charging for not having to set any of it up yourself.
+### The Forge Subscription
 
-**2. Self-hosting support**
-A one-time fee or small annual fee for a self-hosting kit — pre-configured Docker setup, install script, docs, email support. Real value for the Sovereign who wants independence without the setup complexity.
+Three tiers, already built via Square:
 
-**3. The Sovereign tier**
-A premium plan: hosted Forge plus the guarantee that projects are exportable and portable at any time. We'll help you run it yourself if you ever want to leave. That promise commands a premium.
+```
+Creator:    $9/month   — for individuals just getting started
+Pro:        $19/month  — for active builders, full AI access
+Studio:     $49/month  — for teams, power users, commercial projects
+```
 
-**4. Dual licensing** (future)
-Enterprise deal: pay for a commercial license that allows private modifications. 
+---
 
-**The honest math:**
-100 people at $29/month = $2,900/month
-500 people at $29/month = $14,500/month
+### Forge Academy Subscription
 
-You don't need millions of users. You need the right people who genuinely value what you've built. Those people pay and they stay.
+Standalone, separate from the Forge builder subscription.
+
+```
+Free:                 $0     — Grades K–2, 8 lessons, no account required
+Academy:              $9/month or $79/year
+Academy + Forge Pro:  $24/month or $199/year
+```
+
+---
+
+### Town Square Ecosystem Subscription
+
+One subscription that unlocks paid features across all 12 apps.
+
+```
+Town Square Member:   $14/month or $119/year
+                      Free features at all 12 apps become paid features
+                      One login, one price, everything opens
+```
+
+This is separate from both the Forge subscription and Academy. A person can subscribe to just what they use. A person who wants everything gets the best deal by subscribing to each relevant piece.
+
+---
+
+### Per-App Pricing — What Each App Costs Alone
+
+Some apps in the Town Square are better thought of as standalone products. People who never use the Forge should still be able to subscribe to just Call Guardian, just Ledger, just Antivirus.
+
+```
+TPTS (Social):          Free — community is always free
+                        $5/month for business listings and featured placement
+
+Town Square Press TV:   Free to watch
+                        $7/month to publish and monetize your channel
+
+Town Square Press:      Free to publish
+                        15% cut on sales (writer keeps 85%)
+                        $5/month to remove the cut and keep 100%
+
+Inventors Workshop:     $12/month — AI assistance is core to the product
+
+Town Square TV:         Free to watch
+                        Revenue share with filmmakers (70% to filmmaker, 30% to platform)
+
+13 Moon Antivirus:      $4/month or $35/year
+                        Family plan (up to 5 devices): $8/month or $65/year
+
+13 Moon Refusal:        Free — ingredient database is always free
+                        $3/month for AI analysis, alerts, and saved profiles
+
+13 Moon Call Guardian:  $5/month or $39/year
+
+13 Moon Ledger:         $6/month or $49/year
+
+13 Moon Film Editor:    $8/month or $65/year
+
+13 Moon EzQuill:        $5/month or $39/year
+```
+
+**Town Square Press take rate explained:**
+The 15% cut on sales is in line with what the market expects (Gumroad is 10%, Substack is 10%, Amazon KDP takes 30–65%). Writers who pay the $5/month flat fee keep 100% and the math works out at roughly $33/month in sales. Writers selling more than that should pay the flat fee. The Forge does the math for them and tells them which plan saves them money.
+
+---
+
+### The Honest Revenue Math
+
+Forge alone at $19/month:
+- 100 subscribers = $1,900/month
+- 500 subscribers = $9,500/month
+
+Academy alone at $9/month:
+- 100 subscribers = $900/month
+- 500 subscribers = $4,500/month
+
+Town Square membership at $14/month:
+- 100 subscribers = $1,400/month
+- 500 subscribers = $7,000/month
+
+Combined at 500 users across products: realistic monthly revenue of $15,000–$25,000 depending on mix. You don't need millions of users. You need the right people who genuinely value what you've built.
+
+---
+
+### Self-Hosting Support
+
+A one-time fee or small annual fee for the self-hosting kit — pre-configured Docker setup, install script, detailed docs, email support. Real value for the Sovereign who wants independence without the setup complexity.
+
+---
+
+### Dual Licensing (Future)
+
+Enterprise deal: pay for a commercial license that allows private modifications. This is a downstream revenue stream once the product has enough users that companies start building on it.
+
+---
+
+## The Growth Engine — Beyond Day 30
+
+The launch strategy covers the first 10 people and the first 30 days. This section covers what comes after.
+
+---
+
+### Month 2–3: From 10 to 50
+
+The first 10 users are hand-picked. The next 40 come from them.
+
+Every first user gets asked one question: *"Is there one person you know who should see this?"* Not "share this with everyone you know." One person. Specific. This is how word-of-mouth works — not broadcasting, but one honest recommendation at a time.
+
+Simultaneously:
+- The first Forge Letter goes out. Written like a personal dispatch, not a newsletter. What got built this month. What the moon cycle meant for the work. One thing the Forge learned from its first real users.
+- The first Open Build gets published with permission from a user. Not a tutorial. A real record of how something got made.
+- The philosophy page and the README are the content strategy. Written once, they work forever.
+
+---
+
+### Month 4–6: From 50 to 200
+
+By this point the product has real testimonials — people who built real things and can say so honestly.
+
+Three channels:
+1. **The 13 Moon community** — people who already live by this calendar are philosophically pre-sold. Find the forums, Telegram groups, Mastodon accounts where this community lives. Not to pitch. To be present. To share what's being built. To let them find it.
+2. **Frustrated developer communities** — Hacker News, Indie Hackers, small forums where people talk honestly about what's wrong with existing tools. One well-written post about sovereignty and who the Forge is for will find the right people.
+3. **The gallery** — every real project built in the Forge is a proof point. As the gallery fills up, it becomes the best marketing content that exists.
+
+---
+
+### Month 7–12: From 200 to 1,000
+
+The growth engine at this stage is product quality + word of mouth + search.
+
+**SEO through genuine content:**
+The Forge Letter and Open Builds create real content that search engines index. Not "10 best AI coding tools" SEO content — actual writing about sovereignty, 13 Moon philosophy, and honest tool-building. The people searching for this specific thing are exactly the people who will pay.
+
+**The Academy as a funnel:**
+Free Academy lessons pull in people who would never think to look for an AI builder. A person who comes for free coding classes and finishes Grade 5 is now someone who might want to build something real. The Academy converts learners into builders. Every Academy graduate is a potential Forge subscriber.
+
+**Referral without a referral program:**
+No gimmicks. No "give $5, get $5." Just: when someone builds something they're proud of, make it easy for them to say where it came from. A small "built with the Forge" link on deployed projects, opt-in, that links to the gallery and the homepage.
 
 ---
 
@@ -381,16 +513,100 @@ The sovereignty claim needs to be verifiable, not just stated:
 
 ---
 
-## Community Building — The First 10
+## The Legal Layer
 
-The first 10 people who need this most:
+**Legal entity:** Sovereign Digital LLC
 
+The legal layer isn't just paperwork — it's part of the promise. The Forge makes strong claims about ownership, privacy, and sovereignty. Those claims need to be backed by actual legal documents that say the same thing.
+
+**What needs to be in place:**
+
+**Terms of Service — plain English, not lawyer theater.**
+The ToS should say exactly what the Forge promises: your code is yours, we don't train on it, you can export everything, here's what happens if you cancel, here's what happens if we shut down. Written so that a non-lawyer can read it and understand it in five minutes.
+
+**Privacy Policy — one page, honest.**
+What data we collect, what we do with it, what we don't do with it, who can see it, and how to get it all deleted. No 40-page document with hidden carve-outs.
+
+**Sensitive app considerations:**
+Some apps in the Town Square touch territory with real legal implications:
+
+- *13 Moon Ledger* — handles financial data. Not a licensed financial advisor. Needs a clear disclaimer that this is a budgeting tool, not financial advice, and that it doesn't store banking credentials.
+- *13 Moon Refusal* — handles health and ingredient data. Not a medical tool. Clear disclaimer. Information comes from publicly available sources. Not a substitute for professional medical advice.
+- *13 Moon Call Guardian* — intercepts and filters calls. Call recording laws vary by state and country. The app needs clear guidance on what it does and doesn't record and what the user is responsible for.
+- *Town Square Press* and *Town Square TV* — user-generated content platforms. Need clear content policies: what's allowed, what's not, and how moderation works. The philosophy is free speech — but there's a legal difference between hosting speech and endorsing it.
+
+**Operating state:** Sovereign Digital LLC. Know your state's requirements for annual reports, registered agents, and what operating across state lines means for your tax obligations.
+
+**AGPL compliance:** The open source license is already applied. The legal obligation that comes with it — when someone asks for the source of a modification — needs to be easy to fulfill. The Forgejo repo being public satisfies this for the core product.
+
+---
+
+## When Things Break — Resilience Planning
+
+The Forge talks about sovereignty. It needs to practice what it preaches. Here is an honest accounting of what could go wrong and what we do about it.
+
+---
+
+**If the Hetzner server goes down:**
+The server runs Docker with Traefik. If the server goes down, the site goes down. Single point of failure — honest about that.
+
+The plan: periodic automated backups of the database and the Docker volumes to an off-server location (Hetzner's own snapshot service or an S3-compatible object store). Recovery means spinning up a new VPS and restoring from the last backup. Target recovery time: under 2 hours for a serious failure. The backup scripts need to exist and be tested before they're needed.
+
+**If Clerk (authentication) changes pricing or shuts down:**
+Clerk handles auth for all 12 apps. If Clerk disappears or triples their price, we have a problem.
+
+The plan: auth is already isolated in a shared library (`lib/auth`). Clerk is integrated there. If we ever need to swap it out, the swap happens in one place and every app gets the fix. In the meantime: document user data exports from Clerk and run them monthly so we always have the user list.
+
+**If the AI provider goes down or becomes too expensive:**
+The Forge's AI calls go through a provider (currently Moon API). If that provider has an outage, AI features go down.
+
+The plan: the AI integration is behind an abstraction layer. The app doesn't call OpenAI directly — it calls a service that calls OpenAI. Swapping providers means changing one config, not rewriting the product. For extended outages: graceful degradation messaging. The Forge tells users honestly that AI is temporarily unavailable and what they can still do without it.
+
+**If a key dependency stops being maintained:**
+Node packages, libraries, frameworks — any of them can be abandoned.
+
+The plan: pin versions, run audits, update deliberately. The monorepo structure means updates happen once and apply everywhere. No app quietly running on an unmaintained package version.
+
+**If you get sick or can't work for an extended period:**
+The codebase is open source. The documentation in this blueprint and in the codebase itself means someone who understands the philosophy can continue the work. This is not a one-person secret — it's a documented, principled system.
+
+---
+
+## Accessibility — Built In, Not Bolted On
+
+The Forge is for the farmer, the tradesperson, the grandma with a napkin idea. These are not people who are guaranteed to be young, sighted, able-bodied, or using a high-end device. Accessibility is not a feature to add later. It is part of the promise that this tool is for everyone.
+
+**The commitments:**
+
+**Screen reader compatibility.** Every interactive element — buttons, forms, navigation, modals — is properly labeled. Users who navigate by screen reader (NVDA, VoiceOver, JAWS) can use every part of the Forge.
+
+**Keyboard navigation.** Everything that can be done with a mouse can be done with a keyboard. Tab order makes sense. Focus states are visible.
+
+**Color contrast.** Text and background colors pass WCAG AA standards at minimum. The orange-on-dark palette is checked and passing before it ships.
+
+**Text sizing.** The Forge doesn't break when a user has their browser font size set to large. Layouts use relative units so the page scales with the user's settings.
+
+**No motion required.** Animations and transitions are off when the user has "prefer reduced motion" enabled. Some people get migraines from moving UI elements. Respect that.
+
+**Mobile first.** A farmer checking the Forge between jobs on their phone should have the same quality experience as a developer on a wide monitor.
+
+**Plain language.** The Forge is already committed to this in its brand voice. It applies to error messages, onboarding, and every piece of text a user encounters. If a 13-year-old or a 70-year-old can't understand it, rewrite it.
+
+---
+
+## Community Building — The First 10 and Beyond
+
+**The first 10 people who need this most:**
 - Developers who've had code stolen or trained on without consent
 - Creators who've been deplatformed and lost everything
 - People building things that don't fit the mainstream (spiritual, unconventional, sovereign)
-- The 13 Moon community already exists — people who live by this calendar are exactly the kind of people who want tools that respect their philosophy
+- The 13 Moon community — people who live by this calendar are exactly the kind of people who want tools that respect their philosophy
 
-Where they live: small forums, Telegram groups, niche Discord servers, Mastodon, independent blogs. Not Twitter, not Product Hunt first. Find the people who are already frustrated, already looking, already philosophically aligned. They become the first advocates. Then the broader world finds out through them.
+**Where they live:**
+Small forums, Telegram groups, niche Discord servers, Mastodon, independent blogs. Not Twitter first, not Product Hunt first. Find the people who are already frustrated, already looking, already philosophically aligned. They become the first advocates. The broader world finds out through them.
+
+**What the community is NOT:**
+A Discord server with support channels and feature-request threads. That creates a customer service burden and a social media obligation. The community is the gallery, the Forge Letter, the open builds, and the reputation that grows from real people saying honest things.
 
 ---
 
@@ -401,6 +617,8 @@ Where they live: small forums, Telegram groups, niche Discord servers, Mastodon,
 - A platform that creates dependency
 - A business that needs millions of users to survive
 - Anything that requires you to trust us with something you can't afford to lose
+- A Discord server we have to maintain
+- A product that apologizes for having a philosophy
 
 ---
 
@@ -544,10 +762,10 @@ This is not a collection of separate products. It is one interconnected world wi
 - Log in once, stay logged in everywhere across every domain.
 - The moon phase is the same across every app. The rhythm is shared.
 - Your profile, your history, your preferences follow you from app to app.
-- Every app has free features. Every app has paid features. One subscription unlocks the paid tier across the entire Town Square — not just one app.
+- One subscription unlocks paid features across the entire Town Square.
 - If one app does something, another app can know about it.
 
-**What this means for you as the builder:**
+**What this means for the builder:**
 - Change the shared design once — every app updates.
 - Change the moon calendar logic once — every app reflects it.
 - Fix a bug in the authentication layer once — every app is fixed.
@@ -557,38 +775,23 @@ This is not a collection of separate products. It is one interconnected world wi
 
 ## Unified Identity — One Account, Every Domain
 
-This is the technical heart of the Town Square. The auth system (Clerk) already supports this — it is called multi-domain SSO, and it works across completely separate domains.
+The auth system (Clerk) already supports this. It is called multi-domain SSO and it works across completely separate domains.
 
 **How it works for a user:**
-
-1. Someone lands on `anyapp.com` — one of the 12 apps
+1. Someone lands on any app in the Town Square
 2. They create a free account
 3. That account is instantly valid at all 12 domains — they don't know or care how
-4. They visit `otherapp.com` — they're already logged in
+4. They visit another app — they're already logged in
 5. They upgrade to a paid plan on any app — that upgrade unlocks paid features on every app
 
 **How it works technically:**
-
-Clerk (already running in the Forge) supports "satellite domains" — every app points at the same Clerk instance. One user record. One session. Works across any number of domains. This is already built into the auth layer we have.
-
-**The subscription model across the ecosystem:**
-
-```
-Free tier:     Sign up once → access to free features at all 12 apps
-Paid tier:     Subscribe once → paid features unlock everywhere
-               One price. One decision. Everything opens.
-```
-
-This is the model that makes the Town Square sticky. Users don't just subscribe to one tool — they subscribe to the whole world. Canceling means losing access everywhere. That's not a hostage situation — it's a genuine value that scales with the size of the Town Square. The more apps, the more valuable one subscription becomes.
-
-**Revenue implication:**
-The subscription isn't "$X for this app." It's "$X for the Town Square." As the family of apps grows, that price point becomes more defensible and more obviously worth it. Adding a new app doesn't just add users — it increases the value of every existing subscription.
+Clerk supports satellite domains — every app points at the same Clerk instance. One user record. One session. Works across any number of domains. Already built into the auth layer.
 
 ---
 
 ## The 12 Apps — The Full Family
 
-These are the 12 apps of People's Town Square. Each one is a tool for people who work with their hands, think with their own minds, and are done waiting for permission.
+Each one is a tool for people who work with their hands, think with their own minds, and are done waiting for permission.
 
 ---
 
@@ -609,22 +812,22 @@ For the independent journalist and the podcaster. Like YouTube before Google bou
 ---
 
 ### 4. Town Square Press
-For the independent writer. Publish your e-book, your comic book, your poetry, your manifesto, your research. Everything having to do with the written word. You wrote it, you own it, you set the price. We take a small cut. You keep the rest.
+For the independent writer. Publish your e-book, your comic book, your poetry, your manifesto, your research. Everything having to do with the written word. You wrote it, you own it, you set the price. We take 15% on sales — you keep 85%. Pay $5/month flat and keep 100%.
 
 ---
 
 ### 5. 13 Moon Inventors Workshop
-Helping us get our freedom back. The old inventions that got locked away. The new ones that never got funding. The ideas that need a place to breathe. This is where you describe what you want to build and the Workshop helps you figure out how to actually build it — sourcing parts, drawing diagrams, finding precedents, connecting you with others working on similar problems.
+Helping us get our freedom back. The old inventions that got locked away. The new ones that never got funding. The ideas that need a place to breathe. Describe what you want to build and the Workshop helps you figure out how to actually build it — sourcing parts, drawing diagrams, finding precedents, connecting you with others working on similar problems.
 
 ---
 
 ### 6. Town Square TV
-For the independent filmmaker. Takes the art back from Hollywood. Films about real things that happened — the USS Liberty, the things that never made the news. Also: drama, comedy, documentary, short film — anything made outside the machine. Find a filmmaker. Fund a film. Watch something true.
+For the independent filmmaker. Takes the art back from Hollywood. Films about real things that happened — the USS Liberty, the things that never made the news. Also: drama, comedy, documentary, short film — anything made outside the machine. Find a filmmaker. Fund a film. Watch something true. Filmmakers keep 70%.
 
 ---
 
 ### 7. 13 Moon Antivirus
-A real antivirus at a fraction of Norton's price — with more to offer. Built for people who want their computer protected without being nickeled and dimed. You know what you're getting and why.
+A real antivirus at a fraction of Norton's price. Built for people who want their computer protected without being nickeled and dimed. You know what you're getting and why. $4/month. Family plan $8/month.
 
 ---
 
@@ -634,12 +837,12 @@ Know what you're putting in your body and in your home. Every ingredient. Every 
 ---
 
 ### 9. 13 Moon Call Guardian
-Protects you from scammers, spam callers, and anyone trying to waste your time. Simple, effective, yours.
+Protects you from scammers, spam callers, and anyone trying to waste your time. Simple, effective, yours. $5/month.
 
 ---
 
 ### 10. 13 Moon Ledger
-Financial freedom for real people. Budget. Track. Fix your credit. Get out of debt. Set your goals and work toward them with a tool that tells you the truth about where you stand and what it takes to get where you want to go.
+Financial freedom for real people. Budget. Track. Fix your credit. Get out of debt. Set your goals and work toward them with a tool that tells you the truth about where you stand and what it takes to get where you want to go. Not financial advice — honest numbers.
 
 ---
 
@@ -655,9 +858,8 @@ Like DocuSign, but smarter and cheaper. Saves your most repeated personal inform
 
 ## The Monorepo — How the Web Is Built
 
-This is the technical soul of the Town Square. Everything lives in one repository. One home. One deployment pipeline.
+Everything lives in one repository. One home. One deployment pipeline.
 
-**The structure:**
 ```
 people's-town-square/
 ├── artifacts/                    ← Every app lives here
@@ -688,73 +890,92 @@ people's-town-square/
 ```
 
 **The central API server is the nervous system.**
-All 12 apps talk to one API. They don't each have their own backend. They share one. When the API learns something new, every app benefits. When a user does something in one app, the API knows, and any other app can respond to it.
+All 12 apps talk to one API. They don't each have their own backend. They share one. When the API learns something new, every app benefits.
 
 **How "change everything at once" actually works:**
-
 1. You change something in `lib/ui/` — the shared button color, the shared header
-2. You push to Forgejo (your own Git server)
-3. Forgejo automatically builds every app that uses that library
-4. Every app is deployed to your Hetzner server with the new change
-5. Done. All 12 apps updated. One push.
+2. You push to Forgejo
+3. The deploy webhook fires and rebuilds the Docker containers
+4. Every app is live with the new change
+5. Done. One push.
 
-**How bringing in the 12 existing Replit apps works:**
+**How bringing in the 12 existing apps works:**
+1. Copy the code from its existing home into the monorepo under `artifacts/`
+2. Identify what it shares with other apps (auth, design, moon logic) and move that into `lib/`
+3. Add a Dockerfile (same pattern as the Forge)
+4. Add a subdomain in Traefik
+5. It's live on the Hetzner server and connected to everything else
 
-For each app:
-1. We copy the code from its Replit into the monorepo under `artifacts/`
-2. We identify what it shares with other apps (auth, design, moon logic) and move that into `lib/`
-3. We add a Dockerfile (same pattern as the Forge)
-4. We add a subdomain in Traefik (`app-name.13moonforge.ai` or its own domain)
-5. It's live on your server and connected to everything else
-
-The first app takes the longest because we're establishing the pattern. The second app takes half the time. By the fifth app, it's routine.
-
-**The domain structure of the Town Square:**
-Every app in the family gets its own address, all served from the same Hetzner server:
-```
-13moonforge.ai          — The Forge (live now)
-git.13moonforge.ai      — Your Forgejo Git server (deployed, waiting for DNS)
-[app].13moonforge.ai    — Each app in the Town Square
-```
-Or if individual apps have their own domains, Traefik routes those too — same server, different front doors.
+The first app takes the longest because we're establishing the pattern. The second takes half the time. By the fifth, it's routine.
 
 ---
 
-## The First 30 Days — Launch Strategy
+## The Launch Strategy
 
-The goal of the first 30 days is not traffic. It is **10 real people having a real experience.**
+### The First 30 Days
+
+**Goal: 10 real people having a real experience.**
+Not followers. Not signups. Not traffic. 10 people who built something real and would be genuinely sad if the Forge disappeared tomorrow.
 
 **Week 1 — The Quiet Open**
-Don't announce. Turn off the "coming soon" gate. Let the Forge be findable. Anyone who arrives gets the real experience. Fix whatever breaks in real time. These are your first testers and they don't know it.
+Don't announce. Turn off the "coming soon" gate. Let the Forge be findable. Anyone who arrives gets the real experience. Fix whatever breaks in real time.
 
 **Week 2 — The First Conversations**
-Go find people personally. Not on Twitter. In Telegram groups, Discord servers, Mastodon, forums where frustrated developers and creators already talk. Don't pitch. Participate. When the moment is right: "I built something that might be relevant — here's what it does and why." Direct and honest.
+Go find people personally. In Telegram groups, Discord servers, Mastodon, forums where frustrated developers and creators already talk. Don't pitch. Participate. When the moment is right: "I built something that might be relevant — here's what it does and why."
 
 Specifically:
-- 13 Moon / Mayan calendar communities (they are already philosophically aligned)
-- Privacy-focused developer spaces (Mastodon, Lemmy, Hacker News "Ask HN" threads)
-- Indie maker spaces (Makerlog, IndieHackers — but selectively, not as a launch post)
-- Small creator/artist communities who are tired of the big platforms
+- 13 Moon / Mayan calendar communities (philosophically pre-sold)
+- Privacy-focused developer spaces (Mastodon, Lemmy, Hacker News)
+- Indie maker spaces (selectively, not as a launch announcement)
+- Small creator communities tired of the big platforms
 
 **Week 3 — The First Piece of Writing**
-Write one honest post: "Why I built this and who it's for." Not a launch announcement. Not "check out my new startup." A genuine piece of writing about sovereignty, creative work, and the philosophy behind the Forge. Put it on the site. Share it once in each community where you've been participating. Let it find people who resonate.
+Write one honest post: "Why I built this and who it's for." Not a launch announcement. A genuine piece of writing about sovereignty, creative work, and the philosophy behind the Forge. Put it on the site. Share it once in each community where you've been participating.
 
 **Week 4 — Listen Hard**
-The first 10 people who use the Forge will tell you what it's actually missing. This is worth more than any roadmap. Reach out to each one personally. Ask one question: "What were you trying to make when you came to the Forge, and did it work?" The answer shapes everything next.
-
-**What success looks like at day 30:**
-Not follower counts. Not Product Hunt rankings. 10 people who have built something real using the Forge and would be genuinely sad if it disappeared tomorrow. That's the foundation everything else is built on.
+Reach out to each of the first 10 users personally. Ask one question: "What were you trying to make when you came to the Forge, and did it work?" The answer shapes everything next.
 
 ---
 
-## What We're Not Building
+### Month 2–6: From 10 to 200
 
-- A hosting company that holds your stuff
-- A tool that trains on your code
-- A platform that creates dependency
-- A business that needs millions of users to survive
-- Anything that requires you to trust us with something you can't afford to lose
+- Every first user gets asked: "Is there one person you know who should see this?"
+- The first Forge Letter goes out — a personal dispatch, not a newsletter
+- The first Open Build gets published with permission
+- Consistent presence in aligned communities without pitching
+- The gallery fills with real work — real proof
 
 ---
 
-*The name "Forge" is ancient. Nobody owns that word. An anti-platform built on a forge — a place to make things and then take them home — is exactly what it says it is.*
+### Month 7–12: From 200 to 1,000
+
+- SEO through genuine writing — not keyword stuffing, real ideas that the right people search for
+- Academy free lessons pull in learners who convert to builders
+- Opt-in "built with the Forge" attribution on deployed projects links back to the gallery
+- Word of mouth compounds as the product proves itself
+
+---
+
+### What Success Looks Like at Year One
+
+Not a valuation. Not a funding round. Not a Product Hunt ranking.
+
+500 people who pay for something in the Town Square. A gallery full of real projects. An Academy with real graduates. A Forge Letter that people actually read. A codebase that anyone can run themselves. And a reputation that the Forge does exactly what it says it does.
+
+That's the foundation everything else is built on.
+
+---
+
+## The Closing Thought
+
+The name "Forge" is ancient. Nobody owns that word. A blacksmith's forge is the simplest possible thing — heat, iron, hammer, and someone who knows what they're doing. You bring raw material. You leave with something made.
+
+That's this. That's all this is.
+
+The platform economy took the forge model — the workshop, the tool, the craft — and turned it into a subscription to someone else's infrastructure that you rent forever and never own. The Forge takes it back. The platform age is ending. The people who build their own things are going to be the ones who survive it.
+
+Build something. Own it. Take it home.
+
+---
+
+*Sovereign Digital LLC — 13moonforge.ai*
