@@ -15,6 +15,16 @@ The world has enough people who can follow instructions. It needs more people wh
 
 That is what this school is designed to produce.
 
+But let's be precise about what that means — because the word "produce" can be misleading.
+
+This school is not here to make you a better worker. It is not here to make you a stronger employee, a more productive unit, a more valuable asset to someone else's organization. It is not here to take what you have and sharpen it for someone else's benefit.
+
+This school is not even here to make you a "builder" or a "coder" or a "developer" — not in the way those words are usually meant. Those words describe a skill. A category. A type of labor. They put a label on a person and reduce them to what they can produce.
+
+What this school is here to do is grow a person. A whole, well-rounded person who is clear on what they want, capable of going after it, and equipped with the tools to build it themselves. The coding is not the destination — it is the vehicle. You are the destination. The goals you have, the things you want to make exist in the world, the life you want to build on your own terms — that is what this school is pointing at.
+
+Every lesson, every build, every readiness check, every competition, every peer review, every curriculum contribution — all of it is in service of the person, not the skill. The skill is how the person gets where they are going.
+
 ---
 
 The path here is real, structured learning — from complete beginner to a developer who can build and ship anything. A website, an app, a game, a business. But the curriculum is not the point. The curriculum is how you get to the point.
