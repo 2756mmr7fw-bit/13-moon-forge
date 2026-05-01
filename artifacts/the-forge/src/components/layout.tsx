@@ -4,7 +4,7 @@ import {
   Flame, FolderKanban, PlusCircle, CreditCard, ExternalLink,
   Sparkles, Code2, Wand2, Layers, Scale, Crosshair, Activity,
   GraduationCap, ArrowRightLeft, Wrench, BookOpen, Archive, Gamepad2, Rocket, LogOut,
-  Shield, Github, Package, User, LogIn, Menu, X, Settings, KeyRound, ShieldAlert, PlugZap, Swords, Monitor, MonitorPlay, Globe, Download, Wifi, LayoutTemplate, PencilLine, Mail, Search, Grid3X3,
+  Shield, Github, Package, User, Users, LogIn, Menu, X, Settings, KeyRound, ShieldAlert, PlugZap, Swords, Monitor, MonitorPlay, Globe, Download, Wifi, LayoutTemplate, PencilLine, Mail, Search, Grid3X3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LogoMark, LogoWordmark } from "@/components/logo";
@@ -58,6 +58,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/starters",     label: "Forge Starters",   icon: LayoutTemplate, tip: "Pre-built Moon workflows — pick a use case and launch instantly" },
     { href: "/build-with-me", label: "Build With Me",  icon: Flame,          tip: "Tell Forge what you want to build — get a step-by-step Moon plan" },
     { href: "/gallery",       label: "Forge Gallery",  icon: Grid3X3,        tip: "See what people have built with Forge — public shared outputs" },
+    { href: "/town-square",   label: "Town Square",    icon: Users,          tip: "The full family of apps — one account, one subscription, twelve tools" },
   ];
 
   const toolItems: NavItem[] = [
