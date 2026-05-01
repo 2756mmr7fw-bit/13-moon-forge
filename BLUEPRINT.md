@@ -200,15 +200,86 @@ The first year takes you from knowing nothing to writing real interactive code.
 
 **Stage 1 — Beginner (Levels 1–3)**
 
-Before the code. Understanding what a computer actually is.
+Before a student writes a single line of code, they understand why code exists, who invented it, and what tools real developers actually use. By Level 3, they're writing real things — small, simple, and genuinely theirs.
 
-- Level 1: What is a computer doing when you click something? Files, folders, programs — in plain English. No jargon.
-- Level 2: How the internet works — what happens between typing a URL and seeing a page
-- Level 3: Your first HTML — making something appear in a browser with your own hands
+---
 
-Homework: real exploration tasks. Find three things on your computer you didn't know were there. Look at the source code of a website you use every day. Change one thing on a live webpage using your browser's developer tools and see what breaks.
+**Level 1 — The Tools, the Theory, the History**
 
-The goal of Beginner is one thing: make the machine feel less like magic and more like a tool. Tools can be understood. Tools can be learned. That shift in how you see the machine is the first real lesson — and once it happens, it doesn't go back.
+Every trade has a history. Coding has one of the most interesting ones on earth.
+
+*The history:*
+- Where programming came from — Ada Lovelace in 1843, the first person to realize a machine could follow written instructions
+- Alan Turing and the idea that a machine could think
+- Grace Hopper, who wrote the first compiler and coined the term "debugging" after pulling a literal moth out of a relay
+- The people who built the internet, the web, the languages — real humans solving real problems, not mythical geniuses
+- Why there are hundreds of programming languages, what they're each for, and how a developer knows which one to reach for
+
+*The theory:*
+- What is a computer actually doing? Not the marketing version — the real version. Instructions, memory, ones and zeros, in plain English.
+- What is a programming language? How does something you type turn into something a machine does?
+- What is the difference between front end and back end, client and server, app and website?
+
+*The tools:*
+- What is a text editor and why developers use them instead of Word
+- What is a terminal — why it looks like 1985 but still runs the modern world
+- What is a browser's developer tools and how to open them on any website right now
+- The Forge as your workshop — everything needed is already here, nothing to install
+
+*Homework:* Research one programming language that interests you — not necessarily the one you'll learn, just one that caught your eye. Write one paragraph in plain English: what was it made for and who made it?
+
+---
+
+**Level 2 — How Computers and the Web Actually Work**
+
+Before writing code, a developer needs a mental model of what happens when they do. This level builds that model.
+
+*The computer:*
+- What happens between pressing a key and something appearing on screen — the full chain
+- What is a file? What is a folder? What is a program? In real terms, not marketing terms.
+- What does it mean to "run" something? What does an error actually mean?
+- Why computers do exactly what you tell them — not what you meant
+
+*The web:*
+- What happens between typing a URL and seeing a page — the full journey, step by step
+- What is a browser? What is a server? What is the difference between the two?
+- What is HTML, CSS, and JavaScript — in one honest sentence each, before touching any of it
+- Why websites are made of plain text files that any human can open and read
+
+*Homework:* Open the developer tools in your browser and look at the source code of a website you use every day. Find one thing you recognize and one thing you don't. Write down both.
+
+---
+
+**Level 3 — The First Real Code**
+
+This is where every developer in history started. The same first line. The same first feeling.
+
+*Hello, World:*
+- The first program every developer ever wrote — making a computer say something
+- Why this tradition has existed for 50 years and what it means when you've done it
+- Writing it in the Forge, seeing it run, understanding what just happened
+
+*Variables — the first real concept in every language ever written:*
+- What a variable is: a box with a label that holds a piece of information
+- Creating one, giving it a value, using it somewhere
+- Why variables exist and what programming would look like without them
+
+*Making the computer do simple things:*
+- Print something to the screen
+- Do simple math
+- Make a decision: if this, then that
+- Ask for input and respond to it
+
+*Your first webpage:*
+- An HTML file with your name, one thing you like, and one thing you want to build someday
+- Opening it in a browser and seeing it exist in the world
+- That feeling — the thing you typed became something real
+
+*Homework:* Make a webpage that says something true about you. It doesn't have to be beautiful. It has to be real and it has to be yours.
+
+---
+
+The goal of the Beginner stage is one thing: make the machine feel like a tool that humans invented to solve human problems — because that's exactly what it is. Once a student sees it that way, the intimidation leaves and doesn't come back.
 
 **Stage 2 — Apprentice (Levels 4–6)**
 
