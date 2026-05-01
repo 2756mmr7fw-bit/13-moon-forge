@@ -69,6 +69,28 @@ The Academy does not decide what a student builds. The Academy builds the studen
 
 ---
 
+### When the Direction Changes
+
+The design brief from Day 1 is not a contract. It is a starting point.
+
+A student who decides at Level 4 that they want to build something completely different gets to build something completely different. A student who starts with a game and pivots to an app, or starts with an app and realizes the real thing they want to make is a game — that pivot is not a failure. It is the curriculum working correctly. People change as they learn. What felt possible on Day 1 is different from what feels possible at Level 6, because the student at Level 6 is a different person. They know more. They've built more. They see more clearly what they actually want to make.
+
+**What happens when a student wants to change direction:**
+
+They tell Moon AI. That is the whole process.
+
+Moon AI opens a new design brief conversation — the same kind as the first lesson, the same questions, the same structure. They go through it together. The student arrives at a new name, a new one-sentence description, a new core mechanic, a new vision of done. That brief replaces the old one as the active north star.
+
+The old brief is not deleted. It stays in the student's Forge history — marked as the original direction, preserved as a record of where they started. Students who look back at their Day 1 brief after two years often find it instructive. Sometimes they find that the new thing and the old thing were always pointing at the same deeper idea.
+
+**What happens to the three builds:**
+
+The three builds — website, app, game — continue regardless of the pivot. The student's Level 3 website might have been built toward the original idea. From here forward it gets rebuilt toward the new one. That is not wasted work. Learning to rebuild is part of what a developer does. Every professional has refactored something. Every professional has started over when the requirements changed. The Academy makes that a normal part of the process, not a crisis.
+
+**The only thing that stays constant:**
+
+The standard. Whatever the student decides to build, they build it all the way. They finish it. They deploy it. They make it something that could be used by a real person who isn't them. The direction can change as many times as a student needs it to. The commitment to seeing it through — that part stays.
+
 ---
 
 ## Who This Is For
