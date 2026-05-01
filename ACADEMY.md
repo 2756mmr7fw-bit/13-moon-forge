@@ -61,6 +61,104 @@ At any level, a student can return to something they built earlier and improve i
 
 ---
 
+## The Teachers Board
+
+Every Academy student has access to the Teachers Board — a live coding environment where Forge writes and explains code in real time, step by step, exactly like a teacher at a whiteboard.
+
+Here is what it looks like in practice:
+
+The student is working through Chapter 4 of Eloquent JavaScript — functions. They understand the concept but can't quite see how the pieces fit together into something real. They open the Teachers Board and ask Forge to show them.
+
+Forge opens a code editor on the left side of the screen. Output appears on the right. Forge begins writing — not dumping a completed solution, but building line by line, the way a human teacher would. Each line appears with a plain-English explanation of exactly what it does and why it's there. The student can pause Forge at any point, ask a question about any line, and Forge stops and explains before continuing. They can ask Forge to slow down, go back, try a different approach, or show them what happens if one line is changed.
+
+The Teachers Board is not a video. It cannot be fast-forwarded. It is not a static code snippet with a comment above it. It is a live conversation that happens in code — the most honest way to show someone how a developer actually thinks.
+
+**What the Teachers Board can demonstrate:**
+- Any concept from any chapter of any Academy book
+- How a function gets written from scratch, decision by decision
+- What happens when code breaks and how a developer reads the error
+- How the same problem can be solved three different ways and why one is better
+- How a small piece of code connects to the larger project the student is building
+
+**What the Teachers Board is not:**
+- A lecture the student sits through passively
+- A pre-recorded walkthrough
+- A replacement for the student doing the work themselves
+
+The student watches, asks, and then closes the board and writes it themselves. That is the sequence. Watching is not learning. Doing after watching — that is learning.
+
+---
+
+## The Mock Environments — Learn the Tools Before You Touch the Real Ones
+
+One of the most common reasons people quit learning to code is not the code itself — it's the tools. GitHub looks like a cockpit. VS Code has a hundred buttons. The terminal gives no indication that it is working or waiting or broken. Godot opens with a 3D viewport and a menu bar with forty items.
+
+A student who encounters these tools cold, before they understand why any of it exists, gets overwhelmed and associates that overwhelm with coding itself. It is not coding that defeated them. It is the interface.
+
+The Forge Academy solves this with Mock Environments — simulated versions of the real tools, built inside the Forge, that students can explore and practice in before ever touching the actual application.
+
+---
+
+### Mock Terminal
+
+The first tool every developer has to face is the terminal — the command line. It looks like 1985 and gives almost no feedback about whether what you typed was right or wrong. Students who have never used one find it genuinely intimidating.
+
+The Forge Mock Terminal looks and behaves exactly like a real terminal. It accepts commands, prints realistic output, and responds to mistakes the way a real terminal does — with error messages that students learn to read and understand. The difference is that nothing can actually go wrong. There is no real file system to accidentally delete. There is no real server to crash.
+
+By the time a student opens a real terminal for the first time, they have already typed `ls`, `cd`, `mkdir`, `rm`, and `git commit` dozens of times in the mock. The terminal no longer feels foreign. It feels like somewhere they have been before.
+
+---
+
+### Mock Code Editor — VS Code Interface
+
+VS Code is the most used code editor on earth. It was created by Microsoft, it is free, and every professional developer has at least seen it. It is also full of panels, sidebars, extensions, color themes, keybindings, and settings that mean nothing to someone who just wants to write their first function.
+
+The Forge Mock Editor gives students a VS Code-styled interface — the same dark theme, the same file explorer on the left, the same terminal panel at the bottom, the same color-coded syntax highlighting — in a clean version with only what the current level requires visible. As students advance, more of the real interface becomes available. By Level 6, the mock editor matches the real VS Code layout almost exactly, and the transition to the real application is nearly seamless.
+
+Students write their actual homework in this editor. It is not a demo — it is their workspace. The mock interface is the workspace, and it grows with them.
+
+---
+
+### Mock GitHub
+
+GitHub is where most of the world's code lives. It is the social network of developers, the backup system for every serious project, and the place where employers go to see what a developer has actually built. Learning to use it is not optional for anyone who wants to work professionally.
+
+It is also deeply confusing to someone who has never used version control. Repositories, branches, commits, pull requests, forks, issues — none of these words mean anything until you have used them.
+
+The Forge Mock GitHub gives students a GitHub-styled interface — the same repository view, the same commit history, the same file browser, the same green contribution graph — that they can practice in before creating a real GitHub account. Students create mock repositories, make mock commits, view mock diffs, and open mock pull requests. Forge walks them through each action as if it were a real workflow, because the workflow is identical to the real one.
+
+When a student creates their real GitHub account and pushes their first real commit, they have already done it twenty times. The only difference is that this time it counts.
+
+---
+
+### Mock Forgejo — Your Git Server
+
+Because the Forge's own code lives on a self-hosted Forgejo instance at `git.13moonforge.ai`, Academy students also get a mock version of Forgejo — the same interface they will use when they graduate to pushing real code to their own projects on the Forge's infrastructure. Students who learn here are learning the actual workflow of the platform they are building on.
+
+---
+
+### Mock Godot — Game Engine Introduction
+
+Godot is one of the most important game engines in the world — free, open source, and used by thousands of indie developers to build real commercial games. The Academy's game track leads students toward it. But opening Godot for the first time without context is like sitting in the cockpit of an airplane and being told to fly.
+
+The Forge Mock Godot environment introduces the Godot interface — the scene panel, the inspector, the script editor, the node hierarchy — through guided exploration before the student installs the real application. Forge walks them through what each panel is for, why the node system works the way it does, and what a basic scene looks like when it is wired together correctly.
+
+By the time a student opens the real Godot for the first time, they recognize every panel. The layout is familiar. The vocabulary makes sense. The learning curve drops dramatically.
+
+*Note: Godot also has an official web-based version that runs directly in a browser. Academy students in the game track will be given the option to use the real Godot in the browser as soon as they are ready — the mock environment is the on-ramp, not the destination.*
+
+---
+
+### The Mock Environment Philosophy
+
+Every mock environment in the Forge Academy exists for one reason: to remove the tool as a barrier to learning.
+
+The code is hard enough. The concepts take real effort. The debugging takes patience. A student should not also be fighting an unfamiliar interface at the same time they are trying to understand what a closure is.
+
+The mocks make the tools familiar before the stakes are real. When the student graduates to the real tool — the real terminal, the real VS Code, the real GitHub, the real Godot — they are walking into somewhere they have already been. The tool gets out of the way and the learning can happen.
+
+---
+
 ## The Books — The Spine of the Curriculum
 
 The Academy does not teach from videos. It teaches from books.
