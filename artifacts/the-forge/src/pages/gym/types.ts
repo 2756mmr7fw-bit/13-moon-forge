@@ -5,7 +5,8 @@ export type Category =
   | "arrays" | "strings" | "objects" | "functions"
   | "algorithms" | "async" | "data-structures"
   | "functional" | "regex" | "testing"
-  | "trees" | "graphs" | "dynamic-programming" | "bit-manipulation";
+  | "trees" | "graphs" | "dynamic-programming" | "bit-manipulation"
+  | "auth";
 
 export type LearningStyle = "visual" | "hands-on" | "conceptual" | "pattern";
 export type ExerciseFormat = "solve" | "write-tests";
