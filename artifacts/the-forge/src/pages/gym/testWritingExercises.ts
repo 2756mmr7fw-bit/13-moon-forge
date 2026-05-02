@@ -234,6 +234,57 @@ const tests = [
     ],
     tags: ["testing", "strings", "palindrome"], estimatedMinutes: 12,
   },
+  {
+    id: "test-binary-search",
+    format: "write-tests",
+    tier: 3, category: "testing",
+    title: "Test: Binary Search",
+    tagline: "Find the bugs hiding in the boundary conditions.",
+    description: "`binarySearch(arr, target)` searches a **sorted** array and returns the **index** of target, or **-1** if not found. No `indexOf` allowed.",
+    why: "Binary search is one of the most bug-prone functions in computing. Off-by-one errors in loop conditions and pointer updates are legendary. Writing exhaustive tests for it forces you to think like a verification engineer — you have to enumerate every boundary case before you can trust the implementation.",
+    functionSignature: "function binarySearch(arr, target) → number",
+    correctImpl: `function binarySearch(arr, target) { let lo = 0, hi = arr.length - 1; while (lo <= hi) { const mid = Math.floor((lo + hi) / 2); if (arr[mid] === target) return mid; if (arr[mid] < target) lo = mid + 1; else hi = mid - 1; } return -1; }`,
+    brokenImpls: [
+      {
+        label: "uses < instead of <= in while — misses target when it's the only element left in the search space",
+        code: `function binarySearch(arr, target) { let lo = 0, hi = arr.length - 1; while (lo < hi) { const mid = Math.floor((lo + hi) / 2); if (arr[mid] === target) return mid; if (arr[mid] < target) lo = mid + 1; else hi = mid - 1; } return -1; }`,
+      },
+      {
+        label: "no return -1 — returns undefined when target is not found",
+        code: `function binarySearch(arr, target) { let lo = 0, hi = arr.length - 1; while (lo <= hi) { const mid = Math.floor((lo + hi) / 2); if (arr[mid] === target) return mid; if (arr[mid] < target) lo = mid + 1; else hi = mid - 1; } }`,
+      },
+      {
+        label: "reversed search direction — goes right when it should go left and vice versa",
+        code: `function binarySearch(arr, target) { let lo = 0, hi = arr.length - 1; while (lo <= hi) { const mid = Math.floor((lo + hi) / 2); if (arr[mid] === target) return mid; if (arr[mid] < target) hi = mid - 1; else lo = mid + 1; } return -1; }`,
+      },
+      {
+        label: "always searches only the left half — ignores the right half entirely",
+        code: `function binarySearch(arr, target) { let lo = 0, hi = arr.length - 1; while (lo <= hi) { const mid = Math.floor((lo + hi) / 2); if (arr[mid] === target) return mid; hi = mid - 1; } return -1; }`,
+      },
+    ],
+    examples: [
+      { input: "binarySearch([1, 3, 5, 7, 9], 7)", output: "3", note: "index 3" },
+      { input: "binarySearch([1, 3, 5, 7, 9], 4)", output: "-1", note: "not found" },
+      { input: "binarySearch([5], 5)", output: "0" },
+      { input: "binarySearch([], 1)", output: "-1" },
+    ],
+    starterCode: `// Write test cases for binarySearch(arr, target)
+// arr is always sorted. Returns the index of target, or -1.
+// Think about: target at first index, last index, not found, single element, empty
+
+const tests = [
+  { args: [[1, 3, 5, 7, 9], 7], expected: 3 },
+  { args: [[1, 3, 5, 7, 9], 4], expected: -1 },
+  // add more tests below...
+];`,
+    hints: [
+      "Test with target at the very first index (index 0) — boundary bugs show up there",
+      "Test with target at the very last index — same reason",
+      "Test that not-found returns exactly -1, not undefined, null, or false",
+      "Test with a single-element array: both when the element is found and when it isn't",
+    ],
+    tags: ["testing", "binary-search", "edge-cases", "boundary"], estimatedMinutes: 20,
+  },
 ];
 
 export function getTestWritingExerciseById(id: string): TestWritingExercise | undefined {
