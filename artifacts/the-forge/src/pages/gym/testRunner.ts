@@ -228,8 +228,10 @@ export const SPECIAL_RUNNERS: Record<string, (userCode: string) => TestResult[]>
       results.push({ label: "pop() removes and returns top (3)", passed: popped === 3, actual: popped, expected: 3 });
       results.push({ label: "size() → 2 after pop", passed: s.size() === 2, actual: s.size(), expected: 2 });
       s.pop(); s.pop();
-      results.push({ label: "pop() on empty returns null", passed: s.pop() === null, actual: s.pop(), expected: null });
-      results.push({ label: "peek() on empty returns null", passed: s.peek() === null, actual: s.peek(), expected: null });
+      const popOnEmpty = s.pop();
+      results.push({ label: "pop() on empty returns null", passed: popOnEmpty === null, actual: popOnEmpty, expected: null });
+      const peekOnEmpty = s.peek();
+      results.push({ label: "peek() on empty returns null", passed: peekOnEmpty === null, actual: peekOnEmpty, expected: null });
       results.push({ label: "isEmpty() → true after all items removed", passed: s.isEmpty() === true, actual: s.isEmpty(), expected: true });
     } catch (err) {
       results.push(makeError("compilation", "valid Stack class", String(err)));
@@ -259,7 +261,8 @@ export const SPECIAL_RUNNERS: Record<string, (userCode: string) => TestResult[]>
       results.push({ label: "dequeue() removes next in order (2)", passed: d2 === 2, actual: d2, expected: 2 });
       results.push({ label: "size() → 1 after two dequeues", passed: q.size() === 1, actual: q.size(), expected: 1 });
       q.dequeue();
-      results.push({ label: "dequeue() on empty returns null", passed: q.dequeue() === null, actual: q.dequeue(), expected: null });
+      const dequeueOnEmpty = q.dequeue();
+      results.push({ label: "dequeue() on empty returns null", passed: dequeueOnEmpty === null, actual: dequeueOnEmpty, expected: null });
       results.push({ label: "isEmpty() → true after all removed", passed: q.isEmpty() === true, actual: q.isEmpty(), expected: true });
     } catch (err) {
       results.push(makeError("compilation", "valid Queue class", String(err)));

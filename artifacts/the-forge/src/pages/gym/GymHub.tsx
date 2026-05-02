@@ -126,7 +126,7 @@ export default function GymHub() {
   const q = searchQuery.trim().toLowerCase();
 
   const filtered: AnyExercise[] = useMemo(() => {
-    let pool = view === "tier" ? allExs : allExs;
+    let pool: AnyExercise[] = allExs;
     if (view === "tier") {
       if (activeTier !== "all") pool = pool.filter(e => (e as { tier: Tier }).tier === activeTier);
       if (activeCat  !== "all") pool = pool.filter(e => e.category === activeCat);
