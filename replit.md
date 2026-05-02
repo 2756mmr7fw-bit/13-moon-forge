@@ -21,6 +21,39 @@ AI-powered invention and building platform for Sovereign Digital LLC (13moonforg
 - **Write Code Yourself** (`/diy-code`) — Full Monaco editor (VS Code-quality). 16 languages. Zero credits, no AI required. Save directly to Workspace or download the file. For users who want to write their own code without using Forge.
 - **Learn to Code** (`/sage`) — Sage AI tutor, now skill-level-aware.
 
+### Forge Academy — Code Fix Test (`/code-fix-test`)
+Timed bug-fixing tests across 12 levels with all 20 learning features:
+
+**Quality gate**: 60% accuracy required for a session to "qualify". Need 3 qualifying sessions per level to unlock the next. Qualifying sessions tracked separately from total attempts.
+
+**20 features implemented:**
+1. **Accuracy threshold** — Sessions only qualify if ≥60% accuracy. `qualifyingSessions` tracked in `debug_level_progress`.
+2. **Weakness tracker** — Recharts bar chart showing error rate per bug type across all sessions.
+3. **Past session review** — "Review" button on history cards streams Forge's analysis of that session's mistakes.
+4. **Hint system** — Hint button in TestScreen calls `/api/debug-test/hint`. Each hint adds +30s penalty. `hintUsed` stored per result.
+5. **Quality gate display** — Shows qualifying vs total sessions, accuracy badge per session, unlock status.
+6. **Cross-session blind spot report** — Streaming Forge analysis of all-time mistake patterns. Button on ProgressScreen weakness section.
+7. **Fix-it-yourself retry** — Wrong answers presented again in ResultsScreen with Monaco editor, no timer, just practice.
+8. **Streak tracking** — `debug_streaks` table. Current/longest streak shown on ProgressScreen with flame icon.
+9. **Syntax highlighting** — Monaco editor replaces `<pre>` and `<Textarea>` for both broken code and student fix panels.
+10. **Prep brief** — Streaming Forge brief appears before each test. Students can skip it.
+11. **Teach it back** — After Forge review, student types their own explanation. Forge grades 0–10. Score ≥9 earns "Teach the Teacher" achievement.
+12. **Sage lesson links** — Missed bug types surface direct links to relevant Sage lessons in ResultsScreen + ProgressScreen weakness section.
+13. **Boss challenge** — Unlocks when all 12 levels complete. Personalized final exam generated from historical weak spots. Mode: 'boss'.
+14. **Progress graphs** — Recharts LineChart on selected level panel showing accuracy over sessions.
+15. **Daily challenge** — One challenge per day, same for all users. `debug_daily_challenges` + `debug_daily_attempts` tables. Leaderboard after submit.
+16. **Achievements** — 12 achievements: first_test, perfect_score, speed_demon, no_hints, streak_3, streak_7, streak_30, iron_coder, boss_slayer, comeback_kid, daily_first, teach_master. Awarded on `/complete`.
+17. **Pause button** — Freezes timer in TestScreen. Paused seconds tracked separately and stored in session.
+18. **Language expansion** — JavaScript, TypeScript, Python, SQL. Language selector on ProgressScreen and TestScreen. Monaco syntax highlighting adapts to language.
+19. **Export study guide** — "Export Study Guide" button in ResultsScreen opens a formatted printable HTML page of all mistakes + explanations.
+20. **Challenge quality rating** — Star rating (1–5) per challenge shown after verdict. Stored in `debug_test_results.rating`.
+
+**DB tables**: `debug_test_sessions`, `debug_test_results`, `debug_level_progress`, `debug_streaks`, `debug_teach_back`, `debug_daily_challenges`, `debug_daily_attempts`, `debug_achievements`.
+
+**API endpoints** (all under `/api/debug-test/`): `POST /generate`, `POST /check-answer`, `POST /hint`, `POST /prep-brief` (stream), `POST /review-mistakes` (stream), `POST /blind-spot-report` (stream), `POST /teach-back`, `POST /boss-challenge/generate`, `POST /complete`, `GET /progress`, `GET /weakness-report`, `GET /history`, `GET /mistakes/:sessionId`, `GET /daily`, `POST /daily/submit`, `GET /streak`, `GET /achievements`.
+
+**Frontend files**: `artifacts/the-forge/src/pages/code-fix-test.tsx` (main router) + `code-fix-test/types.ts`, `ProgressScreen.tsx`, `TestScreen.tsx`, `ResultsScreen.tsx`, `DailyChallenge.tsx`.
+
 ### Skill Level System
 - User sets their level via "My Skill Level" button at the bottom of the sidebar: Just Starting / Beginner / Novice / Intermediate / Pro
 - Stored in localStorage (`13moonforge_skill_level`)
