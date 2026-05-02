@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db, chatSessions, savedPrompts, workspaceItemsTable } from "@workspace/db";
-import { eq, gte, count } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { Resend } from "resend";
 
 const router = Router();
@@ -12,20 +12,36 @@ function getResend(): Resend {
   return _resend;
 }
 
+// ─── Per-user cooldown ────────────────────────────────────────────────────────
+// One report per user per 24 hours — prevents accidental or repeated sends
+// from burning through the Resend daily quota.
+const COOLDOWN_MS = 24 * 60 * 60 * 1000;
+const lastSentAt = new Map<string, number>();
+
 // POST /api/forge-report — send a Forge activity digest to the user's email
 // Body: { email: string; firstName?: string }
 router.post("/forge-report", async (req, res) => {
   const userId = req.userId;
+
+  // ── Cooldown check ────────────────────────────────────────────────────────
+  const last = lastSentAt.get(userId);
+  if (last) {
+    const elapsed = Date.now() - last;
+    if (elapsed < COOLDOWN_MS) {
+      const nextAvailableAt = last + COOLDOWN_MS;
+      return res.status(429).json({
+        error: "You already sent a Forge Report recently. One per day is the limit.",
+        nextAvailableAt,
+      });
+    }
+  }
 
   const { email, firstName } = req.body ?? {};
   if (!email || typeof email !== "string") {
     return res.status(400).json({ error: "email required" });
   }
 
-  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-
   try {
-    // Gather activity stats
     const [sessions, prompts, files] = await Promise.all([
       db.select({ moonId: chatSessions.moonId, title: chatSessions.title })
         .from(chatSessions)
@@ -131,7 +147,10 @@ router.post("/forge-report", async (req, res) => {
       return res.status(500).json({ error: "Failed to send email" });
     }
 
-    res.json({ ok: true, sentTo: email });
+    // Record the send time only after a confirmed success
+    lastSentAt.set(userId, Date.now());
+
+    res.json({ ok: true, sentTo: email, nextAvailableAt: Date.now() + COOLDOWN_MS });
   } catch (err) {
     req.log.error({ err }, "forge-report: failed");
     res.status(500).json({ error: "Failed to generate report" });

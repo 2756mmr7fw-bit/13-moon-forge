@@ -166,10 +166,32 @@ function TptsEmailLinker() {
   );
 }
 
+function useCooldownTimer(nextAvailableAt: number | null) {
+  const [remaining, setRemaining] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!nextAvailableAt) { setRemaining(null); return; }
+    function tick() {
+      const diff = nextAvailableAt! - Date.now();
+      if (diff <= 0) { setRemaining(null); return; }
+      const h = Math.floor(diff / 3_600_000);
+      const m = Math.floor((diff % 3_600_000) / 60_000);
+      setRemaining(h > 0 ? `${h}h ${m}m` : `${m}m`);
+    }
+    tick();
+    const id = setInterval(tick, 60_000);
+    return () => clearInterval(id);
+  }, [nextAvailableAt]);
+
+  return remaining;
+}
+
 function ForgeReportCard({ email, firstName }: { email: string; firstName?: string }) {
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [err, setErr] = useState("");
+  const [nextAvailableAt, setNextAvailableAt] = useState<number | null>(null);
+  const cooldown = useCooldownTimer(nextAvailableAt);
 
   async function send() {
     setSending(true); setErr("");
@@ -179,8 +201,15 @@ function ForgeReportCard({ email, firstName }: { email: string; firstName?: stri
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, firstName }),
       });
-      if (!res.ok) throw new Error((await res.json()).error ?? "Failed");
+      const data = await res.json();
+      if (!res.ok) {
+        if (res.status === 429 && data.nextAvailableAt) {
+          setNextAvailableAt(data.nextAvailableAt);
+        }
+        throw new Error(data.error ?? "Failed");
+      }
       setSent(true);
+      if (data.nextAvailableAt) setNextAvailableAt(data.nextAvailableAt);
     } catch (e: unknown) {
       setErr(e instanceof Error ? e.message : "Something went wrong");
     } finally { setSending(false); }
@@ -196,8 +225,18 @@ function ForgeReportCard({ email, firstName }: { email: string; firstName?: stri
         Get a weekly activity digest — your sessions, files, and saved prompts — sent to your email.
       </p>
       {sent ? (
-        <div className="flex items-center gap-1.5 text-green-400 text-xs font-medium">
-          <CheckCircle2 size={13} /> Sent to {email}
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-1.5 text-green-400 text-xs font-medium">
+            <CheckCircle2 size={13} /> Sent to {email}
+          </div>
+          {cooldown && (
+            <p className="text-xs text-muted-foreground">Next report available in {cooldown}</p>
+          )}
+        </div>
+      ) : cooldown ? (
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/40 rounded-lg px-3 py-2">
+          <Loader2 size={12} className="shrink-0 opacity-50" />
+          Already sent today — next available in {cooldown}
         </div>
       ) : (
         <Button size="sm" className="w-full gap-2 text-xs h-8" onClick={send} disabled={sending}>
