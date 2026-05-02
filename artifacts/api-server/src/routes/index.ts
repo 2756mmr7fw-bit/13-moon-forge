@@ -43,6 +43,7 @@ import referralRouter from "./referral";
 import hetznerRouter from "./hetzner";
 import mailScannerRouter from "./mail-scanner";
 import debugTestRouter from "./debugTest";
+import academyRouter from "./academy";
 
 const router: IRouter = Router();
 
@@ -90,5 +91,6 @@ router.use(referralRouter);
 router.use(hetznerRouter);
 router.use(mailScannerRouter);
 router.use(debugTestRouter);
+router.use(academyRouter);
 
 export default router;

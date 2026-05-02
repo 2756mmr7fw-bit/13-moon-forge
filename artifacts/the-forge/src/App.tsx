@@ -66,6 +66,14 @@ const ForgeDrop        = lazy(() => import("@/pages/forge-drop"));
 const MailScanner      = lazy(() => import("@/pages/mail-scanner"));
 const DebugForge       = lazy(() => import("@/pages/debug-forge"));
 const CodeFixTest      = lazy(() => import("@/pages/code-fix-test"));
+const TraceReader      = lazy(() => import("@/pages/academy/TraceReader"));
+const DryRun           = lazy(() => import("@/pages/academy/DryRun"));
+const SqlDrill         = lazy(() => import("@/pages/academy/SqlDrill"));
+const BigODrill        = lazy(() => import("@/pages/academy/BigODrill"));
+const TypeFixer        = lazy(() => import("@/pages/academy/TypeFixer"));
+const ApiArchitect     = lazy(() => import("@/pages/academy/ApiArchitect"));
+const GitDrill         = lazy(() => import("@/pages/academy/GitDrill"));
+const LogReader        = lazy(() => import("@/pages/academy/LogReader"));
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 // In production, always route Clerk through our own domain proxy so it works
@@ -338,6 +346,14 @@ function Router() {
                     <Route path="/mail-scanner"          component={MailScanner} />
                     <Route path="/debug-forge"           component={DebugForge} />
                     <Route path="/code-fix-test"         component={CodeFixTest} />
+                    <Route path="/trace-reader"           component={TraceReader} />
+                    <Route path="/dry-run"                component={DryRun} />
+                    <Route path="/sql-drill"              component={SqlDrill} />
+                    <Route path="/big-o"                  component={BigODrill} />
+                    <Route path="/type-fixer"             component={TypeFixer} />
+                    <Route path="/api-architect"          component={ApiArchitect} />
+                    <Route path="/git-drill"              component={GitDrill} />
+                    <Route path="/log-reader"             component={LogReader} />
                     <Route component={NotFound} />
                   </Switch>
                 </ProtectedRoute>

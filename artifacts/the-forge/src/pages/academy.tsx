@@ -5,8 +5,10 @@ import { cn } from "@/lib/utils";
 import {
   GraduationCap, ArrowRight, CheckCircle2, Lock, Star,
   Users, BookOpen, Flame, Trophy, Shield, Moon, Zap,
-  ChevronRight, Circle,
+  ChevronRight, Circle, AlertTriangle, Cpu, Database,
+  FileType2, Network, GitBranch, ScrollText, Timer,
 } from "lucide-react";
+import { DRILL_META, DRILL_ORDER } from "./academy/types";
 
 interface Level {
   num: number;
@@ -214,6 +216,73 @@ export default function Academy() {
             <span className="flex items-center gap-2"><CheckCircle2 size={14} className="text-green-400" /> No income share agreement</span>
             <span className="flex items-center gap-2"><CheckCircle2 size={14} className="text-green-400" /> Work at your pace</span>
           </div>
+        </div>
+      </div>
+
+      {/* ── Forge Drills ──────────────────────────────────────────────────── */}
+      <div className="max-w-5xl mx-auto px-4 py-14 sm:px-6">
+        <div className="text-center mb-10">
+          <span className="text-xs font-bold text-orange-400 tracking-widest uppercase">Forge Drills</span>
+          <h2 className="text-3xl font-black mt-2 mb-3 leading-tight">Use it or lose it.</h2>
+          <p className="text-zinc-400 max-w-xl mx-auto text-sm leading-relaxed">
+            These are the skills that erode fastest without practice and take the longest to rebuild.
+            Stack traces. SQL. Git. Complexity. None of them can be learned by watching — only by doing.
+            Reps build reflex.
+          </p>
+        </div>
+
+        {/* Code Fix Test — featured */}
+        <Link href="/code-fix-test">
+          <div className="rounded-2xl border border-orange-500/30 bg-orange-500/5 p-5 mb-4 hover:bg-orange-500/10 transition-colors cursor-pointer group flex items-center gap-5">
+            <div className="w-12 h-12 rounded-xl bg-orange-500/15 flex items-center justify-center shrink-0">
+              <Timer size={20} className="text-orange-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="font-bold text-sm">Code Fix Test</span>
+                <Badge className="bg-orange-500/20 text-orange-300 border-orange-500/30 text-xs">20 features</Badge>
+              </div>
+              <p className="text-xs text-zinc-400 leading-relaxed">Timed bug-fixing at 12 difficulty levels — streak tracking, daily challenges, achievements, blind spot reports.</p>
+            </div>
+            <ChevronRight size={16} className="text-muted-foreground group-hover:text-orange-400 transition-colors shrink-0" />
+          </div>
+        </Link>
+
+        {/* 8 drill cards */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {DRILL_ORDER.map(type => {
+            const m = DRILL_META[type];
+            const icons: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
+              trace:        AlertTriangle,
+              "dry-run":    Cpu,
+              sql:          Database,
+              "big-o":      Zap,
+              "type-fixer": FileType2,
+              api:          Network,
+              git:          GitBranch,
+              log:          ScrollText,
+            };
+            const Icon = icons[type] ?? GraduationCap;
+            return (
+              <Link key={type} href={m.route}>
+                <div className={cn(
+                  "rounded-xl border p-4 cursor-pointer hover:scale-[1.02] transition-all duration-150 h-full group",
+                  m.border, m.bg,
+                )}>
+                  <div className="flex items-start gap-3 mb-3">
+                    <Icon size={16} className={cn(m.color, "shrink-0 mt-0.5")} />
+                    <span className="font-bold text-sm leading-tight">{m.label}</span>
+                  </div>
+                  <p className="text-xs text-zinc-400 leading-relaxed mb-2">{m.short}</p>
+                  <p className="text-xs text-zinc-600 leading-relaxed italic">{m.why.slice(0, 80)}…</p>
+                  <div className="mt-3 flex items-center gap-1 text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className={m.color}>Start drill</span>
+                    <ChevronRight size={10} className={m.color} />
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       </div>
 
