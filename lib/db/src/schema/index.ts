@@ -13,3 +13,4 @@ export * from "./sharedOutputs";
 export * from "./userMemory";
 export * from "./referrals";
 export * from "./debugTests";
+export * from "./academy";
