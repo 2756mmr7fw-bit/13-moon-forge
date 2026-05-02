@@ -4,7 +4,8 @@ export type Tier     = 1 | 2 | 3 | 4;
 export type Category =
   | "arrays" | "strings" | "objects" | "functions"
   | "algorithms" | "async" | "data-structures"
-  | "functional" | "regex" | "testing";
+  | "functional" | "regex" | "testing"
+  | "trees" | "graphs" | "dynamic-programming" | "bit-manipulation";
 
 export type LearningStyle = "visual" | "hands-on" | "conceptual" | "pattern";
 export type ExerciseFormat = "solve" | "write-tests";
@@ -39,36 +40,33 @@ export interface Exercise {
 }
 
 // ── "Write the Tests" exercise ───────────────────────────────────────────────
-// The student writes test cases. Passes when: all tests pass against the
-// correct implementation AND each broken implementation is caught by at least
-// one of their tests.
 export interface BrokenImpl {
-  label:       string;  // "off-by-one error", "ignores empty input", etc.
-  code:        string;
+  label:  string;
+  code:   string;
 }
 
 export interface TestWritingExercise {
-  id:                  string;
-  format:              "write-tests";
-  tier:                Tier;
-  category:            "testing";
-  title:               string;
-  tagline:             string;
-  description:         string;   // what the function is SUPPOSED to do
-  why:                 string;
-  functionSignature:   string;   // shown to student
-  correctImpl:         string;   // hidden — used for validation
-  brokenImpls:         BrokenImpl[];
-  starterCode:         string;
-  examples:            { input: string; output: string; note?: string }[];
-  hints:               string[];
-  tags:                string[];
-  estimatedMinutes:    number;
+  id:                string;
+  format:            "write-tests";
+  tier:              Tier;
+  category:          "testing";
+  title:             string;
+  tagline:           string;
+  description:       string;
+  why:               string;
+  functionSignature: string;
+  correctImpl:       string;
+  brokenImpls:       BrokenImpl[];
+  starterCode:       string;
+  examples:          { input: string; output: string; note?: string }[];
+  hints:             string[];
+  tags:              string[];
+  estimatedMinutes:  number;
 }
 
 export type AnyExercise = Exercise | TestWritingExercise;
 
-// ── Test runner result types ─────────────────────────────────────────────────
+// ── Test result types ────────────────────────────────────────────────────────
 export interface TestResult {
   label:    string;
   passed:   boolean;
@@ -84,19 +82,19 @@ export interface StudentTestCase {
 }
 
 export interface BrokenImplResult {
-  label:  string;
-  caught: boolean;
+  label:        string;
+  caught:       boolean;
   failingTest?: StudentTestCase;
 }
 
 export interface TestWritingResult {
-  studentTests:         StudentTestCase[];
-  correctAllPass:       boolean;
-  correctResults:       { passed: boolean; actual: unknown; expected: unknown; error?: string }[];
-  brokenResults:        BrokenImplResult[];
-  allBrokenCaught:      boolean;
-  passed:               boolean;
-  parseError?:          string;
+  studentTests:    StudentTestCase[];
+  correctAllPass:  boolean;
+  correctResults:  { passed: boolean; actual: unknown; expected: unknown; error?: string }[];
+  brokenResults:   BrokenImplResult[];
+  allBrokenCaught: boolean;
+  passed:          boolean;
+  parseError?:     string;
 }
 
 export interface AttemptSignals {
@@ -121,7 +119,10 @@ export interface LearningProfileData {
 }
 
 // ── Display metadata ─────────────────────────────────────────────────────────
-export const STYLE_META: Record<LearningStyle, { label: string; color: string; border: string; bg: string; description: string; tip: string }> = {
+export const STYLE_META: Record<LearningStyle, {
+  label: string; color: string; border: string; bg: string;
+  description: string; tip: string;
+}> = {
   "visual": {
     label: "Visual Learner",
     color: "text-purple-400", border: "border-purple-500/30", bg: "bg-purple-500/5",
@@ -156,59 +157,83 @@ export const TIER_META: Record<Tier, { label: string; color: string; description
 };
 
 export const CATEGORY_LABELS: Record<Category, string> = {
-  arrays:           "Arrays",
-  strings:          "Strings",
-  objects:          "Objects",
-  functions:        "Functions",
-  algorithms:       "Algorithms",
-  async:            "Async",
-  "data-structures":"Data Structures",
-  functional:       "Functional",
-  regex:            "Regex",
-  testing:          "Write Tests",
+  arrays:                 "Arrays",
+  strings:                "Strings",
+  objects:                "Objects",
+  functions:              "Functions",
+  algorithms:             "Algorithms",
+  async:                  "Async",
+  "data-structures":      "Data Structures",
+  functional:             "Functional",
+  regex:                  "Regex",
+  testing:                "Write Tests",
+  trees:                  "Trees",
+  graphs:                 "Graphs",
+  "dynamic-programming":  "Dynamic Programming",
+  "bit-manipulation":     "Bit Manipulation",
 };
 
 export const CATEGORY_COLORS: Record<Category, string> = {
-  arrays:           "text-blue-400",
-  strings:          "text-green-400",
-  objects:          "text-yellow-400",
-  functions:        "text-orange-400",
-  algorithms:       "text-red-400",
-  async:            "text-purple-400",
-  "data-structures":"text-cyan-400",
-  functional:       "text-pink-400",
-  regex:            "text-lime-400",
-  testing:          "text-amber-400",
+  arrays:                 "text-blue-400",
+  strings:                "text-green-400",
+  objects:                "text-yellow-400",
+  functions:              "text-orange-400",
+  algorithms:             "text-red-400",
+  async:                  "text-purple-400",
+  "data-structures":      "text-cyan-400",
+  functional:             "text-pink-400",
+  regex:                  "text-lime-400",
+  testing:                "text-amber-400",
+  trees:                  "text-emerald-400",
+  graphs:                 "text-teal-400",
+  "dynamic-programming":  "text-violet-400",
+  "bit-manipulation":     "text-rose-400",
 };
 
 // ── CS Curriculum Tracks ─────────────────────────────────────────────────────
 export interface CurriculumTrack {
-  id:          string;
-  title:       string;
-  subtitle:    string;  // what college calls this
-  forge:       string;  // what Forge calls this
-  categories:  Category[];
-  color:       string;
-  border:      string;
-  bg:          string;
+  id:         string;
+  title:      string;
+  subtitle:   string;
+  forge:      string;
+  categories: Category[];
+  color:      string;
+  border:     string;
+  bg:         string;
 }
 
 export const CURRICULUM_TRACKS: CurriculumTrack[] = [
   {
     id: "linear",
     title: "Linear Data Structures",
-    subtitle: "CS 201 — Data Structures",
+    subtitle: "CS 201 — Data Structures I",
     forge: "How data is stored and accessed in sequence",
     categories: ["arrays", "strings", "data-structures"],
     color: "text-cyan-400", border: "border-cyan-500/30", bg: "bg-cyan-500/5",
   },
   {
+    id: "trees-graphs",
+    title: "Trees & Graphs",
+    subtitle: "CS 202 — Data Structures II",
+    forge: "Non-linear structures that model the real world",
+    categories: ["trees", "graphs"],
+    color: "text-emerald-400", border: "border-emerald-500/30", bg: "bg-emerald-500/5",
+  },
+  {
     id: "logic",
-    title: "Logic & Algorithms",
+    title: "Algorithms & Sorting",
     subtitle: "CS 301 — Algorithm Design",
     forge: "The patterns that solve 90% of hard problems",
     categories: ["algorithms"],
     color: "text-red-400", border: "border-red-500/30", bg: "bg-red-500/5",
+  },
+  {
+    id: "dp",
+    title: "Dynamic Programming",
+    subtitle: "CS 401 — Advanced Algorithms",
+    forge: "Turning exponential problems into polynomial ones by remembering what you've already solved",
+    categories: ["dynamic-programming"],
+    color: "text-violet-400", border: "border-violet-500/30", bg: "bg-violet-500/5",
   },
   {
     id: "fp",
@@ -221,7 +246,7 @@ export const CURRICULUM_TRACKS: CurriculumTrack[] = [
   {
     id: "async-track",
     title: "Concurrency & Async",
-    subtitle: "CS 410 — Operating Systems / Distributed Systems",
+    subtitle: "CS 410 — Operating Systems",
     forge: "How to handle time, waiting, and multiple things at once",
     categories: ["async"],
     color: "text-purple-400", border: "border-purple-500/30", bg: "bg-purple-500/5",
@@ -237,16 +262,24 @@ export const CURRICULUM_TRACKS: CurriculumTrack[] = [
   {
     id: "strings-regex",
     title: "Strings & Pattern Matching",
-    subtitle: "CS 311 — Theory of Computation (finally made practical)",
-    forge: "Text manipulation and regular expressions — the ones college never made you use",
+    subtitle: "CS 311 — Theory of Computation (made practical)",
+    forge: "Text manipulation and regular expressions — the ones college never made you actually use",
     categories: ["strings", "regex"],
     color: "text-green-400", border: "border-green-500/30", bg: "bg-green-500/5",
+  },
+  {
+    id: "bit-track",
+    title: "Bit Manipulation",
+    subtitle: "CS 211 — Computer Organization",
+    forge: "Working directly with binary — the layer beneath every integer operation",
+    categories: ["bit-manipulation"],
+    color: "text-rose-400", border: "border-rose-500/30", bg: "bg-rose-500/5",
   },
   {
     id: "testing-track",
     title: "Software Testing",
     subtitle: "— (College skipped this entirely) —",
-    forge: "Write tests, catch bugs before they happen. The skill colleges never teach.",
+    forge: "Write tests, catch bugs before they ship. The skill colleges never teach.",
     categories: ["testing"],
     color: "text-amber-400", border: "border-amber-500/30", bg: "bg-amber-500/5",
   },
