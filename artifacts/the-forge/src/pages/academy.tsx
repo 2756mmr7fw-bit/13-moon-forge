@@ -294,7 +294,7 @@ export default function Academy() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
                 <span className="font-bold text-sm">Forge's Gym</span>
-                <Badge className="bg-cyan-500/20 text-cyan-300 border-cyan-500/30 text-xs">20 exercises</Badge>
+                <Badge className="bg-cyan-500/20 text-cyan-300 border-cyan-500/30 text-xs">45+ exercises</Badge>
                 <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30 text-xs">adaptive</Badge>
               </div>
               <p className="text-xs text-zinc-400 leading-relaxed">Write working code from scratch. Pass every test case. 4 tiers from foundations to algorithms — the system learns how you think and adjusts.</p>
