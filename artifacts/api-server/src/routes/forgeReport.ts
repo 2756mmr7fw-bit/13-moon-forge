@@ -140,6 +140,11 @@ router.post("/forge-report", async (req, res) => {
       to:      email,
       subject: `🔥 Your Forge Week — ${moonCount} sessions, ${fileCount} files`,
       html,
+      tags: [
+        { name: "app",      value: "the-forge" },
+        { name: "email_type", value: "forge-report" },
+        { name: "product",  value: "13-moon-forge" },
+      ],
     });
 
     if (error) {
