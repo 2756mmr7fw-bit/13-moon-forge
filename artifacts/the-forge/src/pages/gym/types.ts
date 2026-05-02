@@ -172,6 +172,7 @@ export const CATEGORY_LABELS: Record<Category, string> = {
   graphs:                 "Graphs",
   "dynamic-programming":  "Dynamic Programming",
   "bit-manipulation":     "Bit Manipulation",
+  auth:                   "Auth & Security",
 };
 
 export const CATEGORY_COLORS: Record<Category, string> = {
@@ -189,6 +190,7 @@ export const CATEGORY_COLORS: Record<Category, string> = {
   graphs:                 "text-teal-400",
   "dynamic-programming":  "text-violet-400",
   "bit-manipulation":     "text-rose-400",
+  auth:                   "text-indigo-400",
 };
 
 // ── CS Curriculum Tracks ─────────────────────────────────────────────────────
@@ -283,5 +285,13 @@ export const CURRICULUM_TRACKS: CurriculumTrack[] = [
     forge: "Write tests, catch bugs before they ship. The skill colleges never teach.",
     categories: ["testing"],
     color: "text-amber-400", border: "border-amber-500/30", bg: "bg-amber-500/5",
+  },
+  {
+    id: "auth-track",
+    title: "Authentication & Security",
+    subtitle: "— (The gap every developer has until they get burned) —",
+    forge: "Build what Clerk, Auth0, and every SSO company sell — from scratch. Passwords, tokens, sessions, OAuth, permissions.",
+    categories: ["auth"],
+    color: "text-indigo-400", border: "border-indigo-500/30", bg: "bg-indigo-500/5",
   },
 ];

@@ -4,6 +4,7 @@ import { ALL_TREE_GRAPH_EXERCISES } from "./treeGraphExercises";
 import { DP_EXERCISES } from "./dpExercises";
 import { BIT_EXERCISES } from "./bitExercises";
 import { TEST_WRITING_EXERCISES, getTestWritingExerciseById } from "./testWritingExercises";
+import { AUTH_EXERCISES } from "./authExercises";
 
 // ── Tier 1–2 Foundations (original exercises) ─────────────────────────────
 const FOUNDATION_EXERCISES: Exercise[] = [
@@ -514,6 +515,7 @@ export const EXERCISES: Exercise[] = [
   ...ALL_TREE_GRAPH_EXERCISES,
   ...DP_EXERCISES,
   ...BIT_EXERCISES,
+  ...AUTH_EXERCISES,
 ];
 
 export const ALL_GYM_EXERCISES: AnyExercise[] = [
