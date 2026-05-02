@@ -229,6 +229,38 @@ Email arrives with code/PDF → Antivirus extracts content → POSTs to Forge `/
 
 ---
 
+## Forge's Gym — Exercise Inventory
+
+**Total exercises: 79** (71 solve + 8 write-tests)
+
+### Solve exercises by category
+- **Foundations** (22): arrays, strings, objects, functions — Tier 1–2
+- **Data Structures** (5): linked list, stack, queue, LRU cache, BST
+- **Functional** (5): compose, curry, once, partial, flatMap
+- **Async** (3): sleep, promiseAll, retry
+- **Regex** (4): extractNumbers, isValidEmail, stripHtml, slugify
+- **Algorithms** (7+): fibonacci-dp, rotateArray, longestCommonPrefix, quickSort, plus more
+- **Trees & Graphs** (11): inorder/preorder/postorder traversal, level order, max depth, paths, BST insert/search, detect cycle, topological sort
+- **Dynamic Programming** (5): coinChange, longestIncreasingSubsequence, editDistance, knapsack, maxSubarrayDP
+- **Bit Manipulation** (5): countBits, isPowerOfTwo, singleNumber, missingNumber, hammingDistance
+- **Auth & Security** (7): hashPassword, safeCompare, createJWT, verifyJWT, SessionStore, can (RBAC), exchangeCode (OAuth)
+
+### Write-tests exercises (8)
+- test-double-array, test-count-vowels, test-flatten, test-find-max, test-is-palindrome, test-binary-search, test-auth-middleware
+
+### Key files
+- `artifacts/the-forge/src/pages/gym/authExercises.ts` — Auth & Security module (7 exercises)
+- `artifacts/the-forge/src/pages/gym/exercises.ts` — master list + exports
+- `artifacts/the-forge/src/pages/gym/testWritingExercises.ts` — all 8 write-tests exercises
+- `artifacts/the-forge/src/pages/gym/testRunner.ts` — SPECIAL_RUNNERS (class/HOF), ASYNC_SPECIAL_RUNNERS, standard runner
+- `artifacts/the-forge/src/pages/gym/types.ts` — Category union, CATEGORY_LABELS/COLORS, CURRICULUM_TRACKS
+- `artifacts/the-forge/src/pages/gym/GymHub.tsx` — hub UI with tier/curriculum views, search, filters
+- `artifacts/the-forge/src/pages/gym/ExercisePage.tsx` — solve exercise page
+- `artifacts/the-forge/src/pages/gym/WriteTestsPage.tsx` — write-tests page
+- `artifacts/api-server/src/routes/gym.ts` — attempt saving, progress, learning profile
+
+---
+
 ## Workspace
 pnpm workspace monorepo, TypeScript, Node.js 24.
 
