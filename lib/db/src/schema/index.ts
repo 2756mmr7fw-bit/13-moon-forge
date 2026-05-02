@@ -12,3 +12,4 @@ export * from "./savedPrompts";
 export * from "./sharedOutputs";
 export * from "./userMemory";
 export * from "./referrals";
+export * from "./debugTests";
