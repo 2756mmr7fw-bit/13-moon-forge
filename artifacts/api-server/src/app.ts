@@ -16,6 +16,12 @@ const app: Express = express();
 // Trust the reverse proxy (Replit's load balancer sets X-Forwarded-For)
 app.set("trust proxy", 1);
 
+// Log every incoming request immediately (before any middleware can hang)
+app.use((req, _res, next) => {
+  logger.info({ method: req.method, url: req.url?.split("?")[0] }, "→ incoming");
+  next();
+});
+
 app.use(
   pinoHttp({
     logger,
@@ -35,6 +41,20 @@ app.use(
     },
   }),
 );
+
+// Hard 10-second timeout for every request — must come BEFORE Clerk middleware
+// so it fires even if Clerk hangs on JWKS fetching
+app.use((req, res, next) => {
+  const tid = setTimeout(() => {
+    if (!res.headersSent) {
+      logger.warn({ url: req.url?.split("?")[0] }, "hard request timeout");
+      res.status(504).json({ error: "Server timeout. Please try again." });
+    }
+  }, 10_000);
+  res.on("finish", () => clearTimeout(tid));
+  res.on("close", () => clearTimeout(tid));
+  next();
+});
 
 // Clerk proxy must come before body parsers (streams raw bytes)
 app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
