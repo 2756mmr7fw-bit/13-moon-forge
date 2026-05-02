@@ -285,6 +285,57 @@ const tests = [
     ],
     tags: ["testing", "binary-search", "edge-cases", "boundary"], estimatedMinutes: 20,
   },
+  {
+    id: "test-auth-middleware",
+    format: "write-tests",
+    tier: 3, category: "testing",
+    title: "Test: Auth Middleware",
+    tagline: "Your tests are the last line of defense before a breach.",
+    description: "`authMiddleware(req, secret)` checks a request object for a valid token. `req.headers.authorization` holds a Bearer token (e.g. `'Bearer abc123'`). Returns `{ ok: true, userId }` if valid, or `{ ok: false, error: string }` if not.",
+    why: "Authentication middleware is one of the most critical and most poorly-tested pieces of any codebase. A single missed edge case — empty token, wrong format, expired session — and an unauthenticated user gets in. This exercise forces you to enumerate every way a token can be wrong before you trust it.",
+    functionSignature: "function authMiddleware(req, secret) → { ok: boolean, userId?: number, error?: string }",
+    correctImpl: `function authMiddleware(req, secret) { const auth = req.headers && req.headers.authorization; if (!auth || !auth.startsWith('Bearer ')) return { ok: false, error: 'missing token' }; const token = auth.slice(7); if (token !== secret) return { ok: false, error: 'invalid token' }; return { ok: true, userId: 1 }; }`,
+    brokenImpls: [
+      {
+        label: "no check for 'Bearer ' prefix — accepts any authorization header value as a token",
+        code: `function authMiddleware(req, secret) { const token = req.headers && req.headers.authorization; if (!token) return { ok: false, error: 'missing token' }; if (token !== secret) return { ok: false, error: 'invalid token' }; return { ok: true, userId: 1 }; }`,
+      },
+      {
+        label: "no check for missing authorization header — crashes or returns ok:true when header is absent",
+        code: `function authMiddleware(req, secret) { const token = req.headers.authorization.slice(7); if (token !== secret) return { ok: false, error: 'invalid token' }; return { ok: true, userId: 1 }; }`,
+      },
+      {
+        label: "always returns ok:true — no token validation at all",
+        code: `function authMiddleware(req, secret) { return { ok: true, userId: 1 }; }`,
+      },
+      {
+        label: "case-sensitive 'BEARER' check — fails valid tokens that use lowercase 'Bearer'",
+        code: `function authMiddleware(req, secret) { const auth = req.headers && req.headers.authorization; if (!auth || !auth.startsWith('BEARER ')) return { ok: false, error: 'missing token' }; const token = auth.slice(7); if (token !== secret) return { ok: false, error: 'invalid token' }; return { ok: true, userId: 1 }; }`,
+      },
+    ],
+    examples: [
+      { input: "authMiddleware({ headers: { authorization: 'Bearer mysecret' } }, 'mysecret')", output: "{ ok: true, userId: 1 }" },
+      { input: "authMiddleware({ headers: {} }, 'mysecret')", output: "{ ok: false, error: 'missing token' }" },
+      { input: "authMiddleware({ headers: { authorization: 'Bearer wrongtoken' } }, 'mysecret')", output: "{ ok: false, error: 'invalid token' }" },
+    ],
+    starterCode: `// Write test cases for authMiddleware(req, secret)
+// req has a headers object. authorization is a Bearer token string.
+// Returns { ok: true, userId } on success or { ok: false, error } on failure.
+// Think about: valid token, wrong token, missing header, wrong format
+
+const tests = [
+  { args: [{ headers: { authorization: 'Bearer mysecret' } }, 'mysecret'], expected: { ok: true, userId: 1 } },
+  { args: [{ headers: {} }, 'mysecret'], expected: { ok: false, error: 'missing token' } },
+  // add more tests below...
+];`,
+    hints: [
+      "What happens when authorization header is completely missing? What about when headers itself is empty?",
+      "Test that 'mysecret' (without 'Bearer ') is rejected — wrong format",
+      "Test that a token with extra whitespace or casing issues is rejected",
+      "You need a test that would pass with the correct impl but fail with 'always returns ok:true'",
+    ],
+    tags: ["testing", "auth", "middleware", "security"], estimatedMinutes: 20,
+  },
 ];
 
 export function getTestWritingExerciseById(id: string): TestWritingExercise | undefined {
