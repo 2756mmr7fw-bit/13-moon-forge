@@ -6,7 +6,7 @@ import {
   GraduationCap, ArrowRight, CheckCircle2, Lock, Star,
   Users, BookOpen, Flame, Trophy, Shield, Moon, Zap,
   ChevronRight, Circle, AlertTriangle, Cpu, Database,
-  FileType2, Network, GitBranch, ScrollText, Timer,
+  FileType2, Network, GitBranch, ScrollText, Timer, Dumbbell,
 } from "lucide-react";
 import { DRILL_META, DRILL_ORDER } from "./academy/types";
 
@@ -284,6 +284,24 @@ export default function Academy() {
             );
           })}
         </div>
+
+        {/* Forge's Gym — featured below drills */}
+        <Link href="/gym">
+          <div className="rounded-2xl border border-cyan-500/30 bg-cyan-500/5 p-5 mt-4 hover:bg-cyan-500/10 transition-colors cursor-pointer group flex items-center gap-5">
+            <div className="w-12 h-12 rounded-xl bg-cyan-500/15 flex items-center justify-center shrink-0">
+              <Dumbbell size={20} className="text-cyan-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="font-bold text-sm">Forge's Gym</span>
+                <Badge className="bg-cyan-500/20 text-cyan-300 border-cyan-500/30 text-xs">20 exercises</Badge>
+                <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30 text-xs">adaptive</Badge>
+              </div>
+              <p className="text-xs text-zinc-400 leading-relaxed">Write working code from scratch. Pass every test case. 4 tiers from foundations to algorithms — the system learns how you think and adjusts.</p>
+            </div>
+            <ChevronRight size={16} className="text-muted-foreground group-hover:text-cyan-400 transition-colors shrink-0" />
+          </div>
+        </Link>
       </div>
 
       {/* ── Why This School ───────────────────────────────────────────────── */}

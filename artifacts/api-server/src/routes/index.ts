@@ -44,6 +44,7 @@ import hetznerRouter from "./hetzner";
 import mailScannerRouter from "./mail-scanner";
 import debugTestRouter from "./debugTest";
 import academyRouter from "./academy";
+import gymRouter from "./gym";
 
 const router: IRouter = Router();
 
@@ -92,5 +93,6 @@ router.use(hetznerRouter);
 router.use(mailScannerRouter);
 router.use(debugTestRouter);
 router.use(academyRouter);
+router.use(gymRouter);
 
 export default router;
