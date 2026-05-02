@@ -19,12 +19,12 @@ run = "pnpm --filter @workspace/the-forge run dev"
 
 [services.production]
 build = [ "pnpm", "--filter", "@workspace/the-forge", "run", "build" ]
-publicDir = "artifacts/the-forge/dist/public"
-serve = "static"
 
-[[services.production.rewrites]]
-from = "/*"
-to = "/index.html"
+[services.production.run]
+args = ["node", "artifacts/the-forge/server.mjs"]
+
+[services.production.health.startup]
+path = "/"
 
 [services.env]
 PORT = "25654"
