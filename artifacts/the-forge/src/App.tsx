@@ -66,7 +66,15 @@ const ForgeDrop        = lazy(() => import("@/pages/forge-drop"));
 const MailScanner      = lazy(() => import("@/pages/mail-scanner"));
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
+// In production, always route Clerk through our own domain proxy so it works
+// on custom domains without CNAME setup. Computed at runtime so no build-time
+// env var is needed. In dev (import.meta.env.PROD === false) leave undefined
+// since dev Clerk instances don't support proxying.
+const clerkProxyUrl =
+  import.meta.env.VITE_CLERK_PROXY_URL ||
+  (import.meta.env.PROD
+    ? `${window.location.origin}/api/__clerk`
+    : undefined);
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 function stripBase(path: string): string {
