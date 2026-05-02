@@ -4,7 +4,7 @@ import {
   Flame, FolderKanban, PlusCircle, CreditCard, ExternalLink,
   Sparkles, Code2, Wand2, Layers, Scale, Crosshair, Activity,
   GraduationCap, ArrowRightLeft, Wrench, BookOpen, Archive, Gamepad2, Rocket, LogOut,
-  Shield, Github, Package, User, Users, LogIn, Menu, X, Settings, KeyRound, ShieldAlert, PlugZap, Swords, Monitor, MonitorPlay, Globe, Download, Wifi, LayoutTemplate, PencilLine, Mail, Search, Grid3X3, Server, Upload, ScanLine,
+  Shield, Github, Package, User, Users, LogIn, Menu, X, Settings, KeyRound, ShieldAlert, PlugZap, Swords, Monitor, MonitorPlay, Globe, Download, Wifi, LayoutTemplate, PencilLine, Mail, Search, Grid3X3, Server, Upload, ScanLine, Bug, Timer,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LogoMark, LogoWordmark } from "@/components/logo";
@@ -97,8 +97,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
   ];
 
   const learnItems: NavItem[] = [
-    { href: "/sage",       label: "Learn to Code",       icon: GraduationCap,  tip: "Step-by-step AI tutor — learn anything at your pace, beginner to advanced" },
-    { href: "/diy-code",   label: "Write Code Yourself", icon: PencilLine,     tip: "Code editor — write your own code with no AI, no credits needed" },
+    { href: "/sage",          label: "Learn to Code",       icon: GraduationCap,  tip: "Step-by-step AI tutor — learn anything at your pace, beginner to advanced" },
+    { href: "/diy-code",      label: "Write Code Yourself", icon: PencilLine,     tip: "Code editor — write your own code with no AI, no credits needed" },
+    { href: "/debug-forge",   label: "Debug Forge",         icon: Bug,            tip: "Practice finding and fixing bugs — 12 difficulty levels, AI feedback" },
+    { href: "/code-fix-test", label: "Code Fix Test",       icon: Timer,          tip: "Timed bug-fixing tests — every session tracked so you can watch yourself improve" },
   ];
 
   const isActive = (href: string) =>

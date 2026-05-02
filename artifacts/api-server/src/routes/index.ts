@@ -42,6 +42,7 @@ import scoreRouter from "./score";
 import referralRouter from "./referral";
 import hetznerRouter from "./hetzner";
 import mailScannerRouter from "./mail-scanner";
+import debugTestRouter from "./debugTest";
 
 const router: IRouter = Router();
 
@@ -88,5 +89,6 @@ router.use(scoreRouter);
 router.use(referralRouter);
 router.use(hetznerRouter);
 router.use(mailScannerRouter);
+router.use(debugTestRouter);
 
 export default router;
