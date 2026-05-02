@@ -1,5 +1,8 @@
 import { Exercise, AnyExercise } from "./types";
 import { ALL_EXTRA_EXERCISES } from "./moreExercises";
+import { ALL_TREE_GRAPH_EXERCISES } from "./treeGraphExercises";
+import { DP_EXERCISES } from "./dpExercises";
+import { BIT_EXERCISES } from "./bitExercises";
 import { TEST_WRITING_EXERCISES, getTestWritingExerciseById } from "./testWritingExercises";
 
 // ── Tier 1–2 Foundations (original exercises) ─────────────────────────────
@@ -468,10 +471,49 @@ const FOUNDATION_EXERCISES: Exercise[] = [
   },
 ];
 
+// ── Quick Sort ───────────────────────────────────────────────────────────────
+const QUICK_SORT_EXERCISE: Exercise = {
+  id: "quick-sort",
+  tier: 4, category: "algorithms",
+  title: "Quick Sort",
+  tagline: "Partition, recurse, conquer.",
+  description: "Write `quickSort(arr)` that returns a new sorted array using the quicksort algorithm. Choose a pivot, partition the array into elements less than, equal to, and greater than the pivot, then recursively sort each partition.",
+  why: "Quick Sort is the most widely used sorting algorithm in practice — it's the default in most language runtimes. Understanding it alongside Merge Sort shows two completely different divide-and-conquer strategies: one splits evenly (merge), one splits by value (quick).",
+  analogy: "Choose a dividing wall (the pivot). Put everyone shorter on the left, taller on the right. Now sort each side the same way — the whole line ends up sorted.",
+  examples: [
+    { input: "quickSort([3,6,8,10,1,2,1])", output: "[1,1,2,3,6,8,10]" },
+    { input: "quickSort([5,4,3,2,1])", output: "[1,2,3,4,5]" },
+    { input: "quickSort([])", output: "[]" },
+  ],
+  starterCode: `function quickSort(arr) {\n  // pick a pivot, partition, recurse on each side\n}`,
+  functionName: "quickSort",
+  testCases: [
+    { args: [[3, 6, 8, 10, 1, 2, 1]], expected: [1, 1, 2, 3, 6, 8, 10], label: "basic unsorted array" },
+    { args: [[5, 4, 3, 2, 1]], expected: [1, 2, 3, 4, 5], label: "reverse sorted" },
+    { args: [[]], expected: [], label: "empty array" },
+    { args: [[1]], expected: [1], label: "single element" },
+    { args: [[2, 2, 2]], expected: [2, 2, 2], label: "all duplicates", hidden: true },
+    { args: [[1, 2, 3, 4, 5]], expected: [1, 2, 3, 4, 5], label: "already sorted", hidden: true },
+  ],
+  solution: `function quickSort(arr) {\n  if (arr.length <= 1) return arr;\n  const pivot = arr[Math.floor(arr.length / 2)];\n  const left   = arr.filter(x => x < pivot);\n  const middle = arr.filter(x => x === pivot);\n  const right  = arr.filter(x => x > pivot);\n  return [...quickSort(left), ...middle, ...quickSort(right)];\n}`,
+  solutionExplanation: "Pick the middle element as the pivot. Filter into three buckets: less than, equal to, and greater than the pivot. Recursively sort left and right buckets, then concatenate. The 'equal' bucket handles duplicates cleanly.",
+  hints: [
+    "Base case: array of 0 or 1 elements is already sorted",
+    "Partition into three arrays: less, equal, greater than pivot",
+    "Recursively sort the less and greater partitions, then spread them together",
+  ],
+  tags: ["sorting", "recursion", "divide-and-conquer", "O(n log n)"],
+  estimatedMinutes: 20,
+};
+
 // ── Merged complete exercise list ────────────────────────────────────────────
 export const EXERCISES: Exercise[] = [
   ...FOUNDATION_EXERCISES,
   ...ALL_EXTRA_EXERCISES,
+  QUICK_SORT_EXERCISE,
+  ...ALL_TREE_GRAPH_EXERCISES,
+  ...DP_EXERCISES,
+  ...BIT_EXERCISES,
 ];
 
 export const ALL_GYM_EXERCISES: AnyExercise[] = [

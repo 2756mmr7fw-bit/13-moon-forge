@@ -63,16 +63,22 @@ export default function ExercisePage() {
   const runCode = useCallback(() => {
     if (!exercise) return;
     setRunning(true);
+    // Wrap in a tick so the UI can re-render "running" state before we block
     setTimeout(() => {
-      const res = runExercise(code, exercise);
-      setResults(res);
-      const allPassed = res.every(r => r.passed);
-      setRunCount(c => c + 1);
-      if (allPassed && !passed) {
-        setPassed(true);
-        void saveAttempt(true, res.filter(r => r.passed).length, res.length);
-      }
-      setRunning(false);
+      const resultOrPromise = runExercise(code, exercise);
+      Promise.resolve(resultOrPromise).then(res => {
+        setResults(res);
+        const allPassed = res.every(r => r.passed);
+        setRunCount(c => c + 1);
+        if (allPassed && !passed) {
+          setPassed(true);
+          void saveAttempt(true, res.filter(r => r.passed).length, res.length);
+        }
+        setRunning(false);
+      }).catch(err => {
+        setResults([{ label: "Runtime error", passed: false, expected: "no error", error: String(err) }]);
+        setRunning(false);
+      });
     }, 50);
   }, [code, exercise, passed]);
 

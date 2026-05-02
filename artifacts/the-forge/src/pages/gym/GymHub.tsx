@@ -1,15 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "wouter";
 import { cn } from "@/lib/utils";
 import {
   Dumbbell, CheckCircle2, Circle, ChevronRight,
   Eye, Hand, Brain, TrendingUp, FlaskConical,
-  LayoutGrid, BookOpen,
+  LayoutGrid, BookOpen, Search, X,
 } from "lucide-react";
 import { ALL_GYM_EXERCISES } from "./exercises";
 import { TEST_WRITING_EXERCISES } from "./testWritingExercises";
 import {
-  GYM_API, TIER_META, CATEGORY_LABELS, STYLE_META, CURRICULUM_TRACKS,
+  GYM_API, TIER_META, CATEGORY_LABELS, CATEGORY_COLORS, STYLE_META, CURRICULUM_TRACKS,
   type LearningProfileData, type LearningStyle, type Tier, type Category,
   type AnyExercise,
 } from "./types";
@@ -29,11 +29,75 @@ const STYLE_ICONS: Record<LearningStyle, React.ComponentType<{ size?: number; cl
   pattern:     TrendingUp,
 };
 
+function ExerciseCard({
+  ex,
+  progress,
+}: {
+  ex: AnyExercise;
+  progress: Progress | null;
+}) {
+  const best     = progress?.exerciseBest[ex.id];
+  const passed   = best?.passed ?? false;
+  const attempts = best?.attempts ?? 0;
+  const isTest   = ex.format === "write-tests";
+  const tier     = (ex as { tier: Tier }).tier;
+  return (
+    <Link href={`/gym/${ex.id}`}>
+      <div className={cn(
+        "rounded-xl border p-4 cursor-pointer transition-all duration-150 group flex items-center gap-4",
+        passed
+          ? "border-green-500/20 bg-green-500/5 hover:bg-green-500/10"
+          : "border-border/40 hover:bg-muted/20 hover:border-border/60"
+      )}>
+        <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
+          passed ? "bg-green-500/15" : isTest ? "bg-amber-500/10" : "bg-muted/20"
+        )}>
+          {passed
+            ? <CheckCircle2 size={14} className="text-green-400" />
+            : isTest
+              ? <FlaskConical size={14} className="text-amber-400" />
+              : <Circle size={14} className="text-muted-foreground/40" />
+          }
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+            <span className="text-sm font-semibold truncate">{ex.title}</span>
+            {isTest && (
+              <span className="text-xs text-amber-400 border border-amber-500/30 px-1.5 py-0.5 rounded shrink-0">
+                Write Tests
+              </span>
+            )}
+            <span className={cn("text-xs border px-1.5 py-0.5 rounded shrink-0",
+              CATEGORY_COLORS[ex.category],
+              "border-current/20"
+            )}>
+              {CATEGORY_LABELS[ex.category]}
+            </span>
+            <span className={cn("text-xs font-bold shrink-0", TIER_META[tier].color)}>
+              {TIER_META[tier].label}
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground leading-tight truncate">
+            {(ex as { tagline: string }).tagline}
+          </p>
+        </div>
+        {attempts > 0 && (
+          <div className="text-right text-xs text-muted-foreground shrink-0">
+            {attempts} {attempts === 1 ? "attempt" : "attempts"}
+          </div>
+        )}
+        <ChevronRight size={14} className="text-muted-foreground/40 group-hover:text-muted-foreground shrink-0" />
+      </div>
+    </Link>
+  );
+}
+
 export default function GymHub() {
   const [progress,    setProgress]    = useState<Progress | null>(null);
   const [view,        setView]        = useState<"tier" | "curriculum">("tier");
   const [activeTier,  setActiveTier]  = useState<Tier | "all">("all");
   const [activeCat,   setActiveCat]   = useState<Category | "all">("all");
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     void (async () => {
@@ -46,11 +110,10 @@ export default function GymHub() {
     })();
   }, []);
 
-  const tiers      = [1, 2, 3, 4] as Tier[];
-  const categories = Object.keys(CATEGORY_LABELS) as Category[];
-  const solveExs   = ALL_GYM_EXERCISES.filter(e => e.format !== "write-tests") as AnyExercise[];
-  const testExs    = TEST_WRITING_EXERCISES as AnyExercise[];
-  const allExs     = ALL_GYM_EXERCISES;
+  const tiers    = [1, 2, 3, 4] as Tier[];
+  const allExs   = ALL_GYM_EXERCISES;
+  const testExs  = TEST_WRITING_EXERCISES as AnyExercise[];
+  const solveExs = allExs.filter(e => e.format !== "write-tests") as AnyExercise[];
 
   const totalExercises = allExs.length;
   const passedCount    = progress?.totalPassed ?? 0;
@@ -59,61 +122,35 @@ export default function GymHub() {
   const profile       = progress?.learningProfile;
   const dominantStyle = profile?.dominantStyle as LearningStyle | undefined;
 
-  const filteredSolve = solveExs.filter(e => {
-    if (view === "curriculum") return true;
-    if (activeTier !== "all" && (e as { tier: Tier }).tier !== activeTier) return false;
-    if (activeCat !== "all" && e.category !== activeCat) return false;
-    return true;
-  });
+  // ── Search / filter ──────────────────────────────────────────────────────────
+  const q = searchQuery.trim().toLowerCase();
 
-  function ExerciseCard({ ex }: { ex: AnyExercise }) {
-    const best     = progress?.exerciseBest[ex.id];
-    const passed   = best?.passed ?? false;
-    const attempts = best?.attempts ?? 0;
-    const isTest   = ex.format === "write-tests";
-    const tier     = (ex as { tier: Tier }).tier;
-    return (
-      <Link href={`/gym/${ex.id}`}>
-        <div className={cn(
-          "rounded-xl border p-4 cursor-pointer transition-all duration-150 group flex items-center gap-4",
-          passed
-            ? "border-green-500/20 bg-green-500/5 hover:bg-green-500/10"
-            : "border-border/40 hover:bg-muted/20 hover:border-border/60"
-        )}>
-          <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
-            passed ? "bg-green-500/15" : isTest ? "bg-amber-500/10" : "bg-muted/20"
-          )}>
-            {passed
-              ? <CheckCircle2 size={14} className="text-green-400" />
-              : isTest
-                ? <FlaskConical size={14} className="text-amber-400" />
-                : <Circle size={14} className="text-muted-foreground/40" />
-            }
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-              <span className="text-sm font-semibold">{ex.title}</span>
-              {isTest && <span className="text-xs text-amber-400 border border-amber-500/30 px-1.5 py-0.5 rounded">Write Tests</span>}
-              <span className="text-xs text-muted-foreground border border-border/30 px-1.5 py-0.5 rounded">{CATEGORY_LABELS[ex.category]}</span>
-              <span className={cn("text-xs font-bold", TIER_META[tier].color)}>{TIER_META[tier].label}</span>
-            </div>
-            <p className="text-xs text-muted-foreground leading-tight">{(ex as { tagline: string }).tagline}</p>
-          </div>
-          {attempts > 0 && (
-            <div className="text-right text-xs text-muted-foreground shrink-0">
-              {attempts} {attempts === 1 ? "attempt" : "attempts"}
-            </div>
-          )}
-          <ChevronRight size={14} className="text-muted-foreground/40 group-hover:text-muted-foreground shrink-0" />
-        </div>
-      </Link>
-    );
-  }
+  const filtered: AnyExercise[] = useMemo(() => {
+    let pool = view === "tier" ? allExs : allExs;
+    if (view === "tier") {
+      if (activeTier !== "all") pool = pool.filter(e => (e as { tier: Tier }).tier === activeTier);
+      if (activeCat  !== "all") pool = pool.filter(e => e.category === activeCat);
+    }
+    if (!q) return pool;
+    return pool.filter(ex => {
+      const title    = ex.title.toLowerCase();
+      const tagline  = (ex as { tagline: string }).tagline?.toLowerCase() ?? "";
+      const cat      = CATEGORY_LABELS[ex.category].toLowerCase();
+      const tags     = ((ex as { tags?: string[] }).tags ?? []).join(" ").toLowerCase();
+      return title.includes(q) || tagline.includes(q) || cat.includes(q) || tags.includes(q);
+    });
+  }, [view, activeTier, activeCat, q, allExs]);
+
+  // ── Category list for filter chips (only cats that have exercises) ────────────
+  const presentCats = useMemo(() => {
+    const inUse = new Set(allExs.map(e => e.category));
+    return Object.keys(CATEGORY_LABELS).filter(c => inUse.has(c as Category)) as Category[];
+  }, [allExs]);
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
 
-      {/* Header */}
+      {/* ── Header ─────────────────────────────────────────────────────────────── */}
       <div className="mb-6">
         <div className="flex items-center gap-3 mb-3">
           <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center">
@@ -121,7 +158,9 @@ export default function GymHub() {
           </div>
           <div>
             <h1 className="text-2xl font-black">Forge's Gym</h1>
-            <p className="text-xs text-muted-foreground">Write working code. Pass the tests. Write the tests. No shortcuts.</p>
+            <p className="text-xs text-muted-foreground">
+              Write working code. Pass the tests. Write the tests. No shortcuts.
+            </p>
           </div>
         </div>
 
@@ -129,21 +168,30 @@ export default function GymHub() {
         <div className="rounded-xl border border-border/40 bg-card/30 p-4 flex items-center gap-4">
           <div className="flex-1">
             <div className="flex justify-between text-xs mb-1.5">
-              <span className="text-muted-foreground">{passedCount} of {totalExercises} passed ({solveExs.length} solve + {testExs.length} write-tests)</span>
+              <span className="text-muted-foreground">
+                {passedCount} of {totalExercises} passed
+                <span className="text-muted-foreground/50 ml-1">
+                  ({solveExs.length} solve · {testExs.length} write-tests)
+                </span>
+              </span>
               <span className="font-bold text-orange-400">{pct}%</span>
             </div>
             <div className="h-1.5 bg-muted/30 rounded-full overflow-hidden">
-              <div className="h-full bg-orange-500 rounded-full transition-all duration-700" style={{ width: `${pct}%` }} />
+              <div
+                className="h-full bg-orange-500 rounded-full transition-all duration-700"
+                style={{ width: `${pct}%` }}
+              />
             </div>
           </div>
-          <div className="text-right">
-            <p className="text-xs text-muted-foreground">Tiers</p>
-            <div className="flex gap-1 mt-1">
+          <div className="text-right shrink-0">
+            <p className="text-xs text-muted-foreground mb-1">Tiers</p>
+            <div className="flex gap-1">
               {tiers.map(t => {
-                const tierEx = allExs.filter(e => (e as { tier?: Tier }).tier === t);
+                const tierEx    = allExs.filter(e => (e as { tier?: Tier }).tier === t);
                 const allPassed = tierEx.length > 0 && tierEx.every(e => progress?.exerciseBest[e.id]?.passed);
                 return (
-                  <div key={t} className={cn("w-5 h-5 rounded text-xs flex items-center justify-center font-bold",
+                  <div key={t} className={cn(
+                    "w-5 h-5 rounded text-xs flex items-center justify-center font-bold",
                     allPassed ? "bg-orange-500/20 text-orange-400" : "bg-muted/20 text-muted-foreground"
                   )}>{t}</div>
                 );
@@ -153,17 +201,29 @@ export default function GymHub() {
         </div>
       </div>
 
-      {/* Learning Profile */}
+      {/* ── Learning Profile ────────────────────────────────────────────────────── */}
       {dominantStyle && (
-        <div className={cn("rounded-xl border p-4 mb-6 flex items-start gap-4", STYLE_META[dominantStyle].border, STYLE_META[dominantStyle].bg)}>
-          {(() => { const Icon = STYLE_ICONS[dominantStyle]; return <Icon size={18} className={cn(STYLE_META[dominantStyle].color, "mt-0.5 shrink-0")} />; })()}
+        <div className={cn(
+          "rounded-xl border p-4 mb-6 flex items-start gap-4",
+          STYLE_META[dominantStyle].border, STYLE_META[dominantStyle].bg
+        )}>
+          {(() => {
+            const Icon = STYLE_ICONS[dominantStyle];
+            return <Icon size={18} className={cn(STYLE_META[dominantStyle].color, "mt-0.5 shrink-0")} />;
+          })()}
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <span className={cn("text-sm font-bold", STYLE_META[dominantStyle].color)}>{STYLE_META[dominantStyle].label}</span>
+              <span className={cn("text-sm font-bold", STYLE_META[dominantStyle].color)}>
+                {STYLE_META[dominantStyle].label}
+              </span>
               <span className="text-xs text-muted-foreground">· detected from your sessions</span>
             </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">{STYLE_META[dominantStyle].description}</p>
-            <p className="text-xs text-foreground/70 mt-1.5 font-medium italic">"{STYLE_META[dominantStyle].tip}"</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {STYLE_META[dominantStyle].description}
+            </p>
+            <p className="text-xs text-foreground/70 mt-1.5 font-medium italic">
+              "{STYLE_META[dominantStyle].tip}"
+            </p>
           </div>
           <div className="hidden sm:flex flex-col gap-1 text-right shrink-0">
             {(["visual", "hands-on", "conceptual", "pattern"] as LearningStyle[]).map(s => {
@@ -176,10 +236,19 @@ export default function GymHub() {
               const score = Math.round(scoreMap[s]);
               return (
                 <div key={s} className="flex items-center gap-2 text-xs">
-                  <span className="text-muted-foreground w-20 text-right">{STYLE_META[s].label.split(" ")[0]}</span>
+                  <span className="text-muted-foreground w-20 text-right">
+                    {STYLE_META[s].label.split(" ")[0]}
+                  </span>
                   <div className="w-16 h-1 bg-muted/30 rounded-full overflow-hidden">
-                    <div className={cn("h-full rounded-full", s === "visual" ? "bg-purple-400" : s === "hands-on" ? "bg-orange-400" : s === "conceptual" ? "bg-blue-400" : "bg-green-400")}
-                      style={{ width: `${score}%` }} />
+                    <div
+                      className={cn("h-full rounded-full", {
+                        "bg-purple-400": s === "visual",
+                        "bg-orange-400": s === "hands-on",
+                        "bg-blue-400":   s === "conceptual",
+                        "bg-green-400":  s === "pattern",
+                      })}
+                      style={{ width: `${score}%` }}
+                    />
                   </div>
                 </div>
               );
@@ -190,71 +259,152 @@ export default function GymHub() {
 
       {!dominantStyle && profile === null && (
         <div className="rounded-xl border border-dashed border-border/40 p-4 mb-6 text-center">
-          <p className="text-xs text-muted-foreground">Complete 3+ exercises and your learning profile appears here — detected silently from how you work.</p>
+          <p className="text-xs text-muted-foreground">
+            Complete 3+ exercises and your learning profile appears here — detected silently from how you work.
+          </p>
         </div>
       )}
 
-      {/* View toggle */}
-      <div className="flex items-center gap-2 mb-5">
-        <button onClick={() => setView("tier")}
-          className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-colors",
-            view === "tier" ? "border-orange-500/50 bg-orange-500/10 text-orange-400" : "border-border/40 text-muted-foreground hover:bg-muted/20"
-          )}>
-          <LayoutGrid size={12} /> By Tier
-        </button>
-        <button onClick={() => setView("curriculum")}
-          className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-colors",
-            view === "curriculum" ? "border-blue-500/50 bg-blue-500/10 text-blue-400" : "border-border/40 text-muted-foreground hover:bg-muted/20"
-          )}>
-          <BookOpen size={12} /> CS Curriculum
-        </button>
-        {view === "tier" && (
-          <>
-            <div className="w-px h-5 bg-border/40" />
-            {tiers.map(t => (
-              <button key={t} onClick={() => setActiveTier(activeTier === t ? "all" : t)}
-                className={cn("px-2.5 py-1 rounded-lg border text-xs font-semibold transition-colors",
-                  activeTier === t ? cn(TIER_META[t].color, "border-current/30 bg-muted/30") : "border-border/40 text-muted-foreground hover:bg-muted/20"
-                )}>T{t}</button>
-            ))}
-            <div className="w-px h-5 bg-border/40" />
-            {categories.slice(0, 6).map(c => (
-              <button key={c} onClick={() => setActiveCat(activeCat === c ? "all" : c)}
-                className={cn("px-2.5 py-1 rounded-lg border text-xs transition-colors hidden lg:block",
-                  activeCat === c ? "border-cyan-500/50 bg-cyan-500/10 text-cyan-400" : "border-border/40 text-muted-foreground hover:bg-muted/20"
-                )}>
-                {CATEGORY_LABELS[c]}
-              </button>
-            ))}
-          </>
+      {/* ── Search bar ─────────────────────────────────────────────────────────── */}
+      <div className="relative mb-4">
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50" />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          placeholder={`Search ${totalExercises} exercises by title, category, tag…`}
+          className="w-full bg-muted/20 border border-border/40 rounded-xl pl-9 pr-9 py-2.5 text-sm
+            placeholder:text-muted-foreground/40 focus:outline-none focus:border-orange-500/40
+            focus:bg-muted/30 transition-colors"
+        />
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-muted-foreground"
+          >
+            <X size={13} />
+          </button>
         )}
       </div>
 
-      {/* ── BY TIER VIEW ─────────────────────────────────────────────────────── */}
-      {view === "tier" && (
+      {/* ── View + filter controls ──────────────────────────────────────────────── */}
+      {!searchQuery && (
+        <div className="flex items-center gap-2 mb-5 flex-wrap">
+          <button
+            onClick={() => setView("tier")}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-colors",
+              view === "tier"
+                ? "border-orange-500/50 bg-orange-500/10 text-orange-400"
+                : "border-border/40 text-muted-foreground hover:bg-muted/20"
+            )}
+          >
+            <LayoutGrid size={12} /> By Tier
+          </button>
+          <button
+            onClick={() => setView("curriculum")}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-colors",
+              view === "curriculum"
+                ? "border-blue-500/50 bg-blue-500/10 text-blue-400"
+                : "border-border/40 text-muted-foreground hover:bg-muted/20"
+            )}
+          >
+            <BookOpen size={12} /> CS Curriculum
+          </button>
+
+          {view === "tier" && (
+            <>
+              <div className="w-px h-5 bg-border/40" />
+              {tiers.map(t => (
+                <button
+                  key={t}
+                  onClick={() => setActiveTier(activeTier === t ? "all" : t)}
+                  className={cn(
+                    "px-2.5 py-1 rounded-lg border text-xs font-semibold transition-colors",
+                    activeTier === t
+                      ? cn(TIER_META[t].color, "border-current/30 bg-muted/30")
+                      : "border-border/40 text-muted-foreground hover:bg-muted/20"
+                  )}
+                >T{t}</button>
+              ))}
+              <div className="w-px h-5 bg-border/40" />
+              {/* Category chips — scroll-friendly row */}
+              <div className="flex gap-1.5 flex-wrap">
+                {presentCats.map(c => (
+                  <button
+                    key={c}
+                    onClick={() => setActiveCat(activeCat === c ? "all" : c)}
+                    className={cn(
+                      "px-2.5 py-1 rounded-lg border text-xs transition-colors",
+                      activeCat === c
+                        ? cn(CATEGORY_COLORS[c], "border-current/30 bg-current/5")
+                        : "border-border/40 text-muted-foreground hover:bg-muted/20"
+                    )}
+                  >
+                    {CATEGORY_LABELS[c]}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* ── Search results ─────────────────────────────────────────────────────── */}
+      {searchQuery && (
+        <div className="mb-6">
+          <p className="text-xs text-muted-foreground mb-3">
+            {filtered.length === 0
+              ? `No exercises match "${searchQuery}"`
+              : `${filtered.length} exercise${filtered.length === 1 ? "" : "s"} match "${searchQuery}"`
+            }
+          </p>
+          {filtered.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-border/40 p-8 text-center">
+              <p className="text-sm text-muted-foreground">Nothing found.</p>
+              <p className="text-xs text-muted-foreground/60 mt-1">Try searching by category (e.g. "trees"), tag (e.g. "recursion"), or title.</p>
+            </div>
+          ) : (
+            <div className="grid gap-2">
+              {filtered.map(ex => (
+                <ExerciseCard key={ex.id} ex={ex} progress={progress} />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── BY TIER VIEW ───────────────────────────────────────────────────────── */}
+      {!searchQuery && view === "tier" && (
         <div className="space-y-8">
           {(activeTier === "all" ? tiers : [activeTier]).map(tier => {
-            const tierExs = filteredSolve.filter(e => (e as { tier: Tier }).tier === tier);
-            const tierTestExs = testExs.filter(e => (e as { tier: Tier }).tier === tier);
-            const combined = [...tierExs, ...tierTestExs];
-            if (combined.length === 0) return null;
+            const tierFiltered = filtered.filter(e => (e as { tier: Tier }).tier === tier);
+            if (tierFiltered.length === 0) return null;
             return (
               <div key={tier}>
                 <div className="flex items-center gap-2 mb-3">
-                  <span className={cn("text-xs font-black tracking-wider uppercase", TIER_META[tier].color)}>{TIER_META[tier].label}</span>
+                  <span className={cn("text-xs font-black tracking-wider uppercase", TIER_META[tier].color)}>
+                    {TIER_META[tier].label}
+                  </span>
                   <span className="text-xs text-muted-foreground">— {TIER_META[tier].description}</span>
                 </div>
                 <div className="grid gap-2">
-                  {combined.map(ex => <ExerciseCard key={ex.id} ex={ex} />)}
+                  {tierFiltered.map(ex => <ExerciseCard key={ex.id} ex={ex} progress={progress} />)}
                 </div>
               </div>
             );
           })}
+          {filtered.length === 0 && (
+            <div className="rounded-xl border border-dashed border-border/40 p-8 text-center">
+              <p className="text-sm text-muted-foreground">No exercises match those filters.</p>
+            </div>
+          )}
         </div>
       )}
 
-      {/* ── CURRICULUM VIEW ───────────────────────────────────────────────────── */}
-      {view === "curriculum" && (
+      {/* ── CURRICULUM VIEW ────────────────────────────────────────────────────── */}
+      {!searchQuery && view === "curriculum" && (
         <div className="space-y-8">
           <div className="rounded-xl border border-blue-500/20 bg-blue-500/5 p-4">
             <p className="text-xs font-bold text-blue-400 mb-1">The Full CS Curriculum</p>
@@ -269,14 +419,18 @@ export default function GymHub() {
             const trackExs = allExs.filter(e => track.categories.includes(e.category));
             if (trackExs.length === 0) return null;
             const passedInTrack = trackExs.filter(e => progress?.exerciseBest[e.id]?.passed).length;
-            const trackPct = trackExs.length > 0 ? Math.round((passedInTrack / trackExs.length) * 100) : 0;
+            const trackPct = trackExs.length > 0
+              ? Math.round((passedInTrack / trackExs.length) * 100)
+              : 0;
             return (
               <div key={track.id}>
                 {/* Track header */}
                 <div className={cn("rounded-xl border p-4 mb-3", track.border, track.bg)}>
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
-                      <p className={cn("text-xs font-black uppercase tracking-wider mb-0.5", track.color)}>{track.title}</p>
+                      <p className={cn("text-xs font-black uppercase tracking-wider mb-0.5", track.color)}>
+                        {track.title}
+                      </p>
                       <p className="text-xs text-muted-foreground mb-1">{track.forge}</p>
                       <p className="text-xs italic text-muted-foreground/50">{track.subtitle}</p>
                     </div>
@@ -286,12 +440,14 @@ export default function GymHub() {
                     </div>
                   </div>
                   <div className="mt-2 h-1 bg-muted/20 rounded-full overflow-hidden">
-                    <div className={cn("h-full rounded-full transition-all duration-700", track.color.replace("text-", "bg-"))}
-                      style={{ width: `${trackPct}%` }} />
+                    <div
+                      className={cn("h-full rounded-full transition-all duration-700", track.color.replace("text-", "bg-"))}
+                      style={{ width: `${trackPct}%` }}
+                    />
                   </div>
                 </div>
                 <div className="grid gap-2">
-                  {trackExs.map(ex => <ExerciseCard key={ex.id} ex={ex} />)}
+                  {trackExs.map(ex => <ExerciseCard key={ex.id} ex={ex} progress={progress} />)}
                 </div>
               </div>
             );
