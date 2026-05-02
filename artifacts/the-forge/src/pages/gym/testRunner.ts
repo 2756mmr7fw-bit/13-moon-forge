@@ -422,7 +422,6 @@ export const ASYNC_SPECIAL_RUNNERS: Record<string, (userCode: string) => Promise
     }
     return results;
   },
-};
 
   // ── session-store ─────────────────────────────────────────────────────────────
   "session-store": (userCode) => {
