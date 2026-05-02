@@ -21,7 +21,7 @@ run = "pnpm --filter @workspace/the-forge run dev"
 build = [ "pnpm", "--filter", "@workspace/the-forge", "run", "build" ]
 
 [services.production.run]
-args = ["node", "artifacts/the-forge/server.mjs"]
+args = ["pnpm", "--filter", "@workspace/the-forge", "run", "serve"]
 
 [services.production.health.startup]
 path = "/"
