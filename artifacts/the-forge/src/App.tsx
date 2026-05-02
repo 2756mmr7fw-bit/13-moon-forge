@@ -64,6 +64,7 @@ const Academy          = lazy(() => import("@/pages/academy"));
 const ForgeHosting     = lazy(() => import("@/pages/forge-hosting"));
 const ForgeDrop        = lazy(() => import("@/pages/forge-drop"));
 const MailScanner      = lazy(() => import("@/pages/mail-scanner"));
+const DebugForge       = lazy(() => import("@/pages/debug-forge"));
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 // In production, always route Clerk through our own domain proxy so it works
@@ -334,6 +335,7 @@ function Router() {
                     <Route path="/forge-hosting"         component={ForgeHosting} />
                     <Route path="/forge-drop"            component={ForgeDrop} />
                     <Route path="/mail-scanner"          component={MailScanner} />
+                    <Route path="/debug-forge"           component={DebugForge} />
                     <Route component={NotFound} />
                   </Switch>
                 </ProtectedRoute>

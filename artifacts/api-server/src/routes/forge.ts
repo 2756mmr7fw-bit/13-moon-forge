@@ -1546,6 +1546,121 @@ A: Go to /mailbox to find your Forge email address. Forward any email to it — 
 A: Each Moon requires its own subscription from The Town Square. Go to /connections to see which Moons you have access to.
 `;
 
+// ─── Debug Forge: Challenge Generator ─────────────────────────────────────────
+const CHALLENGE_SPEC: Record<number, string> = {
+  1:  "HTML only. Bug: missing closing tag, wrong tag name, or unclosed attribute. Very obvious.",
+  2:  "CSS only. Bug: wrong property name, missing semicolon, or wrong unit. Very obvious.",
+  3:  "JavaScript. Bug: syntax error — missing bracket, wrong quote type, typo in keyword.",
+  4:  "JavaScript. Bug: wrong variable name (typo), simple off-by-one error in a loop.",
+  5:  "JavaScript. Bug: flipped comparison operator (< vs >, === vs !==) causing wrong logic.",
+  6:  "JavaScript. Bug: variable scoping issue — var vs let, or closure capturing wrong value.",
+  7:  "JavaScript. Bug: missing await on an async function call causing incorrect behavior.",
+  8:  "JavaScript. Bug: wrong array method used (e.g., map vs forEach returning nothing, or splice vs slice).",
+  9:  "JavaScript/Node.js. Bug: API response mishandled — wrong status check or JSON not parsed.",
+  10: "JavaScript. Bug: incorrect 'this' binding in a method or callback causing undefined.",
+  11: "JavaScript/Node.js. Bug: security flaw — SQL injection vector, or secret exposed in response.",
+  12: "Any language. Bug: architectural issue — N+1 query, race condition, or O(n²) when O(n) is possible.",
+};
+
+router.post("/forge/debug-challenge", async (req, res) => {
+  const { level } = req.body as { level?: unknown };
+  const challengeLevel = Math.min(Math.max(Number(level) || 1, 1), 12);
+
+  const access = await checkSageAccess(req.userId);
+  if (!access.allowed) {
+    return res.status(403).json({ error: access.error, subscribeUrl: access.subscribeUrl });
+  }
+
+  const spec = CHALLENGE_SPEC[challengeLevel] ?? CHALLENGE_SPEC[1];
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o",
+      max_tokens: 900,
+      response_format: { type: "json_object" },
+      messages: [
+        {
+          role: "system",
+          content: `You are Forge, The Builder — a coding instructor who creates debugging challenges.
+
+Generate a broken code challenge. Return a JSON object with EXACTLY these fields:
+- "description": 1-2 sentences describing what the code is SUPPOSED to do (from student's perspective, e.g. "This function should return the largest number in an array, but something is wrong.")
+- "brokenCode": The actual broken code with the bug embedded naturally. 5-25 lines max. Real, realistic code.
+- "bugType": One of: "Syntax Error" | "Logic Error" | "Scope Bug" | "Async Bug" | "Type Error" | "Security Flaw" | "Performance Bug" | "Runtime Error"
+- "hint": One vague line that nudges without giving away the answer. More obvious for low levels, cryptic for high levels.
+
+Rules:
+- ONE bug per challenge
+- The bug must be subtle enough to miss on first read but obvious once spotted
+- No comments pointing at the bug
+- Code must look like something a real developer wrote`,
+        },
+        {
+          role: "user",
+          content: `Generate a Level ${challengeLevel}/12 challenge. Spec: ${spec}`,
+        },
+      ],
+    });
+
+    const raw = completion.choices[0]?.message?.content ?? "{}";
+    let parsed: Record<string, string>;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      return res.status(500).json({ error: "Challenge generation failed. Try again." });
+    }
+
+    void deductMoonMessage(req.userId, access.moon ?? "sage");
+
+    return res.json({
+      level: challengeLevel,
+      description: parsed.description ?? "",
+      brokenCode: parsed.brokenCode ?? "",
+      bugType: parsed.bugType ?? "Bug",
+      hint: parsed.hint ?? "",
+    });
+  } catch (err) {
+    req.log.error({ err }, "/forge/debug-challenge failed");
+    return res.status(500).json({ error: "Challenge generation failed. Try again." });
+  }
+});
+
+// ─── Debug Forge: Fix Checker ──────────────────────────────────────────────────
+makeStreamRoute(
+  "/forge/debug-check",
+  `You are Forge, The Builder — a precise, encouraging senior developer reviewing a student's bug fix.
+
+Evaluate whether the student's fix correctly resolves the bug. Be direct and educational.
+
+Response format (follow exactly):
+Line 1: Either "✅ Correct!" or "❌ Not quite." — nothing else on this line.
+Then a blank line.
+Then 2-4 sentences: explain what the actual bug was and why it caused the problem.
+Then a blank line.
+If correct: explain why their fix works and what this bug type teaches them. End with "🔑 Key lesson: [one memorable sentence]"
+If incorrect: explain what's still wrong with their fix (don't give the full answer), then give a slightly stronger hint. End with "💡 Try again: [one specific thing to look at]"
+
+Keep it tight. No filler. Write like a senior dev doing a quick code review.`,
+  (body) => `The code was supposed to: ${body.description}
+
+BROKEN CODE:
+\`\`\`
+${body.brokenCode}
+\`\`\`
+
+STUDENT'S FIX:
+\`\`\`
+${body.userFix}
+\`\`\`
+
+Bug category: ${body.bugType ?? "unknown"}
+Challenge level: ${body.level ?? "unknown"}/12
+
+Is the student's fix correct? Evaluate it.`,
+  ["description", "brokenCode", "userFix"],
+  checkSageAccess,
+);
+
 makeStreamRoute(
   "/forge/app-guide",
   `You are Sage, The Teacher — one of The Thirteen Moons, the AI suite built by Sovereign Digital LLC.
