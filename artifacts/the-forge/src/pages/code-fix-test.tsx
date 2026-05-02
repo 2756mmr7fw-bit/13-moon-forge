@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import {
   Bug, Timer, Trophy, Flame, ChevronRight, RotateCcw,
   CheckCircle2, XCircle, Star, TrendingUp, Lock, Loader2,
-  BarChart2, Play, Shield,
+  BarChart2, Play, Shield, BookOpen, Lightbulb,
 } from "lucide-react";
 import { getUserId } from "@/lib/userId";
 
@@ -37,6 +37,11 @@ interface SessionResult {
   bugType: string;
   correct: boolean;
   secondsTaken: number;
+  // Learning record — always captured
+  description: string;
+  brokenCode: string;
+  userFix: string;
+  explanation: string;
 }
 
 interface HistorySession {
@@ -78,8 +83,6 @@ function useStopwatch() {
     setElapsed(0);
   }, []);
 
-  const snapshot = useCallback(() => elapsed, [elapsed]);
-
   useEffect(() => {
     if (running) {
       intervalRef.current = setInterval(() => {
@@ -91,7 +94,120 @@ function useStopwatch() {
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, [running]);
 
-  return { elapsed, running, start, pause, reset, snapshot };
+  return { elapsed, running, start, pause, reset };
+}
+
+// ── Streaming Forge Review Component ──────────────────────────────────────────
+function ForgeReview({ mistakes }: {
+  mistakes: { description: string; brokenCode: string; userFix: string; explanation: string; bugType: string }[];
+}) {
+  const [text, setText] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/debug-test/review-mistakes`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-user-id": getUserId() },
+          body: JSON.stringify({ mistakes }),
+        });
+
+        if (!res.ok || !res.body) {
+          setError("Forge couldn't load the review right now.");
+          setLoading(false);
+          return;
+        }
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        setLoading(false);
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done || cancelled) break;
+          setText(prev => prev + decoder.decode(value, { stream: true }));
+        }
+      } catch {
+        if (!cancelled) setError("Connection error loading review.");
+        setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (error) {
+    return <p className="text-sm text-destructive">{error}</p>;
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <Loader2 size={14} className="animate-spin text-orange-400" />
+        Forge is reviewing your mistakes…
+      </div>
+    );
+  }
+
+  // Render streamed markdown-ish text with basic formatting
+  return (
+    <div className="prose prose-sm prose-invert max-w-none space-y-1 text-sm leading-relaxed">
+      {text.split("\n").map((line, i) => {
+        if (line.startsWith("## ")) {
+          return <h3 key={i} className="text-base font-bold text-foreground mt-4 mb-1">{line.replace("## ", "")}</h3>;
+        }
+        if (line.startsWith("**") && line.endsWith("**")) {
+          return <p key={i} className="font-semibold text-foreground/90 mt-2">{line.replace(/\*\*/g, "")}</p>;
+        }
+        if (line.startsWith("```")) {
+          return null;
+        }
+        if (line === "---") {
+          return <hr key={i} className="border-border/30 my-3" />;
+        }
+        if (line.trim() === "") {
+          return <div key={i} className="h-1" />;
+        }
+        // Inline code
+        const parts = line.split(/(`[^`]+`)/g);
+        if (parts.length > 1) {
+          return (
+            <p key={i} className="text-muted-foreground">
+              {parts.map((part, j) =>
+                part.startsWith("`") && part.endsWith("`")
+                  ? <code key={j} className="bg-muted/40 px-1 py-0.5 rounded text-xs font-mono text-foreground">{part.slice(1, -1)}</code>
+                  : part
+              )}
+            </p>
+          );
+        }
+        return <p key={i} className="text-muted-foreground">{line}</p>;
+      })}
+      {/* Code blocks rendered separately */}
+      {(() => {
+        const blocks: { lang: string; code: string }[] = [];
+        const lines = text.split("\n");
+        let inBlock = false;
+        let current: string[] = [];
+        let lang = "";
+        for (const line of lines) {
+          if (line.startsWith("```") && !inBlock) { inBlock = true; lang = line.slice(3); current = []; }
+          else if (line === "```" && inBlock) {
+            blocks.push({ lang, code: current.join("\n") });
+            inBlock = false;
+          } else if (inBlock) { current.push(line); }
+        }
+        return blocks.map((b, i) => (
+          <pre key={`code-${i}`} className="rounded-lg bg-muted/30 border border-border/40 p-3 font-mono text-xs overflow-auto mt-1 mb-2">
+            {b.code}
+          </pre>
+        ));
+      })()}
+    </div>
+  );
 }
 
 // ── Progress / Home Screen ─────────────────────────────────────────────────
@@ -112,14 +228,13 @@ function ProgressScreen({ onStart }: { onStart: (level: number) => void }) {
           setProgress(data.progress ?? []);
           setHistory(data.recentSessions ?? []);
 
-          // Auto-select highest unlocked level
           const progressMap = Object.fromEntries((data.progress ?? []).map(p => [p.level, p]));
           let highestUnlocked = 1;
           for (let l = 1; l <= 12; l++) {
-            const p = progressMap[l];
             if (l === 1 || (progressMap[l - 1]?.completedSessions ?? 0) >= MIN_REQUIRED) {
               highestUnlocked = l;
             }
+            const p = progressMap[l];
             if (!p || p.completedSessions < MIN_REQUIRED) break;
           }
           setSelectedLevel(highestUnlocked);
@@ -131,15 +246,12 @@ function ProgressScreen({ onStart }: { onStart: (level: number) => void }) {
   }, []);
 
   const progressMap = Object.fromEntries(progress.map(p => [p.level, p]));
-
-  const isUnlocked = (level: number) => {
-    if (level === 1) return true;
-    return (progressMap[level - 1]?.completedSessions ?? 0) >= MIN_REQUIRED;
-  };
+  const isUnlocked = (level: number) =>
+    level === 1 || (progressMap[level - 1]?.completedSessions ?? 0) >= MIN_REQUIRED;
 
   const levelHistory = history.filter(s => s.level === selectedLevel && s.completedAt);
   const firstTime = levelHistory.length > 0 ? levelHistory[levelHistory.length - 1]?.totalSeconds : null;
-  const bestTime = levelHistory.length > 0 ? Math.min(...levelHistory.map(s => s.totalSeconds)) : null;
+  const bestTime  = levelHistory.length > 0 ? Math.min(...levelHistory.map(s => s.totalSeconds)) : null;
 
   if (loading) {
     return (
@@ -157,7 +269,7 @@ function ProgressScreen({ onStart }: { onStart: (level: number) => void }) {
         </div>
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Code Fix Test</h1>
-          <p className="text-sm text-muted-foreground">Timed tests that track your improvement. Every session saved.</p>
+          <p className="text-sm text-muted-foreground">Timed tests that track your improvement. Every session saved — mistakes reviewed by Forge.</p>
         </div>
       </div>
 
@@ -188,92 +300,81 @@ function ProgressScreen({ onStart }: { onStart: (level: number) => void }) {
               >
                 {!unlocked ? <Lock size={10} /> : <span className={isSelected ? "" : color}>{l}</span>}
                 {unlocked && (
-                  <span className="text-[9px] opacity-60">
-                    {sessions}/{MIN_REQUIRED}
-                  </span>
+                  <span className="text-[9px] opacity-60">{sessions}/{MIN_REQUIRED}</span>
                 )}
               </button>
             );
           })}
         </div>
-
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Lock size={10} /> Complete {MIN_REQUIRED} tests at each level to unlock the next
         </div>
       </div>
 
       {/* Selected Level Detail */}
-      {selectedLevel && (
-        <div className="rounded-xl border border-border/60 bg-card/50 p-5 space-y-4">
-          <div className="flex items-start justify-between gap-4 flex-wrap">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className={cn("text-lg font-bold", LEVEL_COLORS[selectedLevel])}>
-                  Level {selectedLevel}
-                </span>
-                <span className="text-muted-foreground">—</span>
-                <span className="text-sm font-medium">{LEVEL_LABELS[selectedLevel]}</span>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {(progressMap[selectedLevel]?.completedSessions ?? 0)} of {MIN_REQUIRED} sessions completed to unlock next level
-              </p>
+      <div className="rounded-xl border border-border/60 bg-card/50 p-5 space-y-4">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className={cn("text-lg font-bold", LEVEL_COLORS[selectedLevel])}>Level {selectedLevel}</span>
+              <span className="text-muted-foreground">—</span>
+              <span className="text-sm font-medium">{LEVEL_LABELS[selectedLevel]}</span>
             </div>
-
-            <Button
-              onClick={() => onStart(selectedLevel)}
-              disabled={!isUnlocked(selectedLevel)}
-              className="gap-2 font-bold bg-orange-600 hover:bg-orange-500"
-            >
-              <Play size={14} /> Start Test
-            </Button>
+            <p className="text-xs text-muted-foreground">
+              {progressMap[selectedLevel]?.completedSessions ?? 0} of {MIN_REQUIRED} sessions completed to unlock next level
+            </p>
           </div>
-
-          {/* Time progression */}
-          {levelHistory.length > 0 && (
-            <div className="space-y-2">
-              <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                <TrendingUp size={11} /> Your time history for this level
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {levelHistory.slice().reverse().map((s, i) => {
-                  const isFirst = i === 0;
-                  const isBest = s.totalSeconds === bestTime;
-                  return (
-                    <div key={s.id} className={cn(
-                      "flex flex-col items-center px-3 py-2 rounded-lg border text-xs",
-                      isBest ? "border-green-500/40 bg-green-500/10" : "border-border/40 bg-muted/20"
-                    )}>
-                      <span className="text-[10px] text-muted-foreground mb-0.5">
-                        {isFirst ? "First" : `#${i + 1}`}{isBest ? " 🏆" : ""}
-                      </span>
-                      <span className="font-bold">{formatTime(s.totalSeconds)}</span>
-                      <span className="text-[10px] text-muted-foreground">
-                        {s.correctCount}/{s.challengeCount} correct
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-              {firstTime !== null && bestTime !== null && firstTime !== bestTime && (
-                <p className="text-xs text-green-400">
-                  You improved by {formatTime(firstTime - bestTime)} from your first attempt!
-                </p>
-              )}
-            </div>
-          )}
-
-          {levelHistory.length === 0 && (
-            <p className="text-xs text-muted-foreground italic">No tests taken at this level yet. Start your first test!</p>
-          )}
+          <Button
+            onClick={() => onStart(selectedLevel)}
+            disabled={!isUnlocked(selectedLevel)}
+            className="gap-2 font-bold bg-orange-600 hover:bg-orange-500"
+          >
+            <Play size={14} /> Start Test
+          </Button>
         </div>
-      )}
+
+        {levelHistory.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+              <TrendingUp size={11} /> Your time history for this level
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {levelHistory.slice().reverse().map((s, i) => {
+                const isFirst = i === 0;
+                const isBest = s.totalSeconds === bestTime;
+                return (
+                  <div key={s.id} className={cn(
+                    "flex flex-col items-center px-3 py-2 rounded-lg border text-xs",
+                    isBest ? "border-green-500/40 bg-green-500/10" : "border-border/40 bg-muted/20"
+                  )}>
+                    <span className="text-[10px] text-muted-foreground mb-0.5">
+                      {isFirst ? "First" : `#${i + 1}`}{isBest ? " 🏆" : ""}
+                    </span>
+                    <span className="font-bold">{formatTime(s.totalSeconds)}</span>
+                    <span className="text-[10px] text-muted-foreground">{s.correctCount}/{s.challengeCount} correct</span>
+                  </div>
+                );
+              })}
+            </div>
+            {firstTime !== null && bestTime !== null && firstTime !== bestTime && (
+              <p className="text-xs text-green-400">
+                You improved by {formatTime(firstTime - bestTime)} from your first attempt!
+              </p>
+            )}
+          </div>
+        )}
+
+        {levelHistory.length === 0 && (
+          <p className="text-xs text-muted-foreground italic">No tests at this level yet. Start your first one!</p>
+        )}
+      </div>
 
       {/* Info cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {[
           { icon: Timer, color: "text-orange-400", bg: "bg-orange-500/10", title: "Time Recorded", desc: "Not a countdown. The clock just runs. Your time is saved every session so you can watch yourself get faster." },
           { icon: BarChart2, color: "text-blue-400", bg: "bg-blue-500/10", title: "Track Improvement", desc: "Every test session is saved. See your first attempt vs. your latest — the numbers tell the story." },
-          { icon: Shield, color: "text-purple-400", bg: "bg-purple-500/10", title: "Cumulative Tests", desc: "Higher levels mix in challenges from past levels. By Level 12, you've seen everything — and fixed all of it." },
+          { icon: Lightbulb, color: "text-yellow-400", bg: "bg-yellow-500/10", title: "Learn From Mistakes", desc: "After each test, Forge reviews every wrong answer. Not just 'you missed it' — it shows you exactly how to fix it and why." },
         ].map(({ icon: Icon, color, bg, title, desc }) => (
           <div key={title} className="rounded-xl border border-border/40 bg-card/30 p-4 space-y-2">
             <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", bg)}>
@@ -328,7 +429,7 @@ function TestScreen({
         headers: { "Content-Type": "application/json", "x-user-id": getUserId() },
         body: JSON.stringify({
           description: challenge.description,
-          brokenCode: challenge.brokenCode,
+          brokenCode:  challenge.brokenCode,
           userFix,
         }),
       });
@@ -336,17 +437,26 @@ function TestScreen({
       setVerdict(data);
       setResults(prev => [...prev, {
         challengeLevel: challenge.challengeLevel,
-        bugType: challenge.bugType,
-        correct: data.correct,
+        bugType:        challenge.bugType,
+        correct:        data.correct,
         secondsTaken,
+        description:    challenge.description,
+        brokenCode:     challenge.brokenCode,
+        userFix,
+        explanation:    data.explanation,
       }]);
     } catch {
-      setVerdict({ correct: false, explanation: "Could not check. Moving on." });
+      const fallback = { correct: false, explanation: "Could not check. Moving on." };
+      setVerdict(fallback);
       setResults(prev => [...prev, {
         challengeLevel: challenge.challengeLevel,
-        bugType: challenge.bugType,
-        correct: false,
+        bugType:        challenge.bugType,
+        correct:        false,
         secondsTaken,
+        description:    challenge.description,
+        brokenCode:     challenge.brokenCode,
+        userFix,
+        explanation:    fallback.explanation,
       }]);
     } finally {
       setChecking(false);
@@ -370,53 +480,38 @@ function TestScreen({
 
   if (!challenge) return null;
 
-  const progressPct = ((idx) / challenges.length) * 100;
+  const progressPct = (idx / challenges.length) * 100;
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6 space-y-4">
-      {/* Test Header */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-2">
           <span className={cn("text-sm font-bold", LEVEL_COLORS[level])}>
             Level {level} — {LEVEL_LABELS[level]}
           </span>
           <span className="text-muted-foreground text-sm">•</span>
-          <span className="text-sm text-muted-foreground">
-            Challenge {idx + 1} of {challenges.length}
-          </span>
+          <span className="text-sm text-muted-foreground">Challenge {idx + 1} of {challenges.length}</span>
         </div>
         <div className="flex items-center gap-2">
           <Timer size={13} className="text-orange-400" />
-          <span className="font-mono text-sm font-bold text-orange-400">
-            {formatTime(totalTimer.elapsed)}
-          </span>
+          <span className="font-mono text-sm font-bold text-orange-400">{formatTime(totalTimer.elapsed)}</span>
         </div>
       </div>
 
-      {/* Progress Bar */}
       <div className="h-1.5 rounded-full bg-muted/30 overflow-hidden">
-        <div
-          className="h-full rounded-full bg-orange-500 transition-all duration-300"
-          style={{ width: `${progressPct}%` }}
-        />
+        <div className="h-full rounded-full bg-orange-500 transition-all duration-300" style={{ width: `${progressPct}%` }} />
       </div>
 
-      {/* Challenge */}
       <div className="rounded-xl border border-border/60 bg-card/50 p-4 space-y-2">
         <div className="flex items-center gap-2">
-          <Badge variant="outline" className="text-xs border-border/60 text-muted-foreground">
-            {challenge.bugType}
-          </Badge>
+          <Badge variant="outline" className="text-xs border-border/60 text-muted-foreground">{challenge.bugType}</Badge>
           {challenge.challengeLevel !== level && (
-            <Badge variant="outline" className="text-xs border-yellow-500/30 text-yellow-400">
-              Review: Level {challenge.challengeLevel}
-            </Badge>
+            <Badge variant="outline" className="text-xs border-yellow-500/30 text-yellow-400">Review: Level {challenge.challengeLevel}</Badge>
           )}
         </div>
         <p className="text-sm font-medium leading-relaxed">{challenge.description}</p>
       </div>
 
-      {/* Code panels */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="space-y-1.5">
           <p className="text-xs text-muted-foreground flex items-center gap-1.5">
@@ -426,7 +521,6 @@ function TestScreen({
             {challenge.brokenCode}
           </pre>
         </div>
-
         <div className="space-y-1.5">
           <p className="text-xs text-muted-foreground flex items-center gap-1.5">
             <Shield size={11} className="text-green-400" /> Your Fix
@@ -441,7 +535,6 @@ function TestScreen({
         </div>
       </div>
 
-      {/* Submit / Verdict */}
       {!verdict && (
         <Button
           onClick={submitFix}
@@ -468,15 +561,17 @@ function TestScreen({
             <span className={cn("text-sm font-bold", verdict.correct ? "text-green-400" : "text-red-400")}>
               {verdict.correct ? "Correct!" : "Not quite."}
             </span>
+            {!verdict.correct && (
+              <span className="text-xs text-muted-foreground ml-1">Forge will explain this one in the review.</span>
+            )}
           </div>
           <p className="text-sm leading-relaxed text-muted-foreground">{verdict.explanation}</p>
 
           <Button onClick={next} className="gap-2 font-bold" size="sm">
-            {idx + 1 >= challenges.length ? (
-              <><Trophy size={14} /> Finish Test</>
-            ) : (
-              <><ChevronRight size={14} /> Next Challenge</>
-            )}
+            {idx + 1 >= challenges.length
+              ? <><Trophy size={14} /> Finish Test &amp; Get Review</>
+              : <><ChevronRight size={14} /> Next Challenge</>
+            }
           </Button>
         </div>
       )}
@@ -499,6 +594,12 @@ function ResultsScreen({
     correctCount: number; total: number; unlockedNext: boolean;
     completedSessions: number; minRequired: number;
   } | null>(null);
+  const [showReview, setShowReview] = useState(false);
+
+  const wrongAnswers = results.filter(r => !r.correct);
+  const correctCount = results.filter(r => r.correct).length;
+  const accuracy     = Math.round((correctCount / results.length) * 100);
+  const avgSeconds   = Math.round(totalSeconds / results.length);
 
   useEffect(() => {
     void (async () => {
@@ -508,10 +609,7 @@ function ResultsScreen({
           headers: { "Content-Type": "application/json", "x-user-id": getUserId() },
           body: JSON.stringify({ level, totalSeconds, results }),
         });
-        if (res.ok) {
-          const data = await res.json();
-          setSaved(data);
-        }
+        if (res.ok) setSaved(await res.json());
       } finally {
         setSaving(false);
       }
@@ -519,9 +617,21 @@ function ResultsScreen({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const correctCount = results.filter(r => r.correct).length;
-  const accuracy = Math.round((correctCount / results.length) * 100);
-  const avgSeconds = Math.round(totalSeconds / results.length);
+  // Auto-open review if there are mistakes
+  useEffect(() => {
+    if (!saving && wrongAnswers.length > 0) {
+      const t = setTimeout(() => setShowReview(true), 600);
+      return () => clearTimeout(t);
+    }
+  }, [saving, wrongAnswers.length]);
+
+  const mistakesForReview = wrongAnswers.map(r => ({
+    description: r.description,
+    brokenCode:  r.brokenCode,
+    userFix:     r.userFix,
+    explanation: r.explanation,
+    bugType:     r.bugType,
+  }));
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
@@ -538,9 +648,9 @@ function ResultsScreen({
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { label: "Total Time", value: formatTime(totalSeconds), icon: Timer, color: "text-orange-400" },
-          { label: "Accuracy", value: `${accuracy}%`, icon: Star, color: accuracy >= 80 ? "text-green-400" : "text-yellow-400" },
-          { label: "Avg / Fix", value: formatTime(avgSeconds), icon: Flame, color: "text-blue-400" },
+          { label: "Total Time",  value: formatTime(totalSeconds), icon: Timer,   color: "text-orange-400" },
+          { label: "Accuracy",    value: `${accuracy}%`,           icon: Star,    color: accuracy >= 80 ? "text-green-400" : "text-yellow-400" },
+          { label: "Avg / Fix",   value: formatTime(avgSeconds),   icon: Flame,   color: "text-blue-400" },
         ].map(({ label, value, icon: Icon, color }) => (
           <div key={label} className="rounded-xl border border-border/50 bg-card/50 p-3 text-center">
             <Icon size={14} className={cn(color, "mx-auto mb-1")} />
@@ -586,6 +696,41 @@ function ResultsScreen({
           <span className="text-destructive">Could not save. Results recorded locally.</span>
         )}
       </div>
+
+      {/* ── Forge Mistake Review ──────────────────────────────────────────── */}
+      {wrongAnswers.length > 0 && (
+        <div className="rounded-xl border border-orange-500/20 bg-orange-950/10 overflow-hidden">
+          <button
+            onClick={() => setShowReview(v => !v)}
+            className="w-full flex items-center justify-between p-4 text-left hover:bg-orange-500/5 transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <BookOpen size={15} className="text-orange-400" />
+              <span className="text-sm font-bold text-orange-300">
+                Forge Reviews Your {wrongAnswers.length} Mistake{wrongAnswers.length > 1 ? "s" : ""}
+              </span>
+            </div>
+            <span className="text-xs text-muted-foreground">{showReview ? "hide" : "show"}</span>
+          </button>
+
+          {showReview && (
+            <div className="border-t border-orange-500/15 p-4">
+              <p className="text-xs text-muted-foreground mb-4">
+                Forge is going through each wrong answer — not just what was broken, but exactly how to fix it and the concept behind it.
+              </p>
+              <ForgeReview mistakes={mistakesForReview} />
+            </div>
+          )}
+        </div>
+      )}
+
+      {wrongAnswers.length === 0 && (
+        <div className="rounded-xl border border-green-500/20 bg-green-950/10 p-4 text-center">
+          <CheckCircle2 size={20} className="text-green-400 mx-auto mb-2" />
+          <p className="text-sm font-bold text-green-400">Perfect score!</p>
+          <p className="text-xs text-muted-foreground mt-1">No mistakes to review. Every bug found correctly.</p>
+        </div>
+      )}
 
       <div className="flex gap-3">
         <Button onClick={onBack} variant="outline" className="flex-1 gap-2">
@@ -650,13 +795,7 @@ export default function CodeFixTest() {
   }
 
   if (screen === "test") {
-    return (
-      <TestScreen
-        level={level}
-        challenges={challenges}
-        onComplete={handleComplete}
-      />
-    );
+    return <TestScreen level={level} challenges={challenges} onComplete={handleComplete} />;
   }
 
   if (screen === "results") {
