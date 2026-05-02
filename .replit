@@ -33,3 +33,4 @@ channel = "stable-25_05"
 [userenv.shared]
 TSQ_BASE_URL = "https://thepeoplestownsq.com"
 ADMIN_EMAILS = "ezekiel@thepeoplestownsq.com"
+VITE_CLERK_PUBLISHABLE_KEY = "pk_test_ZmFjdHVhbC13ZWFzZWwtNDkuY2xlcmsuYWNjb3VudHMuZGV2JA"
