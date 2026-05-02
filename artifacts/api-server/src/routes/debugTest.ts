@@ -74,13 +74,11 @@ async function checkAnswer(description: string, brokenCode: string, userFix: str
           content: `You are a senior developer evaluating a student's bug fix.
 Return JSON with:
 - "correct": boolean — true if the fix resolves the core bug
-- "explanation": 1-2 sentences. If correct: what the bug was and why the fix works. If wrong: what's still broken (no full answer).`,
+- "explanation": 1-2 sentences. If correct: what the bug was and why the fix works. If wrong: what's still broken (no full answer given).`,
         },
         {
           role: "user",
-          content: `Code should: ${description}
-BROKEN:\n${brokenCode}
-STUDENT FIX:\n${userFix}`,
+          content: `Code should: ${description}\nBROKEN:\n${brokenCode}\nSTUDENT FIX:\n${userFix}`,
         },
       ],
     });
@@ -91,7 +89,7 @@ STUDENT FIX:\n${userFix}`,
   }
 }
 
-// ── Generate test challenges for a level ────────────────────────────────────
+// ── Generate test challenges ────────────────────────────────────────────────
 router.post("/debug-test/generate", async (req, res) => {
   const { level } = req.body as { level?: unknown };
   const testLevel = Math.min(Math.max(Number(level) || 1, 1), 12);
@@ -103,20 +101,16 @@ router.post("/debug-test/generate", async (req, res) => {
 
   const count = CHALLENGES_PER_LEVEL[testLevel] ?? 5;
 
-  // For cumulative levels (5+), mix in some from earlier levels
   const levelPool: number[] = [];
   if (testLevel >= 5) {
     const prevCount = Math.floor(count * 0.3);
     const newCount = count - prevCount;
-    for (let i = 0; i < prevCount; i++) {
-      levelPool.push(Math.ceil(Math.random() * (testLevel - 1)));
-    }
+    for (let i = 0; i < prevCount; i++) levelPool.push(Math.ceil(Math.random() * (testLevel - 1)));
     for (let i = 0; i < newCount; i++) levelPool.push(testLevel);
   } else {
     for (let i = 0; i < count; i++) levelPool.push(testLevel);
   }
 
-  // Shuffle pool
   for (let i = levelPool.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [levelPool[i], levelPool[j]] = [levelPool[j]!, levelPool[i]!];
@@ -128,10 +122,7 @@ router.post("/debug-test/generate", async (req, res) => {
       .map((c, i) => c ? { ...c, challengeLevel: levelPool[i]! } : null)
       .filter(Boolean);
 
-    if (valid.length === 0) {
-      return res.status(500).json({ error: "Failed to generate challenges. Try again." });
-    }
-
+    if (valid.length === 0) return res.status(500).json({ error: "Failed to generate challenges. Try again." });
     return res.json({ level: testLevel, challenges: valid, total: valid.length });
   } catch (err) {
     req.log.error({ err }, "/debug-test/generate failed");
@@ -139,17 +130,13 @@ router.post("/debug-test/generate", async (req, res) => {
   }
 });
 
-// ── Check a single answer (fast, non-streaming) ──────────────────────────────
+// ── Check a single answer (fast, non-streaming) ─────────────────────────────
 router.post("/debug-test/check-answer", async (req, res) => {
   const { description, brokenCode, userFix } = req.body as Record<string, string>;
-  if (!description || !brokenCode || !userFix) {
-    return res.status(400).json({ error: "Missing required fields" });
-  }
+  if (!description || !brokenCode || !userFix) return res.status(400).json({ error: "Missing required fields" });
 
   const access = await checkSageAccess(req.userId);
-  if (!access.allowed) {
-    return res.status(403).json({ error: access.error });
-  }
+  if (!access.allowed) return res.status(403).json({ error: access.error });
 
   try {
     const result = await checkAnswer(description, brokenCode, userFix);
@@ -160,18 +147,25 @@ router.post("/debug-test/check-answer", async (req, res) => {
   }
 });
 
-// ── Complete a test session (save results) ───────────────────────────────────
+// ── Complete a test session (save results incl. learning record) ─────────────
 router.post("/debug-test/complete", async (req, res) => {
   const { level, mode, totalSeconds, results } = req.body as {
     level: number;
     mode?: string;
     totalSeconds: number;
-    results: { challengeLevel: number; bugType: string; correct: boolean; secondsTaken: number }[];
+    results: {
+      challengeLevel: number;
+      bugType: string;
+      correct: boolean;
+      secondsTaken: number;
+      description?: string;
+      brokenCode?: string;
+      userFix?: string;
+      explanation?: string;
+    }[];
   };
 
-  if (!level || !results?.length) {
-    return res.status(400).json({ error: "Missing required fields" });
-  }
+  if (!level || !results?.length) return res.status(400).json({ error: "Missing required fields" });
 
   try {
     const correctCount = results.filter(r => r.correct).length;
@@ -188,25 +182,26 @@ router.post("/debug-test/complete", async (req, res) => {
 
     if (!session) return res.status(500).json({ error: "Failed to save session" });
 
-    if (results.length > 0) {
-      await db.insert(debugTestResults).values(
-        results.map(r => ({
-          sessionId:      session.id,
-          userId:         req.userId,
-          challengeLevel: r.challengeLevel,
-          bugType:        r.bugType,
-          correct:        r.correct,
-          secondsTaken:   r.secondsTaken,
-        }))
-      );
-    }
+    await db.insert(debugTestResults).values(
+      results.map(r => ({
+        sessionId:      session.id,
+        userId:         req.userId,
+        challengeLevel: r.challengeLevel,
+        bugType:        r.bugType,
+        correct:        r.correct,
+        secondsTaken:   r.secondsTaken,
+        description:    r.description ?? null,
+        brokenCode:     r.brokenCode ?? null,
+        userFix:        r.userFix ?? null,
+        explanation:    r.explanation ?? null,
+      }))
+    );
 
-    // Update level progress
     const existing = await db.select().from(debugLevelProgress)
       .where(and(eq(debugLevelProgress.userId, req.userId), eq(debugLevelProgress.level, level)));
 
     const prevBest = existing[0]?.bestTotalSeconds ?? null;
-    const newBest = prevBest === null || totalSeconds < prevBest ? totalSeconds : prevBest;
+    const newBest  = prevBest === null || totalSeconds < prevBest ? totalSeconds : prevBest;
     const newCount = (existing[0]?.completedSessions ?? 0) + 1;
 
     await db.insert(debugLevelProgress).values({
@@ -215,7 +210,7 @@ router.post("/debug-test/complete", async (req, res) => {
       completedSessions: newCount,
       bestTotalSeconds:  newBest,
     }).onConflictDoUpdate({
-      target:  [debugLevelProgress.userId, debugLevelProgress.level],
+      target: [debugLevelProgress.userId, debugLevelProgress.level],
       set: {
         completedSessions: sql`${debugLevelProgress.completedSessions} + 1`,
         bestTotalSeconds:  newBest,
@@ -223,20 +218,113 @@ router.post("/debug-test/complete", async (req, res) => {
       },
     });
 
-    const unlockedNext = newCount >= MIN_SESSIONS_TO_ADVANCE;
-
     return res.json({
-      sessionId:    session.id,
+      sessionId:         session.id,
       correctCount,
-      total:        results.length,
+      total:             results.length,
       totalSeconds,
-      unlockedNext,
+      unlockedNext:      newCount >= MIN_SESSIONS_TO_ADVANCE,
       completedSessions: newCount,
-      minRequired:  MIN_SESSIONS_TO_ADVANCE,
+      minRequired:       MIN_SESSIONS_TO_ADVANCE,
     });
   } catch (err) {
     req.log.error({ err }, "/debug-test/complete failed");
     return res.status(500).json({ error: "Failed to save results." });
+  }
+});
+
+// ── Stream Forge's mistake review for a set of wrong answers ─────────────────
+// Accepts either inline `mistakes` array (fresh session) or `sessionId` (load from DB)
+router.post("/debug-test/review-mistakes", async (req, res) => {
+  const { sessionId, mistakes } = req.body as {
+    sessionId?: number;
+    mistakes?: { description: string; brokenCode: string; userFix: string; explanation: string; bugType: string }[];
+  };
+
+  const access = await checkSageAccess(req.userId);
+  if (!access.allowed) return res.status(403).json({ error: access.error });
+
+  let items: { description: string; brokenCode: string; userFix: string; explanation: string; bugType: string }[] = [];
+
+  if (mistakes && mistakes.length > 0) {
+    items = mistakes;
+  } else if (sessionId) {
+    const rows = await db.select().from(debugTestResults)
+      .where(and(
+        eq(debugTestResults.sessionId, sessionId),
+        eq(debugTestResults.userId, req.userId),
+        eq(debugTestResults.correct, false),
+      ));
+    items = rows
+      .filter(r => r.brokenCode && r.userFix)
+      .map(r => ({
+        description: r.description ?? "",
+        brokenCode:  r.brokenCode!,
+        userFix:     r.userFix!,
+        explanation: r.explanation ?? "",
+        bugType:     r.bugType,
+      }));
+  }
+
+  if (items.length === 0) {
+    return res.status(400).json({ error: "No mistakes to review" });
+  }
+
+  const mistakeBlock = items.map((m, i) =>
+    `--- Mistake ${i + 1} (${m.bugType}) ---\nTask: ${m.description}\n\nBROKEN CODE:\n${m.brokenCode}\n\nSTUDENT SUBMITTED:\n${m.userFix}\n\nQuick check note: ${m.explanation}`
+  ).join("\n\n");
+
+  res.setHeader("Content-Type", "text/plain; charset=utf-8");
+  res.setHeader("Transfer-Encoding", "chunked");
+  res.setHeader("Cache-Control", "no-cache");
+  res.flushHeaders();
+
+  try {
+    const stream = await openai.chat.completions.create({
+      model:  "gpt-4o",
+      stream: true,
+      messages: [
+        {
+          role: "system",
+          content: `You are Forge — a direct, encouraging coding instructor reviewing a student's test mistakes.
+For EACH mistake, provide a clear lesson with this exact structure:
+
+## Mistake [N]: [Bug Type]
+
+**What went wrong:**
+[1-2 sentences — name the specific bug precisely]
+
+**Why your fix didn't work:**
+[1-2 sentences — explain exactly what was still wrong in their submission]
+
+**The correct fix:**
+\`\`\`
+[corrected code snippet — only the relevant lines, not the whole file]
+\`\`\`
+
+**The concept to remember:**
+[1 punchy sentence — the rule or principle they need to internalize]
+
+---
+
+Keep each section tight. No fluff. Teach like a senior dev doing a code review — direct, specific, and constructive. After all mistakes, add one brief closing note about the pattern you see across their errors (if any).`,
+        },
+        {
+          role: "user",
+          content: `Please review my ${items.length} mistake${items.length > 1 ? "s" : ""} from this test session:\n\n${mistakeBlock}`,
+        },
+      ],
+    });
+
+    for await (const chunk of stream) {
+      const text = chunk.choices[0]?.delta?.content ?? "";
+      if (text) res.write(text);
+    }
+    res.end();
+  } catch (err) {
+    req.log.error({ err }, "/debug-test/review-mistakes failed");
+    if (!res.headersSent) res.status(500).json({ error: "Review failed." });
+    else res.end();
   }
 });
 
@@ -258,12 +346,12 @@ router.get("/debug-test/progress", async (req, res) => {
   }
 });
 
-// ── Get full session history for a level ─────────────────────────────────────
+// ── Get session history ───────────────────────────────────────────────────────
 router.get("/debug-test/history", async (req, res) => {
   const level = req.query.level ? Number(req.query.level) : undefined;
 
   try {
-    const query = db.select().from(debugTestSessions)
+    const sessions = await db.select().from(debugTestSessions)
       .where(
         level !== undefined
           ? and(eq(debugTestSessions.userId, req.userId), eq(debugTestSessions.level, level))
@@ -272,11 +360,30 @@ router.get("/debug-test/history", async (req, res) => {
       .orderBy(desc(debugTestSessions.completedAt))
       .limit(50);
 
-    const sessions = await query;
     return res.json({ sessions });
   } catch (err) {
     req.log.error({ err }, "/debug-test/history failed");
     return res.status(500).json({ error: "Failed to load history." });
+  }
+});
+
+// ── Load wrong answers for a past session (for on-demand review) ─────────────
+router.get("/debug-test/mistakes/:sessionId", async (req, res) => {
+  const sessionId = Number(req.params.sessionId);
+  if (!sessionId) return res.status(400).json({ error: "Invalid session ID" });
+
+  try {
+    const rows = await db.select().from(debugTestResults)
+      .where(and(
+        eq(debugTestResults.sessionId, sessionId),
+        eq(debugTestResults.userId, req.userId),
+      ))
+      .orderBy(debugTestResults.id);
+
+    return res.json({ results: rows });
+  } catch (err) {
+    req.log.error({ err }, "/debug-test/mistakes failed");
+    return res.status(500).json({ error: "Failed to load mistakes." });
   }
 });
 

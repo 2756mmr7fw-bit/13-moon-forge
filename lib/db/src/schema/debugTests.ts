@@ -23,9 +23,15 @@ export const debugTestResults = pgTable("debug_test_results", {
   bugType:         text("bug_type").notNull(),
   correct:         boolean("correct").notNull(),
   secondsTaken:    integer("seconds_taken").notNull(),
+  // Learning record — stored for every challenge, especially wrong ones
+  description:     text("description"),
+  brokenCode:      text("broken_code"),
+  userFix:         text("user_fix"),
+  explanation:     text("explanation"),
   createdAt:       timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, t => [
   index("debug_results_session_idx").on(t.sessionId),
+  index("debug_results_user_wrong_idx").on(t.userId, t.correct),
 ]);
 
 export const debugLevelProgress = pgTable("debug_level_progress", {
@@ -39,6 +45,6 @@ export const debugLevelProgress = pgTable("debug_level_progress", {
   unique("debug_progress_user_level").on(t.userId, t.level),
 ]);
 
-export type DebugTestSession  = typeof debugTestSessions.$inferSelect;
-export type DebugTestResult   = typeof debugTestResults.$inferSelect;
+export type DebugTestSession   = typeof debugTestSessions.$inferSelect;
+export type DebugTestResult    = typeof debugTestResults.$inferSelect;
 export type DebugLevelProgress = typeof debugLevelProgress.$inferSelect;
