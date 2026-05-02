@@ -74,6 +74,8 @@ const TypeFixer        = lazy(() => import("@/pages/academy/TypeFixer"));
 const ApiArchitect     = lazy(() => import("@/pages/academy/ApiArchitect"));
 const GitDrill         = lazy(() => import("@/pages/academy/GitDrill"));
 const LogReader        = lazy(() => import("@/pages/academy/LogReader"));
+const GymHub           = lazy(() => import("@/pages/gym/GymHub"));
+const GymExercise      = lazy(() => import("@/pages/gym/ExercisePage"));
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 // In production, always route Clerk through our own domain proxy so it works
@@ -354,6 +356,8 @@ function Router() {
                     <Route path="/api-architect"          component={ApiArchitect} />
                     <Route path="/git-drill"              component={GitDrill} />
                     <Route path="/log-reader"             component={LogReader} />
+                    <Route path="/gym/:id"                component={GymExercise} />
+                    <Route path="/gym"                    component={GymHub} />
                     <Route component={NotFound} />
                   </Switch>
                 </ProtectedRoute>
