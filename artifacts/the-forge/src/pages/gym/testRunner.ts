@@ -424,6 +424,83 @@ export const ASYNC_SPECIAL_RUNNERS: Record<string, (userCode: string) => Promise
   },
 };
 
+  // ── session-store ─────────────────────────────────────────────────────────────
+  "session-store": (userCode) => {
+    const results: TestResult[] = [];
+    try {
+      const SessionStore = compileUserFn<new (ttlMs: number) => {
+        create(userId: number): string;
+        get(id: string): number | null;
+        destroy(id: string): void;
+      }>(userCode, "SessionStore");
+
+      const store = new SessionStore(60000);
+
+      const id1 = store.create(42);
+      results.push({ label: "create() returns a string session ID", passed: typeof id1 === "string" && id1.length > 0, actual: id1, expected: "string (e.g. 'sess_1')" });
+
+      const val1 = store.get(id1);
+      results.push({ label: "get() returns the userId for a valid session", passed: val1 === 42, actual: val1, expected: 42 });
+
+      const id2 = store.create(99);
+      results.push({ label: "second create() returns a different ID", passed: id2 !== id1, actual: id2, expected: `not '${id1}'` });
+
+      const val2 = store.get(id2);
+      results.push({ label: "second session has correct userId", passed: val2 === 99, actual: val2, expected: 99 });
+
+      store.destroy(id1);
+      const afterDestroy = store.get(id1);
+      results.push({ label: "get() returns null after destroy()", passed: afterDestroy === null, actual: afterDestroy, expected: null });
+
+      const val2Still = store.get(id2);
+      results.push({ label: "destroy() only removes the targeted session", passed: val2Still === 99, actual: val2Still, expected: 99 });
+
+      const noExist = store.get("sess_doesnotexist");
+      results.push({ label: "get() returns null for unknown session ID", passed: noExist === null, actual: noExist, expected: null });
+
+      // Expired session
+      const expiredStore = new SessionStore(0);
+      const expiredId = expiredStore.create(7);
+      const expiredVal = expiredStore.get(expiredId);
+      results.push({ label: "get() returns null for expired session (ttl=0)", passed: expiredVal === null, actual: expiredVal, expected: null });
+
+    } catch (err) {
+      results.push(makeError("compilation", "valid SessionStore class", String(err)));
+    }
+    return results;
+  },
+
+  // ── rbac ──────────────────────────────────────────────────────────────────────
+  "rbac": (userCode) => {
+    const results: TestResult[] = [];
+    try {
+      const can = compileUserFn<(user: { role?: string }, action: string, resource: string) => boolean>(userCode, "can");
+
+      const cases: [Parameters<typeof can>, boolean, string][] = [
+        [[{ role: "admin" }, "delete", "users"],  true,  "admin can delete users"],
+        [[{ role: "admin" }, "write", "posts"],   true,  "admin can write posts"],
+        [[{ role: "admin" }, "read", "anything"], true,  "admin can read anything"],
+        [[{ role: "editor" }, "read", "posts"],   true,  "editor can read"],
+        [[{ role: "editor" }, "write", "posts"],  true,  "editor can write"],
+        [[{ role: "editor" }, "delete", "posts"], false, "editor cannot delete"],
+        [[{ role: "viewer" }, "read", "posts"],   true,  "viewer can read"],
+        [[{ role: "viewer" }, "write", "posts"],  false, "viewer cannot write"],
+        [[{ role: "viewer" }, "delete", "posts"], false, "viewer cannot delete"],
+        [[{ role: "unknown" }, "read", "posts"],  false, "unknown role → false"],
+        [[{}, "read", "posts"],                   false, "no role → false"],
+      ];
+
+      for (const [args, expected, label] of cases) {
+        const actual = can(...args);
+        results.push({ label, passed: actual === expected, actual, expected });
+      }
+    } catch (err) {
+      results.push(makeError("compilation", "valid can() function", String(err)));
+    }
+    return results;
+  },
+};
+
 // ── Public entry point ────────────────────────────────────────────────────────
 export function runExercise(userCode: string, exercise: Exercise): TestResult[] | Promise<TestResult[]> {
   if (ASYNC_SPECIAL_RUNNERS[exercise.id]) {
