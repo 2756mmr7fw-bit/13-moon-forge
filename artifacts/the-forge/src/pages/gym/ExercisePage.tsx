@@ -8,16 +8,22 @@ import {
   Eye, EyeOff, RotateCcw, ChevronRight, Timer, Loader2,
   Target, BookOpen,
 } from "lucide-react";
-import { getExerciseById } from "./exercises";
+import { getAnyExerciseById } from "./exercises";
 import { runExercise } from "./testRunner";
 import { GYM_API, TIER_META, CATEGORY_LABELS, type TestResult } from "./types";
+import WriteTestsPage from "./WriteTestsPage";
 import { getUserId } from "@/lib/userId";
 
 export default function ExercisePage() {
   const [, params] = useRoute("/gym/:id");
-  const exercise = params?.id ? getExerciseById(params.id) : null;
+  const anyExercise = params?.id ? getAnyExerciseById(params.id) : null;
 
-  const [code,           setCode]           = useState(exercise?.starterCode ?? "");
+  // All hooks must be unconditional — dispatch to WriteTestsPage in the render phase below
+  const solveExercise = anyExercise?.format !== "write-tests"
+    ? (anyExercise as import("./types").Exercise | null)
+    : null;
+
+  const [code,           setCode]           = useState(solveExercise?.starterCode ?? "");
   const [results,        setResults]        = useState<TestResult[] | null>(null);
   const [running,        setRunning]        = useState(false);
   const [showSolution,   setShowSolution]   = useState(false);
@@ -31,6 +37,9 @@ export default function ExercisePage() {
   const startTimeRef       = useRef(Date.now());
   const firstEditTimeRef   = useRef<number | null>(null);
   const hasEditedRef       = useRef(false);
+
+  // This alias is used throughout the component below — keep it in sync
+  const exercise = solveExercise;
 
   useEffect(() => {
     if (exercise) {
@@ -108,6 +117,11 @@ export default function ExercisePage() {
     firstEditTimeRef.current = null;
     hasEditedRef.current = false;
   };
+
+  // Dispatch write-tests exercises — done here (after all hooks)
+  if (anyExercise?.format === "write-tests") {
+    return <WriteTestsPage exercise={anyExercise} />;
+  }
 
   if (!exercise) {
     return (

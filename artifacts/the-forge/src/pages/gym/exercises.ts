@@ -1,7 +1,9 @@
-import { Exercise } from "./types";
+import { Exercise, AnyExercise } from "./types";
+import { ALL_EXTRA_EXERCISES } from "./moreExercises";
+import { TEST_WRITING_EXERCISES, getTestWritingExerciseById } from "./testWritingExercises";
 
-export const EXERCISES: Exercise[] = [
-  // ── Tier 1: Foundations ─────────────────────────────────────────────────
+// ── Tier 1–2 Foundations (original exercises) ─────────────────────────────
+const FOUNDATION_EXERCISES: Exercise[] = [
   {
     id: "sum-array",
     tier: 1, category: "arrays",
@@ -180,7 +182,6 @@ export const EXERCISES: Exercise[] = [
     hints: ["Split the string into words first", "For each word: charAt(0).toUpperCase() + word.slice(1)"],
     tags: ["strings", "map"], estimatedMinutes: 8,
   },
-  // ── Tier 2: Patterns ────────────────────────────────────────────────────
   {
     id: "count-occurrences",
     tier: 2, category: "arrays",
@@ -211,7 +212,7 @@ export const EXERCISES: Exercise[] = [
     tier: 2, category: "objects",
     title: "Group By",
     tagline: "Sort objects into buckets by a key.",
-    description: "Write `groupBy(arr, key)` that groups an array of objects by the value of the given property key. Returns an object where each key is a unique value of that property.",
+    description: "Write `groupBy(arr, key)` that groups an array of objects by the value of the given property key.",
     why: "You will write this pattern every week on a real project. It appears in dashboards, reports, data processing — everywhere.",
     analogy: "Think of sorting mail by ZIP code. Each pile is a group.",
     examples: [
@@ -246,7 +247,6 @@ export const EXERCISES: Exercise[] = [
     why: "Nested data is everywhere — file systems, component trees, JSON responses. Knowing how to flatten it is a fundamental tool.",
     examples: [
       { input: "flattenArray([1, [2, [3, [4]]]])", output: "[1, 2, 3, 4]" },
-      { input: "flattenArray([1, 2, 3])", output: "[1, 2, 3]" },
     ],
     starterCode: `function flattenArray(arr) {\n  // no Array.flat allowed\n}`,
     functionName: "flattenArray",
@@ -274,13 +274,7 @@ export const EXERCISES: Exercise[] = [
     ],
     starterCode: `function memoize(fn) {\n  // return a new function that caches fn's results\n}`,
     functionName: "memoize",
-    testCases: [
-      {
-        args: [(x: number) => x * 2],
-        expected: 10,
-        label: "caches doubles",
-      },
-    ],
+    testCases: [{ args: [(x: number) => x * 2], expected: 10, label: "caches doubles" }],
     solution: `function memoize(fn) {\n  const cache = new Map();\n  return function(...args) {\n    const key = JSON.stringify(args);\n    if (cache.has(key)) return cache.get(key);\n    const result = fn.apply(this, args);\n    cache.set(key, result);\n    return result;\n  };\n}`,
     solutionExplanation: "Store a Map as a closure. On each call, JSON.stringify the args to make a cache key. Return from cache if found, otherwise compute and store.",
     hints: ["Use a closure to hold the cache", "JSON.stringify(args) makes a reliable cache key for simple arguments"],
@@ -295,7 +289,6 @@ export const EXERCISES: Exercise[] = [
     why: "Pagination, batch processing, grid layouts — chunking is a real operation you'll reach for constantly.",
     examples: [
       { input: "chunkArray([1,2,3,4,5], 2)", output: "[[1,2],[3,4],[5]]" },
-      { input: "chunkArray([1,2,3], 3)", output: "[[1,2,3]]" },
     ],
     starterCode: `function chunkArray(arr, size) {\n  // your code here\n}`,
     functionName: "chunkArray",
@@ -310,17 +303,15 @@ export const EXERCISES: Exercise[] = [
     hints: ["slice(i, i + size) extracts a portion of the array", "Increment i by size each iteration"],
     tags: ["arrays", "slice", "pagination"], estimatedMinutes: 10,
   },
-  // ── Tier 3: Real-World ───────────────────────────────────────────────────
   {
     id: "deep-equal",
     tier: 3, category: "objects",
     title: "Deep Equal",
     tagline: "Are these two objects actually the same?",
-    description: "Write `deepEqual(a, b)` that returns `true` if both values are deeply equal — including nested objects and arrays. `===` won't work here.",
+    description: "Write `deepEqual(a, b)` that returns `true` if both values are deeply equal — including nested objects and arrays.",
     why: "Testing, state comparison, React bailouts — deep equality is a tool that every serious developer needs to be able to build.",
     examples: [
       { input: "deepEqual({a:1,b:{c:2}}, {a:1,b:{c:2}})", output: "true" },
-      { input: "deepEqual({a:1}, {a:2})", output: "false" },
       { input: "deepEqual([1,[2,3]], [1,[2,3]])", output: "true" },
     ],
     starterCode: `function deepEqual(a, b) {\n  // your code here\n}`,
@@ -350,13 +341,7 @@ export const EXERCISES: Exercise[] = [
     ],
     starterCode: `function pipe(...fns) {\n  // return a function that runs value through each fn in order\n}`,
     functionName: "pipe",
-    testCases: [
-      {
-        args: [(x: number) => x + 1, (x: number) => x * 2],
-        expected: 8,
-        label: "add then multiply",
-      },
-    ],
+    testCases: [{ args: [(x: number) => x + 1, (x: number) => x * 2], expected: 8, label: "add then multiply" }],
     solution: `function pipe(...fns) {\n  return function(value) {\n    return fns.reduce((acc, fn) => fn(acc), value);\n  };\n}`,
     solutionExplanation: "Collect all functions with rest params, return a new function that uses reduce to thread the value through each function in sequence.",
     hints: ["Use rest params: ...fns", "reduce over the functions, passing the accumulated result to each next fn"],
@@ -375,11 +360,7 @@ export const EXERCISES: Exercise[] = [
     starterCode: `function deepClone(obj) {\n  // no JSON.stringify/parse\n}`,
     functionName: "deepClone",
     testCases: [
-      {
-        args: [{ a: { b: 1 }, c: [1, 2, 3] }],
-        expected: { a: { b: 1 }, c: [1, 2, 3] },
-        label: "clones nested object",
-      },
+      { args: [{ a: { b: 1 }, c: [1, 2, 3] }], expected: { a: { b: 1 }, c: [1, 2, 3] }, label: "clones nested object" },
       { args: [[1, [2, [3]]]], expected: [1, [2, [3]]], label: "clones nested array" },
       { args: [42], expected: 42, label: "primitive passthrough", hidden: true },
       { args: [null], expected: null, label: "null passthrough", hidden: true },
@@ -395,10 +376,9 @@ export const EXERCISES: Exercise[] = [
     title: "Template Engine",
     tagline: "Replace {{variables}} in a string.",
     description: "Write `template(str, data)` that replaces all `{{key}}` placeholders in the string with the corresponding value from the `data` object.",
-    why: "Email templates, notification messages, dynamic SQL — this pattern is everywhere. Understanding how template strings work under the hood makes you better at using them.",
+    why: "Email templates, notification messages, dynamic SQL — this pattern is everywhere.",
     examples: [
       { input: "template('Hello {{name}}!', {name: 'World'})", output: "'Hello World!'" },
-      { input: "template('{{a}} + {{b}} = {{c}}', {a:1, b:2, c:3})", output: "'1 + 2 = 3'" },
     ],
     starterCode: `function template(str, data) {\n  // your code here\n}`,
     functionName: "template",
@@ -410,18 +390,17 @@ export const EXERCISES: Exercise[] = [
     ],
     solution: `function template(str, data) {\n  return str.replace(/\\{\\{(\\w+)\\}\\}/g, (_, key) => data[key] ?? '');\n}`,
     solutionExplanation: "Use String.replace with a regex that matches {{word}}. The callback receives the full match and capture group (key), and returns the data value.",
-    hints: ["String.replace can take a function as the second argument", "The regex pattern is /\\{\\{(\\w+)\\}\\}/g — the \\w+ captures the key name"],
+    hints: ["String.replace can take a function as the second argument", "The regex pattern is /\\{\\{(\\w+)\\}\\}/g"],
     tags: ["regex", "strings", "templates"], estimatedMinutes: 12,
   },
-  // ── Tier 4: Algorithms ───────────────────────────────────────────────────
   {
     id: "binary-search",
     tier: 4, category: "algorithms",
     title: "Binary Search",
     tagline: "Find the target in O(log n) time.",
     description: "Write `binarySearch(arr, target)` that searches a sorted array and returns the index of the target. Return -1 if not found. No `indexOf`.",
-    why: "Binary search is the difference between searching 1 million records in 1 second vs 1ms. It's a fundamental algorithm.",
-    analogy: "Open a dictionary to the middle — if your word is alphabetically before that page, search the left half. Otherwise the right half. Repeat.",
+    why: "Binary search is the difference between searching 1 million records in 1 second vs 1ms.",
+    analogy: "Open a dictionary to the middle — if your word comes before that page, search left. Otherwise right.",
     examples: [
       { input: "binarySearch([1,3,5,7,9,11], 7)", output: "3" },
       { input: "binarySearch([1,3,5], 4)", output: "-1" },
@@ -436,7 +415,7 @@ export const EXERCISES: Exercise[] = [
       { args: [[1, 2, 3, 4, 5], 5], expected: 4, label: "last element", hidden: true },
     ],
     solution: `function binarySearch(arr, target) {\n  let lo = 0, hi = arr.length - 1;\n  while (lo <= hi) {\n    const mid = Math.floor((lo + hi) / 2);\n    if (arr[mid] === target) return mid;\n    if (arr[mid] < target) lo = mid + 1;\n    else hi = mid - 1;\n  }\n  return -1;\n}`,
-    solutionExplanation: "Maintain lo and hi pointers. At each step, check the midpoint. If target is larger, search right half. If smaller, search left half. If equal, found it.",
+    solutionExplanation: "Maintain lo and hi pointers. At each step, check the midpoint. If target is larger, search right half. If smaller, search left half.",
     hints: ["Keep a left and right pointer", "mid = Math.floor((lo + hi) / 2)", "If arr[mid] < target, search right: lo = mid + 1"],
     tags: ["binary-search", "O(log n)", "algorithms"], estimatedMinutes: 20,
   },
@@ -445,12 +424,11 @@ export const EXERCISES: Exercise[] = [
     tier: 4, category: "algorithms",
     title: "Two Sum",
     tagline: "Find the pair that adds to target.",
-    description: "Write `twoSum(nums, target)` that returns the indices of two numbers that add up to `target`. Assume exactly one solution. Do it in O(n) time.",
+    description: "Write `twoSum(nums, target)` that returns the indices of two numbers that add up to `target`. Solve in O(n) time.",
     why: "The most common interview question for a reason — it teaches you when to trade memory for time using a hash map.",
-    analogy: "Looking for a $100 bill. You check each bill and ask 'Is the complement already in my pocket?' — if yes, done.",
+    analogy: "Looking for a $100 bill. You check each bill and ask 'Is the complement already in my pocket?'",
     examples: [
       { input: "twoSum([2, 7, 11, 15], 9)", output: "[0, 1]", note: "2+7=9" },
-      { input: "twoSum([3, 2, 4], 6)", output: "[1, 2]", note: "2+4=6" },
     ],
     starterCode: `function twoSum(nums, target) {\n  // O(n) solution — use a Map\n}`,
     functionName: "twoSum",
@@ -470,8 +448,8 @@ export const EXERCISES: Exercise[] = [
     title: "Merge Sort",
     tagline: "Sort in O(n log n) with divide and conquer.",
     description: "Write `mergeSort(arr)` that sorts an array using the merge sort algorithm. Do not use the built-in sort.",
-    why: "Merge sort is the algorithm behind real-world sort implementations. Understanding it teaches divide-and-conquer — the most powerful algorithm design pattern.",
-    analogy: "Split your deck of cards in half, sort each half, then merge the two sorted halves together by always picking the smaller card.",
+    why: "Merge sort teaches divide-and-conquer — the most powerful algorithm design pattern.",
+    analogy: "Split your deck of cards in half, sort each half, then merge the two sorted halves together.",
     examples: [
       { input: "mergeSort([3, 1, 4, 1, 5, 9, 2, 6])", output: "[1, 1, 2, 3, 4, 5, 6, 9]" },
     ],
@@ -485,9 +463,20 @@ export const EXERCISES: Exercise[] = [
     ],
     solution: `function mergeSort(arr) {\n  if (arr.length <= 1) return arr;\n  const mid = Math.floor(arr.length / 2);\n  const left = mergeSort(arr.slice(0, mid));\n  const right = mergeSort(arr.slice(mid));\n  return merge(left, right);\n}\nfunction merge(left, right) {\n  const result = [];\n  let i = 0, j = 0;\n  while (i < left.length && j < right.length) {\n    if (left[i] <= right[j]) result.push(left[i++]);\n    else result.push(right[j++]);\n  }\n  return result.concat(left.slice(i), right.slice(j));\n}`,
     solutionExplanation: "Split the array in half, recursively sort each half, then merge the two sorted halves by picking the smallest element from each in order.",
-    hints: ["Base case: array of 0 or 1 elements is already sorted", "The merge step compares elements from two sorted arrays and picks the smaller one each time"],
+    hints: ["Base case: array of 0 or 1 elements is already sorted", "The merge step compares elements from two sorted arrays"],
     tags: ["recursion", "divide-and-conquer", "O(n log n)"], estimatedMinutes: 25,
   },
+];
+
+// ── Merged complete exercise list ────────────────────────────────────────────
+export const EXERCISES: Exercise[] = [
+  ...FOUNDATION_EXERCISES,
+  ...ALL_EXTRA_EXERCISES,
+];
+
+export const ALL_GYM_EXERCISES: AnyExercise[] = [
+  ...EXERCISES,
+  ...TEST_WRITING_EXERCISES,
 ];
 
 export function getExerciseById(id: string): Exercise | undefined {
@@ -496,4 +485,11 @@ export function getExerciseById(id: string): Exercise | undefined {
 
 export function getExercisesByTier(tier: number): Exercise[] {
   return EXERCISES.filter(e => e.tier === tier);
+}
+
+export function getAnyExerciseById(id: string): AnyExercise | undefined {
+  return (
+    EXERCISES.find(e => e.id === id) ??
+    getTestWritingExerciseById(id)
+  );
 }
