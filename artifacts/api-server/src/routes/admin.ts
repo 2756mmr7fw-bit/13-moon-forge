@@ -1,5 +1,4 @@
 import { Router } from "express";
-import { createClerkClient } from "@clerk/express";
 import { db, registryAppsTable, paymentsTable } from "@workspace/db";
 import { eq, desc, sql } from "drizzle-orm";
 
@@ -21,52 +20,43 @@ const ADMIN_EMAILS = new Set(
     .filter(Boolean)
 );
 
-// ─── Clerk client (only needed when ADMIN_EMAILS is set) ─────────────────────
-
-const clerkClient = createClerkClient({
-  secretKey: process.env.CLERK_SECRET_KEY ?? "",
-});
-
 // ─── Per-user admin cache (userId → { result, expiresAt }) ───────────────────
 
 const adminCache = new Map<string, { result: boolean; expiresAt: number }>();
 const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
-export async function isAdmin(userId: string): Promise<boolean> {
+export async function isAdmin(userId: string, userEmail?: string): Promise<boolean> {
   if (!userId || userId.startsWith("anon-")) return false;
 
   // Fast path: check by ID
   if (ADMIN_IDS.has(userId.toLowerCase())) return true;
 
-  // No email list configured — skip the Clerk lookup
+  // No email list configured — skip email lookup
   if (ADMIN_EMAILS.size === 0) return false;
 
   // Check cache
   const cached = adminCache.get(userId);
   if (cached && cached.expiresAt > Date.now()) return cached.result;
 
-  // Resolve email via Clerk backend API
-  try {
-    const user = await clerkClient.users.getUser(userId);
-    const emails = (user.emailAddresses ?? []).map((e) => e.emailAddress.toLowerCase());
-    const result = emails.some((email) => ADMIN_EMAILS.has(email));
+  // Check email from session (provided by Replit Auth / authMiddleware)
+  if (userEmail) {
+    const result = ADMIN_EMAILS.has(userEmail.toLowerCase());
     adminCache.set(userId, { result, expiresAt: Date.now() + CACHE_TTL_MS });
     return result;
-  } catch {
-    // Clerk lookup failed (user not found, network issue, etc.) — deny
-    return false;
   }
+
+  return false;
 }
 
 async function requireAdmin(req: any, res: any, next: any) {
-  const ok = await isAdmin(req.userId);
+  const ok = await isAdmin(req.userId, req.user?.email);
   if (!ok) return res.status(403).json({ error: "Forbidden" });
   next();
 }
 
 // ─── GET /api/admin/check ────────────────────────────────────────────────────
 router.get("/admin/check", async (req, res) => {
-  const ok = await isAdmin(req.userId);
+  const ok = await isAdmin(req.userId, req.user?.email);
   return res.json({ isAdmin: ok });
 });
 
