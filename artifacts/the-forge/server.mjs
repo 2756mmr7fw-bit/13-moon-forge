@@ -33,6 +33,7 @@ const MIME = {
 };
 
 function proxyToApi(req, res) {
+  console.log(`[forge-server] proxy → ${req.method} ${req.url}`);
   const options = {
     hostname: API_HOST,
     port: API_PORT,
@@ -42,15 +43,16 @@ function proxyToApi(req, res) {
   };
 
   const proxy = http.request(options, (apiRes) => {
+    console.log(`[forge-server] proxy ← ${apiRes.statusCode} ${req.url}`);
     res.writeHead(apiRes.statusCode, apiRes.headers);
     apiRes.pipe(res, { end: true });
   });
 
   proxy.on("error", (err) => {
-    console.error("[forge-server] proxy error:", err.message);
+    console.error(`[forge-server] proxy error ${req.url}:`, err.message);
     if (!res.headersSent) {
       res.writeHead(502, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ error: "API server unavailable" }));
+      res.end(JSON.stringify({ error: "API server unavailable", path: req.url }));
     }
   });
 
