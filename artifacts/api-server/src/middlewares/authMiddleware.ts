@@ -9,6 +9,7 @@ import {
   updateSession,
   type SessionData,
 } from "../lib/auth";
+import { logger } from "../lib/logger";
 
 declare global {
   namespace Express {
@@ -62,26 +63,32 @@ export async function authMiddleware(
     return this.user != null;
   } as Request["isAuthenticated"];
 
-  const sid = getSessionId(req);
-  if (!sid) {
-    next();
-    return;
-  }
+  try {
+    const sid = getSessionId(req);
+    if (!sid) {
+      next();
+      return;
+    }
 
-  const session = await getSession(sid);
-  if (!session?.user?.id) {
-    await clearSession(res, sid);
-    next();
-    return;
-  }
+    const session = await getSession(sid);
+    if (!session?.user?.id) {
+      await clearSession(res, sid);
+      next();
+      return;
+    }
 
-  const refreshed = await refreshIfExpired(sid, session);
-  if (!refreshed) {
-    await clearSession(res, sid);
-    next();
-    return;
-  }
+    const refreshed = await refreshIfExpired(sid, session);
+    if (!refreshed) {
+      await clearSession(res, sid);
+      next();
+      return;
+    }
 
-  req.user = refreshed.user;
-  next();
+    req.user = refreshed.user;
+    next();
+  } catch (err) {
+    // DB unavailable or session read failed — continue as unauthenticated
+    logger.warn({ err }, "authMiddleware: session lookup failed, continuing as anonymous");
+    next();
+  }
 }
