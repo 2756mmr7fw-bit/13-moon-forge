@@ -125,7 +125,17 @@ router.get("/auth/me", (req: Request, res: Response) => {
   );
 });
 
-router.get("/auth/login", async (req: Request, res: Response) => {
+// POST /auth/me — same as GET but bypasses the Replit production CDN,
+// which serves cached index.html for all GET requests.
+router.post("/auth/me", (req: Request, res: Response) => {
+  res.json(
+    GetCurrentAuthUserResponse.parse({
+      user: req.isAuthenticated() ? req.user : null,
+    }),
+  );
+});
+
+async function buildLoginResponse(req: Request, res: Response) {
   const config = await getOidcConfig();
   const callbackUrl = `${getOrigin(req)}/x-auth/callback`;
   const returnTo = getSafeReturnTo(req.query.returnTo);
@@ -150,7 +160,27 @@ router.get("/auth/login", async (req: Request, res: Response) => {
   setOidcCookie(res, "state", state);
   setOidcCookie(res, "return_to", returnTo);
 
-  res.redirect(redirectTo.href);
+  return redirectTo.href;
+}
+
+router.get("/auth/login", async (req: Request, res: Response) => {
+  try {
+    const loginUrl = await buildLoginResponse(req, res);
+    res.redirect(loginUrl);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to initiate login" });
+  }
+});
+
+// POST /auth/login — CDN-bypass: returns the OAuth URL as JSON instead of redirecting.
+// The client navigates to the external Replit OAuth URL directly.
+router.post("/auth/login", async (req: Request, res: Response) => {
+  try {
+    const loginUrl = await buildLoginResponse(req, res);
+    res.json({ loginUrl });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to initiate login" });
+  }
 });
 
 router.get("/auth/callback", async (req: Request, res: Response) => {
@@ -217,6 +247,78 @@ router.get("/auth/callback", async (req: Request, res: Response) => {
   res.redirect(returnTo);
 });
 
+// POST /auth/callback — CDN-bypass: SPA detects code/state in URL params and
+// POSTs them here to exchange for a session (instead of the GET redirect flow
+// that the CDN intercepts).
+router.post("/auth/callback", async (req: Request, res: Response) => {
+  try {
+    const config = await getOidcConfig();
+    const callbackUrl = `${getOrigin(req)}/x-auth/callback`;
+
+    const { code, state: incomingState, iss } = req.body as {
+      code?: string;
+      state?: string;
+      iss?: string;
+    };
+
+    const codeVerifier = req.cookies?.code_verifier;
+    const nonce = req.cookies?.nonce;
+    const expectedState = req.cookies?.state;
+
+    if (!code || !codeVerifier || !expectedState) {
+      res.status(400).json({ error: "Missing required parameters" });
+      return;
+    }
+
+    const currentUrl = new URL(callbackUrl);
+    currentUrl.searchParams.set("code", code);
+    if (incomingState) currentUrl.searchParams.set("state", incomingState);
+    if (iss) currentUrl.searchParams.set("iss", iss);
+
+    const tokens = await oidc.authorizationCodeGrant(config, currentUrl, {
+      pkceCodeVerifier: codeVerifier,
+      expectedNonce: nonce,
+      expectedState,
+      idTokenExpected: true,
+    });
+
+    const returnTo = getSafeReturnTo(req.cookies?.return_to);
+
+    res.clearCookie("code_verifier", { path: "/" });
+    res.clearCookie("nonce", { path: "/" });
+    res.clearCookie("state", { path: "/" });
+    res.clearCookie("return_to", { path: "/" });
+
+    const claims = tokens.claims();
+    if (!claims) {
+      res.status(401).json({ error: "No claims in ID token" });
+      return;
+    }
+
+    const dbUser = await upsertUser(claims as unknown as Record<string, unknown>);
+
+    const now = Math.floor(Date.now() / 1000);
+    const sessionData: SessionData = {
+      user: {
+        id: dbUser.id,
+        email: dbUser.email,
+        firstName: dbUser.firstName,
+        lastName: dbUser.lastName,
+        profileImageUrl: dbUser.profileImageUrl,
+      },
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token,
+      expires_at: tokens.expiresIn() ? now + tokens.expiresIn()! : claims.exp,
+    };
+
+    const sid = await createSession(sessionData);
+    setSessionCookie(res, sid);
+    res.json({ returnTo });
+  } catch (err) {
+    res.status(401).json({ error: "Callback exchange failed" });
+  }
+});
+
 router.get("/auth/logout", async (req: Request, res: Response) => {
   const config = await getOidcConfig();
   const origin = getOrigin(req);
@@ -229,6 +331,26 @@ router.get("/auth/logout", async (req: Request, res: Response) => {
   });
 
   res.redirect(endSessionUrl.href);
+});
+
+// POST /auth/logout — CDN-bypass: clears session and returns the logout URL
+// as JSON so the client can navigate to it (bypasses CDN GET interception).
+router.post("/auth/logout", async (req: Request, res: Response) => {
+  try {
+    const config = await getOidcConfig();
+    const origin = getOrigin(req);
+    const sid = getSessionId(req);
+    await clearSession(res, sid);
+
+    const endSessionUrl = oidc.buildEndSessionUrl(config, {
+      client_id: process.env.REPL_ID!,
+      post_logout_redirect_uri: origin,
+    });
+
+    res.json({ logoutUrl: endSessionUrl.href });
+  } catch {
+    res.json({ logoutUrl: "/" });
+  }
 });
 
 router.post("/mobile-auth/token-exchange", async (req: Request, res: Response) => {
