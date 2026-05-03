@@ -4,7 +4,7 @@ const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 export default function SignUpPage() {
   useEffect(() => {
-    window.location.href = `/api/replit-login?returnTo=${encodeURIComponent(basePath || "/")}`;
+    window.location.href = `/api/auth/login?returnTo=${encodeURIComponent(basePath || "/")}`;
   }, []);
 
   return (

@@ -117,7 +117,7 @@ async function upsertUser(claims: Record<string, unknown>) {
   return user;
 }
 
-router.get("/replit-user", (req: Request, res: Response) => {
+router.get("/auth/me", (req: Request, res: Response) => {
   res.json(
     GetCurrentAuthUserResponse.parse({
       user: req.isAuthenticated() ? req.user : null,
@@ -125,9 +125,9 @@ router.get("/replit-user", (req: Request, res: Response) => {
   );
 });
 
-router.get("/replit-login", async (req: Request, res: Response) => {
+router.get("/auth/login", async (req: Request, res: Response) => {
   const config = await getOidcConfig();
-  const callbackUrl = `${getOrigin(req)}/api/replit-callback`;
+  const callbackUrl = `${getOrigin(req)}/api/auth/callback`;
   const returnTo = getSafeReturnTo(req.query.returnTo);
 
   const state = oidc.randomState();
@@ -153,16 +153,16 @@ router.get("/replit-login", async (req: Request, res: Response) => {
   res.redirect(redirectTo.href);
 });
 
-router.get("/replit-callback", async (req: Request, res: Response) => {
+router.get("/auth/callback", async (req: Request, res: Response) => {
   const config = await getOidcConfig();
-  const callbackUrl = `${getOrigin(req)}/api/replit-callback`;
+  const callbackUrl = `${getOrigin(req)}/api/auth/callback`;
 
   const codeVerifier = req.cookies?.code_verifier;
   const nonce = req.cookies?.nonce;
   const expectedState = req.cookies?.state;
 
   if (!codeVerifier || !expectedState) {
-    res.redirect("/api/replit-login");
+    res.redirect("/api/auth/login");
     return;
   }
 
@@ -179,7 +179,7 @@ router.get("/replit-callback", async (req: Request, res: Response) => {
       idTokenExpected: true,
     });
   } catch {
-    res.redirect("/api/replit-login");
+    res.redirect("/api/auth/login");
     return;
   }
 
@@ -192,7 +192,7 @@ router.get("/replit-callback", async (req: Request, res: Response) => {
 
   const claims = tokens.claims();
   if (!claims) {
-    res.redirect("/api/replit-login");
+    res.redirect("/api/auth/login");
     return;
   }
 
@@ -217,7 +217,7 @@ router.get("/replit-callback", async (req: Request, res: Response) => {
   res.redirect(returnTo);
 });
 
-router.get("/replit-logout", async (req: Request, res: Response) => {
+router.get("/auth/logout", async (req: Request, res: Response) => {
   const config = await getOidcConfig();
   const origin = getOrigin(req);
   const sid = getSessionId(req);
