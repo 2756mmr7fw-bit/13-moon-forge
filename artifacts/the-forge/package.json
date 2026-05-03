@@ -76,7 +76,7 @@
     "zod": "catalog:"
   },
   "dependencies": {
-    "@clerk/react": "^6.4.2",
+    "@workspace/replit-auth-web": "workspace:*",
     "@monaco-editor/react": "^4.7.0",
     "file-saver": "^2.0.5",
     "jszip": "^3.10.1",

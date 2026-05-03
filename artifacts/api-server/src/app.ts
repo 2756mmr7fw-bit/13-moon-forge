@@ -1,9 +1,9 @@
 import express, { type Express } from "express";
 import cors from "cors";
 import compression from "compression";
+import cookieParser from "cookie-parser";
 import pinoHttp from "pino-http";
-import { clerkMiddleware, getAuth } from "@clerk/express";
-import { CLERK_PROXY_PATH, clerkProxyMiddleware } from "./middlewares/clerkProxyMiddleware";
+import { authMiddleware } from "./middlewares/authMiddleware";
 import router from "./routes";
 import { logger } from "./lib/logger";
 import { userIdMiddleware } from "./middlewares/userId";
@@ -42,8 +42,7 @@ app.use(
   }),
 );
 
-// Hard 10-second timeout for every request — must come BEFORE Clerk middleware
-// so it fires even if Clerk hangs on JWKS fetching
+// Hard 10-second timeout for every request
 app.use((req, res, next) => {
   const tid = setTimeout(() => {
     if (!res.headersSent) {
@@ -56,20 +55,19 @@ app.use((req, res, next) => {
   next();
 });
 
-// Clerk proxy must come before body parsers (streams raw bytes)
-app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
-
 app.use(compression());
 app.use(cors({ credentials: true, origin: true }));
+app.use(cookieParser());
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
-app.use(clerkMiddleware());
+// Auth middleware — reads session cookie, populates req.user
+app.use(authMiddleware);
+// User ID middleware — sets req.userId from session or anon header
 app.use(userIdMiddleware);
 
 // ─── Rate limiting ───────────────────────────────────────────────────────────
 
-// Global: 300 requests per 15 minutes per IP
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 300,
@@ -79,7 +77,6 @@ const globalLimiter = rateLimit({
   skip: (req) => req.path === "/api/health",
 });
 
-// AI routes: 60 requests per hour per IP (generous but bounded)
 const aiLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 60,
@@ -88,7 +85,6 @@ const aiLimiter = rateLimit({
   message: { error: "AI rate limit reached. Try again in an hour." },
 });
 
-// Secrets write ops: 30 per 15 minutes (prevents bulk scraping)
 const secretsWriteLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 30,
@@ -97,7 +93,6 @@ const secretsWriteLimiter = rateLimit({
   message: { error: "Too many secret operations. Please wait." },
 });
 
-// Auth-adjacent endpoints: 10 per 5 minutes per IP
 const authLimiter = rateLimit({
   windowMs: 5 * 60 * 1000,
   max: 10,
@@ -119,7 +114,6 @@ app.use("/api", (req, res, next) => {
   next();
 });
 
-// AI usage tracking — fire-and-forget increment on every POST to an AI route
 const AI_TRACKED_PATHS = ["/api/forge", "/api/flint", "/api/sage", "/api/hawk", "/api/moon",
   "/api/screen-coach", "/api/computer-advisor/analyze", "/api/site-forge/generate"];
 app.use(AI_TRACKED_PATHS, (req, _res, next) => {
@@ -143,8 +137,5 @@ app.use(["/api/secrets/import", "/api/secrets"], (req, res, next) => {
 app.use("/api/payments/checkout", authLimiter);
 
 app.use("/api", router);
-
-// The frontend (the-forge) is a separate artifact served by Vite.
-// The API server only handles /api routes — no static file fallback needed.
 
 export default app;

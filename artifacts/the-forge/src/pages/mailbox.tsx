@@ -6,7 +6,7 @@ import {
   Mail, Star, Trash2, RefreshCw, Inbox, ArrowLeft,
   Loader2, Copy, Check, Paperclip, FolderOpen, Forward,
 } from "lucide-react";
-import { useUser } from "@clerk/react";
+import { useAuth } from "@workspace/replit-auth-web";
 import { format } from "date-fns";
 
 const API = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -43,7 +43,7 @@ async function apiFetch(path: string, opts: RequestInit = {}) {
 }
 
 export default function ForgeInbox() {
-  const { user } = useUser();
+  const { user } = useAuth();
   const [folder, setFolder] = useState<Folder>("inbox");
   const [messages, setMessages] = useState<ForgeMessage[]>([]);
   const [selected, setSelected] = useState<ForgeMessage | null>(null);

@@ -1,4 +1,4 @@
-import { useAuth } from "@clerk/react";
+import { useAuth } from "@workspace/replit-auth-web";
 import { useLocation, Redirect } from "wouter";
 
 interface ProtectedRouteProps {
@@ -6,10 +6,10 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isSignedIn, isLoaded } = useAuth();
+  const { isAuthenticated, isLoading, login } = useAuth();
   const [location] = useLocation();
 
-  if (!isLoaded) {
+  if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -17,7 +17,8 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     );
   }
 
-  if (!isSignedIn) {
+  if (!isAuthenticated) {
+    void login;
     const returnPath = encodeURIComponent(location);
     return <Redirect to={`/sign-in?redirect_url=${returnPath}`} />;
   }

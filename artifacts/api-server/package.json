@@ -23,6 +23,7 @@
     "express": "^5",
     "express-rate-limit": "^8.3.2",
     "http-proxy-middleware": "^3.0.5",
+    "openid-client": "^6.8.4",
     "pdf-parse": "^2.4.5",
     "pino": "^9",
     "pino-http": "^10",

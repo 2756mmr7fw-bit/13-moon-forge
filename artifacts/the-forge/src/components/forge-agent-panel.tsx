@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { useAuth } from "@clerk/react";
+import { useAuth } from "@workspace/replit-auth-web";
 import {
   Flame, Send, Loader2, CheckCircle2, XCircle, Download,
   FileText, Globe, Plus, Sparkles, ChevronDown, Bot,
@@ -63,7 +63,7 @@ const QUICK_STARTS = [
 ];
 
 export function ForgeAgentPanel({ items, onFileCreated, onOpenFile, onClose, initialMessage, initialFileId }: ForgeAgentPanelProps) {
-  const { getToken } = useAuth();
+  
   const [messages, setMessages] = useState<AgentMessage[]>([]);
   const [input, setInput] = useState(initialMessage ?? "");
   const [loading, setLoading] = useState(false);
@@ -71,11 +71,8 @@ export function ForgeAgentPanel({ items, onFileCreated, onOpenFile, onClose, ini
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const authHeaders = useCallback(async (): Promise<Record<string, string>> => {
-    const token = await getToken();
-    return token
-      ? { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }
-      : { "Content-Type": "application/json" };
-  }, [getToken]);
+    return { "Content-Type": "application/json" };
+  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });

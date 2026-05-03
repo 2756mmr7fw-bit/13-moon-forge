@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Send, Wrench, AlertTriangle, CheckCircle2, CreditCard, ArrowRight, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@clerk/react";
+import { useAuth } from "@workspace/replit-auth-web";
 import { SpeakButton } from "@/components/speak-button";
 
 const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -18,7 +18,7 @@ Tell me what's happening — and I'll ask a couple of targeted questions before 
 What's the problem?`;
 
 export default function ComputerFix() {
-  const { getToken } = useAuth();
+  
   const [phase, setPhase] = useState<Phase>("diagnose");
   const [messages, setMessages] = useState<Msg[]>([{ role: "flint", text: FLINT_INTRO }]);
   const [input, setInput] = useState("");
@@ -58,12 +58,11 @@ export default function ComputerFix() {
     }
 
     try {
-      const token = await getToken();
+      
       const res = await fetch(`${API_BASE}${endpoint}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify(body),
       });
@@ -126,12 +125,11 @@ export default function ComputerFix() {
   async function startPayment() {
     setPaymentLoading(true);
     try {
-      const token = await getToken();
+      
       const res = await fetch(`${API_BASE}/api/fix/checkout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({}),
       });
@@ -151,12 +149,11 @@ export default function ComputerFix() {
     // In production this would verify the Square order ID from the redirect URL
     // For now we'll issue a session token directly after the user confirms payment
     try {
-      const token = await getToken();
+      
       const res = await fetch(`${API_BASE}/api/fix/activate`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({ orderId: `manual-${Date.now()}` }),
       });

@@ -1,3 +1,4 @@
+export * from "./auth";
 export * from "./forgeUsers";
 export * from "./projects";
 export * from "./payments";

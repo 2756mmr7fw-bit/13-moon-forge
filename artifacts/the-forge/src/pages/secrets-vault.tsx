@@ -16,10 +16,8 @@ import {
   ChevronDown, ChevronRight, Copy, Check, ShieldCheck, Info, AlertTriangle, RotateCcw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useUser, useAuth, Show } from "@clerk/react";
+import { useAuth } from "@workspace/replit-auth-web";
 import { Link } from "wouter";
-import { getAuthToken } from "@workspace/api-client-react";
-
 const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 const MIGRATION_KEY = "13moonforge_secrets_migrated";
 
@@ -29,11 +27,7 @@ function getAnonUserId() {
   return id;
 }
 
-async function headers(extra?: Record<string, string>): Promise<Record<string, string>> {
-  const token = await getAuthToken();
-  if (token) {
-    return { "Content-Type": "application/json", "Authorization": `Bearer ${token}`, ...extra };
-  }
+function headers(extra?: Record<string, string>): Record<string, string> {
   return { "Content-Type": "application/json", "x-user-id": getAnonUserId(), ...extra };
 }
 
@@ -456,8 +450,7 @@ function AppGroup({ appName, secrets, onDelete, onExport }: {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function SecretsVault() {
-  const { isSignedIn } = useUser();
-  const { getToken } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [secrets, setSecrets] = useState<Secret[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
@@ -479,15 +472,15 @@ export default function SecretsVault() {
   useEffect(() => {
     async function init() {
       // Migrate localStorage-UUID secrets to Clerk userId on first sign-in
-      if (isSignedIn) {
-        const token = await getToken();
+      if (isAuthenticated) {
+        
         const anonId = localStorage.getItem("13moonforge_user_id");
         const migrationDone = localStorage.getItem(MIGRATION_KEY);
-        if (token && anonId && !migrationDone) {
+        if (anonId && !migrationDone) {
           try {
             await fetch(`${API_BASE}/api/secrets/migrate`, {
               method: "POST",
-              headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+              headers: { "Content-Type": "application/json",  },
               body: JSON.stringify({ anonUserId: anonId }),
             });
             localStorage.setItem(MIGRATION_KEY, "done");
@@ -499,7 +492,7 @@ export default function SecretsVault() {
       await loadSecrets();
     }
     init();
-  }, [isSignedIn]);
+  }, [isAuthenticated]);
 
   function handleDelete(id: number) {
     setSecrets(prev => prev.filter(s => s.id !== id));
@@ -643,7 +636,7 @@ export default function SecretsVault() {
         </div>
       )}
 
-      <Show when="signed-out">
+      {!isAuthenticated && (
         <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm flex items-start gap-3">
           <Info size={16} className="text-amber-400 mt-0.5 shrink-0" />
           <div>
@@ -654,7 +647,7 @@ export default function SecretsVault() {
             </p>
           </div>
         </div>
-      </Show>
+      )}
     </div>
   );
 }

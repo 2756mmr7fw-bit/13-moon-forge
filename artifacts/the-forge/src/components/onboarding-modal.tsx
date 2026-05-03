@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { Sparkles, BookOpen, Crosshair, Flame, X, ArrowRight, Brain, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useAuth } from "@clerk/react";
+import { useAuth } from "@workspace/replit-auth-web";
 
 const FLAG = "13moonforge_onboarded";
 const API = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -55,7 +55,7 @@ export function OnboardingModal() {
   const [building, setBuilding] = useState("");
   const [saving, setSaving] = useState(false);
   const [, navigate] = useLocation();
-  const { getToken } = useAuth();
+  
 
   useEffect(() => {
     try {
@@ -77,12 +77,11 @@ export function OnboardingModal() {
     setSaving(true);
     try {
       if (name.trim() || building.trim()) {
-        const token = await getToken();
+        
         await fetch(`${API}/api/user/memory`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
           body: JSON.stringify({ name: name.trim() || undefined, building: building.trim() || undefined }),
         });
