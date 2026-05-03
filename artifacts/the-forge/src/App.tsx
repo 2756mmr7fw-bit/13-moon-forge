@@ -159,7 +159,7 @@ function ReferralClaimHandler() {
 
 function SignInPage() {
   useEffect(() => {
-    window.location.href = `/api/replit-login?returnTo=${encodeURIComponent(basePath || "/")}`;
+    window.location.href = `/api/auth/login?returnTo=${encodeURIComponent(basePath || "/")}`;
   }, []);
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
@@ -170,7 +170,7 @@ function SignInPage() {
 
 function SignUpPage() {
   useEffect(() => {
-    window.location.href = `/api/replit-login?returnTo=${encodeURIComponent(basePath || "/")}`;
+    window.location.href = `/api/auth/login?returnTo=${encodeURIComponent(basePath || "/")}`;
   }, []);
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">

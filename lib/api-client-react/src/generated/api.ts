@@ -44,7 +44,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * @summary Get current authenticated user
  */
 export const getGetCurrentAuthUserUrl = () => {
-  return `/api/replit-user`;
+  return `/api/auth/me`;
 };
 
 export const getCurrentAuthUser = async (
@@ -57,7 +57,7 @@ export const getCurrentAuthUser = async (
 };
 
 export const getGetCurrentAuthUserQueryKey = () => {
-  return [`/api/replit-user`] as const;
+  return [`/api/auth/me`] as const;
 };
 
 export const getGetCurrentAuthUserQueryOptions = <
