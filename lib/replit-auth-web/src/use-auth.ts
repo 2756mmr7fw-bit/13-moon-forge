@@ -11,21 +11,19 @@ interface AuthState {
   logout: () => void;
 }
 
-const AUTH_TIMEOUT_MS = 4000;
-
 export function useAuth(): AuthState {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
-    const controller = new AbortController();
 
-    const timeoutId = setTimeout(() => {
-      controller.abort();
-    }, AUTH_TIMEOUT_MS);
-
-    fetch("/x-auth/me", { credentials: "include", signal: controller.signal })
+    // POST bypasses the Replit CDN (which serves index.html for all GET requests).
+    fetch("/x-auth/me", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+    })
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json() as Promise<{ user: AuthUser | null }>;
@@ -41,25 +39,46 @@ export function useAuth(): AuthState {
           setUser(null);
           setIsLoading(false);
         }
-      })
-      .finally(() => {
-        clearTimeout(timeoutId);
       });
 
     return () => {
       cancelled = true;
-      controller.abort();
-      clearTimeout(timeoutId);
     };
   }, []);
 
   const login = useCallback(() => {
     const returnTo = window.location.pathname.replace(/\/$/, "") || "/";
-    window.location.href = `/x-auth/login?returnTo=${encodeURIComponent(returnTo)}`;
+    // POST to get the OAuth URL (bypasses CDN), then navigate to it.
+    fetch(`/x-auth/login?returnTo=${encodeURIComponent(returnTo)}`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+    })
+      .then((res) => res.json())
+      .then((data: { loginUrl?: string }) => {
+        if (data.loginUrl) {
+          window.location.href = data.loginUrl;
+        }
+      })
+      .catch(() => {
+        // fallback: direct GET navigation (works in dev where CDN is absent)
+        window.location.href = `/x-auth/login?returnTo=${encodeURIComponent(returnTo)}`;
+      });
   }, []);
 
   const logout = useCallback(() => {
-    window.location.href = "/x-auth/logout";
+    fetch("/x-auth/logout", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+    })
+      .then((res) => res.json())
+      .then((data: { logoutUrl?: string }) => {
+        window.location.href = data.logoutUrl ?? "/";
+      })
+      .catch(() => {
+        window.location.href = "/x-auth/logout";
+      });
   }, []);
 
   return {

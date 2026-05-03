@@ -157,10 +157,7 @@ function ReferralClaimHandler() {
   return null;
 }
 
-function SignInPage() {
-  useEffect(() => {
-    window.location.href = `/x-auth/login?returnTo=${encodeURIComponent(basePath || "/")}`;
-  }, []);
+function AuthSpinner() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
       <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -168,15 +165,68 @@ function SignInPage() {
   );
 }
 
+// POST to /x-auth/login to get the OAuth URL (bypasses CDN), then navigate.
+function initiateLogin() {
+  const returnTo = basePath || "/";
+  fetch(`/x-auth/login?returnTo=${encodeURIComponent(returnTo)}`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+  })
+    .then((res) => res.json())
+    .then((data: { loginUrl?: string }) => {
+      if (data.loginUrl) window.location.href = data.loginUrl;
+    })
+    .catch(() => {
+      window.location.href = `/x-auth/login?returnTo=${encodeURIComponent(returnTo)}`;
+    });
+}
+
+function SignInPage() {
+  useEffect(() => { initiateLogin(); }, []);
+  return <AuthSpinner />;
+}
+
 function SignUpPage() {
+  useEffect(() => { initiateLogin(); }, []);
+  return <AuthSpinner />;
+}
+
+// Handles the OAuth callback when Replit redirects back to /x-auth/callback.
+// The CDN serves index.html for this GET, so the SPA mounts, reads the code
+// from the URL, and POSTs it to Express to complete the exchange.
+function AuthCallback() {
+  const [, navigate] = useLocation();
+
   useEffect(() => {
-    window.location.href = `/x-auth/login?returnTo=${encodeURIComponent(basePath || "/")}`;
-  }, []);
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-    </div>
-  );
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    const state = params.get("state");
+    const iss = params.get("iss");
+
+    if (!code) {
+      navigate("/sign-in");
+      return;
+    }
+
+    fetch("/x-auth/callback", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code, state, iss }),
+    })
+      .then((res) => res.json())
+      .then((data: { returnTo?: string; error?: string }) => {
+        if (data.error) {
+          navigate("/sign-in");
+        } else {
+          window.location.href = data.returnTo ?? "/";
+        }
+      })
+      .catch(() => navigate("/sign-in"));
+  }, [navigate]);
+
+  return <AuthSpinner />;
 }
 
 function Router() {
@@ -184,6 +234,7 @@ function Router() {
     <ErrorBoundary>
     <Suspense fallback={<PageLoader />}>
       <Switch>
+        <Route path="/x-auth/callback" component={AuthCallback} />
         <Route path="/sign-in/*?" component={SignInPage} />
         <Route path="/sign-up/*?" component={SignUpPage} />
         <Route path="/share/:id" component={ShareView} />
