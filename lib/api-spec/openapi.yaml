@@ -19,7 +19,7 @@ tags:
   - name: dashboard
     description: Dashboard summary endpoints
 paths:
-  /me:
+  /replit-user:
     get:
       operationId: getCurrentAuthUser
       tags: [auth]
