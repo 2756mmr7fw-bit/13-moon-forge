@@ -61,6 +61,17 @@ app.use(cookieParser());
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
+// CDN-bypass rewrite: In production the Replit CDN routes POST requests for
+// /x-auth/* directly to this Express server (port 8080) instead of going
+// through server.mjs which would rewrite them to /api/auth/*.
+// We replicate that rewrite here so the /api/auth/* handlers respond.
+app.use((req, _res, next) => {
+  if (req.method === "POST" && req.url.startsWith("/x-auth/")) {
+    req.url = "/api/auth/" + req.url.slice("/x-auth/".length);
+  }
+  next();
+});
+
 // Auth middleware — reads session cookie, populates req.user
 app.use(authMiddleware);
 // User ID middleware — sets req.userId from session or anon header
