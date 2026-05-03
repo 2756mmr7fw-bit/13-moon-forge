@@ -32,27 +32,28 @@ const MIME = {
   ".pdf": "application/pdf",
 };
 
-function proxyToApi(req, res) {
-  console.log(`[forge-server] proxy → ${req.method} ${req.url}`);
+function proxyToApi(req, res, overridePath) {
+  const targetPath = overridePath || req.url;
+  console.log(`[forge-server] proxy → ${req.method} ${targetPath}`);
   const options = {
     hostname: API_HOST,
     port: API_PORT,
-    path: req.url,
+    path: targetPath,
     method: req.method,
     headers: { ...req.headers, host: `${API_HOST}:${API_PORT}` },
   };
 
   const proxy = http.request(options, (apiRes) => {
-    console.log(`[forge-server] proxy ← ${apiRes.statusCode} ${req.url}`);
+    console.log(`[forge-server] proxy ← ${apiRes.statusCode} ${targetPath}`);
     res.writeHead(apiRes.statusCode, apiRes.headers);
     apiRes.pipe(res, { end: true });
   });
 
   proxy.on("error", (err) => {
-    console.error(`[forge-server] proxy error ${req.url}:`, err.message);
+    console.error(`[forge-server] proxy error ${targetPath}:`, err.message);
     if (!res.headersSent) {
       res.writeHead(502, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ error: "API server unavailable", path: req.url }));
+      res.end(JSON.stringify({ error: "API server unavailable", path: targetPath }));
     }
   });
 
@@ -104,6 +105,14 @@ function serveIndex(res) {
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
   const pathname = url.pathname;
+  const search = url.search || "";
+
+  // /x-auth/* bypasses the platform CDN by routing through this server
+  // and rewriting the path to /api/auth/* before forwarding to Express.
+  if (pathname.startsWith("/x-auth/") || pathname === "/x-auth") {
+    const rewritten = pathname.replace(/^\/x-auth/, "/api/auth") + search;
+    return proxyToApi(req, res, rewritten);
+  }
 
   if (pathname.startsWith("/api") || pathname.startsWith("/api/")) {
     return proxyToApi(req, res);

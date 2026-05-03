@@ -127,7 +127,7 @@ router.get("/auth/me", (req: Request, res: Response) => {
 
 router.get("/auth/login", async (req: Request, res: Response) => {
   const config = await getOidcConfig();
-  const callbackUrl = `${getOrigin(req)}/api/auth/callback`;
+  const callbackUrl = `${getOrigin(req)}/x-auth/callback`;
   const returnTo = getSafeReturnTo(req.query.returnTo);
 
   const state = oidc.randomState();
@@ -155,14 +155,14 @@ router.get("/auth/login", async (req: Request, res: Response) => {
 
 router.get("/auth/callback", async (req: Request, res: Response) => {
   const config = await getOidcConfig();
-  const callbackUrl = `${getOrigin(req)}/api/auth/callback`;
+  const callbackUrl = `${getOrigin(req)}/x-auth/callback`;
 
   const codeVerifier = req.cookies?.code_verifier;
   const nonce = req.cookies?.nonce;
   const expectedState = req.cookies?.state;
 
   if (!codeVerifier || !expectedState) {
-    res.redirect("/api/auth/login");
+    res.redirect("/x-auth/login");
     return;
   }
 
@@ -179,7 +179,7 @@ router.get("/auth/callback", async (req: Request, res: Response) => {
       idTokenExpected: true,
     });
   } catch {
-    res.redirect("/api/auth/login");
+    res.redirect("/x-auth/login");
     return;
   }
 
@@ -192,7 +192,7 @@ router.get("/auth/callback", async (req: Request, res: Response) => {
 
   const claims = tokens.claims();
   if (!claims) {
-    res.redirect("/api/auth/login");
+    res.redirect("/x-auth/login");
     return;
   }
 

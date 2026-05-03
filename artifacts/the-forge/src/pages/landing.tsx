@@ -114,7 +114,12 @@ export default function Landing() {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, streaming]);
 
-  if (isLoading || isAuthenticated) return null;
+  if (isLoading) return (
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+    </div>
+  );
+  if (isAuthenticated) return null;
 
   async function sendMessage() {
     const text = input.trim();

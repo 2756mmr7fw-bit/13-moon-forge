@@ -18,7 +18,7 @@ export function useAuth(): AuthState {
   useEffect(() => {
     let cancelled = false;
 
-    fetch("/api/auth/me", { credentials: "include" })
+    fetch("/x-auth/me", { credentials: "include" })
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json() as Promise<{ user: AuthUser | null }>;
@@ -43,11 +43,11 @@ export function useAuth(): AuthState {
 
   const login = useCallback(() => {
     const returnTo = window.location.pathname.replace(/\/$/, "") || "/";
-    window.location.href = `/api/auth/login?returnTo=${encodeURIComponent(returnTo)}`;
+    window.location.href = `/x-auth/login?returnTo=${encodeURIComponent(returnTo)}`;
   }, []);
 
   const logout = useCallback(() => {
-    window.location.href = "/api/auth/logout";
+    window.location.href = "/x-auth/logout";
   }, []);
 
   return {

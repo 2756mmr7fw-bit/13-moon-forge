@@ -48,12 +48,24 @@ export default defineConfig({
       strict: true,
       deny: ["**/.*"],
     },
+    proxy: {
+      "/x-auth": {
+        target: "http://localhost:8080",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/x-auth/, "/api/auth"),
+      },
+    },
   },
   preview: {
     port,
     host: "0.0.0.0",
     allowedHosts: true,
     proxy: {
+      "/x-auth": {
+        target: "http://localhost:8080",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/x-auth/, "/api/auth"),
+      },
       "/api": {
         target: "http://localhost:8080",
         changeOrigin: true,
