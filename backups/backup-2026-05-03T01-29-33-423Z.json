@@ -1,0 +1,49 @@
+{
+  "forge_users": [],
+  "user_identities": [],
+  "projects": [],
+  "pages": [],
+  "page_revisions": [],
+  "plans": [],
+  "payments": [],
+  "server_connections": [],
+  "registry_apps": [],
+  "gitlab_connections": [],
+  "bitbucket_connections": [],
+  "github_connections": [],
+  "app_secrets": [],
+  "message_usage": [],
+  "workspace_items": [],
+  "workspace_item_versions": [],
+  "forge_mailbox": [],
+  "forge_mail_attachments": [],
+  "user_tpts_links": [],
+  "moon_entitlements": [],
+  "chat_sessions": [],
+  "saved_prompts": [],
+  "shared_outputs": [],
+  "gallery_reactions": [],
+  "user_memory": [],
+  "referrals": [],
+  "debug_test_sessions": [],
+  "debug_test_results": [],
+  "debug_level_progress": [],
+  "debug_streaks": [],
+  "debug_teach_back": [],
+  "debug_daily_challenges": [],
+  "debug_daily_attempts": [],
+  "debug_achievements": [],
+  "academy_drill_results": [],
+  "gym_attempts": [],
+  "learning_profiles": [],
+  "_meta": [
+    {
+      "backedUpAt": "2026-05-03T01:29:34.592Z",
+      "totalRows": 0,
+      "skipped": [
+        "mailbox"
+      ],
+      "source": "ep-floral-tree-ampquxw6.c-5.us-east-1.aws.neon.tech/neondb?sslmode=require"
+    }
+  ]
+}
