@@ -19,7 +19,7 @@ tags:
   - name: dashboard
     description: Dashboard summary endpoints
 paths:
-  /auth/user:
+  /me:
     get:
       operationId: getCurrentAuthUser
       tags: [auth]
