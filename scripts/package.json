@@ -6,6 +6,7 @@
   "scripts": {
     "hello": "tsx ./src/hello.ts",
     "backup": "tsx ./src/backup.ts",
+    "sync-to-prod": "tsx ./src/syncToProd.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
