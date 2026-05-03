@@ -1,0 +1,243 @@
+{
+  "forge_users": [],
+  "user_identities": [],
+  "projects": [
+    {
+      "id": 1,
+      "name": "My Portfolio",
+      "description": "Personal portfolio showcasing design and development work",
+      "status": "published",
+      "template": "Portfolio",
+      "created_at": "2026-03-29T15:23:39.165Z",
+      "updated_at": "2026-04-02T15:23:39.165Z",
+      "domain": null,
+      "live_url": null,
+      "github_url": null,
+      "connected_services": null
+    },
+    {
+      "id": 2,
+      "name": "Luminary Coffee Co.",
+      "description": "Specialty coffee roaster website with story, menu and shop",
+      "status": "draft",
+      "template": "Business",
+      "created_at": "2026-03-31T15:23:39.165Z",
+      "updated_at": "2026-04-03T13:23:39.165Z",
+      "domain": null,
+      "live_url": null,
+      "github_url": null,
+      "connected_services": null
+    },
+    {
+      "id": 3,
+      "name": "The Midnight Blog",
+      "description": "Writing and thoughts on technology, creativity, and craft",
+      "status": "draft",
+      "template": "Blog",
+      "created_at": "2026-04-02T15:23:39.165Z",
+      "updated_at": "2026-04-03T14:53:39.165Z",
+      "domain": null,
+      "live_url": null,
+      "github_url": null,
+      "connected_services": null
+    }
+  ],
+  "pages": [
+    {
+      "id": 1,
+      "project_id": 1,
+      "title": "Home",
+      "slug": "home",
+      "content": "Welcome to my portfolio. I design and build things for the web.",
+      "order": 0,
+      "created_at": "2026-03-29T15:23:50.057Z",
+      "updated_at": "2026-04-02T15:23:50.057Z",
+      "meta_title": null,
+      "meta_description": null
+    },
+    {
+      "id": 2,
+      "project_id": 1,
+      "title": "Work",
+      "slug": "work",
+      "content": "A collection of my best projects and case studies.",
+      "order": 1,
+      "created_at": "2026-03-29T15:23:50.057Z",
+      "updated_at": "2026-04-02T15:23:50.057Z",
+      "meta_title": null,
+      "meta_description": null
+    },
+    {
+      "id": 3,
+      "project_id": 1,
+      "title": "About",
+      "slug": "about",
+      "content": "I am a designer and developer based in New York.",
+      "order": 2,
+      "created_at": "2026-03-30T15:23:50.057Z",
+      "updated_at": "2026-04-01T15:23:50.057Z",
+      "meta_title": null,
+      "meta_description": null
+    },
+    {
+      "id": 4,
+      "project_id": 2,
+      "title": "Home",
+      "slug": "home",
+      "content": "Welcome to Luminary Coffee Co. We roast small batch specialty coffee.",
+      "order": 0,
+      "created_at": "2026-03-31T15:23:50.057Z",
+      "updated_at": "2026-04-03T13:23:50.057Z",
+      "meta_title": null,
+      "meta_description": null
+    },
+    {
+      "id": 5,
+      "project_id": 2,
+      "title": "Our Story",
+      "slug": "story",
+      "content": "Founded in 2020, Luminary started as a passion project.",
+      "order": 1,
+      "created_at": "2026-03-31T15:23:50.057Z",
+      "updated_at": "2026-04-03T13:23:50.057Z",
+      "meta_title": null,
+      "meta_description": null
+    },
+    {
+      "id": 6,
+      "project_id": 3,
+      "title": "Home",
+      "slug": "home",
+      "content": "Welcome to The Midnight Blog. Thoughts on technology and craft.",
+      "order": 0,
+      "created_at": "2026-04-02T15:23:50.057Z",
+      "updated_at": "2026-04-03T14:53:50.057Z",
+      "meta_title": null,
+      "meta_description": null
+    }
+  ],
+  "page_revisions": [],
+  "plans": [],
+  "payments": [],
+  "server_connections": [],
+  "registry_apps": [],
+  "gitlab_connections": [],
+  "bitbucket_connections": [],
+  "github_connections": [],
+  "app_secrets": [
+    {
+      "id": 1,
+      "user_id": "test-user-123",
+      "app_name": "My Antivirus App",
+      "service_name": "VPN Provider",
+      "key_name": "VPN_API_KEY",
+      "encrypted_value": "4458482d1f8c7672afa907c4:baf06aab44fbd030f08231b70624cec236:e61dcb534163e3e742e0163c28ef28f2",
+      "notes": "Production key",
+      "created_at": "2026-04-20T22:29:46.514Z",
+      "updated_at": "2026-04-20T22:29:46.514Z"
+    }
+  ],
+  "message_usage": [
+    {
+      "id": 1,
+      "user_id": "anon-7bef3238-edc0-4548-8c98-0575cdd22fb0",
+      "month": "2026-04",
+      "count": 1,
+      "updated_at": "2026-04-28T01:59:24.077Z"
+    },
+    {
+      "id": 2,
+      "user_id": "anon-c1838f97-974e-41c9-b137-9c42f887c031",
+      "month": "2026-04",
+      "count": 1,
+      "updated_at": "2026-04-28T13:04:16.179Z"
+    },
+    {
+      "id": 3,
+      "user_id": "anon-9ac321e4-ff3c-4ac9-8d5f-0a199d05bfd2",
+      "month": "2026-04",
+      "count": 1,
+      "updated_at": "2026-04-28T13:35:47.101Z"
+    }
+  ],
+  "workspace_items": [],
+  "workspace_item_versions": [],
+  "forge_mailbox": [
+    {
+      "id": 1,
+      "user_id": "anon-bdc14773-2b37-48d8-b461-a8413ad676cb",
+      "from_name": "Forge",
+      "from_address": "forge@13moonforge.ai",
+      "subject": "Welcome to your Forge Mailbox",
+      "body": "Hey, welcome to your Forge inbox.\n\nThis is your personal mailbox inside 13 Moon Forge. A few things you can do here:\n\n• Send notes to yourself — ideas, reminders, links, whatever you need to capture\n• Forge (and the Moons) may send you important updates here\n• Your Forge email address is yours — it's tied to your account\n\nYour address is shown at the top of this mailbox. Right now incoming email from outside isn't hooked up yet, but the inbox is fully operational for in-app messages.\n\nStay sovereign.\n\n— Forge",
+      "read": false,
+      "starred": false,
+      "folder": "inbox",
+      "created_at": "2026-04-26T12:39:56.427Z"
+    },
+    {
+      "id": 2,
+      "user_id": "anon-c548334b-8ae9-435e-ac00-e666982477aa",
+      "from_name": "Forge",
+      "from_address": "forge@13moonforge.ai",
+      "subject": "Welcome to your Forge Mailbox",
+      "body": "Hey, welcome to your Forge inbox.\n\nThis is your personal mailbox inside 13 Moon Forge. A few things you can do here:\n\n• Send notes to yourself — ideas, reminders, links, whatever you need to capture\n• Forge (and the Moons) may send you important updates here\n• Your Forge email address is yours — it's tied to your account\n\nYour address is shown at the top of this mailbox. Right now incoming email from outside isn't hooked up yet, but the inbox is fully operational for in-app messages.\n\nStay sovereign.\n\n— Forge",
+      "read": false,
+      "starred": false,
+      "folder": "inbox",
+      "created_at": "2026-05-01T23:45:21.040Z"
+    },
+    {
+      "id": 3,
+      "user_id": "anon-6ef08ceb-c047-4122-b77a-35a292ed135e",
+      "from_name": "Forge",
+      "from_address": "forge@13moonforge.ai",
+      "subject": "Welcome to your Forge Mailbox",
+      "body": "Hey, welcome to your Forge inbox.\n\nThis is your personal mailbox inside 13 Moon Forge. A few things you can do here:\n\n• Send notes to yourself — ideas, reminders, links, whatever you need to capture\n• Forge (and the Moons) may send you important updates here\n• Your Forge email address is yours — it's tied to your account\n\nYour address is shown at the top of this mailbox. Right now incoming email from outside isn't hooked up yet, but the inbox is fully operational for in-app messages.\n\nStay sovereign.\n\n— Forge",
+      "read": false,
+      "starred": false,
+      "folder": "inbox",
+      "created_at": "2026-05-01T23:45:21.394Z"
+    }
+  ],
+  "forge_mail_attachments": [],
+  "user_tpts_links": [],
+  "moon_entitlements": [],
+  "chat_sessions": [],
+  "saved_prompts": [],
+  "shared_outputs": [
+    {
+      "id": "a5530022-95f8-42c3-a2a1-aea428289ecc",
+      "user_id": "test-123",
+      "moon_id": "brainstorm",
+      "title": "Test",
+      "content": "Hello world",
+      "is_public": true,
+      "created_at": "2026-04-28T12:39:33.772Z"
+    }
+  ],
+  "gallery_reactions": [],
+  "user_memory": [],
+  "referrals": [],
+  "debug_test_sessions": [],
+  "debug_test_results": [],
+  "debug_level_progress": [],
+  "debug_streaks": [],
+  "debug_teach_back": [],
+  "debug_daily_challenges": [],
+  "debug_daily_attempts": [],
+  "debug_achievements": [],
+  "academy_drill_results": [],
+  "gym_attempts": [],
+  "learning_profiles": [],
+  "_meta": [
+    {
+      "backedUpAt": "2026-05-03T01:07:19.443Z",
+      "totalRows": 17,
+      "skipped": [
+        "mailbox"
+      ],
+      "source": "helium/heliumdb?sslmode=disable"
+    }
+  ]
+}
