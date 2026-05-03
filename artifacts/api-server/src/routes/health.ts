@@ -8,4 +8,8 @@ router.get("/healthz", (_req, res) => {
   res.json(data);
 });
 
+router.get("/healthz/trace", (_req, res) => {
+  res.json({ trace: true, ts: Date.now(), pid: process.pid });
+});
+
 export default router;
