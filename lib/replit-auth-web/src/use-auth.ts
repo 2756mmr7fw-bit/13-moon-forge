@@ -11,14 +11,21 @@ interface AuthState {
   logout: () => void;
 }
 
+const AUTH_TIMEOUT_MS = 4000;
+
 export function useAuth(): AuthState {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
+    const controller = new AbortController();
 
-    fetch("/x-auth/me", { credentials: "include" })
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+    }, AUTH_TIMEOUT_MS);
+
+    fetch("/x-auth/me", { credentials: "include", signal: controller.signal })
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json() as Promise<{ user: AuthUser | null }>;
@@ -34,10 +41,15 @@ export function useAuth(): AuthState {
           setUser(null);
           setIsLoading(false);
         }
+      })
+      .finally(() => {
+        clearTimeout(timeoutId);
       });
 
     return () => {
       cancelled = true;
+      controller.abort();
+      clearTimeout(timeoutId);
     };
   }, []);
 
