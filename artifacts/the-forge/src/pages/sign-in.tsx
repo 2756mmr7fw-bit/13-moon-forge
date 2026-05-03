@@ -1,17 +1,15 @@
-import { SignIn } from "@clerk/react";
+import { useEffect } from "react";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 export default function SignInPage() {
-  // To update login providers, app branding, or OAuth settings use the Auth
-  // pane in the workspace toolbar. More information can be found in the Replit docs.
+  useEffect(() => {
+    window.location.href = `/api/login?returnTo=${encodeURIComponent(basePath || "/")}`;
+  }, []);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <SignIn
-        routing="path"
-        path={`${basePath}/sign-in`}
-        signUpUrl={`${basePath}/sign-up`}
-      />
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
     </div>
   );
 }

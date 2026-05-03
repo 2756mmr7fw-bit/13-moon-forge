@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
-import { useAuth } from "@clerk/react";
+import { useAuth } from "@workspace/replit-auth-web";
 import { LogoMark } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import {
@@ -94,7 +94,7 @@ You're welcome here. No catch, no pressure. You've got 30 free messages right no
 Tell me what's going on — a broken computer, a website you want to build, a contract you can't make sense of, anything. What do you need?`;
 
 export default function Landing() {
-  const { isSignedIn, isLoaded } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const [, setLocation] = useLocation();
 
   const [messages, setMessages] = useState<ChatMsg[]>([
@@ -107,14 +107,14 @@ export default function Landing() {
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (isLoaded && isSignedIn) setLocation("/dashboard");
-  }, [isLoaded, isSignedIn, setLocation]);
+    if (!isLoading && isAuthenticated) setLocation("/dashboard");
+  }, [isLoading, isAuthenticated, setLocation]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, streaming]);
 
-  if (!isLoaded || isSignedIn) return null;
+  if (isLoading || isAuthenticated) return null;
 
   async function sendMessage() {
     const text = input.trim();

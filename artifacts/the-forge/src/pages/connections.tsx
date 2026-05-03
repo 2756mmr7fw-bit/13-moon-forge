@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useAuth } from "@clerk/react";
+import { useAuth } from "@workspace/replit-auth-web";
 import { Link } from "wouter";
 import {
   RefreshCw, Loader2, CheckCircle2, XCircle, AlertCircle, AlertTriangle,
@@ -55,16 +55,12 @@ interface Deployment {
 // ─── Shared auth fetcher ──────────────────────────────────────────────────────
 
 function useApiFetch<T>(key: string[], path: string, enabled = true) {
-  const { getToken } = useAuth();
   return useQuery<T>({
     queryKey: key,
     enabled,
     staleTime: 60_000,
     queryFn: async () => {
-      const token = await getToken();
-      const r = await fetch(`${API_BASE}${path}`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
+      const r = await fetch(`${API_BASE}${path}`, { credentials: "include" });
       if (!r.ok) throw new Error(`${r.status}`);
       return r.json();
     },
@@ -366,7 +362,7 @@ function MoonCard({ slug, data }: {
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function Connections() {
-  const { getToken } = useAuth();
+  
 
   const { data, isLoading, isError, refetch, isFetching } = useApiFetch<ConnectionsData>(
     ["connections"], "/api/connections"

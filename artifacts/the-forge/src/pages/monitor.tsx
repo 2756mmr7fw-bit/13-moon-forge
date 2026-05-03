@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useAuth } from "@clerk/react";
+import { useAuth } from "@workspace/replit-auth-web";
 import {
   AlertTriangle, CheckCircle2, XCircle, AlertCircle,
   RefreshCw, Loader2, Activity, Server, ExternalLink,
@@ -388,7 +388,7 @@ function AlertRow({ alert }: { alert: MonitorData["alerts"][0] }) {
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function Monitor() {
-  const { getToken } = useAuth();
+  
   const [data, setData]       = useState<MonitorData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState<string | null>(null);
@@ -397,9 +397,9 @@ export default function Monitor() {
 
   const fetchStatus = useCallback(async () => {
     try {
-      const token = await getToken();
+      
       const r = await fetch(`${API_BASE}/api/monitor/status`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        credentials: "include",
       });
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       const d = await r.json() as MonitorData;
@@ -412,7 +412,7 @@ export default function Monitor() {
     } finally {
       setLoading(false);
     }
-  }, [getToken]);
+  }, []);
 
   useEffect(() => {
     fetchStatus();

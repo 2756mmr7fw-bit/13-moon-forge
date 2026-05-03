@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { getAuthToken } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -27,12 +26,11 @@ interface StatusData {
 }
 
 async function authFetch(url: string, opts: RequestInit = {}) {
-  const token = await getAuthToken();
   return fetch(url, {
     ...opts,
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(opts.headers ?? {}),
     },
   });

@@ -9,7 +9,7 @@ import {
 import { cn } from "@/lib/utils";
 import { LogoMark, LogoWordmark } from "@/components/logo";
 import { OnboardingModal } from "@/components/onboarding-modal";
-import { useUser, useClerk, useAuth, Show } from "@clerk/react";
+import { useAuth } from "@workspace/replit-auth-web";
 import { SkillLevelBadge, SkillLevelDialog } from "@/components/skill-level-selector";
 import { CommandPalette, useCommandPalette } from "@/components/command-palette";
 
@@ -29,22 +29,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [skillOpen, setSkillOpen] = useState(false);
   const { open: cmdOpen, setOpen: setCmdOpen } = useCommandPalette();
-  const { user } = useUser();
-  const { signOut } = useClerk();
-  const { getToken } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   const location = useLocation()[0];
 
   useEffect(() => {
     (async () => {
       try {
-        const token = await getToken();
         const r = await fetch(`${API_BASE}/api/admin/check`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          credentials: "include",
         });
         if (r.ok) { const d = await r.json() as { isAdmin: boolean }; setIsAdmin(d.isAdmin); }
       } catch { /* not admin or not logged in */ }
     })();
-  }, [getToken]);
+  }, [isAuthenticated]);
 
   // ── Navigation items ──────────────────────────────────────────────────────
 
@@ -126,24 +123,24 @@ export function Layout({ children }: { children: React.ReactNode }) {
   // ── User panel ─────────────────────────────────────────────────────────────
 
   const UserPanel = ({ onNavigate }: { onNavigate?: () => void }) => (
-    <Show when="signed-in">
+    isAuthenticated ? (
       <div className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted transition-colors">
-        {user?.imageUrl
-          ? <img src={user.imageUrl} alt="" className="w-8 h-8 rounded-full" />
+        {user?.profileImageUrl
+          ? <img src={user.profileImageUrl} alt="" className="w-8 h-8 rounded-full" />
           : <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center"><User size={14} className="text-primary" /></div>
         }
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-semibold truncate">{user?.firstName ?? user?.username ?? "My Account"}</p>
-          <p className="text-[10px] text-muted-foreground truncate">{user?.emailAddresses?.[0]?.emailAddress}</p>
+          <p className="text-xs font-semibold truncate">{user?.firstName ?? "My Account"}</p>
+          <p className="text-[10px] text-muted-foreground truncate">{user?.email}</p>
         </div>
         <div className="flex items-center gap-1">
-            <Link href="/account" onClick={onNavigate} title="Account settings">
+          <Link href="/account" onClick={onNavigate} title="Account settings">
             <button className="p-1.5 rounded hover:bg-muted-foreground/20 transition-colors">
               <Settings size={13} className="text-muted-foreground" />
             </button>
           </Link>
           <button
-            onClick={() => signOut()}
+            onClick={() => logout()}
             title="Sign out"
             className="p-1.5 rounded hover:bg-muted-foreground/20 transition-colors"
           >
@@ -151,7 +148,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </button>
         </div>
       </div>
-    </Show>
+    ) : null
   );
 
   // ── Sidebar content ────────────────────────────────────────────────────────
@@ -209,7 +206,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <ExternalLink size={18} />
             Our Other Apps
           </a>
-          <Show when="signed-out">
+          {!isAuthenticated && (
             <Link
               href="/sign-in"
               onClick={onClose}
@@ -218,7 +215,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <LogIn size={18} />
               Sign In
             </Link>
-          </Show>
+          )}
           {isAdmin && (
             <NavLink href="/admin" label="Admin Panel" icon={ShieldAlert} tip="Review and manage app registry submissions" onClick={onClose} />
           )}

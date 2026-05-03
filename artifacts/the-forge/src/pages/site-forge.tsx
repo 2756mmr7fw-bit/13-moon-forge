@@ -9,7 +9,7 @@ import {
   ChevronDown, ChevronRight, Sparkles, Layers, Tag,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@clerk/react";
+import { useAuth } from "@workspace/replit-auth-web";
 import { Link } from "wouter";
 import { HelpPanel } from "@/components/help-panel";
 
@@ -193,7 +193,7 @@ const LOADING_MESSAGES = [
 ];
 
 export default function SiteForge() {
-  const { getToken } = useAuth();
+  
   const [phase, setPhase] = useState<Phase>("form");
   const [loadingMsg, setLoadingMsg] = useState(0);
   const [generatedHtml, setGeneratedHtml] = useState("");
@@ -243,12 +243,11 @@ export default function SiteForge() {
     setLoadingMsg(0);
 
     try {
-      const token = await getToken();
+      
       const res = await fetch(`${API_BASE}/api/site-forge/generate`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify(form),
       });

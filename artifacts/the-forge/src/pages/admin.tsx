@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useAuth } from "@clerk/react";
+import { useAuth } from "@workspace/replit-auth-web";
 import {
   CheckCircle2, XCircle, Trash2, ExternalLink, Loader2, Shield,
   Clock, Package, RefreshCw, Github, Container, Users, DollarSign,
@@ -48,15 +48,14 @@ function StatusBadge({ status }: { status: string }) {
 
 export default function AdminPanel() {
   const [tab, setTab] = useState<Tab>("pending");
-  const { getToken } = useAuth();
+  
   const { toast } = useToast();
   const qc = useQueryClient();
 
   async function authHeaders() {
-    const token = await getToken();
+    
     return {
       "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     };
   }
 

@@ -9,7 +9,7 @@ import {
   PlusCircle, FolderOpen, MonitorPlay, Monitor, Swords, GraduationCap,
   Zap, TrendingUp, Flame, Brain,
 } from "lucide-react";
-import { useUser, useAuth } from "@clerk/react";
+import { useAuth } from "@workspace/replit-auth-web";
 import { useEffect, useState } from "react";
 import { useStreak } from "@/hooks/useStreak";
 
@@ -25,20 +25,16 @@ interface QuotaData {
 }
 
 function useQuota() {
-  const { getToken } = useAuth();
   const [quota, setQuota] = useState<QuotaData | null>(null);
 
   useEffect(() => {
     (async () => {
       try {
-        const token = await getToken();
-        const res = await fetch(`${API_BASE}/api/quota`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
+        const res = await fetch(`${API_BASE}/api/quota`, { credentials: "include" });
         if (res.ok) setQuota(await res.json() as QuotaData);
       } catch { /* silent */ }
     })();
-  }, [getToken]);
+  }, []);
 
   return quota;
 }
@@ -139,24 +135,22 @@ interface ScoreData {
   outputs: number;
 }
 function useForgeScore() {
-  const { getToken } = useAuth();
+  
   const [data, setData] = useState<ScoreData | null>(null);
   useEffect(() => {
     (async () => {
       try {
-        const token = await getToken();
-        const res = await fetch(`${API_BASE}/api/score`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
+        const res = await fetch(`${API_BASE}/api/score`, { credentials: "include" });
         if (res.ok) setData(await res.json() as ScoreData);
       } catch { /* silent */ }
     })();
-  }, [getToken]);
+  }, []);
+
   return data;
 }
 
 export default function Dashboard() {
-  const { user, isLoaded } = useUser();
+  const { user, isLoading } = useAuth();
   const quota = useQuota();
   const pulse = usePulse();
   const forgeScore = useForgeScore();
@@ -169,7 +163,7 @@ export default function Dashboard() {
     query: { queryKey: getGetRecentProjectsQueryKey() }
   });
 
-  const firstName = isLoaded ? (user?.firstName ?? user?.username) : null;
+  const firstName = !isLoading ? (user?.firstName ?? null) : null;
   const moonUsage = useMoonUsage();
   const streak = useStreak();
 

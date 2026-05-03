@@ -1,8 +1,7 @@
-import { lazy, Suspense, useEffect, useRef, Component, type ReactNode, type ErrorInfo } from "react";
+import { lazy, Suspense, useEffect, Component, type ReactNode, type ErrorInfo } from "react";
 import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
-import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
-import { ClerkProvider, SignIn, SignUp, useClerk, useAuth } from "@clerk/react";
-import { setAuthTokenGetter } from "@workspace/api-client-react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useAuth } from "@workspace/replit-auth-web";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Layout } from "@/components/layout";
@@ -19,7 +18,8 @@ const Projects         = lazy(() => import("@/pages/projects"));
 const NewProject       = lazy(() => import("@/pages/new-project"));
 const ProjectDetail    = lazy(() => import("@/pages/project-detail"));
 const PageEditor       = lazy(() => import("@/pages/page-editor"));
-const Pricing          = lazy(() => import("@/pages/pricing"));
+const Pricing          = lazy(() => import("@/pages/payment-success").then(m => ({ default: m.default })).catch(() => import("@/pages/pricing")));
+const PricingPage      = lazy(() => import("@/pages/pricing"));
 const PaymentSuccess   = lazy(() => import("@/pages/payment-success"));
 const Brainstorm       = lazy(() => import("@/pages/brainstorm"));
 const CodeForge        = lazy(() => import("@/pages/code-forge"));
@@ -77,65 +77,9 @@ const LogReader        = lazy(() => import("@/pages/academy/LogReader"));
 const GymHub           = lazy(() => import("@/pages/gym/GymHub"));
 const GymExercise      = lazy(() => import("@/pages/gym/ExercisePage"));
 
-const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-// In production, always route Clerk through our own domain proxy so it works
-// on custom domains without CNAME setup. Computed at runtime so no build-time
-// env var is needed. In dev (import.meta.env.PROD === false) leave undefined
-// since dev Clerk instances don't support proxying.
-const clerkProxyUrl =
-  import.meta.env.VITE_CLERK_PROXY_URL ||
-  (import.meta.env.PROD
-    ? `${window.location.origin}/api/__clerk`
-    : undefined);
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
-
-function stripBase(path: string): string {
-  return basePath && path.startsWith(basePath)
-    ? path.slice(basePath.length) || "/"
-    : path;
-}
-
-const clerkAppearance = {
-  options: {
-    logoPlacement: "inside" as const,
-    logoLinkUrl: basePath || "/",
-    logoImageUrl: `${window.location.origin}${basePath}/logo.svg`,
-  },
-  variables: {
-    colorPrimary: "hsl(20, 90%, 55%)",
-    colorBackground: "hsl(0, 0%, 10%)",
-    colorInputBackground: "hsl(0, 0%, 14%)",
-    colorText: "hsl(0, 0%, 96%)",
-    colorTextSecondary: "hsl(0, 0%, 60%)",
-    colorInputText: "hsl(0, 0%, 96%)",
-    colorNeutral: "hsl(0, 0%, 40%)",
-    borderRadius: "0.625rem",
-  },
-  elements: {
-    rootBox: "w-full",
-    cardBox: "shadow-2xl rounded-2xl w-full overflow-hidden border border-white/10",
-    card: "!shadow-none !border-0 !bg-transparent !rounded-none",
-    footer: "!shadow-none !border-0 !bg-transparent !rounded-none",
-    headerTitle: { color: "hsl(0, 0%, 96%)", fontWeight: "800" },
-    headerSubtitle: { color: "hsl(0, 0%, 60%)" },
-    socialButtonsBlockButtonText: { color: "hsl(0, 0%, 96%)" },
-    formFieldLabel: { color: "hsl(0, 0%, 70%)", fontSize: "0.75rem", fontWeight: "600" },
-    footerActionLink: { color: "hsl(20, 90%, 55%)" },
-    footerActionText: { color: "hsl(0, 0%, 60%)" },
-    dividerText: { color: "hsl(0, 0%, 50%)" },
-    identityPreviewEditButton: { color: "hsl(20, 90%, 55%)" },
-    formFieldSuccessText: { color: "hsl(142, 70%, 50%)" },
-    alertText: { color: "hsl(0, 0%, 80%)" },
-    logoBox: "flex justify-center py-2",
-    logoImage: "h-12 w-12",
-    socialButtonsBlockButton: "border-white/10 hover:border-white/20 !bg-white/5",
-    formButtonPrimary: "bg-primary hover:bg-primary/90 text-white font-bold",
-    formFieldInput: "bg-muted/30 border-white/10 text-foreground",
-    footerAction: "border-t border-white/10",
-    dividerLine: "bg-white/10",
-    main: "gap-5",
-  },
-};
+const API_BASE = basePath;
+const REFERRAL_CLAIMED_KEY = "forge:referral:claimed";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -152,8 +96,7 @@ function PageLoader() {
   );
 }
 
-// Catches chunk-load failures and any other render errors — shows a simple
-// "tap to reload" screen instead of a blank black page.
+// Catches chunk-load failures and any other render errors
 interface EBState { error: Error | null }
 class ErrorBoundary extends Component<{ children: ReactNode }, EBState> {
   state: EBState = { error: null };
@@ -187,47 +130,11 @@ class ErrorBoundary extends Component<{ children: ReactNode }, EBState> {
   }
 }
 
-function ClerkQueryClientCacheInvalidator() {
-  const { addListener } = useClerk();
-  const qc = useQueryClient();
-  const prevUserIdRef = useRef<string | null | undefined>(undefined);
-
-  useEffect(() => {
-    const unsub = addListener(({ user }) => {
-      const uid = user?.id ?? null;
-      if (prevUserIdRef.current !== undefined && prevUserIdRef.current !== uid) {
-        qc.clear();
-      }
-      prevUserIdRef.current = uid;
-    });
-    return unsub;
-  }, [addListener, qc]);
-
-  return null;
-}
-
-function ClerkTokenInitializer() {
-  const { getToken, isSignedIn } = useAuth();
-
-  useEffect(() => {
-    if (isSignedIn) {
-      setAuthTokenGetter(() => getToken());
-    } else {
-      setAuthTokenGetter(null);
-    }
-  }, [isSignedIn, getToken]);
-
-  return null;
-}
-
-const REFERRAL_CLAIMED_KEY = "forge:referral:claimed";
-const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
-
 function ReferralClaimHandler() {
-  const { getToken, isSignedIn } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
-    if (!isSignedIn) return;
+    if (!isAuthenticated) return;
     try {
       if (localStorage.getItem(REFERRAL_CLAIMED_KEY)) return;
       const params = new URLSearchParams(window.location.search);
@@ -235,46 +142,39 @@ function ReferralClaimHandler() {
       if (!ref) return;
       (async () => {
         try {
-          const token = await getToken();
           await fetch(`${API_BASE}/api/referral/claim`, {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ code: ref }),
           });
           localStorage.setItem(REFERRAL_CLAIMED_KEY, "1");
         } catch { /* silent */ }
       })();
     } catch { /* silent */ }
-  }, [isSignedIn, getToken]);
+  }, [isAuthenticated]);
 
   return null;
 }
 
 function SignInPage() {
+  useEffect(() => {
+    window.location.href = `/api/login?returnTo=${encodeURIComponent(basePath || "/")}`;
+  }, []);
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <SignIn
-        routing="path"
-        path={`${basePath}/sign-in`}
-        signUpUrl={`${basePath}/sign-up`}
-        fallbackRedirectUrl={`${basePath}/dashboard`}
-      />
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
     </div>
   );
 }
 
 function SignUpPage() {
+  useEffect(() => {
+    window.location.href = `/api/login?returnTo=${encodeURIComponent(basePath || "/")}`;
+  }, []);
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <SignUp
-        routing="path"
-        path={`${basePath}/sign-up`}
-        signInUrl={`${basePath}/sign-in`}
-        fallbackRedirectUrl={`${basePath}/dashboard`}
-      />
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
     </div>
   );
 }
@@ -292,7 +192,7 @@ function Router() {
           <Layout>
             <Switch>
               {/* ── Public routes ── */}
-              <Route path="/pricing" component={Pricing} />
+              <Route path="/pricing" component={PricingPage} />
               <Route path="/promise" component={Promise} />
               <Route path="/academy" component={Academy} />
               <Route path="/payment/success" component={PaymentSuccess} />
@@ -371,34 +271,10 @@ function Router() {
   );
 }
 
-function ClerkProviderWithRoutes() {
-  const [, setLocation] = useLocation();
-
+function App() {
   return (
-    <ClerkProvider
-      publishableKey={clerkPubKey}
-      proxyUrl={clerkProxyUrl}
-      appearance={clerkAppearance}
-      localization={{
-        signIn: {
-          start: {
-            title: "Welcome back to Forge",
-            subtitle: "Sign in to your sovereign workspace",
-          },
-        },
-        signUp: {
-          start: {
-            title: "Join 13 Moon Forge",
-            subtitle: "Build and own your digital infrastructure",
-          },
-        },
-      }}
-      routerPush={(to) => setLocation(stripBase(to))}
-      routerReplace={(to) => setLocation(stripBase(to), { replace: true })}
-    >
+    <WouterRouter base={basePath}>
       <QueryClientProvider client={queryClient}>
-        <ClerkQueryClientCacheInvalidator />
-        <ClerkTokenInitializer />
         <ReferralClaimHandler />
         <WelcomeTour />
         <TooltipProvider>
@@ -406,14 +282,6 @@ function ClerkProviderWithRoutes() {
           <Toaster />
         </TooltipProvider>
       </QueryClientProvider>
-    </ClerkProvider>
-  );
-}
-
-function App() {
-  return (
-    <WouterRouter base={basePath}>
-      <ClerkProviderWithRoutes />
     </WouterRouter>
   );
 }

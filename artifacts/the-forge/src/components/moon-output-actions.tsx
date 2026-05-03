@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { useLocation } from "wouter";
-import { useAuth } from "@clerk/react";
+import { useAuth } from "@workspace/replit-auth-web";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
@@ -34,18 +34,15 @@ interface MoonOutputActionsProps {
 
 export function MoonOutputActions({ content, moonId, title, className }: MoonOutputActionsProps) {
   const [, navigate] = useLocation();
-  const { getToken } = useAuth();
+  
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [shareId, setShareId] = useState<string | null>(null);
 
   const authHeaders = useCallback(async (): Promise<Record<string, string>> => {
-    const token = await getToken();
-    return token
-      ? { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }
-      : { "Content-Type": "application/json" };
-  }, [getToken]);
+    return { "Content-Type": "application/json" };
+  }, []);
 
   async function saveToWorkspace() {
     if (!content.trim()) return;

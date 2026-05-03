@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, DragEvent } from "react";
-import { useAuth } from "@clerk/react";
+import { useAuth } from "@workspace/replit-auth-web";
 import { HelpPanel } from "@/components/help-panel";
 import { ForgeAgentPanel } from "@/components/forge-agent-panel";
 import JSZip from "jszip";
@@ -63,7 +63,7 @@ function ItemIcon({ item, open, size = 16 }: { item: WItem; open?: boolean; size
 }
 
 export default function Workspace() {
-  const { getToken } = useAuth();
+  
   const { toast } = useToast();
 
   const [items, setItems] = useState<WItem[]>([]);
@@ -95,14 +95,12 @@ export default function Workspace() {
   const [searching, setSearching] = useState(false);
 
   const authHeaders = useCallback(async (): Promise<Record<string, string>> => {
-    const token = await getToken();
-    return token ? { Authorization: `Bearer ${token}`, "Content-Type": "application/json" } : { "Content-Type": "application/json" };
-  }, [getToken]);
+    return { "Content-Type": "application/json" };
+  }, []);
 
   const load = useCallback(async () => {
     try {
-      const headers = await authHeaders();
-      const res = await fetch(`${API_BASE}/api/workspace`, { headers });
+      const res = await fetch(`${API_BASE}/api/workspace`, { headers: await authHeaders(), credentials: "include" });
       if (res.ok) setItems(await res.json());
     } catch { /* silent */ }
     finally { setLoading(false); }

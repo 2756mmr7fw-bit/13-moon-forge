@@ -1,36 +1,14 @@
 import { useState, useEffect } from "react";
-import { UserProfile, useUser } from "@clerk/react";
-import { Show } from "@clerk/react";
 import { Link } from "wouter";
-import { ExternalLink, Shield, CreditCard, LogIn, Link2, CheckCircle2, Loader2, X, AlertCircle, Mail, Send, Brain, Save, Trophy, Users, Copy, Check, Zap } from "lucide-react";
+import { ExternalLink, Shield, CreditCard, LogIn, Link2, CheckCircle2, Loader2, X, AlertCircle, Mail, Send, Brain, Save, Trophy, Users, Copy, Check, Zap, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useAuth } from "@clerk/react";
+import { useAuth } from "@workspace/replit-auth-web";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 const API = basePath;
 
-const clerkAppearance = {
-  variables: {
-    colorPrimary: "hsl(20, 90%, 55%)",
-    colorBackground: "hsl(0, 0%, 10%)",
-    colorInputBackground: "hsl(0, 0%, 14%)",
-    colorText: "hsl(0, 0%, 96%)",
-    colorTextSecondary: "hsl(0, 0%, 60%)",
-    colorInputText: "hsl(0, 0%, 96%)",
-    colorNeutral: "hsl(0, 0%, 40%)",
-    borderRadius: "0.625rem",
-  },
-  elements: {
-    rootBox: "w-full",
-    cardBox: "w-full shadow-none border border-border bg-transparent",
-    card: "!shadow-none !border-0 !bg-transparent",
-    navbar: "!border-r !border-border",
-    navbarButton: "!rounded-md",
-    pageScrollBox: "!pt-0",
-  },
-};
 
 function TptsEmailLinker() {
   const [linked, setLinked]     = useState<string | null>(null);
@@ -251,7 +229,7 @@ function ForgeReportCard({ email, firstName }: { email: string; firstName?: stri
 
 // ─── Memory Card ─────────────────────────────────────────────────────────────
 function MemoryCard() {
-  const { getToken } = useAuth();
+  
   const [name, setName] = useState("");
   const [building, setBuilding] = useState("");
   const [role, setRole] = useState("");
@@ -263,9 +241,9 @@ function MemoryCard() {
   useEffect(() => {
     (async () => {
       try {
-        const token = await getToken();
+        
         const res = await fetch(`${API}/api/user/memory`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          credentials: "include",
         });
         if (res.ok) {
           const data = await res.json() as { name?: string; building?: string; role?: string; preferences?: string };
@@ -278,18 +256,15 @@ function MemoryCard() {
         setLoaded(true);
       }
     })();
-  }, [getToken]);
+  }, []);
 
   const save = async () => {
     setSaving(true);
     try {
-      const token = await getToken();
       await fetch(`${API}/api/user/memory`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, building, role, preferences }),
       });
       setSaved(true);
@@ -376,19 +351,19 @@ function getNextTier(score: number) {
 interface ScoreData { score: number; tier: string; tierColor: string; messages: number; projects: number; outputs: number; }
 
 function ForgeScoreCard() {
-  const { getToken } = useAuth();
+  
   const [data, setData] = useState<ScoreData | null>(null);
   const API_BASE = basePath;
 
   useEffect(() => {
     (async () => {
       try {
-        const token = await getToken();
-        const res = await fetch(`${API_BASE}/api/score`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+        const res = await fetch(`${API_BASE}/api/score`, { credentials: "include" });
         if (res.ok) setData(await res.json());
       } catch { /* silent */ }
     })();
-  }, [getToken]);
+  }, []);
+
 
   if (!data) return null;
 
@@ -432,7 +407,7 @@ function ForgeScoreCard() {
 interface ReferralData { code: string; referralUrl: string; successfulReferrals: number; bonusMessages: number; }
 
 function ReferralCard() {
-  const { getToken } = useAuth();
+  
   const [data, setData] = useState<ReferralData | null>(null);
   const [copied, setCopied] = useState(false);
   const API_BASE = basePath;
@@ -440,12 +415,12 @@ function ReferralCard() {
   useEffect(() => {
     (async () => {
       try {
-        const token = await getToken();
-        const res = await fetch(`${API_BASE}/api/referral`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+        
+        const res = await fetch(`${API_BASE}/api/referral`, { credentials: "include" });
         if (res.ok) setData(await res.json());
       } catch { /* silent */ }
     })();
-  }, [getToken]);
+  }, []);
 
   function copy() {
     if (!data) return;
@@ -490,118 +465,14 @@ function ReferralCard() {
 }
 
 export default function AccountPage() {
-  const { user, isLoaded } = useUser();
+  const { user, isLoading, isAuthenticated, logout } = useAuth();
 
-  return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Account</h1>
-        <p className="text-muted-foreground mt-1">
-          Manage your profile, security, and subscription.
-        </p>
-      </div>
-
-      <Show when="signed-in">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left column */}
-          <div className="lg:col-span-1 space-y-4">
-
-            {/* Forge Score */}
-            <ForgeScoreCard />
-
-            {/* Referral */}
-            <ReferralCard />
-
-            {/* Memory — Tell Forge About You */}
-            <MemoryCard />
-
-            {/* TPTS email linker — most prominent if they have moons */}
-            <TptsEmailLinker />
-
-            {/* Forge Report */}
-            {isLoaded && user?.primaryEmailAddress?.emailAddress && (
-              <ForgeReportCard
-                email={user.primaryEmailAddress.emailAddress}
-                firstName={user.firstName ?? undefined}
-              />
-            )}
-
-            {/* Subscription card */}
-            <div className="rounded-xl border border-border bg-card p-5 space-y-4">
-              <div className="flex items-center gap-2">
-                <Shield size={16} className="text-primary" />
-                <h2 className="font-semibold text-sm">Subscription</h2>
-              </div>
-              <div className="space-y-2">
-                <div className="text-xs text-muted-foreground">
-                  Manage your Moon subscriptions and billing through the Town Square.
-                </div>
-                <a
-                  href="https://thepeoplestownsq.com/account"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
-                >
-                  Open Town Square Account <ExternalLink size={11} />
-                </a>
-              </div>
-
-              <hr className="border-border" />
-
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <CreditCard size={16} className="text-primary" />
-                  <h3 className="font-semibold text-sm">Upgrade Plan</h3>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Subscribe to individual Moons or get all-access for the full Forge suite.
-                </p>
-                <Link href="/pricing">
-                  <Button size="sm" variant="outline" className="w-full text-xs mt-1">
-                    View Plans
-                  </Button>
-                </Link>
-              </div>
-            </div>
-
-            {isLoaded && user && (
-              <div className="rounded-xl border border-border bg-card p-5 space-y-3">
-                <h2 className="font-semibold text-sm">Quick Info</h2>
-                <div className="space-y-2 text-xs">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Name</span>
-                    <span className="font-medium">{user.fullName ?? "—"}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Forge email</span>
-                    <span className="font-medium truncate max-w-[160px]">
-                      {user.primaryEmailAddress?.emailAddress ?? "—"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Member since</span>
-                    <span className="font-medium">
-                      {user.createdAt
-                        ? new Date(user.createdAt).toLocaleDateString("en-US", { month: "short", year: "numeric" })
-                        : "—"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Clerk UserProfile — takes the remaining 2/3 */}
-          <div className="lg:col-span-2">
-            <UserProfile
-              routing="hash"
-              appearance={clerkAppearance}
-            />
-          </div>
+  if (!isAuthenticated && !isLoading) {
+    return (
+      <div className="space-y-8 animate-in fade-in duration-500">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Account</h1>
         </div>
-      </Show>
-
-      <Show when="signed-out">
         <div className="flex flex-col items-center justify-center py-24 gap-4">
           <div className="text-center space-y-2">
             <h2 className="text-xl font-bold">Sign in to view your account</h2>
@@ -613,7 +484,139 @@ export default function AccountPage() {
             </Button>
           </Link>
         </div>
-      </Show>
+      </div>
+    );
+  }
+
+  const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(" ") || "—";
+
+  return (
+    <div className="space-y-8 animate-in fade-in duration-500">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Account</h1>
+        <p className="text-muted-foreground mt-1">
+          Manage your profile, security, and subscription.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left column */}
+        <div className="lg:col-span-1 space-y-4">
+
+          {/* Forge Score */}
+          <ForgeScoreCard />
+
+          {/* Referral */}
+          <ReferralCard />
+
+          {/* Memory — Tell Forge About You */}
+          <MemoryCard />
+
+          {/* TPTS email linker */}
+          <TptsEmailLinker />
+
+          {/* Forge Report */}
+          {user?.email && (
+            <ForgeReportCard
+              email={user.email}
+              firstName={user.firstName ?? undefined}
+            />
+          )}
+
+          {/* Subscription card */}
+          <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+            <div className="flex items-center gap-2">
+              <Shield size={16} className="text-primary" />
+              <h2 className="font-semibold text-sm">Subscription</h2>
+            </div>
+            <div className="space-y-2">
+              <div className="text-xs text-muted-foreground">
+                Manage your Moon subscriptions and billing through the Town Square.
+              </div>
+              <a
+                href="https://thepeoplestownsq.com/account"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+              >
+                Open Town Square Account <ExternalLink size={11} />
+              </a>
+            </div>
+
+            <hr className="border-border" />
+
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <CreditCard size={16} className="text-primary" />
+                <h3 className="font-semibold text-sm">Upgrade Plan</h3>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Subscribe to individual Moons or get all-access for the full Forge suite.
+              </p>
+              <Link href="/pricing">
+                <Button size="sm" variant="outline" className="w-full text-xs mt-1">
+                  View Plans
+                </Button>
+              </Link>
+            </div>
+          </div>
+
+          {user && (
+            <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+              <h2 className="font-semibold text-sm">Quick Info</h2>
+              <div className="space-y-2 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Name</span>
+                  <span className="font-medium">{fullName}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Email</span>
+                  <span className="font-medium truncate max-w-[160px]">{user.email ?? "—"}</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right column — Profile info (replaces Clerk UserProfile) */}
+        <div className="lg:col-span-2 space-y-4">
+          <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              {user?.profileImageUrl
+                ? <img src={user.profileImageUrl} alt="" className="w-14 h-14 rounded-full" />
+                : <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center"><User size={24} className="text-primary" /></div>
+              }
+              <div>
+                <p className="font-bold text-lg">{fullName}</p>
+                <p className="text-sm text-muted-foreground">{user?.email ?? "—"}</p>
+              </div>
+            </div>
+            <hr className="border-border" />
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Your profile is managed by your Replit account. To update your name, email, or avatar, visit your Replit profile settings.
+            </p>
+            <div className="flex gap-2 pt-1">
+              <a
+                href="https://replit.com/account"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button size="sm" variant="outline" className="gap-1.5 text-xs">
+                  <ExternalLink size={12} /> Edit Replit Profile
+                </Button>
+              </a>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="gap-1.5 text-xs text-muted-foreground"
+                onClick={() => logout()}
+              >
+                <LogIn size={12} className="rotate-180" /> Sign Out
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

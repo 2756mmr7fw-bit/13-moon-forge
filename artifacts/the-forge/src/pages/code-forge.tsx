@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
-import { useAuth } from "@clerk/react";
+import { useAuth } from "@workspace/replit-auth-web";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -301,16 +301,15 @@ function FormatTab() {
   const [showRules, setShowRules] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const { getToken } = useAuth();
+  
   const formatted = formatCode(input, platform);
 
   const saveToWorkspace = async () => {
     if (!formatted || saving) return;
     setSaving(true);
     try {
-      const token = await getToken();
+      
       const headers: Record<string, string> = { "Content-Type": "application/json" };
-      if (token) headers.Authorization = `Bearer ${token}`;
       const platformLabel = PLATFORMS.find(p => p.id === platform)?.label ?? platform;
       const name = `${platformLabel} — ${new Date().toLocaleDateString()}`;
       const content = `\`\`\`${platform}\n${formatted}\n\`\`\``;
@@ -540,7 +539,7 @@ function OrganizeTab() {
   const [analyzeError, setAnalyzeError] = useState<{ message: string; subscribeUrl?: string } | null>(null);
   const [savingToWs, setSavingToWs] = useState(false);
   const [savedToWs, setSavedToWs] = useState(false);
-  const { getToken } = useAuth();
+  
 
   const activeFile = files.find(f => f.id === activeId) ?? files[0];
 
@@ -549,9 +548,8 @@ function OrganizeTab() {
     if (!hasCode || savingToWs) return;
     setSavingToWs(true);
     try {
-      const token = await getToken();
+      
       const headers: Record<string, string> = { "Content-Type": "application/json" };
-      if (token) headers.Authorization = `Bearer ${token}`;
       for (const f of files) {
         if (!f.code.trim()) continue;
         const folder = f.folder === "custom" ? f.customFolder || "misc" : f.folder;

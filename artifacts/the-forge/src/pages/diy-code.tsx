@@ -1,6 +1,5 @@
 import { useState, useCallback } from "react";
 import Editor from "@monaco-editor/react";
-import { getAuthToken } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -42,12 +41,11 @@ const EXT_MAP: Record<string, string> = {
 };
 
 async function authFetch(url: string, opts: RequestInit = {}) {
-  const token = await getAuthToken();
   return fetch(url, {
     ...opts,
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(opts.headers ?? {}),
     },
   });
