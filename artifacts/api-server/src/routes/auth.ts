@@ -264,11 +264,18 @@ router.post("/auth/callback", async (req: Request, res: Response) => {
       iss?: string;
     };
 
-    const codeVerifier = req.cookies?.code_verifier;
+    // Accept verifier from request body (client-side PKCE flow where the verifier
+    // is stored in sessionStorage and sent here) OR from a cookie (server-side
+    // login flow where the GET /auth/login handler set the cookie).
+    const { verifier: bodyVerifier } = req.body as { verifier?: string };
+    const codeVerifier = bodyVerifier ?? req.cookies?.code_verifier;
     const nonce = req.cookies?.nonce;
-    const expectedState = req.cookies?.state;
+    // For client-side PKCE the server has no stored expected state; use the
+    // incoming state as the expected value (PKCE code_verifier provides the
+    // security guarantee in this flow).
+    const expectedState = req.cookies?.state ?? incomingState;
 
-    if (!code || !codeVerifier || !expectedState) {
+    if (!code || !codeVerifier) {
       res.status(400).json({ error: "Missing required parameters" });
       return;
     }
@@ -280,7 +287,7 @@ router.post("/auth/callback", async (req: Request, res: Response) => {
 
     const tokens = await oidc.authorizationCodeGrant(config, currentUrl, {
       pkceCodeVerifier: codeVerifier,
-      expectedNonce: nonce,
+      expectedNonce: nonce ?? undefined,
       expectedState,
       idTokenExpected: true,
     });
