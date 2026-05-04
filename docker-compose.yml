@@ -1,6 +1,6 @@
 services:
   forge:
-    build: .
+    image: ${FORGE_IMAGE:-sovereigndigital/forge:latest}
     restart: unless-stopped
     expose:
       - "8080"

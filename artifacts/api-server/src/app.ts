@@ -3,6 +3,8 @@ import cors from "cors";
 import compression from "compression";
 import cookieParser from "cookie-parser";
 import pinoHttp from "pino-http";
+import path from "path";
+import { fileURLToPath } from "url";
 import { authMiddleware } from "./middlewares/authMiddleware";
 import router from "./routes";
 import authRouter from "./routes/auth";
@@ -154,5 +156,26 @@ app.use("/api/payments/checkout", authLimiter);
 
 app.use("/api", authRouter);
 app.use("/api", router);
+
+// ─── Static frontend serving (Docker/VPS) ────────────────────────────────────
+// In Replit deployment server.mjs handles this. In Docker the api-server serves
+// the pre-built frontend that the Dockerfile copies into dist/public/.
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const STATIC_DIR = path.join(__dirname, "public");
+
+app.use(
+  express.static(STATIC_DIR, {
+    maxAge: "7d",
+    immutable: true,
+    index: false,
+  }),
+);
+
+app.get(/^\/(?!api\/).*/, (_req: Request, res: Response) => {
+  res.sendFile(path.join(STATIC_DIR, "index.html"), (err) => {
+    if (err && !res.headersSent) res.status(404).send("Not found");
+  });
+});
 
 export default app;

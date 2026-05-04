@@ -22,28 +22,6 @@ jobs:
       contents: read
       packages: write
 
-    strategy:
-      matrix:
-        include:
-          - image: forge
-            dockerfile: Dockerfile
-            context: .
-          - image: hawk
-            dockerfile: apps/hawk/Dockerfile
-            context: apps/hawk
-          - image: quill
-            dockerfile: apps/quill/Dockerfile
-            context: apps/quill
-          - image: creed
-            dockerfile: apps/creed/Dockerfile
-            context: apps/creed
-          - image: sage
-            dockerfile: apps/sage/Dockerfile
-            context: apps/sage
-          - image: flint
-            dockerfile: apps/flint/Dockerfile
-            context: apps/flint
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -69,25 +47,14 @@ jobs:
             TAG="${{ github.event.inputs.tag || 'latest' }}"
           fi
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-          echo "latest_tag=${{ env.ORG }}/${{ matrix.image }}:latest" >> "$GITHUB_OUTPUT"
-          echo "versioned_tag=${{ env.ORG }}/${{ matrix.image }}:$TAG" >> "$GITHUB_OUTPUT"
+          echo "latest_tag=${{ env.ORG }}/forge:latest" >> "$GITHUB_OUTPUT"
+          echo "versioned_tag=${{ env.ORG }}/forge:$TAG" >> "$GITHUB_OUTPUT"
 
-      - name: Check Dockerfile exists
-        id: check_df
-        run: |
-          if [ -f "${{ matrix.dockerfile }}" ]; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-            echo "Skipping ${{ matrix.image }} — ${{ matrix.dockerfile }} not found"
-          fi
-
-      - name: Build and push ${{ matrix.image }}
-        if: steps.check_df.outputs.exists == 'true'
+      - name: Build and push forge
         uses: docker/build-push-action@v5
         with:
-          context: ${{ matrix.context }}
-          file: ${{ matrix.dockerfile }}
+          context: .
+          file: Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
