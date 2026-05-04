@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import pinoHttp from "pino-http";
 import { authMiddleware } from "./middlewares/authMiddleware";
 import router from "./routes";
+import authRouter from "./routes/auth";
 import { logger } from "./lib/logger";
 import { userIdMiddleware } from "./middlewares/userId";
 import { rateLimit } from "express-rate-limit";
@@ -146,6 +147,12 @@ app.use(["/api/secrets/import", "/api/secrets"], (req, res, next) => {
   next();
 });
 app.use("/api/payments/checkout", authLimiter);
+
+// Mount the auth sub-router directly at the app level at /api (before main router).
+// Routes inside authRouter use /auth/* and /mobile-auth/* prefixes already,
+// so mounting at /api gives paths like POST /api/auth/me, /api/mobile-auth/token-exchange.
+// This bypasses any Express 5 nested sub-router matching issue in the main router.
+app.use("/api", authRouter);
 
 app.use("/api", router);
 
