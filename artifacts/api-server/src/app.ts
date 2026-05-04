@@ -1,8 +1,10 @@
-import express, { type Express, type Request, type Response } from "express";
+import express, { type Express, type Request, type Response, type NextFunction } from "express";
 import cors from "cors";
 import compression from "compression";
 import cookieParser from "cookie-parser";
 import pinoHttp from "pino-http";
+import path from "path";
+import { createProxyMiddleware } from "http-proxy-middleware";
 import { authMiddleware } from "./middlewares/authMiddleware";
 import router from "./routes";
 import authRouter from "./routes/auth";
@@ -13,6 +15,10 @@ import { trackRequest, trackRlHit } from "./lib/trafficTracker";
 import { incrementUsage } from "./routes/quota";
 
 const app: Express = express();
+
+const IS_PROD = process.env.NODE_ENV === "production";
+// In production: the-forge dist is copied here by the prod script.
+const PUBLIC_DIR = path.join(process.cwd(), "public");
 
 // Trust the reverse proxy (Replit's load balancer sets X-Forwarded-For)
 app.set("trust proxy", 1);
@@ -58,25 +64,35 @@ app.use((req, res, next) => {
 
 app.use(compression());
 app.use(cors({ credentials: true, origin: true }));
+
+// Production: serve the-forge SPA static assets (CSS/JS with content hashes)
+// before any auth or API processing for maximum speed.
+if (IS_PROD) {
+  app.use(express.static(PUBLIC_DIR, { index: false }));
+}
+
 app.use(cookieParser());
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
-
-// CDN-bypass rewrite: In production the Replit CDN routes POST requests for
-// /x-auth/* directly to this Express server (port 8080) instead of going
-// through server.mjs which would rewrite them to /api/auth/*.
-// We replicate that rewrite here so the /api/auth/* handlers respond.
-app.use((req, _res, next) => {
-  if (req.method === "POST" && req.url.startsWith("/x-auth/")) {
-    req.url = "/api/auth/" + req.url.slice("/x-auth/".length);
-  }
-  next();
-});
 
 // Auth middleware — reads session cookie, populates req.user
 app.use(authMiddleware);
 // User ID middleware — sets req.userId from session or anon header
 app.use(userIdMiddleware);
+
+// ─── Auth state check ─────────────────────────────────────────────────────────
+// Use app.use() (no path restriction, manual URL+method check) instead of
+// app.post() to bypass any Express 5 route-matching quirks in production.
+// Handles /api/auth/me (direct) and /x-auth/me (CDN-routed to api-server).
+app.use((req: Request, res: Response, next: NextFunction) => {
+  if (req.method !== "POST") { next(); return; }
+  const u = req.url.split("?")[0];
+  if (u === "/api/auth/me" || u === "/x-auth/me") {
+    res.json({ user: req.user ?? null });
+    return;
+  }
+  next();
+});
 
 // ─── Rate limiting ───────────────────────────────────────────────────────────
 
@@ -148,17 +164,34 @@ app.use(["/api/secrets/import", "/api/secrets"], (req, res, next) => {
 });
 app.use("/api/payments/checkout", authLimiter);
 
-// Explicit inline POST /api/auth/me — most direct possible form, no sub-router.
-// This bypasses any Express 5 nested-router matching edge case in the main router.
-app.post("/api/auth/me", (req: Request, res: Response) => {
-  res.json({ user: req.user ?? null });
-});
-
-// Mount the auth sub-router directly at the app level at /api (before main router).
-// Routes inside authRouter use /auth/* and /mobile-auth/* prefixes already,
-// so mounting at /api gives paths like POST /api/auth/me, /api/mobile-auth/token-exchange.
 app.use("/api", authRouter);
-
 app.use("/api", router);
+
+// ─── SPA fallback / Dev proxy ─────────────────────────────────────────────────
+if (IS_PROD) {
+  // Serve index.html for all non-API GET requests (client-side SPA routing).
+  // This runs from the api-server (kind=api) so Replit does NOT CDN-cache it —
+  // users always get the freshly built index.html.
+  app.use((req: Request, res: Response) => {
+    if (req.method !== "GET" && req.method !== "HEAD") {
+      res.status(404).json({ error: "Not found" });
+      return;
+    }
+    if (req.path.startsWith("/api") || req.path.startsWith("/x-auth")) {
+      res.status(404).json({ error: "Not found" });
+      return;
+    }
+    res.sendFile(path.join(PUBLIC_DIR, "index.html"));
+  });
+} else {
+  // Dev: proxy everything that didn't match an API route to the Vite dev server.
+  app.use(
+    createProxyMiddleware({
+      target: "http://localhost:25654",
+      changeOrigin: true,
+      ws: true,
+    }),
+  );
+}
 
 export default app;
