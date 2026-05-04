@@ -5,9 +5,11 @@ import { eq, and } from "drizzle-orm";
 
 const router = Router();
 
-const FORGE_COOLIFY_URL = process.env.FORGE_COOLIFY_URL ?? "";
-const FORGE_COOLIFY_KEY = process.env.FORGE_COOLIFY_API_KEY ?? "";
-const FORGE_DOMAIN = process.env.FORGE_DOMAIN ?? "13moonforge.ai";
+const FORGE_COOLIFY_URL     = process.env.FORGE_COOLIFY_URL ?? "";
+const FORGE_COOLIFY_KEY     = process.env.FORGE_COOLIFY_API_KEY ?? "";
+const FORGE_DOMAIN          = process.env.FORGE_DOMAIN ?? "13moonforge.ai";
+const FORGE_PROJECT_UUID    = process.env.FORGE_COOLIFY_PROJECT_UUID ?? "";
+const FORGE_SERVER_UUID     = process.env.FORGE_COOLIFY_SERVER_UUID ?? "";
 
 function coolify(path: string, opts: RequestInit = {}) {
   const base = FORGE_COOLIFY_URL.replace(/\/+$/, "");
@@ -71,20 +73,10 @@ async function detectStack(token: string, repo: string, branch: string): Promise
   return { stack: "node", port: 3000, buildPack: "nixpacks" };
 }
 
-async function getCoolifyIds() {
-  const [projectsRes, serversRes] = await Promise.all([
-    coolify("/projects"),
-    coolify("/servers"),
-  ]);
-  const projects = await projectsRes.json() as { uuid?: string; name?: string }[];
-  const servers = await serversRes.json() as { uuid?: string; name?: string }[];
-
-  const project = Array.isArray(projects) ? projects.find(p => p.name === "forge-hosted") ?? projects[0] : null;
-  const server = Array.isArray(servers) ? servers[0] : null;
-
+function getCoolifyIds() {
   return {
-    projectUuid: project?.uuid ?? "",
-    serverUuid: server?.uuid ?? "",
+    projectUuid: FORGE_PROJECT_UUID,
+    serverUuid: FORGE_SERVER_UUID,
   };
 }
 
