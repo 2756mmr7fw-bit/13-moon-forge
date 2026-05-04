@@ -269,3 +269,42 @@ pnpm workspace monorepo, TypeScript, Node.js 24.
 - **DB**: `lib/db/` with Drizzle ORM + PostgreSQL
 - **Build**: `pnpm run build` | **Typecheck**: `pnpm run typecheck`
 - **DB push**: `pnpm --filter @workspace/db run push-force`
+
+---
+
+## Self-Hosting (VPS / Hetzner + Coolify)
+
+The app is designed to run independently of Replit on a Hetzner VPS managed by Coolify.
+
+### Architecture
+- Single Docker container (`sovereigndigital/forge:latest`) runs both the Express API and serves the React frontend as static files
+- Postgres 16 runs as a sidecar container in `docker-compose.yml`
+- Traefik (provided by Coolify) handles TLS + routing for `13moonforge.ai`
+
+### Docker image
+- **Dockerfile**: Multi-stage build → `node:20-alpine` runner, Express serves API on port 8080 + static files from `dist/public/`
+- **GitHub Actions** (`.github/workflows/publish-images.yml`): Builds + pushes `sovereigndigital/forge:latest` to Docker Hub on `v*` tags or manual dispatch
+  - Requires GitHub repo secrets: `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN`
+- **Static serving**: `app.ts` uses `express.static("dist/public/")` + SPA catch-all after all API routes
+
+### Required env vars for VPS (see `.env.example`)
+| Var | Value |
+|-----|-------|
+| `DATABASE_URL_PROD` | `postgresql://forge:pass@db:5432/forge` |
+| `SESSION_SECRET` | 64-char random hex |
+| `OIDC_CLIENT_ID` | `ae502d99-2e22-4428-9695-6a23076322d0` (REPL_ID) |
+| `APP_URL` | `https://13moonforge.ai` |
+| `NODE_ENV` | `production` |
+| `PORT` | `8080` |
+| All API keys | See `.env.example` |
+
+### Deploy steps
+1. Add `DOCKERHUB_USERNAME` + `DOCKERHUB_TOKEN` to GitHub repo secrets
+2. Run GitHub Actions (manual dispatch or push a `v*` tag) → image pushed to Docker Hub
+3. Provision Hetzner VPS via the Forge Hosting UI (installs Docker + Coolify via cloud-init)
+4. In Coolify: create a Docker Compose app → paste `docker-compose.yml` → set env vars
+5. Change `13moonforge.ai` DNS A record → Hetzner VPS IP
+6. Run Drizzle migrations on production DB: `pnpm --filter @workspace/db run push-force` (pointing at prod DB)
+
+### Auth on VPS
+Replit OIDC (`https://replit.com/oidc`) works from any host — users log in with their Replit accounts. The `OIDC_CLIENT_ID` is the `REPL_ID` from the Replit workspace. The callback URL (`https://13moonforge.ai/api/auth/callback`) works without any Replit-side configuration changes.

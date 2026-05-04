@@ -12,10 +12,10 @@ router.get("/healthz", (req: Request, res: Response) => {
   res.set("Cache-Control", "no-cache");
 
   const user = req.user ?? null;
-  const oidcClientId = process.env.REPL_ID ?? null;
+  const oidcClientId = process.env.OIDC_CLIENT_ID ?? process.env.REPL_ID ?? null;
   const issuerUrl = process.env.ISSUER_URL ?? "https://replit.com/oidc";
   const domains = process.env.REPLIT_DOMAINS?.split(",").map((d) => d.trim()) ?? [];
-  const appUrl = domains[0] ? `https://${domains[0]}` : null;
+  const appUrl = process.env.APP_URL ?? (domains[0] ? `https://${domains[0]}` : null);
 
   res.json({
     status: "ok",
