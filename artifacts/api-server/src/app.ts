@@ -1,4 +1,4 @@
-import express, { type Express } from "express";
+import express, { type Express, type Request, type Response } from "express";
 import cors from "cors";
 import compression from "compression";
 import cookieParser from "cookie-parser";
@@ -148,10 +148,15 @@ app.use(["/api/secrets/import", "/api/secrets"], (req, res, next) => {
 });
 app.use("/api/payments/checkout", authLimiter);
 
+// Explicit inline POST /api/auth/me — most direct possible form, no sub-router.
+// This bypasses any Express 5 nested-router matching edge case in the main router.
+app.post("/api/auth/me", (req: Request, res: Response) => {
+  res.json({ user: req.user ?? null });
+});
+
 // Mount the auth sub-router directly at the app level at /api (before main router).
 // Routes inside authRouter use /auth/* and /mobile-auth/* prefixes already,
 // so mounting at /api gives paths like POST /api/auth/me, /api/mobile-auth/token-exchange.
-// This bypasses any Express 5 nested sub-router matching issue in the main router.
 app.use("/api", authRouter);
 
 app.use("/api", router);

@@ -209,11 +209,25 @@ function AuthCallback() {
       return;
     }
 
+    // Read the PKCE verifier stored in sessionStorage during client-side login.
+    // If login was server-side, the verifier lives in a cookie and the server
+    // reads it from there; sending null is harmless.
+    let verifier: string | null = null;
+    try {
+      verifier = sessionStorage.getItem("oidc_verifier");
+      sessionStorage.removeItem("oidc_verifier");
+      sessionStorage.removeItem("oidc_state");
+      sessionStorage.removeItem("oidc_nonce");
+      sessionStorage.removeItem("oidc_return_to");
+    } catch {
+      /* private browsing may deny sessionStorage access */
+    }
+
     fetch("/x-auth/callback", {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code, state, iss }),
+      body: JSON.stringify({ code, state, iss, ...(verifier ? { verifier } : {}) }),
     })
       .then((res) => res.json())
       .then((data: { returnTo?: string; error?: string }) => {
