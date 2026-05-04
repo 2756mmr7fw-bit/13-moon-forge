@@ -60,6 +60,16 @@ function proxyToApi(req, res, overridePath) {
   req.pipe(proxy, { end: true });
 }
 
+function findCurrentEntryJS() {
+  try {
+    const html = fs.readFileSync(path.join(STATIC_DIR, "index.html"), "utf8");
+    const match = html.match(/src="(\/assets\/index-[^"]+\.js)"/);
+    return match ? match[1] : null;
+  } catch {
+    return null;
+  }
+}
+
 function serveStatic(urlPath, res) {
   const decoded = decodeURIComponent(urlPath);
   const candidate = path.join(STATIC_DIR, decoded);
@@ -80,6 +90,28 @@ function serveStatic(urlPath, res) {
         ...(isAsset ? { "Cache-Control": "public, max-age=31536000, immutable" } : {}),
       });
       fs.createReadStream(candidate).pipe(res, { end: true });
+    } else if (decoded.startsWith("/assets/") && decoded.endsWith(".js")) {
+      // Missing JS bundle — serve a shim that loads the current entry bundle.
+      // This handles browsers that cached an old index.html referencing a
+      // stale content-hashed bundle that no longer exists after a new deploy.
+      const current = findCurrentEntryJS();
+      if (current && decoded !== current) {
+        const shim = `/* compat-shim: ${decoded} -> ${current} */\nimport(${JSON.stringify(current)});\n`;
+        res.writeHead(200, {
+          "Content-Type": "application/javascript; charset=utf-8",
+          "Cache-Control": "no-store",
+        });
+        res.end(shim);
+      } else {
+        serveIndex(res);
+      }
+    } else if (decoded.startsWith("/assets/") && decoded.endsWith(".css")) {
+      // Missing CSS bundle — serve empty CSS so old index.html doesn't error.
+      res.writeHead(200, {
+        "Content-Type": "text/css; charset=utf-8",
+        "Cache-Control": "no-store",
+      });
+      res.end("/* compat-shim: stale CSS bundle */\n");
     } else {
       serveIndex(res);
     }
