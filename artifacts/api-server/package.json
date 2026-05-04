@@ -7,7 +7,7 @@
     "dev": "export NODE_ENV=development && pnpm run build && pnpm run start",
     "build": "node ./build.mjs",
     "start": "node --enable-source-maps ./dist/index.mjs",
-    "prod": "node ./build.mjs && node --enable-source-maps ./dist/index.mjs",
+    "prod": "pnpm --filter @workspace/the-forge run build && rm -rf ./public && mkdir -p ./public && cp -r ../the-forge/dist/public/. ./public/ && node ./build.mjs && node --enable-source-maps ./dist/index.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

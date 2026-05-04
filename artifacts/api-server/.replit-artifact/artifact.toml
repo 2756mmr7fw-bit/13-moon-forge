@@ -7,7 +7,7 @@ kind = "api"
   [[services]]
   localPort = 8080
   name = "API Server"
-  paths = ["/api"]
+  paths = ["/"]
 
   [services.development]
   run = "pnpm --filter @workspace/api-server run dev"
@@ -15,7 +15,9 @@ kind = "api"
   [services.production]
 
   [services.production.run]
-  # Build and start in the same process to avoid build/run filesystem split
+  # Build the-forge SPA, copy its dist into ./public/, build and start api-server.
+  # The api-server (kind=api) responses are NOT CDN-cached by Replit, so users
+  # always get the freshly built index.html — this fixes the stale CDN black-screen.
   args = ["pnpm", "--filter", "@workspace/api-server", "run", "prod"]
 
   [services.production.run.env]
@@ -24,4 +26,3 @@ kind = "api"
 
   [services.production.health.startup]
   path = "/api/healthz"
-  
