@@ -46,6 +46,7 @@ import mailScannerRouter from "./mail-scanner";
 import debugTestRouter from "./debugTest";
 import academyRouter from "./academy";
 import gymRouter from "./gym";
+import launchRouter from "./launch";
 
 const router: IRouter = Router();
 
@@ -96,5 +97,6 @@ router.use(mailScannerRouter);
 router.use(debugTestRouter);
 router.use(academyRouter);
 router.use(gymRouter);
+router.use(launchRouter);
 
 export default router;

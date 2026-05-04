@@ -66,7 +66,26 @@ export const appSecretsTable = pgTable("app_secrets", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+export const userAppsTable = pgTable("user_apps", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  name: text("name").notNull(),
+  subdomain: text("subdomain").notNull().unique(),
+  githubRepo: text("github_repo"),
+  githubBranch: text("github_branch").notNull().default("main"),
+  dockerImage: text("docker_image"),
+  stack: text("stack").notNull().default("auto"),
+  coolifyResourceId: text("coolify_resource_id"),
+  coolifyResourceType: text("coolify_resource_type").notNull().default("application"),
+  status: text("status").notNull().default("deploying"),
+  url: text("url"),
+  port: integer("port").notNull().default(3000),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 export type ServerConnection = typeof serverConnectionsTable.$inferSelect;
 export type RegistryApp = typeof registryAppsTable.$inferSelect;
 export type GithubConnection = typeof githubConnectionsTable.$inferSelect;
 export type AppSecret = typeof appSecretsTable.$inferSelect;
+export type UserApp = typeof userAppsTable.$inferSelect;
