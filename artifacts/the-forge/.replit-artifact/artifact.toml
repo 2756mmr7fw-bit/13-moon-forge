@@ -26,8 +26,12 @@ VITE_CLERK_PROXY_URL = "https://13moonforge.ai/api/__clerk"
 [services.production.run]
 args = ["pnpm", "--filter", "@workspace/the-forge", "run", "serve"]
 
+[services.production.run.env]
+VITE_CLERK_PROXY_URL = "https://13moonforge.ai/api/__clerk"
+
 [services.production.health.startup]
 path = "/"
+timeout = 120
 
 [services.env]
 PORT = "25654"
