@@ -3,8 +3,6 @@ import cors from "cors";
 import compression from "compression";
 import cookieParser from "cookie-parser";
 import pinoHttp from "pino-http";
-import path from "path";
-import { createProxyMiddleware } from "http-proxy-middleware";
 import { authMiddleware } from "./middlewares/authMiddleware";
 import router from "./routes";
 import authRouter from "./routes/auth";
@@ -15,10 +13,6 @@ import { trackRequest, trackRlHit } from "./lib/trafficTracker";
 import { incrementUsage } from "./routes/quota";
 
 const app: Express = express();
-
-const IS_PROD = process.env.NODE_ENV === "production";
-// In production: the-forge dist is copied here by the prod script.
-const PUBLIC_DIR = path.join(process.cwd(), "public");
 
 // Trust the reverse proxy (Replit's load balancer sets X-Forwarded-For)
 app.set("trust proxy", 1);
@@ -64,13 +58,6 @@ app.use((req, res, next) => {
 
 app.use(compression());
 app.use(cors({ credentials: true, origin: true }));
-
-// Production: serve the-forge SPA static assets (CSS/JS with content hashes)
-// before any auth or API processing for maximum speed.
-if (IS_PROD) {
-  app.use(express.static(PUBLIC_DIR, { index: false }));
-}
-
 app.use(cookieParser());
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
@@ -81,9 +68,10 @@ app.use(authMiddleware);
 app.use(userIdMiddleware);
 
 // ─── Auth state check ─────────────────────────────────────────────────────────
-// Use app.use() (no path restriction, manual URL+method check) instead of
-// app.post() to bypass any Express 5 route-matching quirks in production.
-// Handles /api/auth/me (direct) and /x-auth/me (CDN-routed to api-server).
+// Use app.use() with manual URL+method check instead of app.post() to avoid
+// Express 5 route-matching issues observed in production. Handles both:
+//   • /api/auth/me  — direct call or after server.mjs rewrites /x-auth/me
+//   • /x-auth/me   — if CDN routes the POST directly to api-server
 app.use((req: Request, res: Response, next: NextFunction) => {
   if (req.method !== "POST") { next(); return; }
   const u = req.url.split("?")[0];
@@ -166,32 +154,5 @@ app.use("/api/payments/checkout", authLimiter);
 
 app.use("/api", authRouter);
 app.use("/api", router);
-
-// ─── SPA fallback / Dev proxy ─────────────────────────────────────────────────
-if (IS_PROD) {
-  // Serve index.html for all non-API GET requests (client-side SPA routing).
-  // This runs from the api-server (kind=api) so Replit does NOT CDN-cache it —
-  // users always get the freshly built index.html.
-  app.use((req: Request, res: Response) => {
-    if (req.method !== "GET" && req.method !== "HEAD") {
-      res.status(404).json({ error: "Not found" });
-      return;
-    }
-    if (req.path.startsWith("/api") || req.path.startsWith("/x-auth")) {
-      res.status(404).json({ error: "Not found" });
-      return;
-    }
-    res.sendFile(path.join(PUBLIC_DIR, "index.html"));
-  });
-} else {
-  // Dev: proxy everything that didn't match an API route to the Vite dev server.
-  app.use(
-    createProxyMiddleware({
-      target: "http://localhost:25654",
-      changeOrigin: true,
-      ws: true,
-    }),
-  );
-}
 
 export default app;

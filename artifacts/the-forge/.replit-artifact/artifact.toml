@@ -11,7 +11,7 @@ version = "1.0.0"
 
 [[services]]
 name = "web"
-paths = [ "/forge-static" ]
+paths = ["/"]
 localPort = 25654
 
 [services.development]
@@ -27,7 +27,7 @@ VITE_CLERK_PROXY_URL = "https://13moonforge.ai/api/__clerk"
 args = ["pnpm", "--filter", "@workspace/the-forge", "run", "serve"]
 
 [services.production.health.startup]
-path = "/forge-static"
+path = "/"
 
 [services.env]
 PORT = "25654"
