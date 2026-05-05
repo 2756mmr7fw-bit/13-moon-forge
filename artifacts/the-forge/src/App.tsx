@@ -90,6 +90,7 @@ const ForgeCoderPage   = lazy(() => import("@/pages/forge-coder"));
 const ProjectRoomPage  = lazy(() => import("@/pages/project-room"));
 const MoonPage         = lazy(() => import("@/pages/moon-page"));
 const LedgerPage       = lazy(() => import("@/pages/moons/ledger"));
+const AppInspectorPage = lazy(() => import("@/pages/app-inspector"));
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 const API_BASE = basePath;
@@ -351,6 +352,7 @@ function Router() {
                     <Route path="/project-room"          component={ProjectRoomPage} />
                     <Route path="/moons/ledger"          component={LedgerPage} />
                     <Route path="/moons/:moonId"         component={MoonPage} />
+                    <Route path="/app-inspector"         component={AppInspectorPage} />
                     <Route component={NotFound} />
                   </Switch>
                 </ProtectedRoute>
