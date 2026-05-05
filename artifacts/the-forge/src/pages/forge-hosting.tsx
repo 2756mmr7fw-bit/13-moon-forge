@@ -11,7 +11,7 @@ import {
   CheckCircle2, AlertCircle, Clock, X, ChevronRight,
   Package, Code2, Flame, Container, ArrowRight, Terminal,
   Key, Settings, ChevronDown, ChevronUp, Copy, Check,
-  Webhook, Eye, EyeOff, Lock,
+  Webhook, Eye, EyeOff, Lock, HardDrive, Download,
 } from "lucide-react";
 
 const API = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -37,6 +37,17 @@ interface EnvVar {
   key: string;
   value: string;
   is_build_time?: boolean;
+}
+
+interface UserDatabase {
+  id: number;
+  name: string;
+  dbName: string;
+  dbUser: string;
+  status: string;
+  connectionString: string | null;
+  appId: number | null;
+  createdAt: string;
 }
 
 interface Repo {
@@ -97,7 +108,7 @@ function CopyButton({ text }: { text: string }) {
   );
 }
 
-type DetailTab = "logs" | "env" | "domain" | "autodeploy";
+type DetailTab = "logs" | "env" | "domain" | "autodeploy" | "database";
 
 export default function ForgeHosting() {
   const [apps, setApps] = useState<UserApp[]>([]);
@@ -132,21 +143,34 @@ export default function ForgeHosting() {
   const [savingDomain, setSavingDomain] = useState(false);
   const [domainSaved, setDomainSaved] = useState(false);
   const [togglingAutoDeploy, setTogglingAutoDeploy] = useState(false);
+  const [databases, setDatabases] = useState<UserDatabase[]>([]);
+  const [provisioningDb, setProvisioningDb] = useState(false);
+  const [newDbName, setNewDbName] = useState("");
+  const [showDbConn, setShowDbConn] = useState<number | null>(null);
+  const [cliToken, setCliToken] = useState<string | null>(null);
+  const [generatingToken, setGeneratingToken] = useState(false);
+  const [cliTokenCopied, setCliTokenCopied] = useState(false);
   const logsEndRef = useRef<HTMLDivElement>(null);
   const logsIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const fetchDatabases = useCallback(async () => {
+    const r = await fetch(`${API}/api/launch/databases`, { credentials: "include" });
+    if (r.ok) setDatabases(await r.json().then(d => d.databases ?? []));
+  }, []);
 
   const fetchData = useCallback(async () => {
     try {
       const [appsRes, ghRes] = await Promise.all([
         fetch(`${API}/api/launch/apps`, { credentials: "include" }),
         fetch(`${API}/api/github/status`, { credentials: "include" }),
+        fetchDatabases(),
       ]);
       if (appsRes.ok) setApps(await appsRes.json().then(d => d.apps ?? []));
       if (ghRes.ok) setGithubStatus(await ghRes.json());
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [fetchDatabases]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -350,6 +374,61 @@ export default function ForgeHosting() {
     }
   };
 
+  const handleProvisionDb = async (appId: number) => {
+    if (!newDbName.trim()) return;
+    setProvisioningDb(true);
+    try {
+      const r = await fetch(`${API}/api/launch/databases`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newDbName.trim(), appId }),
+      });
+      if (r.ok) {
+        const data = await r.json();
+        setDatabases(prev => [...prev, data.database]);
+        setNewDbName("");
+      }
+    } finally {
+      setProvisioningDb(false);
+    }
+  };
+
+  const handleInjectDb = async (dbId: number, appId: number) => {
+    const r = await fetch(`${API}/api/launch/databases/${dbId}/inject`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ appId }),
+    });
+    if (r.ok) {
+      setDatabases(prev => prev.map(d => d.id === dbId ? { ...d, appId } : d));
+    }
+  };
+
+  const handleDeleteDb = async (dbId: number) => {
+    await fetch(`${API}/api/launch/databases/${dbId}`, { method: "DELETE", credentials: "include" });
+    setDatabases(prev => prev.filter(d => d.id !== dbId));
+  };
+
+  const handleGenerateToken = async () => {
+    setGeneratingToken(true);
+    try {
+      const r = await fetch(`${API}/api/cli/token`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: "CLI" }),
+      });
+      if (r.ok) {
+        const data = await r.json();
+        setCliToken(data.token);
+      }
+    } finally {
+      setGeneratingToken(false);
+    }
+  };
+
   const handleToggleAutoDeploy = async (app: UserApp) => {
     setTogglingAutoDeploy(true);
     try {
@@ -524,6 +603,7 @@ export default function ForgeHosting() {
                       { id: "env",        label: "Env Vars",    icon: <Key size={12} /> },
                       { id: "domain",     label: "Domain",      icon: <Globe size={12} /> },
                       { id: "autodeploy", label: "Auto-Deploy", icon: <Webhook size={12} /> },
+                      { id: "database",   label: "Database",    icon: <HardDrive size={12} /> },
                     ] as { id: DetailTab; label: string; icon: React.ReactNode }[]).map(tab => (
                       <button
                         key={tab.id}
@@ -777,6 +857,86 @@ export default function ForgeHosting() {
                       )}
                     </div>
                   )}
+
+                  {activeTab === "database" && (
+                    <div className="p-4 space-y-4">
+                      <div>
+                        <p className="text-xs font-semibold text-zinc-300 mb-1">Provision a Postgres database</p>
+                        <p className="text-[11px] text-zinc-500 mb-3">Spins up a dedicated Postgres instance on your Hetzner server and injects <span className="font-mono text-zinc-300">DATABASE_URL</span> into this app automatically.</p>
+
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder="db name (e.g. myapp)"
+                            value={newDbName}
+                            onChange={e => setNewDbName(e.target.value)}
+                            className="bg-zinc-800 border-zinc-700 text-white h-8 text-xs flex-1"
+                          />
+                          <Button
+                            size="sm"
+                            onClick={() => handleProvisionDb(app.id)}
+                            disabled={provisioningDb || !newDbName.trim()}
+                            className="bg-orange-500 hover:bg-orange-600 text-white h-8 text-xs"
+                          >
+                            {provisioningDb ? <Loader2 size={12} className="animate-spin" /> : <><HardDrive size={12} className="mr-1" />Provision</>}
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Databases list */}
+                      {databases.length > 0 && (
+                        <div className="space-y-2">
+                          <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">Your databases</p>
+                          {databases.map(database => (
+                            <div key={database.id} className="rounded-lg border border-zinc-800 bg-zinc-800/20 p-3 space-y-2">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <HardDrive size={12} className={database.status === "ready" ? "text-green-400" : database.status === "provisioning" ? "text-orange-400 animate-pulse" : "text-zinc-500"} />
+                                  <span className="text-xs font-semibold text-zinc-200">{database.name}</span>
+                                  <span className={cn("text-[10px] px-1.5 py-0.5 rounded font-mono",
+                                    database.status === "ready" ? "bg-green-500/10 text-green-400" :
+                                    database.status === "provisioning" ? "bg-orange-500/10 text-orange-400" :
+                                    "bg-zinc-700 text-zinc-400"
+                                  )}>{database.status}</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  {!database.appId && (
+                                    <button
+                                      onClick={() => handleInjectDb(database.id, app.id)}
+                                      className="text-[10px] px-2 py-1 rounded bg-blue-500/10 text-blue-400 hover:bg-blue-500/20"
+                                    >
+                                      Inject to app
+                                    </button>
+                                  )}
+                                  {database.appId === app.id && (
+                                    <span className="text-[10px] text-green-400 flex items-center gap-1"><CheckCircle2 size={10} />Linked</span>
+                                  )}
+                                  <button onClick={() => setShowDbConn(showDbConn === database.id ? null : database.id)} className="text-zinc-500 hover:text-zinc-300 p-1">
+                                    {showDbConn === database.id ? <EyeOff size={12} /> : <Eye size={12} />}
+                                  </button>
+                                  <button onClick={() => handleDeleteDb(database.id)} className="text-zinc-600 hover:text-red-400 p-1">
+                                    <Trash2 size={12} />
+                                  </button>
+                                </div>
+                              </div>
+                              {showDbConn === database.id && database.connectionString && (
+                                <div className="flex items-center gap-2 bg-black rounded border border-zinc-700 px-2 py-1.5 mt-1">
+                                  <span className="text-[10px] font-mono text-zinc-400 flex-1 break-all">{database.connectionString}</span>
+                                  <CopyButton text={database.connectionString} />
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {databases.filter(d => d.appId === app.id).length === 0 && databases.length === 0 && (
+                        <div className="rounded-lg border border-dashed border-zinc-800 p-4 text-center">
+                          <HardDrive size={18} className="text-zinc-600 mx-auto mb-2" />
+                          <p className="text-[11px] text-zinc-500">No databases yet. Provision one above and it'll be linked to this app.</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -803,6 +963,86 @@ export default function ForgeHosting() {
             </div>
           </Link>
         ))}
+      </div>
+
+      {/* CLI Section */}
+      <div className="mt-8 rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <Terminal size={18} className="text-orange-400" />
+            <div>
+              <p className="text-sm font-bold text-white">Forge CLI</p>
+              <p className="text-[11px] text-zinc-500">Deploy and manage apps from your terminal</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          {/* Install */}
+          <div>
+            <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">1. Install</p>
+            <div className="flex items-center gap-2 bg-black rounded-lg border border-zinc-800 px-3 py-2">
+              <span className="text-xs font-mono text-zinc-300 flex-1">curl -fsSL https://13moonforge.ai/api/cli/install | bash</span>
+              <CopyButton text="curl -fsSL https://13moonforge.ai/api/cli/install | bash" />
+            </div>
+          </div>
+
+          {/* Authenticate */}
+          <div>
+            <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">2. Authenticate</p>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 bg-black rounded-lg border border-zinc-800 px-3 py-2">
+                <span className="text-xs font-mono text-zinc-300 flex-1">forge login</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleGenerateToken}
+                  disabled={generatingToken}
+                  className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 h-8 text-xs"
+                >
+                  {generatingToken ? <Loader2 size={12} className="animate-spin mr-1" /> : <Key size={12} className="mr-1" />}
+                  Generate CLI Token
+                </Button>
+                {cliToken && (
+                  <div className="flex items-center gap-2 flex-1 bg-black rounded-lg border border-orange-500/30 px-3 py-1.5">
+                    <span className="text-xs font-mono text-orange-300 flex-1 truncate">{cliToken}</span>
+                    <button
+                      onClick={() => { navigator.clipboard.writeText(cliToken); setCliTokenCopied(true); setTimeout(() => setCliTokenCopied(false), 2000); }}
+                      className="text-zinc-500 hover:text-white"
+                    >
+                      {cliTokenCopied ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}
+                    </button>
+                  </div>
+                )}
+              </div>
+              {cliToken && (
+                <p className="text-[11px] text-orange-400/80">Copy this token — it won't be shown again. Paste it when <span className="font-mono">forge login</span> prompts you.</p>
+              )}
+            </div>
+          </div>
+
+          {/* Commands */}
+          <div>
+            <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">3. Ship it</p>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { cmd: "forge apps",              desc: "List your apps" },
+                { cmd: "forge deploy user/repo",  desc: "Deploy from GitHub" },
+                { cmd: "forge logs <app>",        desc: "Stream logs" },
+                { cmd: "forge db create mydb",    desc: "Provision Postgres" },
+                { cmd: "forge env <app> set K V", desc: "Set env var" },
+                { cmd: "forge redeploy <app>",    desc: "Redeploy app" },
+              ].map(({ cmd, desc }) => (
+                <div key={cmd} className="rounded-lg bg-black border border-zinc-800 px-3 py-2 flex items-center gap-2">
+                  <span className="text-[11px] font-mono text-orange-300 flex-1">{cmd}</span>
+                  <span className="text-[10px] text-zinc-600 hidden sm:block">{desc}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Deploy Modal */}

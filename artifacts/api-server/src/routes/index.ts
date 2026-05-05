@@ -47,6 +47,8 @@ import debugTestRouter from "./debugTest";
 import academyRouter from "./academy";
 import gymRouter from "./gym";
 import launchRouter from "./launch";
+import databasesRouter from "./databases";
+import cliRouter from "./cli";
 
 const router: IRouter = Router();
 
@@ -98,5 +100,7 @@ router.use(debugTestRouter);
 router.use(academyRouter);
 router.use(gymRouter);
 router.use(launchRouter);
+router.use(databasesRouter);
+router.use(cliRouter);
 
 export default router;

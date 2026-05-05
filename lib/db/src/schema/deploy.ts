@@ -87,8 +87,36 @@ export const userAppsTable = pgTable("user_apps", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+export const userDatabasesTable = pgTable("user_databases", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  name: text("name").notNull(),
+  appId: integer("app_id"),
+  coolifyResourceId: text("coolify_resource_id"),
+  dbUser: text("db_user").notNull().default("forge"),
+  dbName: text("db_name").notNull(),
+  dbPassword: text("db_password").notNull(),
+  internalHost: text("internal_host"),
+  port: integer("port").notNull().default(5432),
+  status: text("status").notNull().default("provisioning"),
+  connectionString: text("connection_string"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const cliTokensTable = pgTable("cli_tokens", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  token: text("token").notNull().unique(),
+  name: text("name").notNull().default("CLI"),
+  lastUsedAt: timestamp("last_used_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export type ServerConnection = typeof serverConnectionsTable.$inferSelect;
 export type RegistryApp = typeof registryAppsTable.$inferSelect;
 export type GithubConnection = typeof githubConnectionsTable.$inferSelect;
 export type AppSecret = typeof appSecretsTable.$inferSelect;
 export type UserApp = typeof userAppsTable.$inferSelect;
+export type UserDatabase = typeof userDatabasesTable.$inferSelect;
+export type CliToken = typeof cliTokensTable.$inferSelect;
