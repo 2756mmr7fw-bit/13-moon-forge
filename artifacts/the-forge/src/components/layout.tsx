@@ -89,7 +89,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
   ];
 
   const selfHostItems: NavItem[] = [
-    { href: "/forge-coder", label: "Forge Coder",        icon: Flame,           tip: "Describe anything — Forge writes the complete code and deploys it for you"    },
+    { href: "/forge-coder",     label: "Forge Coder",       icon: Flame,    tip: "Describe anything — Forge writes the complete code and deploys it for you"         },
+    { href: "/app-inspector",   label: "Forge Inspector",   icon: ScanLine, tip: "Forge logs into your apps, visits every page, and reports what's broken"           },
     { href: "/get-forge",  label: "Forge Agent (CLI)",   icon: Terminal,        tip: "Stuck? Install Forge on your computer — tell it what you need, it does it"   },
     { href: "/migrate",    label: "Connect & Deploy",    icon: Rocket,          tip: "Build in Replit, auto-deploy here — connect a GitHub repo in 5 steps"       },
     { href: "/deploys",    label: "Deploy Dashboard",    icon: Zap,             tip: "All your running apps — trigger redeploys, view logs, check status"          },

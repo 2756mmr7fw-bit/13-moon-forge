@@ -60,6 +60,7 @@ import deploysRouter from "./deploys";
 import helpRouter from "./help";
 import agentRouter from "./agent";
 import moonsRouter from "./moons";
+import inspectorRouter from "./inspector";
 
 const router: IRouter = Router();
 
@@ -124,5 +125,6 @@ router.use(deploysRouter);
 router.use(helpRouter);
 router.use(agentRouter);
 router.use(moonsRouter);
+router.use(inspectorRouter);
 
 export default router;
