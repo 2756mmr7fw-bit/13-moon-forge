@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,9 @@ import {
   Server, Globe, GitBranch, Plus, RefreshCw, ExternalLink,
   Loader2, Trash2, RotateCcw, Github, Zap, Database,
   CheckCircle2, AlertCircle, Clock, X, ChevronRight,
-  Package, Code2, Flame, Container, ArrowRight,
+  Package, Code2, Flame, Container, ArrowRight, Terminal,
+  Key, Settings, ChevronDown, ChevronUp, Copy, Check,
+  Webhook, Eye, EyeOff, Lock,
 } from "lucide-react";
 
 const API = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -23,8 +25,18 @@ interface UserApp {
   stack: string;
   status: string;
   url: string | null;
+  customDomain: string | null;
+  autoDeployEnabled: boolean;
+  webhookSecret: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+interface EnvVar {
+  uuid: string;
+  key: string;
+  value: string;
+  is_build_time?: boolean;
 }
 
 interface Repo {
@@ -45,14 +57,14 @@ interface GitHubStatus {
 }
 
 const STACK_ICONS: Record<string, React.ReactNode> = {
-  node: <Code2 size={14} className="text-green-400" />,
-  python: <Code2 size={14} className="text-blue-400" />,
-  go: <Code2 size={14} className="text-cyan-400" />,
-  ruby: <Code2 size={14} className="text-red-400" />,
-  static: <Globe size={14} className="text-purple-400" />,
-  docker: <Container size={14} className="text-sky-400" />,
-  compose: <Container size={14} className="text-sky-400" />,
-  auto: <Package size={14} className="text-zinc-400" />,
+  node:    <Code2 size={13} className="text-green-400" />,
+  python:  <Code2 size={13} className="text-blue-400" />,
+  go:      <Code2 size={13} className="text-cyan-400" />,
+  ruby:    <Code2 size={13} className="text-red-400" />,
+  static:  <Globe size={13} className="text-purple-400" />,
+  docker:  <Container size={13} className="text-sky-400" />,
+  compose: <Container size={13} className="text-sky-400" />,
+  auto:    <Package size={13} className="text-zinc-400" />,
 };
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; dot: string }> = {
@@ -67,11 +79,25 @@ function StatusBadge({ status }: { status: string }) {
   const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.pending;
   return (
     <span className={cn("flex items-center gap-1.5 text-xs font-medium", cfg.color)}>
-      <span className={cn("w-1.5 h-1.5 rounded-full", cfg.dot)} />
+      <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", cfg.dot)} />
       {cfg.label}
     </span>
   );
 }
+
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1500); }}
+      className="text-zinc-500 hover:text-zinc-300 transition-colors"
+    >
+      {copied ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}
+    </button>
+  );
+}
+
+type DetailTab = "logs" | "env" | "domain" | "autodeploy";
 
 export default function ForgeHosting() {
   const [apps, setApps] = useState<UserApp[]>([]);
@@ -89,6 +115,25 @@ export default function ForgeHosting() {
   const [deployError, setDeployError] = useState("");
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [redeployingId, setRedeployingId] = useState<number | null>(null);
+
+  // Detail panel state
+  const [expandedAppId, setExpandedAppId] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<DetailTab>("logs");
+  const [logs, setLogs] = useState<string[]>([]);
+  const [logsLoading, setLogsLoading] = useState(false);
+  const [envVars, setEnvVars] = useState<EnvVar[]>([]);
+  const [envLoading, setEnvLoading] = useState(false);
+  const [newEnvKey, setNewEnvKey] = useState("");
+  const [newEnvValue, setNewEnvValue] = useState("");
+  const [showEnvValue, setShowEnvValue] = useState(false);
+  const [addingEnv, setAddingEnv] = useState(false);
+  const [deletingEnvId, setDeletingEnvId] = useState<string | null>(null);
+  const [customDomain, setCustomDomain] = useState("");
+  const [savingDomain, setSavingDomain] = useState(false);
+  const [domainSaved, setDomainSaved] = useState(false);
+  const [togglingAutoDeploy, setTogglingAutoDeploy] = useState(false);
+  const logsEndRef = useRef<HTMLDivElement>(null);
+  const logsIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -131,6 +176,79 @@ export default function ForgeHosting() {
     }
   }, [selectedRepo]);
 
+  const fetchLogs = useCallback(async (appId: number) => {
+    setLogsLoading(true);
+    try {
+      const r = await fetch(`${API}/api/launch/apps/${appId}/logs`, { credentials: "include" });
+      if (r.ok) {
+        const data = await r.json();
+        setLogs(data.logs ?? []);
+        setTimeout(() => logsEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
+      }
+    } finally {
+      setLogsLoading(false);
+    }
+  }, []);
+
+  const fetchEnvVars = useCallback(async (appId: number) => {
+    setEnvLoading(true);
+    try {
+      const r = await fetch(`${API}/api/launch/apps/${appId}/env`, { credentials: "include" });
+      if (r.ok) {
+        const data = await r.json();
+        setEnvVars(data.vars ?? []);
+      }
+    } finally {
+      setEnvLoading(false);
+    }
+  }, []);
+
+  const syncStatus = useCallback(async (appId: number) => {
+    const r = await fetch(`${API}/api/launch/apps/${appId}/status`, { credentials: "include" });
+    if (r.ok) {
+      const { status } = await r.json();
+      setApps(prev => prev.map(a => a.id === appId ? { ...a, status } : a));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (logsIntervalRef.current) clearInterval(logsIntervalRef.current);
+    if (!expandedAppId) return;
+
+    const app = apps.find(a => a.id === expandedAppId);
+    if (!app) return;
+
+    setCustomDomain(app.customDomain ?? "");
+
+    if (activeTab === "logs") {
+      fetchLogs(expandedAppId);
+      syncStatus(expandedAppId);
+      const iv = setInterval(() => {
+        fetchLogs(expandedAppId);
+        syncStatus(expandedAppId);
+      }, 6000);
+      logsIntervalRef.current = iv;
+    } else if (activeTab === "env") {
+      fetchEnvVars(expandedAppId);
+    }
+
+    return () => {
+      if (logsIntervalRef.current) clearInterval(logsIntervalRef.current);
+    };
+  }, [expandedAppId, activeTab]);
+
+  const toggleExpand = (appId: number) => {
+    if (expandedAppId === appId) {
+      setExpandedAppId(null);
+      if (logsIntervalRef.current) clearInterval(logsIntervalRef.current);
+    } else {
+      setExpandedAppId(appId);
+      setActiveTab("logs");
+      setLogs([]);
+      setEnvVars([]);
+    }
+  };
+
   const handleDeploy = async () => {
     if (!selectedRepo || !appName.trim()) return;
     setDeploying(true);
@@ -149,6 +267,8 @@ export default function ForgeHosting() {
       setSelectedRepo(null);
       setAppName("");
       setDetectedStack(null);
+      setExpandedAppId(data.app.id);
+      setActiveTab("logs");
     } finally {
       setDeploying(false);
     }
@@ -159,6 +279,7 @@ export default function ForgeHosting() {
     try {
       await fetch(`${API}/api/launch/apps/${id}`, { method: "DELETE", credentials: "include" });
       setApps(prev => prev.filter(a => a.id !== id));
+      if (expandedAppId === id) setExpandedAppId(null);
     } finally {
       setDeletingId(null);
     }
@@ -174,6 +295,81 @@ export default function ForgeHosting() {
     }
   };
 
+  const handleAddEnv = async () => {
+    if (!expandedAppId || !newEnvKey.trim()) return;
+    setAddingEnv(true);
+    try {
+      const r = await fetch(`${API}/api/launch/apps/${expandedAppId}/env`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key: newEnvKey.trim(), value: newEnvValue }),
+      });
+      if (r.ok) {
+        setNewEnvKey("");
+        setNewEnvValue("");
+        setShowEnvValue(false);
+        await fetchEnvVars(expandedAppId);
+      }
+    } finally {
+      setAddingEnv(false);
+    }
+  };
+
+  const handleDeleteEnv = async (envUuid: string) => {
+    if (!expandedAppId) return;
+    setDeletingEnvId(envUuid);
+    try {
+      await fetch(`${API}/api/launch/apps/${expandedAppId}/env/${envUuid}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      setEnvVars(prev => prev.filter(v => v.uuid !== envUuid));
+    } finally {
+      setDeletingEnvId(null);
+    }
+  };
+
+  const handleSaveDomain = async () => {
+    if (!expandedAppId || !customDomain.trim()) return;
+    setSavingDomain(true);
+    try {
+      const r = await fetch(`${API}/api/launch/apps/${expandedAppId}/domain`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ domain: customDomain.trim() }),
+      });
+      if (r.ok) {
+        setApps(prev => prev.map(a => a.id === expandedAppId ? { ...a, customDomain: customDomain.trim() } : a));
+        setDomainSaved(true);
+        setTimeout(() => setDomainSaved(false), 2000);
+      }
+    } finally {
+      setSavingDomain(false);
+    }
+  };
+
+  const handleToggleAutoDeploy = async (app: UserApp) => {
+    setTogglingAutoDeploy(true);
+    try {
+      const r = await fetch(`${API}/api/launch/apps/${app.id}/autodeploy`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ enabled: !app.autoDeployEnabled }),
+      });
+      if (r.ok) {
+        const data = await r.json();
+        setApps(prev => prev.map(a =>
+          a.id === app.id ? { ...a, autoDeployEnabled: data.enabled } : a
+        ));
+      }
+    } finally {
+      setTogglingAutoDeploy(false);
+    }
+  };
+
   const filteredRepos = repos.filter(r =>
     r.fullName.toLowerCase().includes(repoSearch.toLowerCase()) ||
     (r.description ?? "").toLowerCase().includes(repoSearch.toLowerCase())
@@ -186,6 +382,8 @@ export default function ForgeHosting() {
       </div>
     );
   }
+
+  const expandedApp = apps.find(a => a.id === expandedAppId);
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 px-4 py-8 max-w-5xl mx-auto">
@@ -224,7 +422,7 @@ export default function ForgeHosting() {
         </div>
       )}
 
-      {/* Platform stats */}
+      {/* Stats */}
       <div className="grid grid-cols-3 gap-3 mb-8">
         {[
           { label: "Apps deployed", value: String(apps.length), icon: <Server size={14} className="text-orange-400" /> },
@@ -249,68 +447,350 @@ export default function ForgeHosting() {
           </Button>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {apps.map(app => (
-            <div key={app.id} className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-4 flex items-center gap-4">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-semibold text-white text-sm">{app.name}</span>
-                  <StatusBadge status={app.status} />
-                  <span className="text-zinc-600">{STACK_ICONS[app.stack] ?? STACK_ICONS.auto}</span>
+            <div key={app.id} className="rounded-xl border border-zinc-800 bg-zinc-900/40 overflow-hidden">
+              {/* App row */}
+              <div
+                className="p-4 flex items-center gap-4 cursor-pointer hover:bg-zinc-800/30 transition-colors"
+                onClick={() => toggleExpand(app.id)}
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-semibold text-white text-sm">{app.name}</span>
+                    <StatusBadge status={app.status} />
+                    <span className="text-zinc-600">{STACK_ICONS[app.stack] ?? STACK_ICONS.auto}</span>
+                    {app.autoDeployEnabled && (
+                      <span className="text-[10px] text-blue-400 border border-blue-400/30 rounded px-1.5 py-0.5">auto-deploy</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3 text-xs text-zinc-500">
+                    {app.customDomain ? (
+                      <span className="flex items-center gap-1 text-orange-400/80">
+                        <Globe size={11} /> {app.customDomain}
+                      </span>
+                    ) : app.url ? (
+                      <span className="flex items-center gap-1">
+                        <Globe size={11} /> {app.subdomain}.13moonforge.ai
+                      </span>
+                    ) : null}
+                    {app.githubRepo && (
+                      <span className="flex items-center gap-1">
+                        <GitBranch size={11} /> {app.githubRepo.split("/")[1]} / {app.githubBranch}
+                      </span>
+                    )}
+                    <span className="flex items-center gap-1">
+                      <Clock size={11} /> {new Date(app.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3 text-xs text-zinc-500">
+                <div className="flex items-center gap-1 shrink-0">
                   {app.url && (
-                    <a href={app.url} target="_blank" rel="noreferrer" className="flex items-center gap-1 hover:text-orange-400 transition-colors">
-                      <Globe size={11} /> {app.subdomain}.13moonforge.ai
+                    <a href={app.url} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}>
+                      <Button size="sm" variant="ghost" className="text-zinc-400 hover:text-white h-8 w-8 p-0">
+                        <ExternalLink size={13} />
+                      </Button>
                     </a>
                   )}
-                  {app.githubRepo && (
-                    <span className="flex items-center gap-1">
-                      <GitBranch size={11} /> {app.githubRepo} / {app.githubBranch}
-                    </span>
-                  )}
-                  <span className="flex items-center gap-1">
-                    <Clock size={11} /> {new Date(app.createdAt).toLocaleDateString()}
+                  <Button
+                    size="sm" variant="ghost"
+                    className="text-zinc-400 hover:text-blue-400 h-8 w-8 p-0"
+                    onClick={e => { e.stopPropagation(); handleRedeploy(app.id); }}
+                    disabled={redeployingId === app.id}
+                  >
+                    {redeployingId === app.id ? <Loader2 size={13} className="animate-spin" /> : <RotateCcw size={13} />}
+                  </Button>
+                  <Button
+                    size="sm" variant="ghost"
+                    className="text-zinc-400 hover:text-red-400 h-8 w-8 p-0"
+                    onClick={e => { e.stopPropagation(); handleDelete(app.id); }}
+                    disabled={deletingId === app.id}
+                  >
+                    {deletingId === app.id ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
+                  </Button>
+                  <span className="text-zinc-600 ml-1">
+                    {expandedAppId === app.id ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                   </span>
                 </div>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
-                {app.url && (
-                  <a href={app.url} target="_blank" rel="noreferrer">
-                    <Button size="sm" variant="ghost" className="text-zinc-400 hover:text-white h-8 w-8 p-0">
-                      <ExternalLink size={13} />
-                    </Button>
-                  </a>
-                )}
-                <Button
-                  size="sm" variant="ghost"
-                  className="text-zinc-400 hover:text-blue-400 h-8 w-8 p-0"
-                  onClick={() => handleRedeploy(app.id)}
-                  disabled={redeployingId === app.id}
-                >
-                  {redeployingId === app.id ? <Loader2 size={13} className="animate-spin" /> : <RotateCcw size={13} />}
-                </Button>
-                <Button
-                  size="sm" variant="ghost"
-                  className="text-zinc-400 hover:text-red-400 h-8 w-8 p-0"
-                  onClick={() => handleDelete(app.id)}
-                  disabled={deletingId === app.id}
-                >
-                  {deletingId === app.id ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
-                </Button>
-              </div>
+
+              {/* Detail panel */}
+              {expandedAppId === app.id && (
+                <div className="border-t border-zinc-800">
+                  {/* Tabs */}
+                  <div className="flex gap-0 border-b border-zinc-800 px-4">
+                    {([
+                      { id: "logs",       label: "Logs",        icon: <Terminal size={12} /> },
+                      { id: "env",        label: "Env Vars",    icon: <Key size={12} /> },
+                      { id: "domain",     label: "Domain",      icon: <Globe size={12} /> },
+                      { id: "autodeploy", label: "Auto-Deploy", icon: <Webhook size={12} /> },
+                    ] as { id: DetailTab; label: string; icon: React.ReactNode }[]).map(tab => (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={cn(
+                          "flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium border-b-2 transition-colors",
+                          activeTab === tab.id
+                            ? "border-orange-500 text-orange-400"
+                            : "border-transparent text-zinc-500 hover:text-zinc-300"
+                        )}
+                      >
+                        {tab.icon} {tab.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Tab: Logs */}
+                  {activeTab === "logs" && (
+                    <div className="p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs text-zinc-500">Live logs · refreshes every 6s</span>
+                        <Button size="sm" variant="ghost" className="h-6 text-xs text-zinc-500 hover:text-white px-2" onClick={() => fetchLogs(app.id)}>
+                          <RefreshCw size={11} className="mr-1" /> Refresh
+                        </Button>
+                      </div>
+                      <div className="rounded-lg bg-black border border-zinc-800 p-3 h-64 overflow-y-auto font-mono text-[11px] leading-relaxed">
+                        {logsLoading && logs.length === 0 ? (
+                          <div className="flex items-center gap-2 text-zinc-500">
+                            <Loader2 size={12} className="animate-spin" /> Fetching logs...
+                          </div>
+                        ) : logs.length === 0 ? (
+                          <p className="text-zinc-600">No logs yet. Logs appear here once the app starts building.</p>
+                        ) : (
+                          logs.map((line, i) => (
+                            <div key={i} className={cn(
+                              "whitespace-pre-wrap break-all",
+                              line.toLowerCase().includes("error") ? "text-red-400" :
+                              line.toLowerCase().includes("warn") ? "text-yellow-400" :
+                              line.toLowerCase().includes("success") || line.toLowerCase().includes("done") ? "text-green-400" :
+                              "text-zinc-300"
+                            )}>
+                              {line}
+                            </div>
+                          ))
+                        )}
+                        <div ref={logsEndRef} />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Tab: Env Vars */}
+                  {activeTab === "env" && (
+                    <div className="p-4 space-y-3">
+                      <p className="text-xs text-zinc-500">Environment variables injected into your app at runtime. Changes take effect after a redeploy.</p>
+
+                      {envLoading ? (
+                        <div className="flex items-center gap-2 text-xs text-zinc-500 py-3">
+                          <Loader2 size={12} className="animate-spin" /> Loading...
+                        </div>
+                      ) : envVars.length === 0 ? (
+                        <p className="text-xs text-zinc-600 py-2">No environment variables set yet.</p>
+                      ) : (
+                        <div className="space-y-1.5">
+                          {envVars.map(v => (
+                            <div key={v.uuid} className="flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-800/40 px-3 py-2">
+                              <Lock size={11} className="text-zinc-600 shrink-0" />
+                              <span className="text-xs font-mono text-zinc-300 font-semibold w-48 truncate">{v.key}</span>
+                              <span className="text-xs font-mono text-zinc-600 flex-1 truncate">{"•".repeat(Math.min(v.value?.length ?? 8, 16))}</span>
+                              <CopyButton text={`${v.key}=${v.value}`} />
+                              <button
+                                onClick={() => handleDeleteEnv(v.uuid)}
+                                disabled={deletingEnvId === v.uuid}
+                                className="text-zinc-600 hover:text-red-400 transition-colors"
+                              >
+                                {deletingEnvId === v.uuid ? <Loader2 size={11} className="animate-spin" /> : <X size={11} />}
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Add new env var */}
+                      <div className="rounded-lg border border-zinc-700 bg-zinc-800/20 p-3 space-y-2">
+                        <p className="text-[11px] font-semibold text-zinc-400">Add variable</p>
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder="KEY"
+                            value={newEnvKey}
+                            onChange={e => setNewEnvKey(e.target.value.toUpperCase().replace(/\s/g, "_"))}
+                            className="bg-zinc-800 border-zinc-700 text-white h-8 text-xs font-mono w-40"
+                          />
+                          <div className="relative flex-1">
+                            <Input
+                              placeholder="value"
+                              value={newEnvValue}
+                              type={showEnvValue ? "text" : "password"}
+                              onChange={e => setNewEnvValue(e.target.value)}
+                              className="bg-zinc-800 border-zinc-700 text-white h-8 text-xs font-mono pr-8"
+                            />
+                            <button
+                              onClick={() => setShowEnvValue(p => !p)}
+                              className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
+                            >
+                              {showEnvValue ? <EyeOff size={12} /> : <Eye size={12} />}
+                            </button>
+                          </div>
+                          <Button
+                            size="sm"
+                            onClick={handleAddEnv}
+                            disabled={!newEnvKey.trim() || addingEnv}
+                            className="bg-orange-500 hover:bg-orange-600 text-white h-8 px-3 text-xs"
+                          >
+                            {addingEnv ? <Loader2 size={12} className="animate-spin" /> : "Add"}
+                          </Button>
+                        </div>
+                      </div>
+
+                      {envVars.length > 0 && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-zinc-700 text-zinc-400 hover:text-white text-xs h-7"
+                          onClick={() => handleRedeploy(app.id)}
+                          disabled={redeployingId === app.id}
+                        >
+                          <RotateCcw size={11} className="mr-1.5" />
+                          {redeployingId === app.id ? "Redeploying..." : "Redeploy to apply changes"}
+                        </Button>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Tab: Domain */}
+                  {activeTab === "domain" && (
+                    <div className="p-4 space-y-4">
+                      <div>
+                        <p className="text-xs font-semibold text-zinc-300 mb-1">Forge subdomain</p>
+                        <div className="flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-800/40 px-3 py-2">
+                          <Globe size={12} className="text-zinc-500" />
+                          <span className="text-xs font-mono text-zinc-300">{app.subdomain}.13moonforge.ai</span>
+                          <CopyButton text={`https://${app.subdomain}.13moonforge.ai`} />
+                          <a href={`https://${app.subdomain}.13moonforge.ai`} target="_blank" rel="noreferrer" className="text-zinc-500 hover:text-zinc-300">
+                            <ExternalLink size={11} />
+                          </a>
+                        </div>
+                      </div>
+
+                      <div>
+                        <p className="text-xs font-semibold text-zinc-300 mb-1">Custom domain</p>
+                        <p className="text-[11px] text-zinc-500 mb-2">Point your domain to your Forge app. Traefik handles SSL automatically.</p>
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder="myapp.com or app.mysite.com"
+                            value={customDomain}
+                            onChange={e => { setCustomDomain(e.target.value); setDomainSaved(false); }}
+                            className="bg-zinc-800 border-zinc-700 text-white h-8 text-xs font-mono"
+                          />
+                          <Button
+                            size="sm"
+                            onClick={handleSaveDomain}
+                            disabled={!customDomain.trim() || savingDomain}
+                            className="bg-orange-500 hover:bg-orange-600 text-white h-8 px-3 text-xs shrink-0"
+                          >
+                            {savingDomain ? <Loader2 size={12} className="animate-spin" /> : domainSaved ? <Check size={12} /> : "Save"}
+                          </Button>
+                        </div>
+                      </div>
+
+                      {customDomain && (
+                        <div className="rounded-lg border border-zinc-800 bg-zinc-800/20 p-3 space-y-2">
+                          <p className="text-[11px] font-semibold text-zinc-400">DNS setup</p>
+                          <p className="text-[11px] text-zinc-500">Add this record in your DNS provider:</p>
+                          <div className="rounded border border-zinc-700 bg-black p-2 font-mono text-[11px]">
+                            <div className="flex gap-4 text-zinc-400">
+                              <span className="text-zinc-600 w-16">Type</span>
+                              <span className="text-zinc-600 w-36">Name</span>
+                              <span className="text-zinc-600">Value</span>
+                            </div>
+                            <div className="flex gap-4 text-zinc-300 mt-1">
+                              <span className="w-16">A</span>
+                              <span className="w-36 truncate">{customDomain.includes(".") ? customDomain.split(".")[0] : "@"}</span>
+                              <span>5.78.154.21</span>
+                            </div>
+                          </div>
+                          <p className="text-[11px] text-zinc-600">SSL certificate is issued automatically within a few minutes of DNS propagation.</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Tab: Auto-Deploy */}
+                  {activeTab === "autodeploy" && (
+                    <div className="p-4 space-y-4">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="text-xs font-semibold text-zinc-300 mb-1">Auto-deploy on push</p>
+                          <p className="text-[11px] text-zinc-500">Redeploy automatically every time you push to <span className="font-mono text-zinc-300">{app.githubBranch}</span>.</p>
+                        </div>
+                        <button
+                          onClick={() => handleToggleAutoDeploy(app)}
+                          disabled={togglingAutoDeploy}
+                          className={cn(
+                            "relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200",
+                            app.autoDeployEnabled ? "bg-orange-500" : "bg-zinc-700"
+                          )}
+                        >
+                          <span className={cn(
+                            "inline-block h-4 w-4 transform rounded-full bg-white shadow transition duration-200",
+                            app.autoDeployEnabled ? "translate-x-4" : "translate-x-0"
+                          )} />
+                        </button>
+                      </div>
+
+                      {app.autoDeployEnabled && app.webhookSecret && (
+                        <div className="space-y-3">
+                          <div className="rounded-lg border border-zinc-800 bg-zinc-800/20 p-3 space-y-2">
+                            <p className="text-[11px] font-semibold text-zinc-400">GitHub webhook setup</p>
+                            <p className="text-[11px] text-zinc-500">In your GitHub repo → Settings → Webhooks → Add webhook:</p>
+                            <div className="space-y-2">
+                              <div>
+                                <p className="text-[10px] text-zinc-600 mb-1">Payload URL</p>
+                                <div className="flex items-center gap-2 bg-black rounded border border-zinc-700 px-2 py-1.5">
+                                  <span className="text-[11px] font-mono text-zinc-300 flex-1 break-all">
+                                    {`https://13moonforge.ai/api/launch/webhook/${app.webhookSecret}`}
+                                  </span>
+                                  <CopyButton text={`https://13moonforge.ai/api/launch/webhook/${app.webhookSecret}`} />
+                                </div>
+                              </div>
+                              <div className="flex gap-4">
+                                <div className="flex-1">
+                                  <p className="text-[10px] text-zinc-600 mb-1">Content type</p>
+                                  <div className="bg-black rounded border border-zinc-700 px-2 py-1.5 text-[11px] font-mono text-zinc-300">application/json</div>
+                                </div>
+                                <div className="flex-1">
+                                  <p className="text-[10px] text-zinc-600 mb-1">Events</p>
+                                  <div className="bg-black rounded border border-zinc-700 px-2 py-1.5 text-[11px] font-mono text-zinc-300">Just the push event</div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 text-[11px] text-green-400">
+                            <CheckCircle2 size={12} /> Webhook active — pushes to <span className="font-mono">{app.githubBranch}</span> will trigger a redeploy
+                          </div>
+                        </div>
+                      )}
+
+                      {!app.autoDeployEnabled && (
+                        <div className="rounded-lg border border-zinc-800 bg-zinc-800/20 p-3 text-[11px] text-zinc-500">
+                          Enable auto-deploy to get a webhook URL you can add to your GitHub repo. Every push to <span className="font-mono text-zinc-300">{app.githubBranch}</span> will redeploy automatically.
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           ))}
         </div>
       )}
 
-      {/* Links to other tools */}
+      {/* Quick links */}
       <div className="mt-8 grid grid-cols-2 gap-3">
         {[
-          { href: "/github", label: "Connect GitHub", desc: "Link your repos", icon: <Github size={15} /> },
-          { href: "/sovereign", label: "Sovereign Stack", desc: "Certification checker", icon: <CheckCircle2 size={15} /> },
-          { href: "/secrets", label: "App Secrets", desc: "Manage env vars", icon: <Server size={15} /> },
-          { href: "/monitor", label: "Monitor", desc: "Uptime & health", icon: <Zap size={15} /> },
+          { href: "/github",    label: "Connect GitHub",   desc: "Link your repos",      icon: <Github size={15} /> },
+          { href: "/sovereign", label: "Sovereign Stack",  desc: "Certification checker", icon: <CheckCircle2 size={15} /> },
+          { href: "/secrets",   label: "App Secrets",      desc: "Manage env vars",       icon: <Key size={15} /> },
+          { href: "/monitor",   label: "Monitor",          desc: "Uptime & health",        icon: <Zap size={15} /> },
         ].map(link => (
           <Link key={link.href} href={link.href}>
             <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-4 hover:border-zinc-700 transition-colors cursor-pointer flex items-center gap-3">
@@ -350,7 +830,6 @@ export default function ForgeHosting() {
                 </div>
               ) : (
                 <>
-                  {/* Step 1: Pick repo */}
                   <div>
                     <Label className="text-xs text-zinc-400 mb-2 block">1. Pick a repository</Label>
                     <Input
@@ -390,7 +869,6 @@ export default function ForgeHosting() {
                     </div>
                   </div>
 
-                  {/* Step 2: Config */}
                   {selectedRepo && (
                     <>
                       <div>
@@ -415,7 +893,6 @@ export default function ForgeHosting() {
                         />
                       </div>
 
-                      {/* Stack detection */}
                       <div className="rounded-lg border border-zinc-800 bg-zinc-800/30 p-3">
                         {detecting ? (
                           <div className="flex items-center gap-2 text-xs text-zinc-400">
