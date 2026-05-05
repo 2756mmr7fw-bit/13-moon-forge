@@ -195,7 +195,7 @@ router.get("/help/cli-token", (req, res) => {
 
 // ── GET /api/help/forge-agent.js — serve the downloadable CLI script ───────────
 router.get("/help/forge-agent.js", (_req, res) => {
-  const scriptPath = path.join(__dirname, "..", "..", "forge-agent.js");
+  const scriptPath = path.join(__dirname, "..", "forge-agent.js");
   if (fs.existsSync(scriptPath)) {
     res.setHeader("Content-Type", "application/javascript");
     res.setHeader("Content-Disposition", 'attachment; filename="forge.js"');
