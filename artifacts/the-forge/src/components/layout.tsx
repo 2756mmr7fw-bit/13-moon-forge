@@ -78,6 +78,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   const selfHostItems: NavItem[] = [
     { href: "/vault",      label: "The Vault",           icon: Vault,           tip: "Your private code vault — store, import, and own your repos"       },
+    { href: "/activity",   label: "Activity Feed",        icon: Activity,        tip: "Timeline of everything that happened — repos, imports, deployments" },
     { href: "/github",     label: "GitHub",              icon: Github,          tip: "Connect your GitHub repositories"                                  },
     { href: "/wizard",     label: "Move My App",         icon: Wand2,           tip: "Step-by-step wizard to move your app off Replit, Heroku, or Render" },
     { href: "/migration",  label: "Migration Status",    icon: ArrowRightLeft,  tip: "Check the progress of an ongoing migration"                        },
