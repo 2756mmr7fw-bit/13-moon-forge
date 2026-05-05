@@ -59,6 +59,7 @@ import activityRouter from "./activity";
 import deploysRouter from "./deploys";
 import helpRouter from "./help";
 import agentRouter from "./agent";
+import moonsRouter from "./moons";
 
 const router: IRouter = Router();
 
@@ -122,5 +123,6 @@ router.use(activityRouter);
 router.use(deploysRouter);
 router.use(helpRouter);
 router.use(agentRouter);
+router.use(moonsRouter);
 
 export default router;

@@ -5,6 +5,7 @@ import {
   Sparkles, Code2, Wand2, Layers, Scale, Crosshair, Activity,
   GraduationCap, ArrowRightLeft, Wrench, BookOpen, Archive, Gamepad2, Rocket, LogOut,
   Shield, Github, Package, User, Users, LogIn, Menu, X, Settings, KeyRound, ShieldAlert, PlugZap, Swords, Monitor, MonitorPlay, Globe, Download, Wifi, LayoutTemplate, PencilLine, Mail, Search, Grid3X3, Server, Upload, ScanLine, Bug, Timer, Vault, Zap,
+  Compass, Receipt, Dumbbell, Megaphone, Feather, Terminal,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LogoMark, LogoWordmark } from "@/components/logo";
@@ -58,6 +59,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/gallery",       label: "Forge Gallery",  icon: Grid3X3,        tip: "See what people have built with Forge — public shared outputs" },
     { href: "/town-square",   label: "Town Square",    icon: Users,          tip: "The full family of apps — one account, one subscription, twelve tools" },
     { href: "/academy",       label: "Forge Academy",  icon: GraduationCap,  tip: "The coding school — sovereign coders, not order takers. First lesson free." },
+  ];
+
+  const moonItems: NavItem[] = [
+    { href: "/project-room",  label: "Project Room",   icon: Layers,    tip: "Your crew HQ — create a project, assemble your moons, track everything in one place" },
+    { href: "/moons/sage",    label: "Sage",           icon: Compass,   tip: "The planner — figures out what you're actually building and why, before a line is written" },
+    { href: "/moons/scout",   label: "Scout",          icon: Crosshair, tip: "The researcher — finds what already exists so you don't build the wrong thing" },
+    { href: "/moons/quill",   label: "Quill",          icon: Feather,   tip: "The writer — names, copy, pitches, docs, brainstorms. Everything that needs words" },
+    { href: "/moons/ledger",  label: "Ledger",         icon: Receipt,   tip: "The tracker — time logged, money spent, always visible so nothing bleeds invisibly" },
+    { href: "/moons/grit",    label: "Grit",           icon: Dumbbell,  tip: "The push — when you've hit the wall, Grit gets you one concrete step forward" },
+    { href: "/moons/herald",  label: "Herald",         icon: Megaphone, tip: "The launcher — plan and execute the moment your work goes into the world" },
   ];
 
   const toolItems: NavItem[] = [
@@ -173,6 +184,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {/* Builder */}
         <div className="space-y-0.5">
           {builderItems.map(item => <NavLink key={item.href} {...item} onClick={onClose} />)}
+        </div>
+
+        {/* The Moons */}
+        <div className="pt-4 pb-1 px-3">
+          <p className="text-[10px] font-bold tracking-widest text-muted-foreground/50 uppercase">The Moons</p>
+        </div>
+        <div className="space-y-0.5">
+          {moonItems.map(item => <NavLink key={item.href} {...item} onClick={onClose} />)}
         </div>
 
         {/* AI Tools */}
