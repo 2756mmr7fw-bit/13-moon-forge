@@ -2,6 +2,7 @@ import http from "http";
 import app from "./app";
 import { logger } from "./lib/logger";
 import { createRemoteWss } from "./routes/remote";
+import { startUptimePoller } from "./routes/uptime";
 
 const rawPort = process.env["PORT"];
 
@@ -37,4 +38,5 @@ server.listen(port, (err?: Error) => {
     process.exit(1);
   }
   logger.info({ port }, "Server listening");
+  startUptimePoller();
 });
