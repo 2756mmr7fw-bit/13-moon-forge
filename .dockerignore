@@ -9,4 +9,8 @@ dist
 **/dist
 *.log
 .DS_Store
+attached_assets
 artifacts/mockup-sandbox
+artifacts/forge-mobile
+.local
+scripts

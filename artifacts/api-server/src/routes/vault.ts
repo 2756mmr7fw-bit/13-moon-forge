@@ -142,40 +142,17 @@ router.post("/vault/import/github", async (req, res) => {
     return res.status(503).json({ error: "Vault not configured. Please set FORGEJO_URL and FORGEJO_TOKEN." });
   }
 
-  // Derive repo name from URL if not provided
   const urlParts = body.data.githubUrl.replace(/\.git$/, "").split("/");
   const derivedName = body.data.repoName ?? urlParts[urlParts.length - 1] ?? "imported-repo";
 
-  // Create DB record immediately (pending)
-  let importRecord: { id: number } | undefined;
-  let repoRecord: { id: number; name: string; forgejoOwner: string | null; cloneUrl: string | null } | undefined;
-
   try {
-    // Create repo in Forgejo
-    const forgejoRes = await forgejoApi("POST", `/user/repos`, {
-      name: derivedName,
-      description: `Imported from ${body.data.githubUrl}`,
-      private: body.data.visibility === "private",
-      auto_init: false,
-    });
-
-    if (!forgejoRes.ok) {
-      return res.status(502).json({ error: `Vault error: ${(forgejoRes.data as { message?: string }).message ?? "Unknown"}` });
-    }
-
-    const forgejoRepo = forgejoRes.data as { id: number; owner: { login: string }; full_name: string; clone_url: string };
-
+    // Insert repo + import records immediately so we can respond 202 right away
     const [repo] = await db.insert(reposTable).values({
       name: derivedName,
       description: `Imported from ${body.data.githubUrl}`,
       visibility: body.data.visibility,
-      forgejoRepoId: forgejoRepo.id,
-      forgejoOwner: forgejoRepo.owner.login,
-      forgejoFullName: forgejoRepo.full_name,
-      cloneUrl: forgejoRepo.clone_url,
       projectId: body.data.projectId ?? null,
     }).returning();
-    repoRecord = repo;
 
     const [imp] = await db.insert(importsTable).values({
       repoId: repo.id,
@@ -184,40 +161,50 @@ router.post("/vault/import/github", async (req, res) => {
       sourceRepoName: derivedName,
       status: "importing",
     }).returning();
-    importRecord = imp;
 
     res.status(202).json({ repo, import: imp, message: "Import started" });
 
-    // Run the actual git mirror in the background
-    const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "vault-import-"));
+    // Use Forgejo's native migration API — server-to-server, no local git or disk needed
     try {
-      const cloneUrl = body.data.githubToken
-        ? body.data.githubUrl.replace("https://", `https://${body.data.githubToken}@`)
-        : body.data.githubUrl;
+      const migrateRes = await forgejoApi("POST", "/repos/migrate", {
+        clone_addr: body.data.githubUrl,
+        repo_name: derivedName,
+        private: body.data.visibility === "private",
+        mirror: false,
+        auth_token: body.data.githubToken ?? undefined,
+        wiki: false,
+        issues: false,
+        pull_requests: false,
+        releases: false,
+        milestones: false,
+        labels: false,
+      });
 
-      await execAsync(`git clone --mirror "${cloneUrl}" "${tmpDir}/repo.git"`);
+      if (!migrateRes.ok) {
+        throw new Error((migrateRes.data as { message?: string }).message ?? "Migration failed");
+      }
 
-      const pushUrl = forgejoRepo.clone_url.replace("https://", `https://${FORGEJO_ADMIN_USER}:${FORGEJO_TOKEN}@`);
-      await execAsync(`git -C "${tmpDir}/repo.git" remote set-url origin "${pushUrl}"`);
-      await execAsync(`git -C "${tmpDir}/repo.git" push --mirror`);
+      const forgejoRepo = migrateRes.data as { id: number; owner: { login: string }; full_name: string; clone_url: string };
+
+      await db.update(reposTable).set({
+        forgejoRepoId: forgejoRepo.id,
+        forgejoOwner: forgejoRepo.owner.login,
+        forgejoFullName: forgejoRepo.full_name,
+        cloneUrl: forgejoRepo.clone_url,
+        updatedAt: new Date(),
+      }).where(eq(reposTable.id, repo.id));
 
       await db.update(importsTable)
         .set({ status: "done", updatedAt: new Date() })
         .where(eq(importsTable.id, imp.id));
-
-      await db.update(reposTable)
-        .set({ updatedAt: new Date() })
-        .where(eq(reposTable.id, repo.id));
-    } finally {
-      await fs.rm(tmpDir, { recursive: true, force: true });
-    }
-  } catch (err: unknown) {
-    req.log.error({ err }, "GitHub import failed");
-    if (importRecord) {
+    } catch (err) {
+      req.log.error({ err }, "GitHub migration failed");
       await db.update(importsTable)
         .set({ status: "error", errorMessage: String(err), updatedAt: new Date() })
-        .where(eq(importsTable.id, importRecord.id));
+        .where(eq(importsTable.id, imp.id));
     }
+  } catch (err) {
+    req.log.error({ err }, "GitHub import setup failed");
   }
 });
 
