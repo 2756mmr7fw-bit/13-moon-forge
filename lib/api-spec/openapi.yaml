@@ -376,6 +376,9 @@ components:
           enum: [draft, published, archived]
         template:
           type: string
+        projectType:
+          type: string
+          enum: [website, app, api, tool]
         pageCount:
           type: integer
         createdAt:
@@ -389,6 +392,7 @@ components:
         - name
         - status
         - template
+        - projectType
         - pageCount
         - createdAt
         - updatedAt
@@ -402,6 +406,9 @@ components:
           type: string
         template:
           type: string
+        projectType:
+          type: string
+          enum: [website, app, api, tool]
       required:
         - name
         - template
@@ -416,6 +423,9 @@ components:
         status:
           type: string
           enum: [draft, published, archived]
+        projectType:
+          type: string
+          enum: [website, app, api, tool]
 
     Page:
       type: object
