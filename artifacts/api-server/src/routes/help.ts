@@ -1,7 +1,37 @@
 import { Router } from "express";
 import { openai } from "@workspace/integrations-openai-ai-server";
+import { createHmac } from "crypto";
+import path from "path";
+import fs from "fs";
 
 const router = Router();
+
+// ── CLI token helpers ──────────────────────────────────────────────────────────
+function generateCliToken(userId: string): string {
+  const secret = process.env.SESSION_SECRET ?? "forge-agent-secret";
+  const ts = Date.now().toString();
+  const payload = `${userId}:${ts}`;
+  const sig = createHmac("sha256", secret).update(payload).digest("hex");
+  return Buffer.from(`${payload}:${sig}`).toString("base64url");
+}
+
+function verifyCliToken(token: string): string | null {
+  try {
+    const secret = process.env.SESSION_SECRET ?? "forge-agent-secret";
+    const decoded = Buffer.from(token, "base64url").toString();
+    const lastColon = decoded.lastIndexOf(":");
+    const sig = decoded.slice(lastColon + 1);
+    const payload = decoded.slice(0, lastColon);
+    const expected = createHmac("sha256", secret).update(payload).digest("hex");
+    if (sig !== expected) return null;
+    const parts = payload.split(":");
+    if (parts.length < 2) return null;
+    const ts = parseInt(parts[parts.length - 1]);
+    // 1-year expiry
+    if (Date.now() - ts > 365 * 24 * 60 * 60 * 1000) return null;
+    return parts.slice(0, -1).join(":");
+  } catch { return null; }
+}
 
 const FORGE_HELP_SYSTEM_PROMPT = `You are Forge Guide — the built-in helper for 13 Moon Forge, a self-hosting platform that lets anyone move their apps off Replit, Vercel, Netlify, Heroku, Railway, Render, DigitalOcean, Fly.io, Glitch, and GitHub Pages onto their own server.
 
@@ -150,6 +180,70 @@ router.post("/help/chat", async (req, res) => {
     res.write(`data: ${JSON.stringify({ type: "done" })}\n\n`);
   } catch (err) {
     req.log.error({ err }, "Help chat error");
+    res.write(`data: ${JSON.stringify({ type: "error", message: "Something went wrong" })}\n\n`);
+  } finally {
+    res.end();
+  }
+});
+
+// ── GET /api/help/cli-token — issue a CLI token for logged-in user ─────────────
+router.get("/help/cli-token", (req, res) => {
+  if (!req.user) return res.status(401).json({ error: "Not authenticated" });
+  const token = generateCliToken((req.user as { id: string }).id);
+  res.json({ token });
+});
+
+// ── GET /api/help/forge-agent.js — serve the downloadable CLI script ───────────
+router.get("/help/forge-agent.js", (_req, res) => {
+  const scriptPath = path.join(__dirname, "..", "..", "forge-agent.js");
+  if (fs.existsSync(scriptPath)) {
+    res.setHeader("Content-Type", "application/javascript");
+    res.setHeader("Content-Disposition", 'attachment; filename="forge.js"');
+    res.sendFile(scriptPath);
+  } else {
+    res.status(404).json({ error: "Forge Agent script not found" });
+  }
+});
+
+// ── POST /api/help/cli-chat — CLI-token-authenticated streaming chat ───────────
+router.post("/help/cli-chat", async (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith("Bearer ")) {
+    return res.status(401).json({ error: "Bearer token required" });
+  }
+  const userId = verifyCliToken(authHeader.slice(7));
+  if (!userId) return res.status(401).json({ error: "Invalid or expired CLI token" });
+
+  const { messages } = req.body as {
+    messages?: Array<{ role: "user" | "assistant"; content: string }>;
+  };
+  if (!Array.isArray(messages) || messages.length === 0) {
+    return res.status(400).json({ error: "messages required" });
+  }
+
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  res.flushHeaders();
+
+  try {
+    const stream = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      stream: true,
+      max_tokens: 800,
+      temperature: 0.5,
+      messages: [
+        { role: "system", content: FORGE_HELP_SYSTEM_PROMPT + "\n\nIMPORTANT: You are running as a CLI agent on the user's local machine. Be concise. When you suggest an action the user should take (like creating a GitHub repo or running a git command), phrase it so they know you can do it for them if they confirm. Keep responses focused and short — this is a terminal, not a web chat." },
+        ...messages.slice(-12),
+      ],
+    });
+
+    for await (const chunk of stream) {
+      const text = chunk.choices[0]?.delta?.content ?? "";
+      if (text) res.write(`data: ${JSON.stringify({ type: "chunk", text })}\n\n`);
+    }
+    res.write(`data: ${JSON.stringify({ type: "done" })}\n\n`);
+  } catch (err) {
     res.write(`data: ${JSON.stringify({ type: "error", message: "Something went wrong" })}\n\n`);
   } finally {
     res.end();
