@@ -12,6 +12,7 @@ import { OnboardingModal } from "@/components/onboarding-modal";
 import { useAuth } from "@workspace/replit-auth-web";
 import { SkillLevelBadge, SkillLevelDialog } from "@/components/skill-level-selector";
 import { CommandPalette, useCommandPalette } from "@/components/command-palette";
+import { HelpChat } from "@/components/help-chat";
 
 const OUR_APPS_URL = "https://thepeoplestownsq.com";
 
@@ -322,6 +323,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </main>
+
+      <HelpChat />
     </div>
   );
 }
