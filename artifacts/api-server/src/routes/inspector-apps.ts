@@ -24,8 +24,8 @@ function verifyCliToken(token: string): string | null {
   } catch { return null; }
 }
 
-function getCliUserId(req: ReturnType<typeof Router>["get"] extends (...args: any[]) => any ? any : any): string | null {
-  const auth = (req as any).headers?.authorization as string | undefined;
+function getCliUserId(req: any): string | null {
+  const auth = req.headers?.authorization as string | undefined;
   if (!auth?.startsWith("Bearer ")) return null;
   return verifyCliToken(auth.slice(7));
 }
@@ -76,10 +76,10 @@ async function generateQuillDoc(
 
 // ══════════════════════════════════════════════════════════════════════════════
 // ── APPS — Clerk-authenticated (web UI) ──────────────────────────────────────
+// These are mounted at /api via app.use("/api", router), so paths omit /api
 // ══════════════════════════════════════════════════════════════════════════════
 
-// GET /api/inspector/apps
-router.get("/api/inspector/apps", async (req, res) => {
+router.get("/inspector/apps", async (req, res) => {
   if (!req.user) { res.status(401).json({ error: "Not authenticated" }); return; }
   const uid = userId(req);
   const apps = await db
@@ -90,24 +90,15 @@ router.get("/api/inspector/apps", async (req, res) => {
   res.json({ apps });
 });
 
-// POST /api/inspector/apps
-router.post("/api/inspector/apps", async (req, res) => {
+router.post("/inspector/apps", async (req, res) => {
   if (!req.user) { res.status(401).json({ error: "Not authenticated" }); return; }
   const uid = userId(req);
   const body = req.body as {
-    id?: string;
-    name?: string;
-    url?: string;
-    loginUrl?: string;
-    username?: string;
-    usernameField?: string;
-    passwordField?: string;
-    loginMethod?: string;
-    pages?: string[];
-    description?: string;
+    id?: string; name?: string; url?: string; loginUrl?: string;
+    username?: string; usernameField?: string; passwordField?: string;
+    loginMethod?: string; pages?: string[]; description?: string;
   };
   if (!body.name || !body.url) { res.status(400).json({ error: "name and url required" }); return; }
-
   const id = body.id ?? `app_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   await db.insert(inspectorAppsTable).values({
     id, userId: uid,
@@ -124,8 +115,7 @@ router.post("/api/inspector/apps", async (req, res) => {
   res.json({ ok: true, id });
 });
 
-// PUT /api/inspector/apps/:id
-router.put("/api/inspector/apps/:id", async (req, res) => {
+router.put("/inspector/apps/:id", async (req, res) => {
   if (!req.user) { res.status(401).json({ error: "Not authenticated" }); return; }
   const uid = userId(req);
   const body = req.body;
@@ -146,8 +136,7 @@ router.put("/api/inspector/apps/:id", async (req, res) => {
   res.json({ ok: true });
 });
 
-// DELETE /api/inspector/apps/:id
-router.delete("/api/inspector/apps/:id", async (req, res) => {
+router.delete("/inspector/apps/:id", async (req, res) => {
   if (!req.user) { res.status(401).json({ error: "Not authenticated" }); return; }
   const uid = userId(req);
   await db.delete(inspectorAppsTable)
@@ -155,28 +144,20 @@ router.delete("/api/inspector/apps/:id", async (req, res) => {
   res.json({ ok: true });
 });
 
-// ── Bulk sync from localStorage ────────────────────────────────────────────────
-// POST /api/inspector/apps/sync
-router.post("/api/inspector/apps/sync", async (req, res) => {
+// Bulk sync from localStorage
+router.post("/inspector/apps/sync", async (req, res) => {
   if (!req.user) { res.status(401).json({ error: "Not authenticated" }); return; }
   const uid = userId(req);
   const { apps } = req.body as { apps: { id: string; name: string; url: string; loginUrl?: string; username?: string; usernameField?: string; passwordField?: string; loginMethod?: string; pages?: string[]; description?: string }[] };
   if (!Array.isArray(apps)) { res.status(400).json({ error: "apps array required" }); return; }
-
   for (const app of apps) {
     await db.insert(inspectorAppsTable)
       .values({
-        id: app.id,
-        userId: uid,
-        name: app.name,
-        url: app.url,
-        loginUrl: app.loginUrl || null,
-        username: app.username || null,
-        usernameField: app.usernameField || "username",
-        passwordField: app.passwordField || "password",
+        id: app.id, userId: uid, name: app.name, url: app.url,
+        loginUrl: app.loginUrl || null, username: app.username || null,
+        usernameField: app.usernameField || "username", passwordField: app.passwordField || "password",
         loginMethod: (app.loginMethod as "form" | "none") || "form",
-        pages: app.pages ?? [],
-        description: app.description || null,
+        pages: app.pages ?? [], description: app.description || null,
       })
       .onConflictDoUpdate({
         target: inspectorAppsTable.id,
@@ -187,27 +168,20 @@ router.post("/api/inspector/apps/sync", async (req, res) => {
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
-// ── REPORTS — Clerk-authenticated ────────────────────────────────────────────
+// ── REPORTS — Clerk-authenticated ────────────────────────────────════════════
 // ══════════════════════════════════════════════════════════════════════════════
 
-// GET /api/inspector/reports
-router.get("/api/inspector/reports", async (req, res) => {
+router.get("/inspector/reports", async (req, res) => {
   if (!req.user) { res.status(401).json({ error: "Not authenticated" }); return; }
   const uid = userId(req);
   const reports = await db
     .select({
-      id: inspectorReportsTable.id,
-      appId: inspectorReportsTable.appId,
-      appName: inspectorReportsTable.appName,
-      appUrl: inspectorReportsTable.appUrl,
-      source: inspectorReportsTable.source,
-      status: inspectorReportsTable.status,
-      inspectedAt: inspectorReportsTable.inspectedAt,
-      pagesChecked: inspectorReportsTable.pagesChecked,
-      errorCount: inspectorReportsTable.errorCount,
-      warnCount: inspectorReportsTable.warnCount,
-      quillDoc: inspectorReportsTable.quillDoc,
-      recheckOf: inspectorReportsTable.recheckOf,
+      id: inspectorReportsTable.id, appId: inspectorReportsTable.appId,
+      appName: inspectorReportsTable.appName, appUrl: inspectorReportsTable.appUrl,
+      source: inspectorReportsTable.source, status: inspectorReportsTable.status,
+      inspectedAt: inspectorReportsTable.inspectedAt, pagesChecked: inspectorReportsTable.pagesChecked,
+      errorCount: inspectorReportsTable.errorCount, warnCount: inspectorReportsTable.warnCount,
+      quillDoc: inspectorReportsTable.quillDoc, recheckOf: inspectorReportsTable.recheckOf,
     })
     .from(inspectorReportsTable)
     .where(eq(inspectorReportsTable.userId, uid))
@@ -216,8 +190,7 @@ router.get("/api/inspector/reports", async (req, res) => {
   res.json({ reports });
 });
 
-// GET /api/inspector/reports/:id
-router.get("/api/inspector/reports/:id", async (req, res) => {
+router.get("/inspector/reports/:id", async (req, res) => {
   if (!req.user) { res.status(401).json({ error: "Not authenticated" }); return; }
   const uid = userId(req);
   const [report] = await db
@@ -232,8 +205,8 @@ router.get("/api/inspector/reports/:id", async (req, res) => {
 // ── CLI-AUTHENTICATED ENDPOINTS ───────────────────────────────────────────────
 // ══════════════════════════════════════════════════════════════════════════════
 
-// GET /api/inspector/cli-apps — CLI fetches saved apps
-router.get("/api/inspector/cli-apps", async (req, res) => {
+// CLI fetches saved apps list
+router.get("/inspector/cli-apps", async (req, res) => {
   const uid = getCliUserId(req);
   if (!uid) { res.status(401).json({ error: "Invalid CLI token" }); return; }
   const apps = await db
@@ -244,22 +217,17 @@ router.get("/api/inspector/cli-apps", async (req, res) => {
   res.json({ apps });
 });
 
-// GET /api/inspector/cli-reports — CLI/mobile fetches recent reports
-router.get("/api/inspector/cli-reports", async (req, res) => {
+// CLI/mobile fetches recent reports list
+router.get("/inspector/cli-reports", async (req, res) => {
   const uid = getCliUserId(req);
   if (!uid) { res.status(401).json({ error: "Invalid CLI token" }); return; }
   const reports = await db
     .select({
-      id: inspectorReportsTable.id,
-      appId: inspectorReportsTable.appId,
-      appName: inspectorReportsTable.appName,
-      appUrl: inspectorReportsTable.appUrl,
-      inspectedAt: inspectorReportsTable.inspectedAt,
-      pagesChecked: inspectorReportsTable.pagesChecked,
-      errorCount: inspectorReportsTable.errorCount,
-      warnCount: inspectorReportsTable.warnCount,
-      source: inspectorReportsTable.source,
-      quillDoc: inspectorReportsTable.quillDoc,
+      id: inspectorReportsTable.id, appId: inspectorReportsTable.appId,
+      appName: inspectorReportsTable.appName, appUrl: inspectorReportsTable.appUrl,
+      inspectedAt: inspectorReportsTable.inspectedAt, pagesChecked: inspectorReportsTable.pagesChecked,
+      errorCount: inspectorReportsTable.errorCount, warnCount: inspectorReportsTable.warnCount,
+      source: inspectorReportsTable.source, quillDoc: inspectorReportsTable.quillDoc,
     })
     .from(inspectorReportsTable)
     .where(eq(inspectorReportsTable.userId, uid))
@@ -268,8 +236,8 @@ router.get("/api/inspector/cli-reports", async (req, res) => {
   res.json({ reports });
 });
 
-// GET /api/inspector/reports/:id (CLI auth fallback)
-router.get("/api/inspector/cli-reports/:id", async (req, res) => {
+// CLI/mobile fetch single report by ID
+router.get("/inspector/cli-reports/:id", async (req, res) => {
   const uid = getCliUserId(req);
   if (!uid) { res.status(401).json({ error: "Invalid CLI token" }); return; }
   const [report] = await db
@@ -280,21 +248,16 @@ router.get("/api/inspector/cli-reports/:id", async (req, res) => {
   res.json({ report });
 });
 
-// POST /api/inspector/cli-report — CLI submits a completed inspection
-router.post("/api/inspector/cli-report", async (req, res) => {
+// CLI submits a completed inspection report
+router.post("/inspector/cli-report", async (req, res) => {
   const uid = getCliUserId(req);
   if (!uid) { res.status(401).json({ error: "Invalid CLI token" }); return; }
 
   const body = req.body as {
-    appName: string;
-    appUrl: string;
-    appId?: string;
+    appName: string; appUrl: string; appId?: string;
     findings: { type: string; message: string; page?: string; detail?: string }[];
     screenshots?: { page: string; label: string; data: string }[];
-    inspectedAt: string;
-    pagesChecked: number;
-    errorCount: number;
-    warnCount: number;
+    inspectedAt: string; pagesChecked: number; errorCount: number; warnCount: number;
     recheckOf?: string;
   };
 
@@ -304,76 +267,59 @@ router.post("/api/inspector/cli-report", async (req, res) => {
   }
 
   const id = `report_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  const quillDoc = await generateQuillDoc(body.appName ?? body.appUrl, body.appUrl, body.findings);
 
-  // Generate Quill doc
-  const quillDoc = await generateQuillDoc(body.appName, body.appUrl, body.findings);
-
-  // Save report
   await db.insert(inspectorReportsTable).values({
-    id,
-    userId: uid,
+    id, userId: uid,
     appId: body.appId ?? null,
-    appName: body.appName,
+    appName: body.appName ?? body.appUrl,
     appUrl: body.appUrl,
-    source: "cli",
-    status: "done",
+    source: "cli", status: "done",
     inspectedAt: new Date(body.inspectedAt),
     pagesChecked: body.pagesChecked,
     errorCount: body.errorCount,
     warnCount: body.warnCount,
     findings: body.findings as any,
-    screenshots: (body.screenshots ?? []).map(s => ({ page: s.page, label: s.label, dataUrl: `data:image/png;base64,${s.data}` })) as any,
+    screenshots: (body.screenshots ?? []).map(s => ({
+      page: s.page, label: s.label, dataUrl: `data:image/png;base64,${s.data}`,
+    })) as any,
     quillDoc,
     recheckOf: body.recheckOf ?? null,
   });
 
-  // Save individual issues for tracking
-  const issues = body.findings.filter(f => f.type === "error" || f.type === "warn");
-  for (const issue of issues) {
+  // Save individual issues
+  for (const issue of body.findings.filter(f => f.type === "error" || f.type === "warn")) {
     await db.insert(inspectorIssuesTable).values({
       id: `issue_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-      reportId: id,
-      userId: uid,
+      reportId: id, userId: uid,
       appId: body.appId ?? null,
-      appName: body.appName,
+      appName: body.appName ?? body.appUrl,
       page: issue.page ?? null,
-      type: issue.type,
-      message: issue.message,
-      detail: issue.detail ?? null,
-      status: "open",
+      type: issue.type, message: issue.message,
+      detail: issue.detail ?? null, status: "open",
     });
   }
 
   res.json({ ok: true, reportId: id, quillDoc });
 });
 
-// GET /api/inspector/cli-recheck-data — CLI fetches failing pages from last report for an app
-router.get("/api/inspector/cli-recheck-data", async (req, res) => {
+// CLI fetches failing pages from last report (for recheck)
+router.get("/inspector/cli-recheck-data", async (req, res) => {
   const uid = getCliUserId(req);
   if (!uid) { res.status(401).json({ error: "Invalid CLI token" }); return; }
 
   const { appName } = req.query as { appName?: string };
 
-  let query = db
+  const conditions = [eq(inspectorReportsTable.userId, uid)];
+  if (appName) conditions.push(eq(inspectorReportsTable.appName, appName));
+
+  const [latest] = await db
     .select()
     .from(inspectorReportsTable)
-    .where(eq(inspectorReportsTable.userId, uid))
+    .where(and(...conditions))
     .orderBy(desc(inspectorReportsTable.inspectedAt))
     .limit(1);
 
-  if (appName) {
-    query = db
-      .select()
-      .from(inspectorReportsTable)
-      .where(and(
-        eq(inspectorReportsTable.userId, uid),
-        eq(inspectorReportsTable.appName, appName),
-      ))
-      .orderBy(desc(inspectorReportsTable.inspectedAt))
-      .limit(1);
-  }
-
-  const [latest] = await query;
   if (!latest) { res.json({ found: false }); return; }
 
   const findings = (latest.findings as any[]) ?? [];
@@ -381,24 +327,20 @@ router.get("/api/inspector/cli-recheck-data", async (req, res) => {
     findings
       .filter(f => f.type === "error" || f.type === "warn")
       .map(f => f.page)
-      .filter(Boolean)
+      .filter(Boolean),
   )];
 
   res.json({
-    found: true,
-    reportId: latest.id,
-    appName: latest.appName,
-    appUrl: latest.appUrl,
-    appId: latest.appId,
+    found: true, reportId: latest.id,
+    appName: latest.appName, appUrl: latest.appUrl, appId: latest.appId,
     inspectedAt: latest.inspectedAt,
-    errorCount: latest.errorCount,
-    warnCount: latest.warnCount,
+    errorCount: latest.errorCount, warnCount: latest.warnCount,
     failingPages,
   });
 });
 
-// PATCH /api/inspector/issues/:id — mark issue fixed/wont-fix
-router.patch("/api/inspector/issues/:id", async (req, res) => {
+// Mark issue as fixed / wont-fix / open
+router.patch("/inspector/issues/:id", async (req, res) => {
   if (!req.user) { res.status(401).json({ error: "Not authenticated" }); return; }
   const uid = userId(req);
   const { status } = req.body as { status: "fixed" | "wont-fix" | "open" };
