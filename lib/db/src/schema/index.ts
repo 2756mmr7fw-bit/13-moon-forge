@@ -18,3 +18,4 @@ export * from "./debugTests";
 export * from "./academy";
 export * from "./gym";
 export * from "./repos";
+export * from "./inspector";
