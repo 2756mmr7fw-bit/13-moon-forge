@@ -61,6 +61,7 @@ import helpRouter from "./help";
 import agentRouter from "./agent";
 import moonsRouter from "./moons";
 import inspectorRouter from "./inspector";
+import cliInspectRouter from "./cli-inspect";
 
 const router: IRouter = Router();
 
@@ -126,5 +127,6 @@ router.use(helpRouter);
 router.use(agentRouter);
 router.use(moonsRouter);
 router.use(inspectorRouter);
+router.use(cliInspectRouter);
 
 export default router;
