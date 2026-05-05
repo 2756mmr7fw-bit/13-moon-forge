@@ -9,6 +9,7 @@ import fs from "fs/promises";
 import path from "path";
 import os from "os";
 import multiparty from "multiparty";
+import { TEMPLATES, type TemplateName } from "./templates";
 
 const execAsync = promisify(exec);
 const router = Router();
@@ -51,11 +52,14 @@ router.get("/vault/repos", async (req, res) => {
 });
 
 // ── POST /api/vault/repos ───────────────────────────────────────────────────
+const TEMPLATE_NAMES: [TemplateName, ...TemplateName[]] = ["blank", "react-vite", "express", "static-html", "nextjs"];
+
 const CreateRepoBody = z.object({
   name: z.string().min(1).max(100).regex(/^[a-zA-Z0-9_.-]+$/, "Repo name can only contain letters, numbers, dashes, dots, or underscores"),
   description: z.string().max(500).optional(),
   visibility: z.enum(["private", "public"]).default("private"),
   projectId: z.number().int().optional(),
+  template: z.enum(TEMPLATE_NAMES).default("blank"),
 });
 
 router.post("/vault/repos", async (req, res) => {
@@ -94,6 +98,24 @@ router.post("/vault/repos", async (req, res) => {
       cloneUrl: forgejoRepo.clone_url,
       projectId: body.data.projectId ?? null,
     }).returning();
+
+    // Push template files if a non-blank template was chosen
+    const templateName = body.data.template ?? "blank";
+    const template = TEMPLATES[templateName];
+    if (template && template.files.length > 0) {
+      const owner = forgejoRepo.owner.login;
+      const repoName = body.data.name;
+      for (const file of template.files) {
+        try {
+          await forgejoApi("POST", `/repos/${owner}/${repoName}/contents/${file.path}`, {
+            message: `Initial commit: add ${file.path}`,
+            content: Buffer.from(file.content).toString("base64"),
+          });
+        } catch (e) {
+          req.log.warn({ file: file.path, err: e }, "Template file push failed — skipping");
+        }
+      }
+    }
 
     res.status(201).json(repo);
   } catch (err) {

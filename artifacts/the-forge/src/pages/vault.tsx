@@ -7,11 +7,21 @@ import { Card, CardContent } from "@/components/ui/card";
 import {
   Vault, Plus, Github, Upload, ExternalLink, Trash2, Loader2,
   GitBranch, Lock, Globe2, RefreshCw, CheckCircle2, XCircle, Clock,
-  FolderGit2, ArrowUpFromLine, X,
+  FolderGit2, ArrowUpFromLine, X, Code2, Server, FileCode2, Layers,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+type TemplateName = "blank" | "react-vite" | "express" | "static-html" | "nextjs";
+
+const TEMPLATES: Array<{ name: TemplateName; label: string; description: string; icon: React.ReactNode }> = [
+  { name: "blank",       label: "Blank",        description: "Start from scratch",             icon: <FolderGit2 className="w-5 h-5" /> },
+  { name: "react-vite",  label: "React + Vite", description: "React 19, TypeScript, Vite",     icon: <Code2 className="w-5 h-5" /> },
+  { name: "express",     label: "Express API",  description: "Node.js REST API",               icon: <Server className="w-5 h-5" /> },
+  { name: "static-html", label: "Static HTML",  description: "HTML, CSS, JS — no build step",  icon: <FileCode2 className="w-5 h-5" /> },
+  { name: "nextjs",      label: "Next.js",      description: "Full-stack React App Router",    icon: <Layers className="w-5 h-5" /> },
+];
 
 interface Repo {
   id: number;
@@ -71,8 +81,8 @@ function useVault() {
 function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-card border border-border rounded-xl w-full max-w-md shadow-2xl">
-        <div className="flex items-center justify-between p-5 border-b border-border">
+      <div className="bg-card border border-border rounded-xl w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-5 border-b border-border sticky top-0 bg-card z-10">
           <h2 className="font-bold text-lg">{title}</h2>
           <button onClick={onClose} className="p-1.5 rounded hover:bg-muted transition-colors"><X className="w-4 h-4" /></button>
         </div>
@@ -88,6 +98,7 @@ function NewRepoModal({ onClose, onCreated }: { onClose: () => void; onCreated: 
   const [name, setName] = useState("");
   const [desc, setDesc] = useState("");
   const [visibility, setVisibility] = useState<"private" | "public">("private");
+  const [template, setTemplate] = useState<TemplateName>("blank");
   const [saving, setSaving] = useState(false);
 
   const submit = async () => {
@@ -97,11 +108,12 @@ function NewRepoModal({ onClose, onCreated }: { onClose: () => void; onCreated: 
       const r = await fetch(`${API_BASE}/api/vault/repos`, {
         method: "POST", credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), description: desc.trim() || undefined, visibility }),
+        body: JSON.stringify({ name: name.trim(), description: desc.trim() || undefined, visibility, template }),
       });
       const data = await r.json();
       if (!r.ok) { toast({ title: "Error", description: data.error, variant: "destructive" }); return; }
-      toast({ title: "Repo created", description: `${name} is ready in your Vault` });
+      const tLabel = TEMPLATES.find(t => t.name === template)?.label ?? template;
+      toast({ title: "Repo created", description: template === "blank" ? `${name} is ready in your Vault` : `${name} scaffolded with ${tLabel} template` });
       onCreated(data);
       onClose();
     } finally {
@@ -122,6 +134,26 @@ function NewRepoModal({ onClose, onCreated }: { onClose: () => void; onCreated: 
           <Input value={desc} onChange={e => setDesc(e.target.value)} placeholder="What this project does…" />
         </div>
         <div>
+          <label className="text-sm font-medium mb-1.5 block">Starter template</label>
+          <div className="grid grid-cols-1 gap-2">
+            {TEMPLATES.map(t => (
+              <button key={t.name} onClick={() => setTemplate(t.name)} className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg border text-left transition-colors",
+                template === t.name
+                  ? "bg-primary/10 border-primary/40 text-primary"
+                  : "border-border text-muted-foreground hover:text-foreground hover:border-border/80"
+              )}>
+                <span className={cn("shrink-0", template === t.name ? "text-primary" : "text-muted-foreground")}>{t.icon}</span>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium leading-tight">{t.label}</p>
+                  <p className="text-xs opacity-70 leading-tight mt-0.5">{t.description}</p>
+                </div>
+                {template === t.name && <CheckCircle2 className="w-4 h-4 ml-auto shrink-0 text-primary" />}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
           <label className="text-sm font-medium mb-1.5 block">Visibility</label>
           <div className="flex gap-2">
             {(["private", "public"] as const).map(v => (
@@ -137,7 +169,7 @@ function NewRepoModal({ onClose, onCreated }: { onClose: () => void; onCreated: 
         </div>
         <Button className="w-full" onClick={submit} disabled={saving || !name.trim()}>
           {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
-          Create Repository
+          {template === "blank" ? "Create Repository" : `Create with ${TEMPLATES.find(t => t.name === template)?.label}`}
         </Button>
       </div>
     </Modal>
@@ -338,7 +370,6 @@ export default function VaultPage() {
     }
   };
 
-  // Load on mount
   useState(() => { refresh(); });
 
   const vaultNotConfigured = status && !status.configured;
@@ -489,7 +520,7 @@ volumes:
                         title="Delete repo"
                       >
                         {deletingId === repo.id
-                          ? <Loader2 className="w-3.5 h-3.5 text-red-400 animate-spin" />
+                          ? <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />
                           : <Trash2 className="w-3.5 h-3.5 text-muted-foreground hover:text-red-400" />}
                       </button>
                     </div>
@@ -507,18 +538,13 @@ volumes:
           <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-3">Recent Imports</h2>
           <div className="space-y-2">
             {recentImports.map(imp => (
-              <div key={imp.id} className="flex items-center gap-3 p-3 bg-card border border-border rounded-lg text-sm">
-                {imp.source === "github" && <Github className="w-4 h-4 text-muted-foreground shrink-0" />}
-                {imp.source === "zip"    && <Upload className="w-4 h-4 text-muted-foreground shrink-0" />}
+              <div key={imp.id} className="flex items-center gap-3 px-4 py-3 bg-card border border-border rounded-lg">
+                {imp.source === "github" ? <Github className="w-4 h-4 text-muted-foreground shrink-0" /> : <Upload className="w-4 h-4 text-muted-foreground shrink-0" />}
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">{imp.sourceRepoName ?? imp.sourceUrl ?? "Unknown"}</p>
+                  <p className="text-sm font-medium truncate">{imp.sourceRepoName ?? "Unnamed"}</p>
                   {imp.sourceUrl && <p className="text-xs text-muted-foreground truncate">{imp.sourceUrl}</p>}
-                  {imp.errorMessage && <p className="text-xs text-red-400 truncate">{imp.errorMessage}</p>}
                 </div>
-                <div className="shrink-0"><ImportBadge status={imp.status} /></div>
-                <span className="text-[10px] text-muted-foreground shrink-0">
-                  {new Date(imp.createdAt).toLocaleDateString()}
-                </span>
+                <ImportBadge status={imp.status} />
               </div>
             ))}
           </div>
