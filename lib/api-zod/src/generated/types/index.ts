@@ -9,6 +9,7 @@
 export * from "./authUser";
 export * from "./createPageBody";
 export * from "./createProjectBody";
+export * from "./createProjectBodyProjectType";
 export * from "./dashboardSummary";
 export * from "./exchangeMobileAuthorizationCodeBody";
 export * from "./exchangeMobileAuthorizationCodeResponse";
@@ -17,7 +18,9 @@ export * from "./healthStatus";
 export * from "./logoutMobileSessionResponse";
 export * from "./page";
 export * from "./project";
+export * from "./projectProjectType";
 export * from "./projectStatus";
 export * from "./updatePageBody";
 export * from "./updateProjectBody";
+export * from "./updateProjectBodyProjectType";
 export * from "./updateProjectBodyStatus";
