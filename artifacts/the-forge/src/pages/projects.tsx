@@ -8,12 +8,28 @@ import { Badge } from "@/components/ui/badge";
 import {
   Anvil, Search, Loader2, PlusCircle, ArrowRight, Clock, Layers,
   Briefcase, Star, SortAsc, SortDesc, Flame, ChevronDown, Globe, Github,
-  GripVertical, RotateCcw,
+  GripVertical, RotateCcw, Globe2, AppWindow, Code2, Wrench,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type SortKey = "updated" | "name" | "pages";
 type SortDir = "asc" | "desc";
+type ProjectTypeFilter = "all" | "website" | "app" | "api" | "tool";
+
+const TYPE_TABS: { key: ProjectTypeFilter; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+  { key: "all",     label: "All",      icon: ({ className }) => <Anvil className={className} /> },
+  { key: "website", label: "Websites", icon: ({ className }) => <Globe2 className={className} /> },
+  { key: "app",     label: "Apps",     icon: ({ className }) => <AppWindow className={className} /> },
+  { key: "api",     label: "APIs",     icon: ({ className }) => <Code2 className={className} /> },
+  { key: "tool",    label: "Tools",    icon: ({ className }) => <Wrench className={className} /> },
+];
+
+const TYPE_COLORS: Record<string, string> = {
+  website: "border-sky-500/30 text-sky-400 bg-sky-500/10",
+  app:     "border-violet-500/30 text-violet-400 bg-violet-500/10",
+  api:     "border-green-500/30 text-green-400 bg-green-500/10",
+  tool:    "border-amber-500/30 text-amber-400 bg-amber-500/10",
+};
 
 function usePinned() {
   const key = "forge_pinned_projects";
@@ -50,6 +66,7 @@ export default function Projects() {
   const [, setLocation] = useLocation();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<string | null>(null);
+  const [typeFilter, setTypeFilter] = useState<ProjectTypeFilter>("all");
   const [sort, setSort] = useState<SortKey>("updated");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [showSort, setShowSort] = useState(false);
@@ -65,13 +82,14 @@ export default function Projects() {
     query: { queryKey: getListProjectsQueryKey() }
   });
 
-  const isSearching = !!(search || filter);
+  const isSearching = !!(search || filter || typeFilter !== "all");
   const hasCustomOrder = order.length > 0;
 
   const sorted = useMemo(() => {
     if (!projects) return [];
     let list = [...projects].filter(p => {
       if (filter && p.status !== filter) return false;
+      if (typeFilter !== "all" && (p as unknown as Record<string,string>).projectType !== typeFilter) return false;
       if (search && !p.name.toLowerCase().includes(search.toLowerCase())) return false;
       return true;
     });
@@ -176,6 +194,25 @@ export default function Projects() {
           </Link>
         </div>
       )}
+
+      {/* Type tabs */}
+      <div className="flex gap-1.5 flex-wrap">
+        {TYPE_TABS.map(({ key, label, icon: Icon }) => (
+          <button
+            key={key}
+            onClick={() => setTypeFilter(key)}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all border",
+              typeFilter === key
+                ? "bg-primary/15 text-primary border-primary/40"
+                : "bg-card text-muted-foreground border-border hover:text-foreground hover:border-border/80"
+            )}
+          >
+            <Icon className="w-3.5 h-3.5" />
+            {label}
+          </button>
+        ))}
+      </div>
 
       {/* Search + Filter + Sort */}
       <div className="flex flex-col md:flex-row gap-3 items-start md:items-center bg-card p-4 rounded-xl border border-border">
@@ -294,13 +331,20 @@ export default function Projects() {
                   <div className="p-5 flex-1 flex flex-col">
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="font-bold text-lg line-clamp-1 group-hover:text-primary transition-colors pr-6">{project.name}</h3>
-                      <Badge variant="outline" className={cn(
-                        "shrink-0 text-xs",
-                        project.status === "published" ? "border-green-500/30 text-green-500 bg-green-500/10" :
-                        project.status === "draft" ? "border-primary/30 text-primary bg-primary/10" : "border-muted text-muted-foreground"
-                      )}>
-                        {project.status}
-                      </Badge>
+                      <div className="flex flex-col gap-1 items-end shrink-0">
+                        <Badge variant="outline" className={cn(
+                          "text-xs",
+                          project.status === "published" ? "border-green-500/30 text-green-500 bg-green-500/10" :
+                          project.status === "draft" ? "border-primary/30 text-primary bg-primary/10" : "border-muted text-muted-foreground"
+                        )}>
+                          {project.status}
+                        </Badge>
+                        {(project as unknown as Record<string,string>).projectType && (project as unknown as Record<string,string>).projectType !== "website" && (
+                          <Badge variant="outline" className={cn("text-[10px]", TYPE_COLORS[(project as unknown as Record<string,string>).projectType] ?? "border-muted text-muted-foreground")}>
+                            {(project as unknown as Record<string,string>).projectType}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
 
                     <p className="text-muted-foreground text-sm line-clamp-2 mb-3 flex-1">
@@ -383,8 +427,8 @@ export default function Projects() {
               ? "Clear your filters or try a different search."
               : "Just tell Forge what you want to build — he'll set up the whole project for you."}
           </p>
-          {search || filter ? (
-            <Button variant="outline" onClick={() => { setSearch(""); setFilter(null); }}>
+          {search || filter || typeFilter !== "all" ? (
+            <Button variant="outline" onClick={() => { setSearch(""); setFilter(null); setTypeFilter("all"); }}>
               Clear filters
             </Button>
           ) : (
