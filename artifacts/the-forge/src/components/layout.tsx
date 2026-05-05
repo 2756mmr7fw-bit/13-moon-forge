@@ -186,6 +186,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
           {builderItems.map(item => <NavLink key={item.href} {...item} onClick={onClose} />)}
         </div>
 
+        {/* The Moons */}
+        <div className="pt-4 pb-1 px-3">
+          <p className="text-[10px] font-bold tracking-widest text-muted-foreground/50 uppercase">The Moons</p>
+        </div>
+        <div className="space-y-0.5">
+          {moonItems.map(item => <NavLink key={item.href} {...item} onClick={onClose} />)}
+        </div>
+
         {/* AI Tools */}
         <div className="pt-4 pb-1 px-3">
           <p className="text-[10px] font-bold tracking-widest text-muted-foreground/50 uppercase">AI Tools</p>
