@@ -17,6 +17,7 @@ RUN pnpm install
 
 # ─── Build frontend ──────────────────────────────────────────────────────────
 FROM deps AS web-build
+ARG CACHEBUST=2
 COPY tsconfig.base.json ./
 COPY lib/ ./lib/
 COPY artifacts/the-forge ./artifacts/the-forge
