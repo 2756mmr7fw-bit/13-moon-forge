@@ -5,6 +5,7 @@
  * The Forge - Website Builder API
  * OpenAPI spec version: 0.1.0
  */
+import type { ProjectProjectType } from "./projectProjectType";
 import type { ProjectStatus } from "./projectStatus";
 
 export interface Project {
@@ -13,6 +14,7 @@ export interface Project {
   description?: string;
   status: ProjectStatus;
   template: string;
+  projectType: ProjectProjectType;
   pageCount: number;
   createdAt: Date;
   updatedAt: Date;
