@@ -49,6 +49,11 @@ import gymRouter from "./gym";
 import launchRouter from "./launch";
 import databasesRouter from "./databases";
 import cliRouter from "./cli";
+import uptimeRouter from "./uptime";
+import storageRouter from "./storage";
+import emailGatewayRouter from "./email-gateway";
+import aiGatewayRouter from "./ai-gateway";
+import marketplaceRouter from "./marketplace";
 
 const router: IRouter = Router();
 
@@ -102,5 +107,10 @@ router.use(gymRouter);
 router.use(launchRouter);
 router.use(databasesRouter);
 router.use(cliRouter);
+router.use(uptimeRouter);
+router.use(storageRouter);
+router.use(emailGatewayRouter);
+router.use(aiGatewayRouter);
+router.use(marketplaceRouter);
 
 export default router;
