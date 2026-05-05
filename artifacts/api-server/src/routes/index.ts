@@ -58,6 +58,7 @@ import vaultRouter from "./vault";
 import activityRouter from "./activity";
 import deploysRouter from "./deploys";
 import helpRouter from "./help";
+import agentRouter from "./agent";
 
 const router: IRouter = Router();
 
@@ -120,5 +121,6 @@ router.use(vaultRouter);
 router.use(activityRouter);
 router.use(deploysRouter);
 router.use(helpRouter);
+router.use(agentRouter);
 
 export default router;
