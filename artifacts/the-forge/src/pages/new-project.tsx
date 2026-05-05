@@ -4,7 +4,7 @@ import { useCreateProject, useCreatePage, getListProjectsQueryKey, getGetDashboa
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Flame, Loader2, Hammer, Send, RotateCcw, CheckCircle2, Edit2 } from "lucide-react";
+import { Flame, Loader2, Hammer, Send, RotateCcw, CheckCircle2, Edit2, Globe2, AppWindow, Code2, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SpeakButton } from "@/components/speak-button";
 
@@ -12,6 +12,14 @@ const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 const TEMPLATES = ["portfolio", "business", "blog", "landing", "ecommerce"] as const;
 type Template = typeof TEMPLATES[number];
+type ProjectType = "website" | "app" | "api" | "tool";
+
+const PROJECT_TYPES: { key: ProjectType; label: string; desc: string; icon: React.ComponentType<{ className?: string }> }[] = [
+  { key: "website", label: "Website",  desc: "Landing page, blog, portfolio",   icon: ({ className }) => <Globe2 className={className} /> },
+  { key: "app",     label: "App",      desc: "Web app with backend logic",       icon: ({ className }) => <AppWindow className={className} /> },
+  { key: "api",     label: "API",      desc: "REST or GraphQL service",           icon: ({ className }) => <Code2 className={className} /> },
+  { key: "tool",    label: "Tool",     desc: "Internal tool or dashboard",        icon: ({ className }) => <Wrench className={className} /> },
+];
 
 interface Msg { role: "user" | "forge"; text: string }
 interface Plan {
@@ -38,6 +46,7 @@ export default function NewProject() {
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
   const [plan, setPlan] = useState<Plan | null>(null);
+  const [projectType, setProjectType] = useState<ProjectType>("website");
   const [extracting, setExtracting] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [editName, setEditName] = useState("");
@@ -164,7 +173,7 @@ export default function NewProject() {
     try {
       const project = await new Promise<{ id: number }>((resolve, reject) => {
         createProject.mutate(
-          { data: { name: finalName, description: plan.brief || undefined, template: plan.template } },
+          { data: { name: finalName, description: plan.brief || undefined, template: plan.template, projectType } },
           { onSuccess: resolve, onError: reject }
         );
       });
@@ -305,6 +314,29 @@ export default function NewProject() {
               </div>
 
               <div className="space-y-3 text-sm">
+                {/* Project Type */}
+                <div className="flex items-start gap-3">
+                  <span className="text-muted-foreground w-16 shrink-0 mt-1">Kind</span>
+                  <div className="flex gap-1.5 flex-wrap">
+                    {PROJECT_TYPES.map(({ key, label, desc, icon: Icon }) => (
+                      <button
+                        key={key}
+                        onClick={() => setProjectType(key)}
+                        title={desc}
+                        className={cn(
+                          "flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-colors",
+                          projectType === key
+                            ? "bg-primary/20 text-primary border border-primary/30"
+                            : "bg-muted text-muted-foreground hover:text-foreground border border-transparent"
+                        )}
+                      >
+                        <Icon className="w-3 h-3" />
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Name */}
                 <div className="flex items-center gap-3">
                   <span className="text-muted-foreground w-16 shrink-0">Name</span>
