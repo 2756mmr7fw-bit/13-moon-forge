@@ -80,6 +80,9 @@ export const userAppsTable = pgTable("user_apps", {
   status: text("status").notNull().default("deploying"),
   url: text("url"),
   port: integer("port").notNull().default(3000),
+  customDomain: text("custom_domain"),
+  autoDeployEnabled: boolean("auto_deploy_enabled").notNull().default(false),
+  webhookSecret: text("webhook_secret"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
