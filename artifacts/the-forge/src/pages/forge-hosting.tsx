@@ -12,6 +12,7 @@ import {
   Package, Code2, Flame, Container, ArrowRight, Terminal,
   Key, Settings, ChevronDown, ChevronUp, Copy, Check,
   Webhook, Eye, EyeOff, Lock, HardDrive, Download,
+  Activity, Mail, Store,
 } from "lucide-react";
 
 const API = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -945,24 +946,31 @@ export default function ForgeHosting() {
       )}
 
       {/* Quick links */}
-      <div className="mt-8 grid grid-cols-2 gap-3">
-        {[
-          { href: "/github",    label: "Connect GitHub",   desc: "Link your repos",      icon: <Github size={15} /> },
-          { href: "/sovereign", label: "Sovereign Stack",  desc: "Certification checker", icon: <CheckCircle2 size={15} /> },
-          { href: "/secrets",   label: "App Secrets",      desc: "Manage env vars",       icon: <Key size={15} /> },
-          { href: "/monitor",   label: "Monitor",          desc: "Uptime & health",        icon: <Zap size={15} /> },
-        ].map(link => (
-          <Link key={link.href} href={link.href}>
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-4 hover:border-zinc-700 transition-colors cursor-pointer flex items-center gap-3">
-              <span className="text-orange-400">{link.icon}</span>
-              <div>
-                <p className="text-xs font-semibold text-zinc-200">{link.label}</p>
-                <p className="text-[11px] text-zinc-500">{link.desc}</p>
+      <div className="mt-8">
+        <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-3">Platform Services</p>
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            { href: "/forge-uptime",      label: "Uptime Monitoring", desc: "Ping monitors & status pages",  icon: <Activity size={15} /> },
+            { href: "/forge-storage",     label: "Object Storage",    desc: "S3-compatible file storage",     icon: <HardDrive size={15} /> },
+            { href: "/forge-email",       label: "Email API",         desc: "Transactional email gateway",    icon: <Mail size={15} /> },
+            { href: "/forge-ai",          label: "AI Gateway",        desc: "All models, one API key",        icon: <Zap size={15} /> },
+            { href: "/forge-marketplace", label: "App Marketplace",   desc: "One-click app installs",         icon: <Store size={15} /> },
+            { href: "/github",            label: "Connect GitHub",    desc: "Link your repos",                icon: <Github size={15} /> },
+            { href: "/secrets",           label: "App Secrets",       desc: "Manage env vars",                icon: <Key size={15} /> },
+            { href: "/monitor",           label: "Monitor",           desc: "Infra health & alerts",          icon: <CheckCircle2 size={15} /> },
+          ].map(link => (
+            <Link key={link.href} href={link.href}>
+              <div className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-4 hover:border-zinc-700 transition-colors cursor-pointer flex items-center gap-3">
+                <span className="text-orange-400">{link.icon}</span>
+                <div>
+                  <p className="text-xs font-semibold text-zinc-200">{link.label}</p>
+                  <p className="text-[11px] text-zinc-500">{link.desc}</p>
+                </div>
+                <ChevronRight size={14} className="text-zinc-600 ml-auto" />
               </div>
-              <ChevronRight size={14} className="text-zinc-600 ml-auto" />
-            </div>
-          </Link>
-        ))}
+            </Link>
+          ))}
+        </div>
       </div>
 
       {/* CLI Section */}
