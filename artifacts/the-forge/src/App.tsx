@@ -63,6 +63,11 @@ const TownSquare       = lazy(() => import("@/pages/town-square"));
 const Academy          = lazy(() => import("@/pages/academy"));
 const ForgeHosting     = lazy(() => import("@/pages/forge-hosting"));
 const ForgeDrop        = lazy(() => import("@/pages/forge-drop"));
+const ForgeUptime      = lazy(() => import("@/pages/forge-uptime"));
+const ForgeStorage     = lazy(() => import("@/pages/forge-storage"));
+const ForgeEmail       = lazy(() => import("@/pages/forge-email"));
+const ForgeAi          = lazy(() => import("@/pages/forge-ai"));
+const ForgeMarketplace = lazy(() => import("@/pages/forge-marketplace"));
 const MailScanner      = lazy(() => import("@/pages/mail-scanner"));
 const DebugForge       = lazy(() => import("@/pages/debug-forge"));
 const CodeFixTest      = lazy(() => import("@/pages/code-fix-test"));
@@ -310,6 +315,11 @@ function Router() {
                     <Route path="/town-square"           component={TownSquare} />
                     <Route path="/forge-hosting"         component={ForgeHosting} />
                     <Route path="/forge-drop"            component={ForgeDrop} />
+                    <Route path="/forge-uptime"          component={ForgeUptime} />
+                    <Route path="/forge-storage"         component={ForgeStorage} />
+                    <Route path="/forge-email"           component={ForgeEmail} />
+                    <Route path="/forge-ai"              component={ForgeAi} />
+                    <Route path="/forge-marketplace"     component={ForgeMarketplace} />
                     <Route path="/mail-scanner"          component={MailScanner} />
                     <Route path="/debug-forge"           component={DebugForge} />
                     <Route path="/code-fix-test"         component={CodeFixTest} />
