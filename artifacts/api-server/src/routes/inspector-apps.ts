@@ -1,18 +1,10 @@
 import { Router } from "express";
 import { createHmac } from "crypto";
-import { db } from "../lib/db";
-import {
-  inspectorAppsTable, inspectorReportsTable, inspectorIssuesTable,
-} from "@workspace/db";
+import { db, inspectorAppsTable, inspectorReportsTable, inspectorIssuesTable } from "@workspace/db";
 import { eq, and, desc } from "drizzle-orm";
-import OpenAI from "openai";
+import { openai } from "@workspace/integrations-openai-ai-server";
 
 const router = Router();
-
-const openai = new OpenAI({
-  baseURL: process.env.OPENAI_BASE_URL ?? "https://ai.replit.com/",
-  apiKey: process.env.REPLIT_API_KEY ?? process.env.OPENAI_API_KEY ?? "replit",
-});
 
 // ── CLI token verification ─────────────────────────────────────────────────────
 function verifyCliToken(token: string): string | null {
