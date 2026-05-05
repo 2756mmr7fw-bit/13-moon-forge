@@ -32,7 +32,7 @@ RUN pnpm --filter @workspace/api-server run build
 
 # ─── Production image ─────────────────────────────────────────────────────────
 FROM node:20-alpine AS runner
-RUN npm install -g pnpm@9
+RUN corepack enable
 WORKDIR /app
 
 ENV NODE_ENV=production
