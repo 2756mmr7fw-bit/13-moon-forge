@@ -2,6 +2,7 @@ import { Router } from "express";
 import { db } from "@workspace/db";
 import { userAppsTable, githubConnectionsTable } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
+import { randomBytes, createHmac, timingSafeEqual } from "crypto";
 
 const router = Router();
 
@@ -36,6 +37,16 @@ function ghFetch(token: string, path: string) {
 
 function slugify(str: string) {
   return str.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+async function getApp(idStr: string, userId: string) {
+  const id = parseInt(idStr);
+  if (isNaN(id)) return null;
+  const [app] = await db
+    .select()
+    .from(userAppsTable)
+    .where(and(eq(userAppsTable.id, id), eq(userAppsTable.userId, userId)));
+  return app ?? null;
 }
 
 async function detectStack(token: string, repo: string, branch: string): Promise<{ stack: string; port: number; buildPack: string }> {
@@ -80,7 +91,16 @@ function getCoolifyIds() {
   };
 }
 
-// ─── GET /api/launch/apps ───────────────────────────────────────────────────
+function mapCoolifyStatus(raw: string): string {
+  const s = raw.toLowerCase();
+  if (s.includes("running")) return "live";
+  if (s.includes("stop")) return "stopped";
+  if (s.includes("error") || s.includes("fail") || s.includes("exited")) return "error";
+  if (s.includes("deploy") || s.includes("building") || s.includes("starting")) return "deploying";
+  return "pending";
+}
+
+// ─── GET /api/launch/apps ────────────────────────────────────────────────────
 router.get("/launch/apps", async (req, res) => {
   try {
     const apps = await db
@@ -96,7 +116,7 @@ router.get("/launch/apps", async (req, res) => {
   }
 });
 
-// ─── POST /api/launch/deploy ─────────────────────────────────────────────────
+// ─── POST /api/launch/deploy ──────────────────────────────────────────────────
 router.post("/launch/deploy", async (req, res) => {
   if (!FORGE_COOLIFY_URL || !FORGE_COOLIFY_KEY) {
     return res.status(503).json({ error: "Managed hosting not configured yet." });
@@ -135,9 +155,10 @@ router.post("/launch/deploy", async (req, res) => {
 
   const { stack, port, buildPack } = await detectStack(githubConn.accessToken, repo, branch);
   const fqdn = `https://${subdomain}.${FORGE_DOMAIN}`;
+  const webhookSecret = randomBytes(24).toString("hex");
 
   try {
-    const { projectUuid, serverUuid } = await getCoolifyIds();
+    const { projectUuid, serverUuid } = getCoolifyIds();
     if (!projectUuid || !serverUuid) {
       return res.status(503).json({ error: "Could not connect to hosting infrastructure." });
     }
@@ -186,6 +207,7 @@ router.post("/launch/deploy", async (req, res) => {
       status: coolifyId ? "deploying" : "pending",
       url: fqdn,
       port,
+      webhookSecret,
     }).returning();
 
     return res.json({ ok: true, app });
@@ -195,7 +217,214 @@ router.post("/launch/deploy", async (req, res) => {
   }
 });
 
-// ─── POST /api/launch/apps/:id/redeploy ─────────────────────────────────────
+// ─── GET /api/launch/apps/:id/logs ───────────────────────────────────────────
+router.get("/launch/apps/:id/logs", async (req, res) => {
+  const app = await getApp(req.params.id, req.userId);
+  if (!app) return res.status(404).json({ error: "Not found" });
+  if (!app.coolifyResourceId || !FORGE_COOLIFY_KEY) return res.json({ logs: [] });
+
+  try {
+    const r = await coolify(`/applications/${app.coolifyResourceId}/logs?lines=200`);
+    if (!r.ok) return res.json({ logs: [] });
+    const data = await r.json() as { logs?: string } | string[] | string;
+
+    let lines: string[] = [];
+    if (typeof data === "string") {
+      lines = data.split("\n").filter(Boolean);
+    } else if (Array.isArray(data)) {
+      lines = data.map(String);
+    } else if (data && typeof data === "object" && "logs" in data) {
+      lines = String(data.logs ?? "").split("\n").filter(Boolean);
+    }
+    return res.json({ logs: lines });
+  } catch (err) {
+    req.log.error({ err }, "launch/logs failed");
+    return res.json({ logs: [] });
+  }
+});
+
+// ─── GET /api/launch/apps/:id/status ─────────────────────────────────────────
+router.get("/launch/apps/:id/status", async (req, res) => {
+  const app = await getApp(req.params.id, req.userId);
+  if (!app) return res.status(404).json({ error: "Not found" });
+  if (!app.coolifyResourceId || !FORGE_COOLIFY_KEY) return res.json({ status: app.status });
+
+  try {
+    const r = await coolify(`/applications/${app.coolifyResourceId}`);
+    if (!r.ok) return res.json({ status: app.status });
+
+    const data = await r.json() as { status?: string };
+    const status = mapCoolifyStatus(data.status ?? "");
+
+    if (status !== app.status) {
+      await db.update(userAppsTable)
+        .set({ status, updatedAt: new Date() })
+        .where(eq(userAppsTable.id, app.id));
+    }
+    return res.json({ status });
+  } catch (err) {
+    req.log.error({ err }, "launch/status failed");
+    return res.json({ status: app.status });
+  }
+});
+
+// ─── GET /api/launch/apps/:id/env ────────────────────────────────────────────
+router.get("/launch/apps/:id/env", async (req, res) => {
+  const app = await getApp(req.params.id, req.userId);
+  if (!app) return res.status(404).json({ error: "Not found" });
+  if (!app.coolifyResourceId || !FORGE_COOLIFY_KEY) return res.json({ vars: [] });
+
+  try {
+    const r = await coolify(`/applications/${app.coolifyResourceId}/envs`);
+    if (!r.ok) return res.json({ vars: [] });
+    const data = await r.json();
+    return res.json({ vars: Array.isArray(data) ? data : [] });
+  } catch (err) {
+    req.log.error({ err }, "launch/env GET failed");
+    return res.json({ vars: [] });
+  }
+});
+
+// ─── POST /api/launch/apps/:id/env ───────────────────────────────────────────
+router.post("/launch/apps/:id/env", async (req, res) => {
+  const app = await getApp(req.params.id, req.userId);
+  if (!app) return res.status(404).json({ error: "Not found" });
+  if (!app.coolifyResourceId) return res.status(400).json({ error: "App not yet deployed to infrastructure." });
+
+  const { key, value } = req.body as { key: string; value: string };
+  if (!key) return res.status(400).json({ error: "key is required" });
+
+  try {
+    const r = await coolify(`/applications/${app.coolifyResourceId}/envs`, {
+      method: "POST",
+      body: JSON.stringify({ key, value: value ?? "" }),
+    });
+    if (!r.ok) {
+      const errText = await r.text();
+      req.log.warn({ status: r.status, body: errText }, "Coolify env POST failed");
+      return res.status(500).json({ error: "Failed to add env var" });
+    }
+    const created = await r.json();
+    return res.json({ ok: true, var: created });
+  } catch (err) {
+    req.log.error({ err }, "launch/env POST failed");
+    return res.status(500).json({ error: "Failed to add env var" });
+  }
+});
+
+// ─── DELETE /api/launch/apps/:id/env/:envUuid ────────────────────────────────
+router.delete("/launch/apps/:id/env/:envUuid", async (req, res) => {
+  const app = await getApp(req.params.id, req.userId);
+  if (!app) return res.status(404).json({ error: "Not found" });
+  if (!app.coolifyResourceId) return res.status(400).json({ error: "App not deployed" });
+
+  try {
+    const r = await coolify(
+      `/applications/${app.coolifyResourceId}/envs/${req.params.envUuid}`,
+      { method: "DELETE" }
+    );
+    if (!r.ok) return res.status(500).json({ error: "Failed to delete env var" });
+    return res.json({ ok: true });
+  } catch (err) {
+    req.log.error({ err }, "launch/env DELETE failed");
+    return res.status(500).json({ error: "Failed to delete env var" });
+  }
+});
+
+// ─── PATCH /api/launch/apps/:id/domain ───────────────────────────────────────
+router.patch("/launch/apps/:id/domain", async (req, res) => {
+  const app = await getApp(req.params.id, req.userId);
+  if (!app) return res.status(404).json({ error: "Not found" });
+
+  const { domain } = req.body as { domain: string };
+  const cleanDomain = domain.replace(/^https?:\/\//, "").replace(/\/$/, "").toLowerCase();
+
+  if (!cleanDomain) return res.status(400).json({ error: "domain is required" });
+
+  try {
+    if (app.coolifyResourceId && FORGE_COOLIFY_KEY) {
+      const fqdn = `https://${cleanDomain},https://${app.subdomain}.${FORGE_DOMAIN}`;
+      await coolify(`/applications/${app.coolifyResourceId}`, {
+        method: "PATCH",
+        body: JSON.stringify({ fqdn }),
+      });
+    }
+
+    await db.update(userAppsTable)
+      .set({ customDomain: cleanDomain, updatedAt: new Date() })
+      .where(eq(userAppsTable.id, app.id));
+
+    return res.json({ ok: true, domain: cleanDomain });
+  } catch (err) {
+    req.log.error({ err }, "launch/domain PATCH failed");
+    return res.status(500).json({ error: "Failed to update domain" });
+  }
+});
+
+// ─── POST /api/launch/apps/:id/autodeploy ────────────────────────────────────
+router.post("/launch/apps/:id/autodeploy", async (req, res) => {
+  const app = await getApp(req.params.id, req.userId);
+  if (!app) return res.status(404).json({ error: "Not found" });
+
+  const { enabled } = req.body as { enabled: boolean };
+
+  await db.update(userAppsTable)
+    .set({ autoDeployEnabled: enabled, updatedAt: new Date() })
+    .where(eq(userAppsTable.id, app.id));
+
+  const webhookUrl = `https://${FORGE_DOMAIN}/api/launch/webhook/${app.webhookSecret}`;
+  return res.json({ ok: true, enabled, webhookUrl, webhookSecret: app.webhookSecret });
+});
+
+// ─── POST /api/launch/webhook/:secret ────────────────────────────────────────
+router.post("/launch/webhook/:secret", async (req, res) => {
+  const { secret } = req.params;
+  if (!secret || secret.length < 16) return res.status(400).json({ error: "Invalid" });
+
+  const [app] = await db
+    .select()
+    .from(userAppsTable)
+    .where(and(eq(userAppsTable.webhookSecret, secret), eq(userAppsTable.autoDeployEnabled, true)));
+
+  if (!app) return res.status(404).json({ error: "Not found" });
+
+  const sig = req.headers["x-hub-signature-256"] as string | undefined;
+  if (sig && app.webhookSecret) {
+    const body = JSON.stringify(req.body);
+    const expected = "sha256=" + createHmac("sha256", app.webhookSecret).update(body).digest("hex");
+    try {
+      if (!timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) {
+        return res.status(401).json({ error: "Invalid signature" });
+      }
+    } catch {
+      return res.status(401).json({ error: "Invalid signature" });
+    }
+  }
+
+  const event = req.headers["x-github-event"] as string | undefined;
+  if (event !== "push") return res.json({ ok: true, skipped: true });
+
+  const payload = req.body as { ref?: string };
+  const pushedBranch = payload.ref?.replace("refs/heads/", "") ?? "";
+  if (pushedBranch && pushedBranch !== app.githubBranch) {
+    return res.json({ ok: true, skipped: true, reason: "branch mismatch" });
+  }
+
+  try {
+    if (app.coolifyResourceId && FORGE_COOLIFY_KEY) {
+      await coolify(`/applications/${app.coolifyResourceId}/restart`, { method: "GET" });
+    }
+    await db.update(userAppsTable)
+      .set({ status: "deploying", updatedAt: new Date() })
+      .where(eq(userAppsTable.id, app.id));
+    return res.json({ ok: true, triggered: true });
+  } catch (err) {
+    req.log.error({ err }, "webhook redeploy failed");
+    return res.status(500).json({ error: "Redeploy failed" });
+  }
+});
+
+// ─── POST /api/launch/apps/:id/redeploy ──────────────────────────────────────
 router.post("/launch/apps/:id/redeploy", async (req, res) => {
   const id = parseInt(req.params.id);
   const [app] = await db
@@ -241,7 +470,7 @@ router.delete("/launch/apps/:id", async (req, res) => {
   }
 });
 
-// ─── GET /api/launch/detect ──────────────────────────────────────────────────
+// ─── POST /api/launch/detect ─────────────────────────────────────────────────
 router.post("/launch/detect", async (req, res) => {
   const { repo, branch = "main" } = req.body as { repo: string; branch?: string };
   if (!repo) return res.status(400).json({ error: "repo is required" });
