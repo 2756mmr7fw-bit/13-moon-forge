@@ -156,7 +156,7 @@ if [ -w "\$BIN_DIR" ]; then
 else
   sudo ln -sf "\${INSTALL_DIR}/forge" "\${BIN_DIR}/forge" 2>/dev/null || {
     echo "forge installed to \${INSTALL_DIR}/forge"
-    echo "Add to PATH: export PATH=\\"\\${HOME}/.forge:\\$PATH\\""
+    echo "Add to PATH: export PATH=\\"\${HOME}/.forge:\\$PATH\\""
   }
 fi
 
