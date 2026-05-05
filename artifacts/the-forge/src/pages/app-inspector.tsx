@@ -85,7 +85,7 @@ function FindingRow({ finding }: { finding: Finding | Omit<Finding, "ts"> }) {
   );
 }
 
-// ── Saved apps (localStorage) ─────────────────────────────────────────────────
+// ── Saved apps (localStorage + DB sync) ───────────────────────────────────────
 
 interface SavedApp {
   id: string;
@@ -106,6 +106,39 @@ function loadApps(): SavedApp[] {
 }
 function saveApps(apps: SavedApp[]) {
   localStorage.setItem("forge:inspector:apps", JSON.stringify(apps));
+}
+
+// Sync localStorage apps to DB (runs once on mount)
+async function syncAppsToDb(apps: SavedApp[]): Promise<void> {
+  if (apps.length === 0) return;
+  try {
+    await fetch(`${API_BASE}/api/inspector/apps/sync`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ apps }),
+    });
+  } catch { /* ignore — DB sync is best-effort */ }
+}
+
+async function dbSaveApp(app: SavedApp, isNew: boolean): Promise<void> {
+  try {
+    await fetch(`${API_BASE}/api/inspector/apps${isNew ? "" : `/${app.id}`}`, {
+      method: isNew ? "POST" : "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(app),
+    });
+  } catch { /* ignore */ }
+}
+
+async function dbDeleteApp(id: string): Promise<void> {
+  try {
+    await fetch(`${API_BASE}/api/inspector/apps/${id}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+  } catch { /* ignore */ }
 }
 
 // ── CLI token copy helper ──────────────────────────────────────────────────────
@@ -202,18 +235,45 @@ function ScreenshotGallery({ screenshots }: { screenshots: CliScreenshot[] }) {
   );
 }
 
+// ── Extended report type (DB-backed) ─────────────────────────────────────────
+
+interface DbReport extends CliReport {
+  id: string;
+  quillDoc?: string;
+  recheckOf?: string;
+}
+
 // ── CLI report panel ──────────────────────────────────────────────────────────
 
 function CliReportPanel() {
-  const [report, setReport] = useState<CliReport | null>(null);
+  const [report, setReport] = useState<DbReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [lastChecked, setLastChecked] = useState<Date | null>(null);
   const [polling, setPolling] = useState(false);
+  const [quillOpen, setQuillOpen] = useState(false);
 
   const fetchReport = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/agent/cli-inspect/latest`, { credentials: "include" });
-      const data = await res.json();
+      // Try new DB-backed endpoint first
+      const res = await fetch(`${API_BASE}/api/inspector/reports`, { credentials: "include" });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.reports?.length > 0) {
+          const latest = data.reports[0];
+          // Fetch full report details
+          const fullRes = await fetch(`${API_BASE}/api/inspector/reports/${latest.id}`, { credentials: "include" });
+          if (fullRes.ok) {
+            const fullData = await fullRes.json();
+            setReport(fullData.report as DbReport);
+            setLastChecked(new Date());
+            setLoading(false);
+            return;
+          }
+        }
+      }
+      // Fallback to old in-memory endpoint
+      const fallback = await fetch(`${API_BASE}/api/agent/cli-inspect/latest`, { credentials: "include" });
+      const data = await fallback.json();
       if (data.report) setReport(data.report);
       setLastChecked(new Date());
     } catch { /* ignore */ } finally {
@@ -267,14 +327,25 @@ function CliReportPanel() {
             </div>
 
             <div>
-              <p className="text-xs text-muted-foreground mb-1.5">2. Run the inspector</p>
-              <div className="bg-muted/50 rounded-lg p-3 font-mono text-xs">
-                node forge.js inspect https://myapp.com --username me@email.com --pages /dashboard,/settings
+              <p className="text-xs text-muted-foreground mb-1.5">2. Inspect by name (uses your saved apps above)</p>
+              <div className="bg-muted/50 rounded-lg p-3 font-mono text-xs space-y-1">
+                <div>node forge.js inspect</div>
+                <div className="text-muted-foreground/60 text-[10px]">— shows a numbered menu of your saved apps</div>
+                <div className="pt-1">node forge.js inspect "My App, Blog, Store"</div>
+                <div className="text-muted-foreground/60 text-[10px]">— inspects all three in sequence, Quill documents each one</div>
               </div>
             </div>
 
             <div>
-              <p className="text-xs text-muted-foreground mb-1.5">3. Paste your token when prompted</p>
+              <p className="text-xs text-muted-foreground mb-1.5">3. After fixing issues, recheck</p>
+              <div className="bg-muted/50 rounded-lg p-3 font-mono text-xs">
+                node forge.js recheck
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1.5">Re-runs only pages that had errors or warnings. Marks what's now passing.</p>
+            </div>
+
+            <div>
+              <p className="text-xs text-muted-foreground mb-1.5">4. Paste your token when prompted</p>
               <div className="flex items-center gap-2">
                 <CliTokenButton />
                 <span className="text-xs text-muted-foreground">— or get it at /get-forge</span>
@@ -284,7 +355,7 @@ function CliReportPanel() {
 
           <div className="pt-2 border-t border-border/40 space-y-1 text-xs text-muted-foreground">
             <p>On first run: Forge installs a browser (~200MB, one-time) into <code className="font-mono bg-muted px-1 rounded">~/.forge-playwright/</code></p>
-            <p>Screenshots save to <code className="font-mono bg-muted px-1 rounded">~/forge-inspection/</code> on your computer, and appear here when the run completes.</p>
+            <p>Screenshots and Quill's issue doc appear here automatically when the run completes.</p>
           </div>
         </div>
 
@@ -333,6 +404,34 @@ function CliReportPanel() {
         </div>
       </div>
 
+      {/* Quill doc */}
+      {(report as DbReport).quillDoc && (
+        <div className="border border-sky-500/20 bg-sky-500/5 rounded-xl overflow-hidden">
+          <button
+            onClick={() => setQuillOpen(v => !v)}
+            className="w-full flex items-center justify-between gap-3 p-4 text-left hover:bg-sky-500/5 transition-colors"
+          >
+            <div className="flex items-center gap-2.5">
+              <div className="w-6 h-6 rounded-md bg-sky-500/15 flex items-center justify-center">
+                <Terminal size={12} className="text-sky-400" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-sky-300">Quill's Issue Report</p>
+                <p className="text-[11px] text-muted-foreground">AI-written analysis of every finding</p>
+              </div>
+            </div>
+            {quillOpen ? <ChevronUp size={14} className="text-muted-foreground" /> : <ChevronDown size={14} className="text-muted-foreground" />}
+          </button>
+          {quillOpen && (
+            <div className="px-4 pb-4">
+              <pre className="whitespace-pre-wrap text-xs text-muted-foreground leading-relaxed font-sans border border-border/40 rounded-lg p-4 bg-background/50">
+                {(report as DbReport).quillDoc}
+              </pre>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Screenshots */}
       {report.screenshots.length > 0 && (
         <div className="border border-border rounded-xl p-5">
@@ -347,13 +446,25 @@ function CliReportPanel() {
         ))}
       </div>
 
-      {/* Run again instructions */}
+      {/* Recheck / run again */}
       <div className="border border-border/40 rounded-xl p-4 text-xs text-muted-foreground space-y-1.5">
-        <p className="font-medium text-foreground text-sm">Run again</p>
-        <div className="bg-muted/50 rounded-lg p-2.5 font-mono text-[11px]">
-          node forge.js inspect {report.appUrl}
-        </div>
-        <p>This page auto-refreshes every 30 seconds while open.</p>
+        {(report.errorCount > 0 || report.warnCount > 0) ? (
+          <>
+            <p className="font-medium text-foreground text-sm">After fixing — run recheck</p>
+            <div className="bg-muted/50 rounded-lg p-2.5 font-mono text-[11px]">
+              node forge.js recheck
+            </div>
+            <p>Forge re-inspects only the pages that had issues, marks what's now passing.</p>
+          </>
+        ) : (
+          <>
+            <p className="font-medium text-foreground text-sm">Run again</p>
+            <div className="bg-muted/50 rounded-lg p-2.5 font-mono text-[11px]">
+              node forge.js inspect "{report.appName}"
+            </div>
+            <p>This page auto-refreshes every 30 seconds while open.</p>
+          </>
+        )}
       </div>
     </div>
   );
@@ -435,19 +546,28 @@ export default function AppInspector() {
     }
   }, [passwords]);
 
+  // Sync existing localStorage apps to DB on first mount
+  useEffect(() => {
+    const existing = loadApps();
+    if (existing.length > 0) syncAppsToDb(existing);
+  }, []);
+
   const deleteApp = (id: string) => {
     const next = apps.filter(a => a.id !== id);
     saveApps(next);
     setApps(next);
+    dbDeleteApp(id);
   };
 
   const saveApp = (app: SavedApp) => {
     const existing = apps.find(a => a.id === app.id);
+    const isNew = !existing;
     const next = existing ? apps.map(a => a.id === app.id ? app : a) : [app, ...apps];
     saveApps(next);
     setApps(next);
     setEditingApp(null);
     setAddingApp(false);
+    dbSaveApp(app, isNew);
   };
 
   const errCount = findings.filter(f => f.type === "error").length;
