@@ -19,7 +19,7 @@ const path = require("path");
 const os = require("os");
 
 // ── Config ─────────────────────────────────────────────────────────────────────
-const VERSION = "1.1.0";
+const VERSION = "2.0.0";
 const CONFIG_PATH = path.join(os.homedir(), ".forge-agent.json");
 const FORGE_HOST = "13moonforge.ai";
 const FORGE_BASE = "/api/help/cli-chat";
@@ -346,8 +346,21 @@ function getPlaywright() {
   return require(pwPath);
 }
 
+// ── Viewport definitions ───────────────────────────────────────────────────────
+const VIEWPORTS = {
+  desktop: { width: 1280, height: 900 },
+  tablet:  { width: 768,  height: 1024 },
+  mobile:  { width: 390,  height: 844 },
+};
+
 async function inspectApp(appUrl, options = {}) {
-  const { token, loginUrl, username, password, pages = [], appName = appUrl, saveScreenshots = true } = options;
+  const {
+    token, loginUrl, username, password, pages = [], appName = appUrl,
+    saveScreenshots = true, appId, recheckOf, headless = false,
+    viewports: viewportList = ["desktop"], customAssertions = [], baselines = [],
+  } = options;
+
+  const crypto = require("crypto");
 
   // Output directory for screenshots
   const outDir = path.join(os.homedir(), "forge-inspection", new Date().toISOString().slice(0, 10));
@@ -355,6 +368,12 @@ async function inspectApp(appUrl, options = {}) {
 
   const findings = [];
   const screenshots = [];
+  const allConsoleErrors = [];
+  const allNetworkFailures = [];
+  const allPerformanceMetrics = {};
+  const allAxeViolations = {};
+  const allAssertionResults = [];
+  const visualDiffs = [];
 
   function finding(type, message, page, detail) {
     const f = { type, message, page, detail, ts: Date.now() };
@@ -390,24 +409,28 @@ async function inspectApp(appUrl, options = {}) {
   let browser, context, mainPage;
   try {
     browser = await chromium.launch({
-      headless: false, // Show the browser so user can see what's happening
+      headless,
       args: ["--no-sandbox", "--disable-dev-shm-usage"],
-      slowMo: 200, // Slight slow-mo so it's visible
+      slowMo: headless ? 0 : 150,
     });
 
+    const primaryViewport = VIEWPORTS[viewportList[0]] || VIEWPORTS.desktop;
     context = await browser.newContext({
-      viewport: { width: 1280, height: 800 },
-      userAgent: "ForgeInspector/1.1 (13moonforge.ai)",
+      viewport: primaryViewport,
+      userAgent: "ForgeInspector/2.0 (13moonforge.ai)",
     });
 
-    // Capture console errors
-    const consoleErrors = [];
-    context.on("page", page => {
-      page.on("console", msg => {
-        if (msg.type() === "error") consoleErrors.push({ text: msg.text(), url: page.url() });
+    // Capture console errors and network failures globally
+    context.on("page", pg => {
+      pg.on("console", msg => {
+        if (msg.type() === "error") allConsoleErrors.push({ text: msg.text(), url: pg.url(), ts: Date.now() });
       });
-      page.on("pageerror", err => {
-        consoleErrors.push({ text: err.message, url: page.url() });
+      pg.on("pageerror", err => {
+        allConsoleErrors.push({ text: err.message, url: pg.url(), ts: Date.now() });
+      });
+      pg.on("response", resp => {
+        const st = resp.status();
+        if (st >= 400) allNetworkFailures.push({ url: resp.url(), status: st, page: pg.url() });
       });
     });
 
@@ -603,15 +626,37 @@ async function inspectApp(appUrl, options = {}) {
         const title = await mainPage.title();
         finding("ok", `Loaded — "${title}" (HTTP ${status})`, pagePath);
 
-        // Check for visible error text
-        const bodyText = await mainPage.$eval("body", el => el.innerText).catch(() => "");
+        // ── Performance metrics ──────────────────────────────────────────────
+        const perf = await mainPage.evaluate(() => {
+          const nav = performance.getEntriesByType("navigation")[0];
+          const paints = Object.fromEntries(performance.getEntriesByType("paint").map(p => [p.name, Math.round(p.startTime)]));
+          return nav ? {
+            ttfb: Math.round(nav.responseStart - nav.requestStart),
+            domContentLoaded: Math.round(nav.domContentLoadedEventEnd - nav.startTime),
+            loadTime: Math.round(nav.loadEventEnd - nav.startTime),
+            firstPaint: paints["first-paint"] ?? null,
+            firstContentfulPaint: paints["first-contentful-paint"] ?? null,
+          } : null;
+        }).catch(() => null);
 
+        if (perf) {
+          allPerformanceMetrics[pagePath] = perf;
+          const lcpLabel = perf.firstContentfulPaint !== null ? `FCP ${perf.firstContentfulPaint}ms` : "";
+          const ttfbLabel = `TTFB ${perf.ttfb}ms`;
+          const loadLabel = `Load ${perf.loadTime}ms`;
+          finding("info", `Perf: ${[ttfbLabel, lcpLabel, loadLabel].filter(Boolean).join(" · ")}`, pagePath);
+          if (perf.loadTime > 5000) finding("warn", `Slow page load: ${perf.loadTime}ms (target <3000ms)`, pagePath);
+          else if (perf.loadTime > 3000) finding("warn", `Page load borderline slow: ${perf.loadTime}ms`, pagePath);
+          if (perf.ttfb > 800) finding("warn", `High TTFB: ${perf.ttfb}ms (target <600ms)`, pagePath);
+        }
+
+        // ── Visible error text check ─────────────────────────────────────────
+        const bodyText = await mainPage.$eval("body", el => el.innerText).catch(() => "");
         const errorPatterns = [
           /something went wrong/i, /application error/i, /500 internal server/i,
           /cannot read properties/i, /is not defined/i, /failed to fetch/i,
           /econnrefused/i, /network error/i, /chunk load error/i,
         ];
-
         for (const pat of errorPatterns) {
           if (pat.test(bodyText)) {
             const match = bodyText.match(pat);
@@ -622,30 +667,114 @@ async function inspectApp(appUrl, options = {}) {
           }
         }
 
-        // Check for empty main content
+        // ── Empty content check ──────────────────────────────────────────────
         const mainContent = await mainPage.$eval("main, #root, #app, [role='main'], .main-content", el => el.innerText?.trim()).catch(() => null);
         if (mainContent !== null && mainContent.length < 20) {
           finding("warn", "Main content area appears empty or not rendered", pagePath);
         }
 
-        // Check for broken images
+        // ── Broken images ────────────────────────────────────────────────────
         const brokenImages = await mainPage.$$eval("img", imgs =>
           imgs.filter(img => !img.complete || img.naturalWidth === 0)
-              .map(img => img.src || img.getAttribute("src"))
-              .filter(Boolean)
-              .slice(0, 5)
+              .map(img => img.src || img.getAttribute("src")).filter(Boolean).slice(0, 5)
         ).catch(() => []);
         if (brokenImages.length > 0) {
           finding("warn", `${brokenImages.length} broken image(s)`, pagePath, brokenImages.join(", "));
         }
 
-        // Screenshot
+        // ── Accessibility scan (axe-core) ────────────────────────────────────
+        try {
+          await mainPage.addScriptTag({ url: "https://cdnjs.cloudflare.com/ajax/libs/axe-core/4.9.0/axe.min.js" });
+          const violations = await mainPage.evaluate(async () => {
+            const r = await axe.run({ runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "best-practice"] } });
+            return r.violations.map(v => ({
+              id: v.id, impact: v.impact, description: v.description,
+              nodes: v.nodes.length, help: v.help, helpUrl: v.helpUrl,
+            }));
+          });
+          if (violations.length > 0) {
+            allAxeViolations[pagePath] = violations;
+            const critical = violations.filter(v => v.impact === "critical").length;
+            const serious = violations.filter(v => v.impact === "serious").length;
+            finding(critical > 0 || serious > 0 ? "warn" : "info",
+              `Accessibility: ${violations.length} violation${violations.length !== 1 ? "s" : ""} (${critical} critical, ${serious} serious)`,
+              pagePath,
+              violations.slice(0, 3).map(v => `${v.impact}: ${v.help}`).join(" | "),
+            );
+          } else {
+            finding("ok", "Accessibility: no WCAG violations found", pagePath);
+          }
+        } catch { /* axe injection failed — likely strict CSP */ }
+
+        // ── Custom assertions ────────────────────────────────────────────────
+        for (const assertion of customAssertions) {
+          try {
+            let passed = false;
+            if (assertion.selector) {
+              passed = await mainPage.$(assertion.selector).then(el => el !== null).catch(() => false);
+            } else if (assertion.text) {
+              passed = await mainPage.evaluate(t => document.body.innerText.includes(t), assertion.text).catch(() => false);
+            }
+            allAssertionResults.push({ label: assertion.label || assertion.text || assertion.selector, passed, page: pagePath });
+            if (!passed) finding("warn", `Assertion failed: "${assertion.label || assertion.text || assertion.selector}"`, pagePath);
+            else finding("ok", `Assertion passed: "${assertion.label || assertion.text || assertion.selector}"`, pagePath);
+          } catch (e) {
+            allAssertionResults.push({ label: assertion.label || assertion.text || assertion.selector, passed: false, error: e.message, page: pagePath });
+          }
+        }
+
+        // ── Desktop screenshot + visual regression ───────────────────────────
         if (saveScreenshots) {
           const safeName = pagePath.replace(/[^a-zA-Z0-9]/g, "-").replace(/-+/g, "-").slice(0, 30) || "page";
-          const ssPath = path.join(outDir, `${String(i + 4).padStart(2, "0")}-${safeName}.png`);
-          await mainPage.screenshot({ path: ssPath, fullPage: true });
-          screenshots.push({ page: pagePath, label: pagePath, path: ssPath, data: fs.readFileSync(ssPath).toString("base64") });
+          const ssPath = path.join(outDir, `${String(i + 4).padStart(2, "0")}-${safeName}-desktop.png`);
+          const ssBuffer = await mainPage.screenshot({ path: ssPath, fullPage: true });
+          const ssData = (ssBuffer || fs.readFileSync(ssPath)).toString("base64");
+          const ssHash = crypto.createHash("sha256").update(ssData).digest("hex").slice(0, 16);
+          screenshots.push({ page: pagePath, label: pagePath, viewport: "desktop", path: ssPath, data: ssData, hash: ssHash });
+
+          // Compare against baseline
+          const baseline = baselines.find(b => b.page === pagePath && b.viewport === "desktop");
+          if (baseline) {
+            if (baseline.screenshotHash && !baseline.screenshotHash.startsWith(ssHash.slice(0, 8))) {
+              finding("warn", `Visual change detected vs. approved baseline`, pagePath, `Approve new look at 13moonforge.ai/app-inspector`);
+              visualDiffs.push({ page: pagePath, viewport: "desktop", changed: true, hash: ssHash, baselineHash: baseline.screenshotHash });
+            } else {
+              finding("ok", `Visual regression: matches baseline`, pagePath);
+              visualDiffs.push({ page: pagePath, viewport: "desktop", changed: false, hash: ssHash });
+            }
+          } else {
+            visualDiffs.push({ page: pagePath, viewport: "desktop", noBaseline: true, hash: ssHash });
+          }
+
           finding("ok", `Screenshot saved → ${ssPath}`, pagePath);
+        }
+
+        // ── Additional viewports (tablet, mobile) — screenshot only ──────────
+        for (const vp of viewportList.slice(1)) {
+          const vpSize = VIEWPORTS[vp];
+          if (!vpSize) continue;
+          try {
+            await mainPage.setViewportSize(vpSize);
+            await new Promise(r => setTimeout(r, 500));
+            const safeName = pagePath.replace(/[^a-zA-Z0-9]/g, "-").replace(/-+/g, "-").slice(0, 30) || "page";
+            const ssPath = saveScreenshots ? path.join(outDir, `${String(i + 4).padStart(2, "0")}-${safeName}-${vp}.png`) : null;
+            const ssBuffer = ssPath ? await mainPage.screenshot({ path: ssPath, fullPage: true }) : await mainPage.screenshot({ fullPage: true });
+            const ssData = ssBuffer.toString("base64");
+            const ssHash = crypto.createHash("sha256").update(ssData).digest("hex").slice(0, 16);
+            screenshots.push({ page: pagePath, label: `${pagePath} (${vp})`, viewport: vp, path: ssPath, data: ssData, hash: ssHash });
+            finding("ok", `${vp.charAt(0).toUpperCase() + vp.slice(1)} screenshot saved`, pagePath);
+
+            // Visual regression for this viewport
+            const baseline = baselines.find(b => b.page === pagePath && b.viewport === vp);
+            if (baseline && baseline.screenshotHash && !baseline.screenshotHash.startsWith(ssHash.slice(0, 8))) {
+              finding("warn", `Visual change on ${vp}: differs from approved baseline`, pagePath);
+              visualDiffs.push({ page: pagePath, viewport: vp, changed: true, hash: ssHash, baselineHash: baseline.screenshotHash });
+            } else if (baseline) {
+              visualDiffs.push({ page: pagePath, viewport: vp, changed: false, hash: ssHash });
+            }
+          } catch { /* viewport resize failed, skip */ }
+          // Restore to primary viewport
+          await mainPage.setViewportSize(VIEWPORTS[viewportList[0]] || VIEWPORTS.desktop).catch(() => {});
         }
 
       } catch (e) {
@@ -654,11 +783,20 @@ async function inspectApp(appUrl, options = {}) {
     }
 
     // ── Console errors summary ─────────────────────────────────────────────────
-    if (consoleErrors.length > 0) {
-      finding("warn", `${consoleErrors.length} JavaScript error(s) detected in browser console`);
-      consoleErrors.slice(0, 5).forEach(e => finding("error", e.text, e.url, null));
+    if (allConsoleErrors.length > 0) {
+      finding("warn", `${allConsoleErrors.length} JavaScript error(s) in browser console`);
+      allConsoleErrors.slice(0, 3).forEach(e => finding("error", e.text.slice(0, 120), null, null));
     } else {
       finding("ok", "No JavaScript console errors detected");
+    }
+
+    // ── Network failures summary ───────────────────────────────────────────────
+    const significantNetFails = allNetworkFailures.filter(f => !f.url.includes("axe") && !f.url.includes("analytics"));
+    if (significantNetFails.length > 0) {
+      finding("warn", `${significantNetFails.length} failed network request(s)`);
+      significantNetFails.slice(0, 3).forEach(f => finding("error", `HTTP ${f.status}: ${f.url.slice(0, 80)}`, null, null));
+    } else {
+      finding("ok", "No failed network requests detected");
     }
 
   } catch (e) {
@@ -671,11 +809,40 @@ async function inspectApp(appUrl, options = {}) {
     }
   }
 
-  // ── Summary ────────────────────────────────────────────────────────────────
   const errors = findings.filter(f => f.type === "error").length;
   const warns = findings.filter(f => f.type === "warn").length;
   const oks = findings.filter(f => f.type === "ok").length;
 
+  // ── Accessibility summary ──────────────────────────────────────────────────
+  const totalAxeViolations = Object.values(allAxeViolations).reduce((s, v) => s + v.length, 0);
+  if (totalAxeViolations > 0) {
+    println(`\n  ♿ Accessibility: ${totalAxeViolations} WCAG violation${totalAxeViolations !== 1 ? "s" : ""} across ${Object.keys(allAxeViolations).length} page${Object.keys(allAxeViolations).length !== 1 ? "s" : ""}`, "yellow");
+  } else {
+    println(`\n  ♿ Accessibility: WCAG compliant — no violations`, "green");
+  }
+
+  // ── Performance summary ────────────────────────────────────────────────────
+  const perfPages = Object.values(allPerformanceMetrics);
+  if (perfPages.length > 0) {
+    const avgLoad = Math.round(perfPages.reduce((s, p) => s + (p.loadTime ?? 0), 0) / perfPages.length);
+    const slowPages = perfPages.filter(p => (p.loadTime ?? 0) > 3000).length;
+    println(`  ⚡ Performance: avg load ${avgLoad}ms${slowPages > 0 ? `, ${slowPages} slow page${slowPages !== 1 ? "s" : ""}` : ""}`, avgLoad > 3000 ? "yellow" : "green");
+  }
+
+  // ── Visual regression summary ──────────────────────────────────────────────
+  const changedScreens = visualDiffs.filter(d => d.changed).length;
+  const noBaselineScreens = visualDiffs.filter(d => d.noBaseline).length;
+  if (changedScreens > 0) println(`  👁  Visual: ${changedScreens} page${changedScreens !== 1 ? "s" : ""} differ from baseline`, "yellow");
+  else if (noBaselineScreens > 0) println(`  👁  Visual: no baselines set — run 'node forge.js approve' to set them`, "dim");
+  else if (visualDiffs.length > 0) println(`  👁  Visual: all pages match baselines`, "green");
+
+  // ── Custom assertions summary ──────────────────────────────────────────────
+  if (allAssertionResults.length > 0) {
+    const passed = allAssertionResults.filter(a => a.passed).length;
+    println(`  ✔  Assertions: ${passed}/${allAssertionResults.length} passed`, passed < allAssertionResults.length ? "yellow" : "green");
+  }
+
+  // ── Summary ────────────────────────────────────────────────────────────────
   println("\n  ─────────────────────────────────────────", "dim");
   println("  Inspection complete", "bold");
   if (errors > 0) println(`  ✗ ${errors} error${errors !== 1 ? "s" : ""}`, "red");
@@ -690,10 +857,15 @@ async function inspectApp(appUrl, options = {}) {
       const result = await forgePost("/api/inspector/cli-report", {
         appName,
         appUrl,
-        appId: options.appId ?? undefined,
-        recheckOf: options.recheckOf ?? undefined,
+        appId: appId ?? undefined,
+        recheckOf: recheckOf ?? undefined,
         findings: findings.map(({ type, message, page, detail }) => ({ type, message, page, detail })),
-        screenshots: screenshots.map(s => ({ page: s.page, label: s.label, data: s.data })),
+        screenshots: screenshots.map(s => ({ page: s.page, label: s.label, viewport: s.viewport ?? "desktop", data: s.data, hash: s.hash })),
+        consoleErrors: allConsoleErrors,
+        networkFailures: significantNetFails ?? allNetworkFailures.filter(f => !f.url.includes("axe")),
+        performanceMetrics: allPerformanceMetrics,
+        accessibilityViolations: allAxeViolations,
+        visualDiffs,
         inspectedAt: new Date().toISOString(),
         pagesChecked: allPages.length,
         errorCount: errors,
@@ -701,19 +873,19 @@ async function inspectApp(appUrl, options = {}) {
       }, token);
 
       if (result.status === 200 || result.status === 201) {
-        println("\n  ✓ Quill's issue report is ready.", "green");
+        println("\n  ✓ Quill's full report is ready.", "green");
         println("  View at: https://13moonforge.ai/app-inspector", "green");
+        if (result.data?.reportId) println(`  Report ID: ${result.data.reportId}`, "dim");
         if (result.data?.quillDoc) {
           println("\n  ─── Quill's Summary ─────────────────────────────────", "dim");
-          // Show first 500 chars of quill doc
           const doc = result.data.quillDoc;
-          println(doc.length > 500 ? doc.slice(0, 500) + "\n  ...(full report in app)" : doc, "reset");
+          println(doc.length > 600 ? doc.slice(0, 600) + "\n  ...(full report in app)" : doc, "reset");
           println("  ──────────────────────────────────────────────────────", "dim");
         }
       } else {
-        println("\n  (Could not sync to Forge — report saved locally)", "dim");
+        println("\n  (Could not sync to Forge — screenshots saved locally)", "dim");
       }
-    } catch { println("\n  (Could not reach Forge — report saved locally)", "dim"); }
+    } catch { println("\n  (Could not reach Forge — screenshots saved locally)", "dim"); }
   }
 
   println("\n", "");
@@ -820,6 +992,8 @@ async function runInspectMode(args, cfg) {
   // Named apps (first positional arg that isn't a flag or URL)
   const appNamesArg = args.find(a => !a.startsWith("--") && !a.startsWith("http"));
   const saveScreenshots = !hasFlag("--no-screenshots");
+  const headless = hasFlag("--headless") || hasFlag("--ci");
+  const viewports = getArg("--viewports")?.split(",").map(v => v.trim()).filter(Boolean) ?? ["desktop"];
 
   // ── Direct URL mode ────────────────────────────────────────────────────────
   if (directUrl) {
@@ -828,8 +1002,8 @@ async function runInspectMode(args, cfg) {
     const appName = getArg("--name") || directUrl;
     const pages = (getArg("--pages") || "").split(",").map(p => p.trim()).filter(Boolean);
     let password = null;
-    if (username) password = await rlPassword(`  Password for ${username}: `);
-    await inspectApp(directUrl, { token: cfg.token, loginUrl, username, password, pages, appName, saveScreenshots });
+    if (username && !headless) password = await rlPassword(`  Password for ${username}: `);
+    await inspectApp(directUrl, { token: cfg.token, loginUrl, username, password, pages, appName, saveScreenshots, headless, viewports });
     return;
   }
 
@@ -882,6 +1056,16 @@ async function runInspectMode(args, cfg) {
       password = await rlPassword(`  Password for ${app.username} @ ${app.name}: `);
     }
 
+    // Fetch baselines for this app (for visual regression)
+    let appBaselines = [];
+    try {
+      const blResult = await forgeGet(`/api/inspector/baselines-for-compare?appId=${encodeURIComponent(app.id)}`, cfg.token);
+      if (blResult.status === 200 && Array.isArray(blResult.data?.baselines)) appBaselines = blResult.data.baselines;
+    } catch { /* no baselines */ }
+
+    const appViewports = Array.isArray(app.viewports) && app.viewports.length > 0 ? app.viewports : ["desktop"];
+    const appAssertions = Array.isArray(app.customAssertions) ? app.customAssertions : [];
+
     await inspectApp(app.url, {
       token: cfg.token,
       loginUrl: app.loginUrl,
@@ -891,6 +1075,10 @@ async function runInspectMode(args, cfg) {
       appName: app.name,
       appId: app.id,
       saveScreenshots,
+      headless,
+      viewports: appViewports,
+      customAssertions: appAssertions,
+      baselines: appBaselines,
     });
 
     if (i < appsToInspect.length - 1) {
@@ -935,19 +1123,202 @@ async function handleInspectIntent(input, cfg) {
   });
 }
 
+// ── Generate GitHub Actions workflow file ─────────────────────────────────────
+async function runGenerateWorkflow(args) {
+  const appNameArg = args[0] || "";
+  const outFile = ".github/workflows/forge-inspector.yml";
+  const yaml = `# Forge Inspector — Auto-generated by Forge Agent v${VERSION}
+# Runs on every push to main and weekly. Fails if any errors are found.
+# Setup: add FORGE_TOKEN to your repository secrets.
+# Get your token at: https://13moonforge.ai/get-forge
+
+name: Forge Inspector
+
+on:
+  push:
+    branches: [main, master]
+  schedule:
+    - cron: "0 9 * * 1"  # Every Monday 9 AM UTC
+  workflow_dispatch:
+
+jobs:
+  inspect:
+    name: Forge App Inspection
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Download Forge CLI
+        run: curl -fsSL -o forge.js https://13moonforge.ai/api/help/forge-agent.js
+
+      - name: Install Playwright system deps
+        run: |
+          mkdir -p ~/.forge-playwright
+          cd ~/.forge-playwright
+          npm init -y
+          npm install playwright
+          PLAYWRIGHT_BROWSERS_PATH=~/.forge-playwright/browsers npx playwright install-deps chromium
+          PLAYWRIGHT_BROWSERS_PATH=~/.forge-playwright/browsers npx playwright install chromium
+
+      - name: Configure token
+        run: |
+          echo '{"token":"'\${{ secrets.FORGE_TOKEN }}'"}' > ~/.forge-agent.json
+
+      - name: Run inspection
+        run: |
+          node forge.js inspect ${appNameArg ? `"${appNameArg}"` : "all"} --headless --no-screenshots
+
+      - name: Upload screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: forge-inspection-\${{ github.run_number }}
+          path: ~/forge-inspection/
+          retention-days: 30
+`;
+
+  fs.mkdirSync(".github/workflows", { recursive: true });
+  fs.writeFileSync(outFile, yaml);
+
+  println("\n  ✓ GitHub Actions workflow generated!", "green");
+  println(`  File: ${outFile}`, "dim");
+  println("\n  Next steps:", "bold");
+  println("  1. Add FORGE_TOKEN to your GitHub repo secrets:", "dim");
+  println("     Settings → Secrets → Actions → New repository secret", "dim");
+  println("  2. Get your token at: https://13moonforge.ai/get-forge", "dim");
+  println("  3. Commit and push the workflow file:", "dim");
+  println(`     git add ${outFile} && git commit -m "Add Forge Inspector workflow" && git push`, "dim");
+  println("\n  The workflow will run on every push to main and fail the build if issues are found.\n", "dim");
+}
+
+// ── Approve visual baselines — send current screenshots as new baselines ───────
+async function runApproveMode(args, cfg) {
+  println("\n  👁  Forge Baseline Approval\n", "magenta");
+
+  const appName = args[0] || null;
+  println(`  Fetching last inspection${appName ? ` for "${appName}"` : ""}...`, "dim");
+
+  const qs = appName ? `?appName=${encodeURIComponent(appName)}` : "";
+  const r = await forgeGet(`/api/inspector/cli-recheck-data${qs}`, cfg.token).catch(() => null);
+  if (!r || r.status !== 200 || !r.data?.found) {
+    println("  No recent inspection found. Run an inspection first.\n", "yellow");
+    return;
+  }
+
+  const { appName: name, appId } = r.data;
+  if (!appId) { println("  Cannot approve: app not found in your saved apps.\n", "yellow"); return; }
+
+  // Fetch last report screenshots from API
+  const rr = await forgeGet(`/api/inspector/cli-reports?appId=${encodeURIComponent(appId)}`, cfg.token).catch(() => null);
+  if (!rr || rr.status !== 200 || !rr.data?.reports?.length) {
+    println("  No reports found for this app.\n", "yellow"); return;
+  }
+
+  const latestReport = rr.data.reports[0];
+  const screenshots = latestReport.screenshots ?? [];
+  if (screenshots.length === 0) {
+    println("  No screenshots in last report to approve.\n", "yellow"); return;
+  }
+
+  println(`  Approving ${screenshots.length} screenshot${screenshots.length !== 1 ? "s" : ""} as visual baselines for ${name}...`, "dim");
+
+  let approved = 0;
+  for (const ss of screenshots) {
+    if (!ss.data) continue;
+    try {
+      const result = await forgePost("/api/inspector/baselines", {
+        appId, page: ss.page, viewport: ss.viewport ?? "desktop", screenshotData: ss.data,
+      }, cfg.token);
+      if (result.status === 200) {
+        approved++;
+        println(`  ✓ Baseline approved: ${ss.page} (${ss.viewport ?? "desktop"})`, "green");
+      }
+    } catch { /* skip */ }
+  }
+
+  println(`\n  ✓ ${approved} baseline${approved !== 1 ? "s" : ""} saved. Future inspections will compare against these.\n`, "green");
+}
+
+// ── Monitor daemon — check schedules and run inspections on a cron ─────────────
+async function runMonitorMode(args, cfg) {
+  const intervalOverride = parseInt(args.find(a => !a.startsWith("--")) ?? "") || null;
+
+  println("\n  🕐 Forge Monitor — continuous inspection daemon\n", "magenta");
+  println("  Checking your scheduled apps...", "dim");
+  println("  Press Ctrl+C to stop.\n", "dim");
+
+  let iteration = 0;
+  while (true) {
+    iteration++;
+    try {
+      const r = await forgeGet("/api/inspector/cli-schedules", cfg.token);
+      if (r.status !== 200) { await new Promise(res => setTimeout(res, 30000)); continue; }
+
+      const { due } = r.data;
+      if (due.length === 0) {
+        if (iteration === 1) println("  No scheduled inspections due yet.", "dim");
+      } else {
+        println(`\n  ${due.length} inspection${due.length !== 1 ? "s" : ""} due:`, "bold");
+        for (const { app, id: scheduleId, intervalMinutes } of due) {
+          if (!app) continue;
+          println(`\n  Running scheduled inspection of ${app.name}...`, "dim");
+          try {
+            const baselines = await forgeGet(`/api/inspector/baselines-for-compare?appId=${encodeURIComponent(app.id)}`, cfg.token)
+              .then(b => b.data?.baselines ?? []).catch(() => []);
+            await inspectApp(app.url, {
+              token: cfg.token, loginUrl: app.loginUrl, username: app.username,
+              pages: app.pages ?? [], appName: app.name, appId: app.id,
+              saveScreenshots: false, headless: true,
+              viewports: app.viewports ?? ["desktop"],
+              customAssertions: app.customAssertions ?? [],
+              baselines,
+            });
+            await forgePost("/api/inspector/cli-schedule-done", { scheduleId, hadErrors: false }, cfg.token).catch(() => {});
+          } catch (e) {
+            println(`  ✗ Scheduled inspection failed: ${e.message}`, "red");
+            await forgePost("/api/inspector/cli-schedule-done", { scheduleId, hadErrors: true }, cfg.token).catch(() => {});
+          }
+        }
+      }
+    } catch (e) {
+      println(`  Monitor error: ${e.message}`, "dim");
+    }
+
+    // Sleep until next check (default: 1 minute between polls)
+    const sleepMs = (intervalOverride ?? 1) * 60 * 1000;
+    await new Promise(res => setTimeout(res, sleepMs));
+  }
+}
+
 // ── Main ───────────────────────────────────────────────────────────────────────
 async function main() {
   const cliArgs = process.argv.slice(2);
 
-  // Inspect mode: node forge.js inspect [appName|url]
-  if (cliArgs[0] === "inspect" || cliArgs[0] === "recheck") {
-    const isRecheck = cliArgs[0] === "recheck";
+  // ── generate-workflow: output GitHub Actions YAML ─────────────────────────
+  if (cliArgs[0] === "generate-workflow") {
+    await runGenerateWorkflow(cliArgs.slice(1));
+    return;
+  }
+
+  // ── Commands that need a token ─────────────────────────────────────────────
+  const needsTokenCmds = ["inspect", "recheck", "approve", "monitor"];
+  if (needsTokenCmds.includes(cliArgs[0])) {
+    const cmd = cliArgs[0];
+    const isInspector = ["inspect", "recheck", "approve"].includes(cmd);
+
     print("\n  ╔══════════════════════════════════════╗\n", "magenta");
-    if (isRecheck) {
-      print("  ║   🔁  Forge Recheck  v" + VERSION + "           ║\n", "magenta");
-    } else {
-      print("  ║   🔍  Forge Inspector  v" + VERSION + "         ║\n", "magenta");
-    }
+    if (cmd === "recheck") print("  ║   🔁  Forge Recheck  v" + VERSION + "           ║\n", "magenta");
+    else if (cmd === "approve") print("  ║   👁  Forge Approve  v" + VERSION + "           ║\n", "magenta");
+    else if (cmd === "monitor") print("  ║   🕐  Forge Monitor  v" + VERSION + "           ║\n", "magenta");
+    else print("  ║   🔍  Forge Inspector  v" + VERSION + "         ║\n", "magenta");
     print("  ║   13moonforge.ai                     ║\n", "magenta");
     print("  ╚══════════════════════════════════════╝\n\n", "magenta");
 
@@ -962,11 +1333,10 @@ async function main() {
       print("  ✓ Token saved\n\n", "green");
     }
 
-    if (isRecheck) {
-      await runRecheckMode(cliArgs.slice(1), cfg);
-    } else {
-      await runInspectMode(cliArgs.slice(1), cfg);
-    }
+    if (cmd === "recheck") await runRecheckMode(cliArgs.slice(1), cfg);
+    else if (cmd === "approve") await runApproveMode(cliArgs.slice(1), cfg);
+    else if (cmd === "monitor") await runMonitorMode(cliArgs.slice(1), cfg);
+    else await runInspectMode(cliArgs.slice(1), cfg);
     return;
   }
 
