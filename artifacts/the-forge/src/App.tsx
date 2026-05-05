@@ -86,6 +86,7 @@ const ActivityPage     = lazy(() => import("@/pages/activity"));
 const DeploysPage      = lazy(() => import("@/pages/deploys"));
 const MigratePage      = lazy(() => import("@/pages/migrate"));
 const GetForgePage     = lazy(() => import("@/pages/get-forge"));
+const ForgeCoderPage   = lazy(() => import("@/pages/forge-coder"));
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 const API_BASE = basePath;
@@ -343,6 +344,7 @@ function Router() {
                     <Route path="/deploys"                component={DeploysPage} />
                     <Route path="/migrate"                component={MigratePage} />
                     <Route path="/get-forge"             component={GetForgePage} />
+                    <Route path="/forge-coder"           component={ForgeCoderPage} />
                     <Route component={NotFound} />
                   </Switch>
                 </ProtectedRoute>
