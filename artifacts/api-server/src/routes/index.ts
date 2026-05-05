@@ -57,6 +57,7 @@ import marketplaceRouter from "./marketplace";
 import vaultRouter from "./vault";
 import activityRouter from "./activity";
 import deploysRouter from "./deploys";
+import helpRouter from "./help";
 
 const router: IRouter = Router();
 
@@ -118,5 +119,6 @@ router.use(marketplaceRouter);
 router.use(vaultRouter);
 router.use(activityRouter);
 router.use(deploysRouter);
+router.use(helpRouter);
 
 export default router;
