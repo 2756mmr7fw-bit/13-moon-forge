@@ -4,7 +4,7 @@ import {
   Flame, FolderKanban, PlusCircle, CreditCard, ExternalLink,
   Sparkles, Code2, Wand2, Layers, Scale, Crosshair, Activity,
   GraduationCap, ArrowRightLeft, Wrench, BookOpen, Archive, Gamepad2, Rocket, LogOut,
-  Shield, Github, Package, User, Users, LogIn, Menu, X, Settings, KeyRound, ShieldAlert, PlugZap, Swords, Monitor, MonitorPlay, Globe, Download, Wifi, LayoutTemplate, PencilLine, Mail, Search, Grid3X3, Server, Upload, ScanLine, Bug, Timer,
+  Shield, Github, Package, User, Users, LogIn, Menu, X, Settings, KeyRound, ShieldAlert, PlugZap, Swords, Monitor, MonitorPlay, Globe, Download, Wifi, LayoutTemplate, PencilLine, Mail, Search, Grid3X3, Server, Upload, ScanLine, Bug, Timer, Vault,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LogoMark, LogoWordmark } from "@/components/logo";
@@ -77,6 +77,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   ];
 
   const selfHostItems: NavItem[] = [
+    { href: "/vault",      label: "The Vault",           icon: Vault,           tip: "Your private code vault — store, import, and own your repos"       },
     { href: "/github",     label: "GitHub",              icon: Github,          tip: "Connect your GitHub repositories"                                  },
     { href: "/wizard",     label: "Move My App",         icon: Wand2,           tip: "Step-by-step wizard to move your app off Replit, Heroku, or Render" },
     { href: "/migration",  label: "Migration Status",    icon: ArrowRightLeft,  tip: "Check the progress of an ongoing migration"                        },
