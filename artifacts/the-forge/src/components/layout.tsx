@@ -4,7 +4,7 @@ import {
   Flame, FolderKanban, PlusCircle, CreditCard, ExternalLink,
   Sparkles, Code2, Wand2, Layers, Scale, Crosshair, Activity,
   GraduationCap, ArrowRightLeft, Wrench, BookOpen, Archive, Gamepad2, Rocket, LogOut,
-  Shield, Github, Package, User, Users, LogIn, Menu, X, Settings, KeyRound, ShieldAlert, PlugZap, Swords, Monitor, MonitorPlay, Globe, Download, Wifi, LayoutTemplate, PencilLine, Mail, Search, Grid3X3, Server, Upload, ScanLine, Bug, Timer, Vault,
+  Shield, Github, Package, User, Users, LogIn, Menu, X, Settings, KeyRound, ShieldAlert, PlugZap, Swords, Monitor, MonitorPlay, Globe, Download, Wifi, LayoutTemplate, PencilLine, Mail, Search, Grid3X3, Server, Upload, ScanLine, Bug, Timer, Vault, Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LogoMark, LogoWordmark } from "@/components/logo";
@@ -77,22 +77,24 @@ export function Layout({ children }: { children: React.ReactNode }) {
   ];
 
   const selfHostItems: NavItem[] = [
-    { href: "/vault",      label: "The Vault",           icon: Vault,           tip: "Your private code vault — store, import, and own your repos"       },
-    { href: "/activity",   label: "Activity Feed",        icon: Activity,        tip: "Timeline of everything that happened — repos, imports, deployments" },
-    { href: "/github",     label: "GitHub",              icon: Github,          tip: "Connect your GitHub repositories"                                  },
-    { href: "/wizard",     label: "Move My App",         icon: Wand2,           tip: "Step-by-step wizard to move your app off Replit, Heroku, or Render" },
-    { href: "/migration",  label: "Migration Status",    icon: ArrowRightLeft,  tip: "Check the progress of an ongoing migration"                        },
-    { href: "/leaving",    label: "Leaving Replit/Heroku",icon: LogOut,         tip: "Guides for escaping cloud platforms to your own server"            },
-    { href: "/sovereign",  label: "Self-Hosting Guide",  icon: Shield,          tip: "The 13-point standard for truly owning your stack"                 },
-    { href: "/forge-hosting", label: "Forge Hosting",     icon: Server,          tip: "All your apps — deployed, managed, and live on your own server"   },
-    { href: "/forge-drop",    label: "Forge Drop",        icon: Upload,          tip: "Send files to any app in the ecosystem — zip, video, PDF, images"  },
-    { href: "/app-hub",    label: "Deploy Apps",         icon: Layers,          tip: "Deploy apps to your Coolify server with one click"                 },
-    { href: "/registry",   label: "App Directory",       icon: Package,         tip: "Browse and submit self-hostable open-source apps"                  },
-    { href: "/secrets",    label: "API Keys",            icon: KeyRound,        tip: "Securely store passwords, API keys, and tokens"                    },
-    { href: "/monitor",    label: "App Health",          icon: Activity,        tip: "Live status of your running apps and infrastructure"               },
-    { href: "/connections",label: "Integrations",        icon: PlugZap,         tip: "Connect third-party services to the Forge"                        },
+    { href: "/migrate",    label: "Connect & Deploy",    icon: Rocket,          tip: "Build in Replit, auto-deploy here — connect a GitHub repo in 5 steps"       },
+    { href: "/deploys",    label: "Deploy Dashboard",    icon: Zap,             tip: "All your running apps — trigger redeploys, view logs, check status"          },
+    { href: "/vault",      label: "The Vault",           icon: Vault,           tip: "Your private code vault — store, import, and own your repos"                 },
+    { href: "/activity",   label: "Activity Feed",        icon: Activity,        tip: "Timeline of everything that happened — repos, imports, deployments"          },
+    { href: "/github",     label: "GitHub",              icon: Github,          tip: "Connect your GitHub repositories"                                            },
+    { href: "/wizard",     label: "Move My App",         icon: Wand2,           tip: "Step-by-step wizard to move your app off Replit, Heroku, or Render"          },
+    { href: "/migration",  label: "Migration Status",    icon: ArrowRightLeft,  tip: "Check the progress of an ongoing migration"                                  },
+    { href: "/leaving",    label: "Leaving Replit/Heroku",icon: LogOut,         tip: "Guides for escaping cloud platforms to your own server"                      },
+    { href: "/sovereign",  label: "Self-Hosting Guide",  icon: Shield,          tip: "The 13-point standard for truly owning your stack"                           },
+    { href: "/forge-hosting", label: "Forge Hosting",     icon: Server,          tip: "All your apps — deployed, managed, and live on your own server"             },
+    { href: "/forge-drop",    label: "Forge Drop",        icon: Upload,          tip: "Send files to any app in the ecosystem — zip, video, PDF, images"           },
+    { href: "/app-hub",    label: "Deploy Apps",         icon: Layers,          tip: "Deploy apps to your Coolify server with one click"                           },
+    { href: "/registry",   label: "App Directory",       icon: Package,         tip: "Browse and submit self-hostable open-source apps"                            },
+    { href: "/secrets",    label: "API Keys",            icon: KeyRound,        tip: "Securely store passwords, API keys, and tokens"                              },
+    { href: "/monitor",    label: "App Health",          icon: Activity,        tip: "Live status of your running apps and infrastructure"                         },
+    { href: "/connections",label: "Integrations",        icon: PlugZap,         tip: "Connect third-party services to the Forge"                                   },
     { href: "/antivirus",  label: "Antivirus Link",      icon: ShieldAlert,     tip: "Link 13 Moon Antivirus — extract emailed code and send it straight to Forge" },
-    { href: "/mail-scanner", label: "Mail Scanner",      icon: ScanLine,        tip: "Scan email attachments and route clean files to any app in the ecosystem"      },
+    { href: "/mail-scanner", label: "Mail Scanner",      icon: ScanLine,        tip: "Scan email attachments and route clean files to any app in the ecosystem"    },
   ];
 
   const learnItems: NavItem[] = [

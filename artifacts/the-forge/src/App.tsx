@@ -83,6 +83,8 @@ const GymHub           = lazy(() => import("@/pages/gym/GymHub"));
 const GymExercise      = lazy(() => import("@/pages/gym/ExercisePage"));
 const VaultPage        = lazy(() => import("@/pages/vault"));
 const ActivityPage     = lazy(() => import("@/pages/activity"));
+const DeploysPage      = lazy(() => import("@/pages/deploys"));
+const MigratePage      = lazy(() => import("@/pages/migrate"));
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 const API_BASE = basePath;
@@ -337,6 +339,8 @@ function Router() {
                     <Route path="/gym"                    component={GymHub} />
                     <Route path="/vault"                  component={VaultPage} />
                     <Route path="/activity"               component={ActivityPage} />
+                    <Route path="/deploys"                component={DeploysPage} />
+                    <Route path="/migrate"                component={MigratePage} />
                     <Route component={NotFound} />
                   </Switch>
                 </ProtectedRoute>
