@@ -62,6 +62,7 @@ export const ListProjectsResponseItem = zod.object({
   description: zod.string().optional(),
   status: zod.enum(["draft", "published", "archived"]),
   template: zod.string(),
+  projectType: zod.enum(["website", "app", "api", "tool"]),
   pageCount: zod.number(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
@@ -75,6 +76,7 @@ export const CreateProjectBody = zod.object({
   name: zod.string(),
   description: zod.string().optional(),
   template: zod.string(),
+  projectType: zod.enum(["website", "app", "api", "tool"]).optional(),
 });
 
 /**
@@ -90,6 +92,7 @@ export const GetProjectResponse = zod.object({
   description: zod.string().optional(),
   status: zod.enum(["draft", "published", "archived"]),
   template: zod.string(),
+  projectType: zod.enum(["website", "app", "api", "tool"]),
   pageCount: zod.number(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
@@ -106,6 +109,7 @@ export const UpdateProjectBody = zod.object({
   name: zod.string().optional(),
   description: zod.string().optional(),
   status: zod.enum(["draft", "published", "archived"]).optional(),
+  projectType: zod.enum(["website", "app", "api", "tool"]).optional(),
 });
 
 export const UpdateProjectResponse = zod.object({
@@ -114,6 +118,7 @@ export const UpdateProjectResponse = zod.object({
   description: zod.string().optional(),
   status: zod.enum(["draft", "published", "archived"]),
   template: zod.string(),
+  projectType: zod.enum(["website", "app", "api", "tool"]),
   pageCount: zod.number(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
@@ -212,6 +217,7 @@ export const GetRecentProjectsResponseItem = zod.object({
   description: zod.string().optional(),
   status: zod.enum(["draft", "published", "archived"]),
   template: zod.string(),
+  projectType: zod.enum(["website", "app", "api", "tool"]),
   pageCount: zod.number(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
