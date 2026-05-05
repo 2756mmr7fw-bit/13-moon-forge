@@ -45,21 +45,43 @@ export const ProjectStatus = {
   archived: "archived",
 } as const;
 
+export type ProjectProjectType =
+  (typeof ProjectProjectType)[keyof typeof ProjectProjectType];
+
+export const ProjectProjectType = {
+  website: "website",
+  app: "app",
+  api: "api",
+  tool: "tool",
+} as const;
+
 export interface Project {
   id: number;
   name: string;
   description?: string;
   status: ProjectStatus;
   template: string;
+  projectType: ProjectProjectType;
   pageCount: number;
   createdAt: string;
   updatedAt: string;
 }
 
+export type CreateProjectBodyProjectType =
+  (typeof CreateProjectBodyProjectType)[keyof typeof CreateProjectBodyProjectType];
+
+export const CreateProjectBodyProjectType = {
+  website: "website",
+  app: "app",
+  api: "api",
+  tool: "tool",
+} as const;
+
 export interface CreateProjectBody {
   name: string;
   description?: string;
   template: string;
+  projectType?: CreateProjectBodyProjectType;
 }
 
 export type UpdateProjectBodyStatus =
@@ -71,10 +93,21 @@ export const UpdateProjectBodyStatus = {
   archived: "archived",
 } as const;
 
+export type UpdateProjectBodyProjectType =
+  (typeof UpdateProjectBodyProjectType)[keyof typeof UpdateProjectBodyProjectType];
+
+export const UpdateProjectBodyProjectType = {
+  website: "website",
+  app: "app",
+  api: "api",
+  tool: "tool",
+} as const;
+
 export interface UpdateProjectBody {
   name?: string;
   description?: string;
   status?: UpdateProjectBodyStatus;
+  projectType?: UpdateProjectBodyProjectType;
 }
 
 export interface Page {

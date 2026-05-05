@@ -8,6 +8,7 @@ export const projectsTable = pgTable("projects", {
   description: text("description"),
   status: text("status").notNull().default("draft"),
   template: text("template").notNull(),
+  projectType: text("project_type").notNull().default("website"),
   domain: text("domain"),
   liveUrl: text("live_url"),
   githubUrl: text("github_url"),

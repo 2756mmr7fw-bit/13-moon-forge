@@ -5,10 +5,12 @@
  * The Forge - Website Builder API
  * OpenAPI spec version: 0.1.0
  */
+import type { UpdateProjectBodyProjectType } from "./updateProjectBodyProjectType";
 import type { UpdateProjectBodyStatus } from "./updateProjectBodyStatus";
 
 export interface UpdateProjectBody {
   name?: string;
   description?: string;
   status?: UpdateProjectBodyStatus;
+  projectType?: UpdateProjectBodyProjectType;
 }

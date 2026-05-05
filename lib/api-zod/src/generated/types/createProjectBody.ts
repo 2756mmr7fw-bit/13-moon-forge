@@ -5,9 +5,11 @@
  * The Forge - Website Builder API
  * OpenAPI spec version: 0.1.0
  */
+import type { CreateProjectBodyProjectType } from "./createProjectBodyProjectType";
 
 export interface CreateProjectBody {
   name: string;
   description?: string;
   template: string;
+  projectType?: CreateProjectBodyProjectType;
 }

@@ -42,7 +42,7 @@ router.post("/projects", async (req, res) => {
   try {
     const [project] = await db
       .insert(projectsTable)
-      .values({ name: body.data.name, description: body.data.description ?? null, template: body.data.template, status: "draft" })
+      .values({ name: body.data.name, description: body.data.description ?? null, template: body.data.template, projectType: body.data.projectType ?? "website", status: "draft" })
       .returning();
     res.status(201).json({ ...project, pageCount: 0 });
   } catch (err) {
@@ -77,6 +77,7 @@ router.put("/projects/:id", async (req, res) => {
     if (body.data.name !== undefined) updates.name = body.data.name;
     if (body.data.description !== undefined) updates.description = body.data.description;
     if (body.data.status !== undefined) updates.status = body.data.status;
+    if (body.data.projectType !== undefined) updates.projectType = body.data.projectType;
 
     const [project] = await db.update(projectsTable).set(updates).where(eq(projectsTable.id, params.data.id)).returning();
     if (!project) return res.status(404).json({ error: "Project not found" });
