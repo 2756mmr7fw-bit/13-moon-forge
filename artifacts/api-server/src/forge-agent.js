@@ -192,6 +192,27 @@ function forgeChat(messages, token) {
   });
 }
 
+// ── GET from Forge API ────────────────────────────────────────────────────────
+function forgeGet(apiPath, token) {
+  return new Promise((resolve, reject) => {
+    const isHttps = FORGE_HOST !== "localhost";
+    const lib = isHttps ? https : http;
+    const req = lib.request({
+      hostname: FORGE_HOST, port: isHttps ? 443 : 80, path: apiPath, method: "GET",
+      headers: { "Authorization": `Bearer ${token}` },
+    }, (res) => {
+      let buf = "";
+      res.on("data", d => buf += d);
+      res.on("end", () => {
+        try { resolve({ status: res.statusCode, data: JSON.parse(buf) }); }
+        catch { resolve({ status: res.statusCode, data: buf }); }
+      });
+    });
+    req.on("error", reject);
+    req.end();
+  });
+}
+
 // ── POST JSON to Forge API ─────────────────────────────────────────────────────
 function forgePost(path, data, token) {
   return new Promise((resolve, reject) => {
@@ -664,11 +685,13 @@ async function inspectApp(appUrl, options = {}) {
 
   // ── Send report to Forge UI ────────────────────────────────────────────────
   if (token) {
-    print("\n  Sending report to 13 Moon Forge...", "dim");
+    print("\n  Quill is writing up the issues...", "dim");
     try {
-      const result = await forgePost("/api/agent/cli-inspect", {
+      const result = await forgePost("/api/inspector/cli-report", {
         appName,
         appUrl,
+        appId: options.appId ?? undefined,
+        recheckOf: options.recheckOf ?? undefined,
         findings: findings.map(({ type, message, page, detail }) => ({ type, message, page, detail })),
         screenshots: screenshots.map(s => ({ page: s.page, label: s.label, data: s.data })),
         inspectedAt: new Date().toISOString(),
@@ -678,9 +701,17 @@ async function inspectApp(appUrl, options = {}) {
       }, token);
 
       if (result.status === 200 || result.status === 201) {
-        println("\n  ✓ Report live at: https://13moonforge.ai/app-inspector", "green");
+        println("\n  ✓ Quill's issue report is ready.", "green");
+        println("  View at: https://13moonforge.ai/app-inspector", "green");
+        if (result.data?.quillDoc) {
+          println("\n  ─── Quill's Summary ─────────────────────────────────", "dim");
+          // Show first 500 chars of quill doc
+          const doc = result.data.quillDoc;
+          println(doc.length > 500 ? doc.slice(0, 500) + "\n  ...(full report in app)" : doc, "reset");
+          println("  ──────────────────────────────────────────────────────", "dim");
+        }
       } else {
-        println("\n  (Could not sync to Forge UI — report is saved locally)", "dim");
+        println("\n  (Could not sync to Forge — report saved locally)", "dim");
       }
     } catch { println("\n  (Could not reach Forge — report saved locally)", "dim"); }
   }
@@ -688,32 +719,96 @@ async function inspectApp(appUrl, options = {}) {
   println("\n", "");
 }
 
+// ── Fetch saved apps from Forge ────────────────────────────────────────────────
+async function fetchSavedApps(token) {
+  try {
+    const r = await forgeGet("/api/inspector/cli-apps", token);
+    if (r.status === 200 && Array.isArray(r.data.apps)) return r.data.apps;
+    return [];
+  } catch { return []; }
+}
+
+// ── Fetch recheck data (last failing pages for an app) ─────────────────────────
+async function fetchRecheckData(token, appName) {
+  try {
+    const qs = appName ? `?appName=${encodeURIComponent(appName)}` : "";
+    const r = await forgeGet(`/api/inspector/cli-recheck-data${qs}`, token);
+    if (r.status === 200 && r.data.found) return r.data;
+    return null;
+  } catch { return null; }
+}
+
+// ── Recheck mode — re-inspect only previously failing pages ───────────────────
+async function runRecheckMode(args, cfg) {
+  println("\n  🔁 Forge Recheck Mode\n", "magenta");
+
+  const appName = args[0] || null;
+  println(`  Fetching last inspection${appName ? ` for "${appName}"` : ""}...`, "dim");
+
+  const data = await fetchRecheckData(cfg.token, appName);
+  if (!data) {
+    println("  No previous inspection found. Run 'node forge.js inspect <url>' first.\n", "yellow");
+    return;
+  }
+
+  const { appName: name, appUrl, appId, reportId, failingPages, errorCount, warnCount } = data;
+
+  println(`\n  App: ${name}`, "bold");
+  println(`  URL: ${appUrl}`, "dim");
+  println(`  Previous run: ${errorCount} error${errorCount !== 1 ? "s" : ""}, ${warnCount} warning${warnCount !== 1 ? "s" : ""}`, "yellow");
+
+  if (failingPages.length === 0) {
+    println("  No failing pages from last run — nothing to recheck!\n", "green");
+    return;
+  }
+
+  println(`\n  Rechecking ${failingPages.length} failing page${failingPages.length !== 1 ? "s" : ""}:`, "dim");
+  failingPages.forEach(p => println(`    • ${p}`, "dim"));
+  println("", "");
+
+  const proceed = await rl("  Enter password to log in (or press Enter to skip login): ");
+  const username = await rl("  Username/email (or Enter to skip): ");
+  let password = null;
+  if (username) password = await rlPassword(`  Password for ${username}: `);
+
+  await inspectApp(appUrl, {
+    token: cfg.token,
+    username: username || undefined,
+    password: password || undefined,
+    pages: failingPages,
+    appName: name,
+    appId,
+    recheckOf: reportId,
+    saveScreenshots: true,
+  });
+}
+
+// ── Show saved apps menu and let user pick ────────────────────────────────────
+async function pickAppsFromMenu(apps) {
+  println("\n  Your saved apps:\n", "bold");
+  apps.forEach((app, i) => {
+    print(`  ${String(i + 1).padStart(2)}. `, "dim");
+    print(app.name, "bold");
+    println(`  ${app.url}`, "dim");
+  });
+  println("\n  Enter numbers or names (e.g. 1,3 or 'My App, Blog'). 'all' to inspect everything.\n", "dim");
+  const input = await rl("  Which apps? ");
+
+  if (input.toLowerCase() === "all") return apps;
+
+  // Try number selection
+  const nums = input.split(/[,\s]+/).map(n => parseInt(n.trim())).filter(n => !isNaN(n) && n >= 1 && n <= apps.length);
+  if (nums.length > 0) return nums.map(n => apps[n - 1]);
+
+  // Try name matching
+  const names = input.split(",").map(n => n.trim().toLowerCase());
+  return apps.filter(app => names.some(n => app.name.toLowerCase().includes(n)));
+}
+
 // ── Parse inspect command line args ───────────────────────────────────────────
-async function runInspectMode(args) {
-  const cfg = loadConfig();
-
-  // Ensure token
-  if (!cfg.token) {
-    println("  You need a CLI token to use Forge Inspector.", "dim");
-    println("  Get one at: https://13moonforge.ai/get-forge\n", "dim");
-    const token = await rl("  Paste your CLI token: ");
-    if (!token) { println("No token — exiting.", "red"); process.exit(1); }
-    cfg.token = token;
-    saveConfig(cfg);
-  }
-
-  // Parse URL (first non-flag arg after "inspect")
-  const appUrl = args.find(a => a.startsWith("http"));
-  if (!appUrl) {
-    println("  Usage: node forge.js inspect https://myapp.com [options]\n", "yellow");
-    println("  Options:", "dim");
-    println("    --pages /dashboard,/settings,/orders   Pages to inspect", "dim");
-    println("    --login-url /login                     Login page URL", "dim");
-    println("    --username me@email.com                Login username", "dim");
-    println("    --name 'My App'                        App name for report", "dim");
-    println("    --no-screenshots                       Skip saving screenshots\n", "dim");
-    process.exit(0);
-  }
+async function runInspectMode(args, cfg) {
+  // Check for direct URL
+  const directUrl = args.find(a => a.startsWith("http"));
 
   // Parse flags
   const getArg = (flag) => {
@@ -722,19 +817,91 @@ async function runInspectMode(args) {
   };
   const hasFlag = (flag) => args.includes(flag);
 
-  const loginUrl = getArg("--login-url");
-  const username = getArg("--username");
-  const appName = getArg("--name") || appUrl;
-  const pages = (getArg("--pages") || "").split(",").map(p => p.trim()).filter(Boolean);
+  // Named apps (first positional arg that isn't a flag or URL)
+  const appNamesArg = args.find(a => !a.startsWith("--") && !a.startsWith("http"));
   const saveScreenshots = !hasFlag("--no-screenshots");
 
-  // Get password interactively if username provided
-  let password = null;
-  if (username) {
-    password = await rlPassword(`  Password for ${username}: `);
+  // ── Direct URL mode ────────────────────────────────────────────────────────
+  if (directUrl) {
+    const loginUrl = getArg("--login-url");
+    const username = getArg("--username");
+    const appName = getArg("--name") || directUrl;
+    const pages = (getArg("--pages") || "").split(",").map(p => p.trim()).filter(Boolean);
+    let password = null;
+    if (username) password = await rlPassword(`  Password for ${username}: `);
+    await inspectApp(directUrl, { token: cfg.token, loginUrl, username, password, pages, appName, saveScreenshots });
+    return;
   }
 
-  await inspectApp(appUrl, { token: cfg.token, loginUrl, username, password, pages, appName, saveScreenshots });
+  // ── Named app(s) or interactive menu ──────────────────────────────────────
+  println("  Fetching your saved apps...", "dim");
+  const allApps = await fetchSavedApps(cfg.token);
+
+  if (allApps.length === 0) {
+    println("\n  No apps saved yet. Add them at:\n  https://13moonforge.ai/app-inspector\n", "yellow");
+    println("  Or run directly: node forge.js inspect https://myapp.com\n", "dim");
+    return;
+  }
+
+  let appsToInspect = [];
+
+  if (appNamesArg) {
+    // Match by names from command line arg: "My App, Blog, Store"
+    const names = appNamesArg.split(",").map(n => n.trim().toLowerCase()).filter(Boolean);
+    appsToInspect = allApps.filter(app =>
+      names.some(n => app.name.toLowerCase().includes(n) || app.url.toLowerCase().includes(n))
+    );
+    if (appsToInspect.length === 0) {
+      println(`\n  No apps matched "${appNamesArg}". Your saved apps:`, "yellow");
+      allApps.forEach(a => println(`    • ${a.name}`, "dim"));
+      println("", "");
+      appsToInspect = await pickAppsFromMenu(allApps);
+    }
+  } else {
+    appsToInspect = await pickAppsFromMenu(allApps);
+  }
+
+  if (appsToInspect.length === 0) {
+    println("  No apps selected.\n", "yellow");
+    return;
+  }
+
+  println(`\n  Inspecting ${appsToInspect.length} app${appsToInspect.length !== 1 ? "s" : ""} in sequence...\n`, "bold");
+
+  // ── Inspect each app ──────────────────────────────────────────────────────
+  for (let i = 0; i < appsToInspect.length; i++) {
+    const app = appsToInspect[i];
+    if (appsToInspect.length > 1) {
+      println(`\n  [${ i + 1}/${appsToInspect.length}] ${app.name}`, "bold");
+      println("  ─────────────────────────────────────────", "dim");
+    }
+
+    // Get password for this app if it has a login
+    let password = null;
+    if (app.loginMethod === "form" && app.username) {
+      password = await rlPassword(`  Password for ${app.username} @ ${app.name}: `);
+    }
+
+    await inspectApp(app.url, {
+      token: cfg.token,
+      loginUrl: app.loginUrl,
+      username: app.username,
+      password,
+      pages: app.pages ?? [],
+      appName: app.name,
+      appId: app.id,
+      saveScreenshots,
+    });
+
+    if (i < appsToInspect.length - 1) {
+      println("\n  Pausing 3 seconds before next app...", "dim");
+      await new Promise(r => setTimeout(r, 3000));
+    }
+  }
+
+  if (appsToInspect.length > 1) {
+    println(`\n  ✓ All ${appsToInspect.length} apps inspected. Reports available at:\n  https://13moonforge.ai/app-inspector\n`, "green");
+  }
 }
 
 // ── Interactive inspect trigger ────────────────────────────────────────────────
@@ -772,13 +939,34 @@ async function handleInspectIntent(input, cfg) {
 async function main() {
   const cliArgs = process.argv.slice(2);
 
-  // Inspect mode: node forge.js inspect https://myapp.com
-  if (cliArgs[0] === "inspect") {
+  // Inspect mode: node forge.js inspect [appName|url]
+  if (cliArgs[0] === "inspect" || cliArgs[0] === "recheck") {
+    const isRecheck = cliArgs[0] === "recheck";
     print("\n  ╔══════════════════════════════════════╗\n", "magenta");
-    print("  ║   🔍  Forge Inspector  v" + VERSION + "         ║\n", "magenta");
+    if (isRecheck) {
+      print("  ║   🔁  Forge Recheck  v" + VERSION + "           ║\n", "magenta");
+    } else {
+      print("  ║   🔍  Forge Inspector  v" + VERSION + "         ║\n", "magenta");
+    }
     print("  ║   13moonforge.ai                     ║\n", "magenta");
     print("  ╚══════════════════════════════════════╝\n\n", "magenta");
-    await runInspectMode(cliArgs.slice(1));
+
+    let cfg = loadConfig();
+    if (!cfg.token) {
+      print("  You need a CLI token to connect to The Forge.\n", "dim");
+      print("  Get one at: https://13moonforge.ai/get-forge\n\n", "dim");
+      const token = await rl("  Paste your CLI token: ");
+      if (!token) { print("No token — exiting.\n", "red"); process.exit(1); }
+      cfg.token = token;
+      saveConfig(cfg);
+      print("  ✓ Token saved\n\n", "green");
+    }
+
+    if (isRecheck) {
+      await runRecheckMode(cliArgs.slice(1), cfg);
+    } else {
+      await runInspectMode(cliArgs.slice(1), cfg);
+    }
     return;
   }
 
