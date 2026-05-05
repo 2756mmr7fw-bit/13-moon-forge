@@ -3,7 +3,8 @@ import {
   ScanLine, Play, Loader2, CheckCircle2, AlertCircle, AlertTriangle,
   Info, ChevronDown, ChevronUp, Plus, Trash2, Globe, Lock, Eye, EyeOff,
   ArrowRight, Monitor, Terminal, Camera, RefreshCw, ExternalLink, X,
-  Copy, Check,
+  Copy, Check, Share2, Bell, Clock, Zap, Shield, Activity, Wifi, Link,
+  GitBranch, Smartphone, Tablet, Radio, BarChart2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -85,6 +86,47 @@ function FindingRow({ finding }: { finding: Finding | Omit<Finding, "ts"> }) {
   );
 }
 
+// ── Extended types ────────────────────────────────────────────────────────────
+
+interface AxeViolation {
+  id: string;
+  impact: string;
+  description: string;
+  nodes: number;
+  help: string;
+  helpUrl?: string;
+}
+
+interface PerfMetrics {
+  ttfb: number;
+  domContentLoaded: number;
+  loadTime: number;
+  firstPaint?: number;
+  firstContentfulPaint?: number;
+}
+
+interface VisualDiff {
+  page: string;
+  viewport: string;
+  changed: boolean;
+  hash?: string;
+  noBaseline?: boolean;
+  baselineHash?: string;
+}
+
+interface TrendPoint {
+  id: string;
+  inspectedAt: string;
+  errorCount: number;
+  warnCount: number;
+}
+
+interface CustomAssertion {
+  label: string;
+  text?: string;
+  selector?: string;
+}
+
 // ── Saved apps (localStorage + DB sync) ───────────────────────────────────────
 
 interface SavedApp {
@@ -98,6 +140,8 @@ interface SavedApp {
   loginMethod: "form" | "none";
   pages: string[];
   description?: string;
+  viewports?: string[];
+  customAssertions?: CustomAssertion[];
 }
 
 function loadApps(): SavedApp[] {
@@ -235,15 +279,537 @@ function ScreenshotGallery({ screenshots }: { screenshots: CliScreenshot[] }) {
   );
 }
 
+// ── Trend sparkline ───────────────────────────────────────────────────────────
+
+function TrendSparkline({ points }: { points: TrendPoint[] }) {
+  if (points.length < 2) return null;
+  const maxErr = Math.max(...points.map(p => p.errorCount), 1);
+  const W = 80, H = 28, pad = 2;
+  const xs = points.map((_, i) => pad + (i / (points.length - 1)) * (W - pad * 2));
+  const ys = points.map(p => H - pad - (p.errorCount / maxErr) * (H - pad * 2));
+  const d = xs.map((x, i) => `${i === 0 ? "M" : "L"}${x.toFixed(1)},${ys[i].toFixed(1)}`).join(" ");
+  const lastErr = points[points.length - 1].errorCount;
+  const color = lastErr === 0 ? "#10b981" : lastErr <= 3 ? "#f59e0b" : "#ef4444";
+
+  return (
+    <div title={`Last ${points.length} runs · latest: ${lastErr} error${lastErr !== 1 ? "s" : ""}`}>
+      <svg width={W} height={H} className="opacity-70">
+        <path d={d} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx={xs[xs.length - 1]} cy={ys[ys.length - 1]} r="2.5" fill={color} />
+      </svg>
+    </div>
+  );
+}
+
+// ── Share button ──────────────────────────────────────────────────────────────
+
+function ShareButton({ reportId }: { reportId: string }) {
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const share = async () => {
+    if (shareUrl) {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      return;
+    }
+    setLoading(true);
+    try {
+      const r = await fetch(`${API_BASE}/api/inspector/share/${reportId}`, {
+        method: "POST", credentials: "include",
+      });
+      const d = await r.json();
+      if (d.url) {
+        setShareUrl(d.url);
+        await navigator.clipboard.writeText(d.url);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }
+    } catch { /* ignore */ } finally { setLoading(false); }
+  };
+
+  return (
+    <button
+      onClick={share}
+      className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border border-border hover:border-primary/40 hover:bg-primary/5 transition-all text-muted-foreground hover:text-foreground"
+      title={shareUrl ? "Copy shareable link" : "Generate shareable link"}
+    >
+      {loading ? <Loader2 size={12} className="animate-spin" /> : copied ? <Check size={12} className="text-emerald-400" /> : <Share2 size={12} />}
+      {copied ? "Link copied!" : shareUrl ? "Copy link" : "Share"}
+    </button>
+  );
+}
+
+// ── Schedule / alert panel ────────────────────────────────────────────────────
+
+function SchedulePanel({ appId, appName }: { appId: string; appName: string }) {
+  const [open, setOpen] = useState(false);
+  const [interval, setIntervalMin] = useState(60);
+  const [email, setEmail] = useState("");
+  const [slack, setSlack] = useState("");
+  const [enabled, setEnabled] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [existing, setExisting] = useState<any | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    fetch(`${API_BASE}/api/inspector/schedules`, { credentials: "include" })
+      .then(r => r.json())
+      .then(d => {
+        const sched = d.schedules?.find((s: any) => s.appId === appId);
+        if (sched) {
+          setExisting(sched);
+          setIntervalMin(sched.intervalMinutes);
+          setEmail(sched.alertEmail ?? "");
+          setSlack(sched.alertSlackWebhook ?? "");
+          setEnabled(sched.enabled);
+        }
+      }).catch(() => {});
+  }, [open, appId]);
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      await fetch(`${API_BASE}/api/inspector/schedules`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ appId, intervalMinutes: interval, alertEmail: email || null, alertSlackWebhook: slack || null, enabled }),
+      });
+      setSaved(true);
+      setTimeout(() => { setSaved(false); setOpen(false); }, 1500);
+    } catch { /* ignore */ } finally { setSaving(false); }
+  };
+
+  const deleteSchedule = async () => {
+    if (!existing) return;
+    await fetch(`${API_BASE}/api/inspector/schedules/${existing.id}`, { method: "DELETE", credentials: "include" });
+    setExisting(null);
+    setOpen(false);
+  };
+
+  return (
+    <div>
+      <button
+        onClick={() => setOpen(v => !v)}
+        className={cn(
+          "flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border transition-all",
+          existing?.enabled
+            ? "border-emerald-500/40 bg-emerald-500/5 text-emerald-400 hover:border-emerald-500/60"
+            : "border-border hover:border-primary/40 hover:bg-primary/5 text-muted-foreground hover:text-foreground"
+        )}
+        title="Configure scheduled monitoring"
+      >
+        <Clock size={12} />
+        {existing?.enabled ? `Every ${existing.intervalMinutes}min` : "Schedule"}
+      </button>
+
+      {open && (
+        <div className="mt-3 border border-border rounded-xl p-4 space-y-3 bg-card/50">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-semibold">Monitoring schedule — {appName}</p>
+            <button onClick={() => setOpen(false)} className="text-muted-foreground hover:text-foreground">
+              <X size={14} />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium">Check every</label>
+              <select
+                value={interval}
+                onChange={e => setIntervalMin(Number(e.target.value))}
+                className="w-full text-xs rounded-lg border border-border bg-background px-2.5 py-2"
+              >
+                <option value={15}>15 minutes</option>
+                <option value={30}>30 minutes</option>
+                <option value={60}>1 hour</option>
+                <option value={360}>6 hours</option>
+                <option value={720}>12 hours</option>
+                <option value={1440}>24 hours</option>
+              </select>
+            </div>
+            <div className="flex items-end pb-0.5">
+              <label className="flex items-center gap-2 text-xs cursor-pointer">
+                <input type="checkbox" checked={enabled} onChange={e => setEnabled(e.target.checked)} className="rounded" />
+                Enabled
+              </label>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium flex items-center gap-1.5"><Bell size={11} /> Alert email <span className="text-muted-foreground font-normal">(optional)</span></label>
+            <Input value={email} onChange={e => setEmail(e.target.value)} placeholder="you@company.com" className="text-xs" />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium flex items-center gap-1.5"><Radio size={11} /> Slack webhook URL <span className="text-muted-foreground font-normal">(optional)</span></label>
+            <Input value={slack} onChange={e => setSlack(e.target.value)} placeholder="https://hooks.slack.com/services/..." className="text-xs" />
+            <p className="text-[10px] text-muted-foreground">Paste an Incoming Webhook URL from your Slack app settings</p>
+          </div>
+
+          <p className="text-[11px] text-muted-foreground border-t border-border/40 pt-2">
+            Run <code className="font-mono bg-muted px-1 rounded">node forge.js monitor</code> on your computer to activate scheduled inspections.
+          </p>
+
+          <div className="flex gap-2">
+            <Button onClick={save} disabled={saving} size="sm" className="flex-1 text-xs">
+              {saving ? <Loader2 size={12} className="animate-spin mr-1.5" /> : null}
+              {saved ? "Saved ✓" : "Save schedule"}
+            </Button>
+            {existing && (
+              <Button onClick={deleteSchedule} variant="ghost" size="sm" className="text-xs text-destructive hover:text-destructive">
+                Delete
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Diff badge ────────────────────────────────────────────────────────────────
+
+function DiffBadge({ reportId }: { reportId: string }) {
+  const [diff, setDiff] = useState<{ newErrors: number; fixed: number; persistent: number } | null>(null);
+
+  useEffect(() => {
+    fetch(`${API_BASE}/api/inspector/diff/${reportId}`, { credentials: "include" })
+      .then(r => r.json())
+      .then(d => { if (d.diff) setDiff(d.diff); })
+      .catch(() => {});
+  }, [reportId]);
+
+  if (!diff || (diff.newErrors === 0 && diff.fixed === 0)) return null;
+
+  return (
+    <div className="flex items-center gap-2 flex-wrap">
+      {diff.newErrors > 0 && (
+        <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 font-medium">
+          +{diff.newErrors} new
+        </span>
+      )}
+      {diff.fixed > 0 && (
+        <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">
+          {diff.fixed} fixed ✓
+        </span>
+      )}
+      {diff.persistent > 0 && (
+        <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">
+          {diff.persistent} ongoing
+        </span>
+      )}
+    </div>
+  );
+}
+
+// ── Performance tab ───────────────────────────────────────────────────────────
+
+function PerformanceTab({ metrics }: { metrics: Record<string, PerfMetrics> }) {
+  const entries = Object.entries(metrics);
+  if (entries.length === 0) return <p className="text-xs text-muted-foreground py-4 text-center">No performance data collected.</p>;
+
+  const badge = (ms: number | undefined) => {
+    if (ms === undefined || ms === null) return null;
+    const color = ms < 1000 ? "text-emerald-400" : ms < 3000 ? "text-yellow-400" : "text-red-400";
+    return <span className={cn("font-mono text-xs", color)}>{ms}ms</span>;
+  };
+
+  return (
+    <div className="space-y-3">
+      {entries.map(([page, m]) => (
+        <div key={page} className="border border-border rounded-xl p-4 space-y-2">
+          <code className="text-xs font-mono text-muted-foreground">{page}</code>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="space-y-0.5">
+              <p className="text-[10px] text-muted-foreground">TTFB</p>
+              {badge(m.ttfb)}
+            </div>
+            <div className="space-y-0.5">
+              <p className="text-[10px] text-muted-foreground">FCP</p>
+              {badge(m.firstContentfulPaint ?? undefined)}
+            </div>
+            <div className="space-y-0.5">
+              <p className="text-[10px] text-muted-foreground">DOM Ready</p>
+              {badge(m.domContentLoaded)}
+            </div>
+            <div className="space-y-0.5">
+              <p className="text-[10px] text-muted-foreground">Load Time</p>
+              {badge(m.loadTime)}
+            </div>
+          </div>
+          <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+            <div
+              className={cn("h-full rounded-full transition-all", m.loadTime < 1000 ? "bg-emerald-500" : m.loadTime < 3000 ? "bg-yellow-500" : "bg-red-500")}
+              style={{ width: `${Math.min(100, (m.loadTime / 5000) * 100)}%` }}
+            />
+          </div>
+        </div>
+      ))}
+      <p className="text-[10px] text-muted-foreground">
+        Targets: TTFB &lt;600ms · FCP &lt;1800ms · Load &lt;3000ms (Core Web Vitals guidance)
+      </p>
+    </div>
+  );
+}
+
+// ── Accessibility tab ─────────────────────────────────────────────────────────
+
+const IMPACT_COLOR: Record<string, string> = {
+  critical: "text-red-400 bg-red-500/10 border-red-500/20",
+  serious:  "text-orange-400 bg-orange-500/10 border-orange-500/20",
+  moderate: "text-yellow-400 bg-yellow-500/10 border-yellow-500/20",
+  minor:    "text-blue-400 bg-blue-500/10 border-blue-500/20",
+};
+
+function AccessibilityTab({ violations }: { violations: Record<string, AxeViolation[]> }) {
+  const entries = Object.entries(violations);
+  const total = entries.reduce((s, [, v]) => s + v.length, 0);
+
+  if (entries.length === 0) return (
+    <div className="flex items-center gap-3 py-6 text-center justify-center">
+      <Shield size={16} className="text-emerald-400" />
+      <p className="text-sm text-emerald-400 font-medium">No WCAG violations found — fully accessible!</p>
+    </div>
+  );
+
+  return (
+    <div className="space-y-4">
+      <p className="text-xs text-muted-foreground">{total} WCAG violation{total !== 1 ? "s" : ""} across {entries.length} page{entries.length !== 1 ? "s" : ""} · <a href="https://www.deque.com/axe/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Powered by axe-core</a></p>
+      {entries.map(([page, viols]) => (
+        <div key={page} className="space-y-2">
+          <p className="text-xs font-medium text-muted-foreground"><code className="font-mono">{page}</code></p>
+          {viols.map((v, i) => (
+            <div key={i} className={cn("border rounded-lg px-3 py-2.5 text-xs space-y-1", IMPACT_COLOR[v.impact] ?? "border-border")}>
+              <div className="flex items-start justify-between gap-2">
+                <span className="font-medium">{v.help}</span>
+                <span className={cn("text-[10px] px-1.5 py-0.5 rounded-full border font-semibold uppercase shrink-0", IMPACT_COLOR[v.impact])}>{v.impact}</span>
+              </div>
+              <p className="text-muted-foreground">{v.description}</p>
+              <p className="text-muted-foreground">{v.nodes} element{v.nodes !== 1 ? "s" : ""} affected</p>
+              {v.helpUrl && (
+                <a href={v.helpUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary hover:underline">
+                  <Link size={10} /> Learn how to fix this
+                </a>
+              )}
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── Visual diff tab ───────────────────────────────────────────────────────────
+
+function VisualTab({ diffs, screenshots, onApprove }: {
+  diffs: VisualDiff[];
+  screenshots: { page: string; viewport?: string; dataUrl: string; label: string }[];
+  onApprove: (page: string, viewport: string, data: string) => Promise<void>;
+}) {
+  const [approving, setApproving] = useState<string | null>(null);
+  const [approved, setApproved] = useState<Set<string>>(new Set());
+
+  const changed = diffs.filter(d => d.changed);
+  const noBaseline = diffs.filter(d => d.noBaseline);
+  const matching = diffs.filter(d => !d.changed && !d.noBaseline);
+
+  const getScreenshot = (page: string, vp: string) =>
+    screenshots.find(s => s.page === page && (s.viewport ?? "desktop") === vp);
+
+  const approve = async (page: string, viewport: string) => {
+    const key = `${page}:${viewport}`;
+    const ss = getScreenshot(page, viewport);
+    if (!ss) return;
+    setApproving(key);
+    try {
+      await onApprove(page, viewport, ss.dataUrl.split(",")[1] ?? ss.dataUrl);
+      setApproved(prev => new Set([...prev, key]));
+    } finally { setApproving(null); }
+  };
+
+  if (diffs.length === 0) return <p className="text-xs text-muted-foreground py-4 text-center">No visual comparison data.</p>;
+
+  return (
+    <div className="space-y-4">
+      {changed.length > 0 && (
+        <div className="space-y-3">
+          <p className="text-xs font-medium text-yellow-400 flex items-center gap-1.5"><AlertTriangle size={12} /> {changed.length} page{changed.length !== 1 ? "s" : ""} differ from baseline</p>
+          {changed.map(d => {
+            const key = `${d.page}:${d.viewport}`;
+            const ss = getScreenshot(d.page, d.viewport);
+            return (
+              <div key={key} className="border border-yellow-500/20 rounded-xl p-3 space-y-2 bg-yellow-500/5">
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <code className="text-xs font-mono">{d.page}</code>
+                    <span className="text-[10px] text-muted-foreground ml-2">{d.viewport}</span>
+                  </div>
+                  <button
+                    onClick={() => approve(d.page, d.viewport)}
+                    disabled={!!approving || approved.has(key)}
+                    className="text-[10px] px-2.5 py-1 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary transition-colors disabled:opacity-50"
+                  >
+                    {approved.has(key) ? "✓ Approved" : approving === key ? "Approving..." : "Approve new look"}
+                  </button>
+                </div>
+                {ss && <img src={ss.dataUrl} alt={d.page} className="w-full h-28 object-cover object-top rounded-lg border border-border" />}
+              </div>
+            );
+          })}
+        </div>
+      )}
+      {noBaseline.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5"><Camera size={12} /> {noBaseline.length} page{noBaseline.length !== 1 ? "s" : ""} have no baseline yet</p>
+          {noBaseline.map(d => {
+            const key = `${d.page}:${d.viewport}`;
+            const ss = getScreenshot(d.page, d.viewport);
+            return (
+              <div key={key} className="border border-border rounded-xl p-3 space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <code className="text-xs font-mono">{d.page}</code>
+                    <span className="text-[10px] text-muted-foreground ml-2">{d.viewport}</span>
+                  </div>
+                  <button
+                    onClick={() => approve(d.page, d.viewport)}
+                    disabled={!!approving || approved.has(key)}
+                    className="text-[10px] px-2.5 py-1 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary transition-colors disabled:opacity-50"
+                  >
+                    {approved.has(key) ? "✓ Set as baseline" : "Set as baseline"}
+                  </button>
+                </div>
+                {ss && <img src={ss.dataUrl} alt={d.page} className="w-full h-24 object-cover object-top rounded-lg border border-border" />}
+              </div>
+            );
+          })}
+        </div>
+      )}
+      {matching.length > 0 && (
+        <p className="text-xs text-emerald-400 flex items-center gap-1.5"><CheckCircle2 size={12} /> {matching.length} page{matching.length !== 1 ? "s" : ""} match baseline perfectly</p>
+      )}
+      <div className="text-[11px] text-muted-foreground border-t border-border/40 pt-3 space-y-1">
+        <p>You can also set all baselines at once from the CLI:</p>
+        <code className="font-mono bg-muted px-2 py-1 rounded block">node forge.js approve</code>
+      </div>
+    </div>
+  );
+}
+
+// ── Network tab ───────────────────────────────────────────────────────────────
+
+function NetworkTab({ failures, consoleErrors }: {
+  failures: Array<{ url: string; status: number; page?: string }>;
+  consoleErrors: Array<{ text: string; url?: string }>;
+}) {
+  const sigFailures = failures.filter(f => !f.url.includes("axe") && !f.url.includes("analytics"));
+
+  return (
+    <div className="space-y-4">
+      {sigFailures.length > 0 ? (
+        <div className="space-y-2">
+          <p className="text-xs font-medium flex items-center gap-1.5"><Wifi size={12} className="text-red-400" /> {sigFailures.length} failed network request{sigFailures.length !== 1 ? "s" : ""}</p>
+          {sigFailures.map((f, i) => (
+            <div key={i} className="border border-red-500/20 bg-red-500/5 rounded-lg px-3 py-2 text-xs space-y-0.5">
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-red-400 font-semibold">{f.status}</span>
+                <span className="text-muted-foreground truncate">{f.url}</span>
+              </div>
+              {f.page && <p className="text-[10px] text-muted-foreground">on page: {f.page}</p>}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-xs text-emerald-400 flex items-center gap-1.5"><CheckCircle2 size={12} /> No failed network requests</p>
+      )}
+
+      {consoleErrors.length > 0 ? (
+        <div className="space-y-2">
+          <p className="text-xs font-medium flex items-center gap-1.5"><Terminal size={12} className="text-yellow-400" /> {consoleErrors.length} console error{consoleErrors.length !== 1 ? "s" : ""}</p>
+          {consoleErrors.slice(0, 10).map((e, i) => (
+            <div key={i} className="border border-yellow-500/20 bg-yellow-500/5 rounded-lg px-3 py-2 text-xs">
+              <p className="font-mono text-muted-foreground break-all">{e.text.slice(0, 200)}</p>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-xs text-emerald-400 flex items-center gap-1.5"><CheckCircle2 size={12} /> No console errors</p>
+      )}
+    </div>
+  );
+}
+
+// ── CI generator panel ────────────────────────────────────────────────────────
+
+function CiGeneratorButton({ appName }: { appName?: string }) {
+  const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const cmd = `node forge.js generate-workflow${appName ? ` "${appName}"` : ""}`;
+
+  const copy = async () => {
+    await navigator.clipboard.writeText(cmd);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div>
+      <button
+        onClick={() => setOpen(v => !v)}
+        className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border border-border hover:border-primary/40 hover:bg-primary/5 text-muted-foreground hover:text-foreground transition-all"
+      >
+        <GitBranch size={12} /> CI/CD
+      </button>
+
+      {open && (
+        <div className="mt-3 border border-border rounded-xl p-4 space-y-3 bg-card/50">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-semibold flex items-center gap-2"><GitBranch size={14} /> GitHub Actions CI</p>
+            <button onClick={() => setOpen(false)} className="text-muted-foreground hover:text-foreground"><X size={14} /></button>
+          </div>
+          <p className="text-xs text-muted-foreground">Generate a GitHub Actions workflow that runs Forge Inspector on every push and fails the build if errors are found.</p>
+          <div className="space-y-1.5">
+            <p className="text-xs font-medium">Run this in your project folder:</p>
+            <div className="flex items-center gap-2">
+              <code className="flex-1 bg-muted/50 rounded-lg px-3 py-2 text-xs font-mono">{cmd}</code>
+              <button onClick={copy} className="shrink-0 p-2 rounded-lg border border-border hover:bg-muted transition-colors">
+                {copied ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+              </button>
+            </div>
+          </div>
+          <div className="text-xs text-muted-foreground space-y-1 border-t border-border/40 pt-3">
+            <p>This creates <code className="font-mono bg-muted px-1 rounded">.github/workflows/forge-inspector.yml</code></p>
+            <p>Then add <code className="font-mono bg-muted px-1 rounded">FORGE_TOKEN</code> to your GitHub repo secrets.</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Extended report type (DB-backed) ─────────────────────────────────────────
 
 interface DbReport extends CliReport {
   id: string;
   quillDoc?: string;
   recheckOf?: string;
+  shareId?: string;
+  consoleErrors?: Array<{ text: string; url?: string; ts?: number }>;
+  networkFailures?: Array<{ url: string; status: number; page?: string }>;
+  performanceMetrics?: Record<string, PerfMetrics>;
+  accessibilityViolations?: Record<string, AxeViolation[]>;
+  visualDiffs?: VisualDiff[];
+  diffData?: { newErrors: number; fixed: number; persistent: number };
 }
 
 // ── CLI report panel ──────────────────────────────────────────────────────────
+
+type ReportTab = "findings" | "perf" | "a11y" | "visual" | "network";
 
 function CliReportPanel() {
   const [report, setReport] = useState<DbReport | null>(null);
@@ -251,6 +817,7 @@ function CliReportPanel() {
   const [lastChecked, setLastChecked] = useState<Date | null>(null);
   const [polling, setPolling] = useState(false);
   const [quillOpen, setQuillOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<ReportTab>("findings");
 
   const fetchReport = useCallback(async () => {
     try {
@@ -398,11 +965,15 @@ function CliReportPanel() {
           {errCount === 0 && warnCount === 0 && (
             <span className="text-sm text-emerald-400 font-medium">All clear 🎉</span>
           )}
+          {report.id && <ShareButton reportId={report.id} />}
           <button onClick={refresh} disabled={polling} title="Check for newer reports" className="text-muted-foreground hover:text-foreground transition-colors">
             <RefreshCw size={14} className={cn(polling && "animate-spin")} />
           </button>
         </div>
       </div>
+
+      {/* Diff badges (new/fixed/persistent vs previous run) */}
+      {report.id && <DiffBadge reportId={report.id} />}
 
       {/* Quill doc */}
       {(report as DbReport).quillDoc && (
@@ -432,19 +1003,102 @@ function CliReportPanel() {
         </div>
       )}
 
-      {/* Screenshots */}
-      {report.screenshots.length > 0 && (
+      {/* Report tab bar */}
+      {(() => {
+        const hasPerfData = report.performanceMetrics && Object.keys(report.performanceMetrics).length > 0;
+        const hasA11yData = report.accessibilityViolations !== undefined;
+        const hasVisualData = report.visualDiffs && report.visualDiffs.length > 0;
+        const hasNetData = (report.networkFailures && report.networkFailures.length > 0) || (report.consoleErrors && report.consoleErrors.length > 0);
+        const tabs: Array<{ id: ReportTab; label: string; icon: React.ReactNode; count?: number }> = [
+          { id: "findings", label: "Findings", icon: <ScanLine size={12} />, count: findings.length },
+          ...(hasPerfData ? [{ id: "perf" as ReportTab, label: "Performance", icon: <Activity size={12} /> }] : []),
+          ...(hasA11yData ? [{ id: "a11y" as ReportTab, label: "Accessibility", icon: <Shield size={12} />, count: Object.values(report.accessibilityViolations ?? {}).flat().length }] : []),
+          ...(hasVisualData ? [{ id: "visual" as ReportTab, label: "Visual", icon: <Camera size={12} />, count: report.visualDiffs?.filter(d => d.changed).length }] : []),
+          ...(hasNetData ? [{ id: "network" as ReportTab, label: "Network", icon: <Wifi size={12} />, count: report.networkFailures?.length }] : []),
+        ];
+        if (tabs.length <= 1) return null;
+        return (
+          <div className="flex gap-1 p-1 bg-muted/40 rounded-xl overflow-x-auto">
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all",
+                  activeTab === tab.id
+                    ? "bg-background text-foreground shadow-sm border border-border/50"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {tab.icon}
+                {tab.label}
+                {tab.count !== undefined && tab.count > 0 && (
+                  <span className={cn("text-[10px] px-1.5 py-0.5 rounded-full font-semibold",
+                    tab.id === "a11y" || tab.id === "visual" ? "bg-yellow-500/20 text-yellow-400" :
+                    tab.id === "network" ? "bg-red-500/20 text-red-400" : "bg-muted text-muted-foreground"
+                  )}>{tab.count}</span>
+                )}
+              </button>
+            ))}
+          </div>
+        );
+      })()}
+
+      {/* Screenshots (always shown above tabbed content) */}
+      {report.screenshots.length > 0 && activeTab === "findings" && (
         <div className="border border-border rounded-xl p-5">
           <ScreenshotGallery screenshots={report.screenshots} />
         </div>
       )}
 
-      {/* Findings */}
-      <div className="space-y-1.5">
-        {findings.map((f, i) => (
-          <FindingRow key={i} finding={{ ...f, ts: 0 }} />
-        ))}
-      </div>
+      {/* Tab content */}
+      {activeTab === "findings" && (
+        <div className="space-y-1.5">
+          {findings.map((f, i) => (
+            <FindingRow key={i} finding={{ ...f, ts: 0 }} />
+          ))}
+        </div>
+      )}
+
+      {activeTab === "perf" && report.performanceMetrics && (
+        <div className="border border-border rounded-xl p-5">
+          <PerformanceTab metrics={report.performanceMetrics} />
+        </div>
+      )}
+
+      {activeTab === "a11y" && (
+        <div className="border border-border rounded-xl p-5">
+          <AccessibilityTab violations={report.accessibilityViolations ?? {}} />
+        </div>
+      )}
+
+      {activeTab === "visual" && report.visualDiffs && (
+        <div className="border border-border rounded-xl p-5">
+          <VisualTab
+            diffs={report.visualDiffs}
+            screenshots={report.screenshots.map(s => ({ ...s, viewport: "desktop" }))}
+            onApprove={async (page, viewport, data) => {
+              const appId = (report as any).appId;
+              if (!appId) return;
+              await fetch(`${API_BASE}/api/inspector/baselines`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ appId, page, viewport, screenshotData: data }),
+              });
+            }}
+          />
+        </div>
+      )}
+
+      {activeTab === "network" && (
+        <div className="border border-border rounded-xl p-5">
+          <NetworkTab
+            failures={report.networkFailures ?? []}
+            consoleErrors={report.consoleErrors ?? []}
+          />
+        </div>
+      )}
 
       {/* Recheck / run again */}
       <div className="border border-border/40 rounded-xl p-4 text-xs text-muted-foreground space-y-1.5">
@@ -465,6 +1119,114 @@ function CliReportPanel() {
             <p>This page auto-refreshes every 30 seconds while open.</p>
           </>
         )}
+      </div>
+    </div>
+  );
+}
+
+// ── App card ──────────────────────────────────────────────────────────────────
+
+function AppCard({
+  app, runningId, passwords, showPasswords,
+  setPasswords, setShowPasswords, onEdit, onDelete, onRun,
+}: {
+  app: SavedApp;
+  runningId: string | null;
+  passwords: Record<string, string>;
+  showPasswords: Record<string, boolean>;
+  setPasswords: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+  setShowPasswords: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
+  onEdit: () => void;
+  onDelete: () => void;
+  onRun: () => void;
+}) {
+  const [trend, setTrend] = useState<TrendPoint[]>([]);
+
+  useEffect(() => {
+    fetch(`${API_BASE}/api/inspector/trends/${encodeURIComponent(app.id)}?limit=10`, { credentials: "include" })
+      .then(r => r.json())
+      .then(d => { if (d.trends) setTrend(d.trends); })
+      .catch(() => {});
+  }, [app.id]);
+
+  return (
+    <div className="border border-border rounded-xl p-5 bg-card/30 space-y-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+            <h3 className="font-semibold">{app.name}</h3>
+            {app.loginMethod === "form" && app.username && (
+              <span className="flex items-center gap-1 text-[10px] text-muted-foreground border border-border rounded-full px-2 py-0.5">
+                <Lock size={9} /> {app.username}
+              </span>
+            )}
+            {app.viewports && app.viewports.length > 1 && (
+              <span className="flex items-center gap-1 text-[10px] text-muted-foreground border border-border rounded-full px-2 py-0.5">
+                <Monitor size={9} /> {app.viewports.join(", ")}
+              </span>
+            )}
+            {trend.length >= 2 && <TrendSparkline points={trend} />}
+          </div>
+          <a href={app.url} target="_blank" rel="noopener noreferrer"
+            className="text-xs text-muted-foreground hover:text-primary transition-colors truncate block">{app.url}</a>
+          {app.pages.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-2">
+              {app.pages.map(p => (
+                <code key={p} className="text-[10px] bg-muted px-1.5 py-0.5 rounded font-mono">{p}</code>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <Button variant="ghost" size="sm" onClick={onEdit} className="text-xs text-muted-foreground">Edit</Button>
+          <button onClick={onDelete} className="p-1.5 rounded hover:bg-destructive/10 hover:text-destructive transition-colors">
+            <Trash2 size={13} />
+          </button>
+        </div>
+      </div>
+
+      {app.loginMethod === "form" && (
+        <div className="flex gap-2 items-center">
+          <div className="relative flex-1 max-w-xs">
+            <Input
+              type={showPasswords[app.id] ? "text" : "password"}
+              placeholder="Password (not saved)"
+              value={passwords[app.id] ?? ""}
+              onChange={e => setPasswords(p => ({ ...p, [app.id]: e.target.value }))}
+              className="pr-9 text-sm"
+            />
+            <button
+              onClick={() => setShowPasswords(p => ({ ...p, [app.id]: !p[app.id] }))}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              {showPasswords[app.id] ? <EyeOff size={14} /> : <Eye size={14} />}
+            </button>
+          </div>
+          <Button onClick={onRun} disabled={!!runningId || !passwords[app.id]} className="gap-2">
+            {runningId === app.id
+              ? <><Loader2 size={14} className="animate-spin" /> Inspecting...</>
+              : <><Play size={14} /> Run</>}
+          </Button>
+        </div>
+      )}
+      {app.loginMethod === "none" && (
+        <Button onClick={onRun} disabled={!!runningId} className="gap-2">
+          {runningId === app.id
+            ? <><Loader2 size={14} className="animate-spin" /> Inspecting...</>
+            : <><Play size={14} /> Run inspection</>}
+        </Button>
+      )}
+
+      {/* Bottom toolbar */}
+      <div className="flex items-center gap-2 flex-wrap pt-1 border-t border-border/30">
+        <SchedulePanel appId={app.id} appName={app.name} />
+        <CiGeneratorButton appName={app.name} />
+        <span className="flex items-center gap-1 text-[11px] text-muted-foreground ml-auto">
+          <Terminal size={11} />
+          <code className="font-mono bg-muted px-1.5 py-0.5 rounded">
+            node forge.js inspect "{app.name}"
+          </code>
+        </span>
       </div>
     </div>
   );
@@ -652,93 +1414,18 @@ export default function AppInspector() {
           ) : (
             <div className="grid gap-4">
               {apps.map(app => (
-                <div key={app.id} className="border border-border rounded-xl p-5 bg-card/30 space-y-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <h3 className="font-semibold">{app.name}</h3>
-                        {app.loginMethod === "form" && app.username && (
-                          <span className="flex items-center gap-1 text-[10px] text-muted-foreground border border-border rounded-full px-2 py-0.5">
-                            <Lock size={9} /> {app.username}
-                          </span>
-                        )}
-                      </div>
-                      <a href={app.url} target="_blank" rel="noopener noreferrer"
-                        className="text-xs text-muted-foreground hover:text-primary transition-colors truncate block">{app.url}</a>
-                      {app.pages.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {app.pages.map(p => (
-                            <code key={p} className="text-[10px] bg-muted px-1.5 py-0.5 rounded font-mono">{p}</code>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => { setEditingApp(app); setAddingApp(false); }}
-                        className="text-xs text-muted-foreground"
-                      >
-                        Edit
-                      </Button>
-                      <button onClick={() => deleteApp(app.id)} className="p-1.5 rounded hover:bg-destructive/10 hover:text-destructive transition-colors">
-                        <Trash2 size={13} />
-                      </button>
-                    </div>
-                  </div>
-
-                  {app.loginMethod === "form" && (
-                    <div className="flex gap-2 items-center">
-                      <div className="relative flex-1 max-w-xs">
-                        <Input
-                          type={showPasswords[app.id] ? "text" : "password"}
-                          placeholder="Password (not saved)"
-                          value={passwords[app.id] ?? ""}
-                          onChange={e => setPasswords(p => ({ ...p, [app.id]: e.target.value }))}
-                          className="pr-9 text-sm"
-                        />
-                        <button
-                          onClick={() => setShowPasswords(p => ({ ...p, [app.id]: !p[app.id] }))}
-                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                        >
-                          {showPasswords[app.id] ? <EyeOff size={14} /> : <Eye size={14} />}
-                        </button>
-                      </div>
-                      <Button
-                        onClick={() => void runInspection(app)}
-                        disabled={!!runningId || !passwords[app.id]}
-                        className="gap-2"
-                      >
-                        {runningId === app.id
-                          ? <><Loader2 size={14} className="animate-spin" /> Inspecting...</>
-                          : <><Play size={14} /> Run inspection</>
-                        }
-                      </Button>
-                    </div>
-                  )}
-                  {app.loginMethod === "none" && (
-                    <Button
-                      onClick={() => void runInspection(app)}
-                      disabled={!!runningId}
-                      className="gap-2"
-                    >
-                      {runningId === app.id
-                        ? <><Loader2 size={14} className="animate-spin" /> Inspecting...</>
-                        : <><Play size={14} /> Run inspection</>
-                      }
-                    </Button>
-                  )}
-
-                  {/* CLI shortcut for this app */}
-                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground pt-1 border-t border-border/30">
-                    <Terminal size={11} />
-                    <span>Also runnable with CLI for screenshots:</span>
-                    <code className="font-mono bg-muted px-1.5 py-0.5 rounded">
-                      node forge.js inspect {app.url}{app.username ? ` --username ${app.username}` : ""}{app.pages.length ? ` --pages ${app.pages.join(",")}` : ""}
-                    </code>
-                  </div>
-                </div>
+                <AppCard
+                  key={app.id}
+                  app={app}
+                  runningId={runningId}
+                  passwords={passwords}
+                  showPasswords={showPasswords}
+                  setPasswords={setPasswords}
+                  setShowPasswords={setShowPasswords}
+                  onEdit={() => { setEditingApp(app); setAddingApp(false); }}
+                  onDelete={() => deleteApp(app.id)}
+                  onRun={() => void runInspection(app)}
+                />
               ))}
             </div>
           )}
@@ -827,6 +1514,12 @@ export default function AppInspector() {
 
 // ── App form ──────────────────────────────────────────────────────────────────
 
+const ALL_VIEWPORTS = [
+  { id: "desktop", label: "Desktop", icon: Monitor },
+  { id: "tablet", label: "Tablet", icon: Tablet },
+  { id: "mobile", label: "Mobile", icon: Smartphone },
+] as const;
+
 function AppForm({ initial, onSave, onCancel }: {
   initial?: SavedApp;
   onSave: (app: SavedApp) => void;
@@ -843,11 +1536,28 @@ function AppForm({ initial, onSave, onCancel }: {
   const [newPage, setNewPage] = useState("");
   const [description, setDescription] = useState(initial?.description ?? "");
   const [advanced, setAdvanced] = useState(false);
+  const [viewports, setViewports] = useState<string[]>(initial?.viewports ?? ["desktop"]);
+  const [assertions, setAssertions] = useState<CustomAssertion[]>(initial?.customAssertions ?? []);
+  const [newAssertLabel, setNewAssertLabel] = useState("");
+  const [newAssertText, setNewAssertText] = useState("");
 
   const addPage = () => {
     const p = newPage.startsWith("/") ? newPage : `/${newPage}`;
     if (p !== "/" && !pages.includes(p)) setPages(prev => [...prev, p]);
     setNewPage("");
+  };
+
+  const toggleViewport = (vp: string) => {
+    setViewports(prev =>
+      prev.includes(vp) ? (prev.length > 1 ? prev.filter(v => v !== vp) : prev) : [...prev, vp]
+    );
+  };
+
+  const addAssertion = () => {
+    if (!newAssertLabel.trim() || !newAssertText.trim()) return;
+    setAssertions(prev => [...prev, { label: newAssertLabel.trim(), text: newAssertText.trim() }]);
+    setNewAssertLabel("");
+    setNewAssertText("");
   };
 
   const submit = () => {
@@ -863,6 +1573,8 @@ function AppForm({ initial, onSave, onCancel }: {
       loginMethod,
       pages,
       description: description.trim() || undefined,
+      viewports,
+      customAssertions: assertions.length > 0 ? assertions : undefined,
     });
   };
 
@@ -960,6 +1672,73 @@ function AppForm({ initial, onSave, onCancel }: {
                   <Trash2 size={10} />
                 </button>
               </span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Viewports (for CLI / browser inspections) */}
+      <div className="space-y-2">
+        <label className="text-xs font-medium flex items-center gap-1.5">
+          <Monitor size={12} /> Viewports to capture
+          <span className="text-muted-foreground font-normal">(CLI browser mode only)</span>
+        </label>
+        <div className="flex gap-2 flex-wrap">
+          {ALL_VIEWPORTS.map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              onClick={() => toggleViewport(id)}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-medium transition-all",
+                viewports.includes(id)
+                  ? "border-primary/50 bg-primary/10 text-primary"
+                  : "border-border text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Icon size={12} /> {label}
+            </button>
+          ))}
+        </div>
+        <p className="text-[10px] text-muted-foreground">
+          Desktop = 1280×720 · Tablet = 768×1024 · Mobile = 390×844
+        </p>
+      </div>
+
+      {/* Custom assertions */}
+      <div className="space-y-2">
+        <label className="text-xs font-medium flex items-center gap-1.5">
+          <Zap size={12} /> Custom text assertions
+          <span className="text-muted-foreground font-normal">(optional)</span>
+        </label>
+        <p className="text-[11px] text-muted-foreground">
+          Forge will fail if any of these strings are missing from the page.
+        </p>
+        <div className="flex gap-2">
+          <Input
+            value={newAssertLabel}
+            onChange={e => setNewAssertLabel(e.target.value)}
+            placeholder='Label (e.g. "Shows dashboard")'
+            className="flex-1 text-xs"
+          />
+          <Input
+            value={newAssertText}
+            onChange={e => setNewAssertText(e.target.value)}
+            onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addAssertion(); } }}
+            placeholder='Text to find (e.g. "Welcome back")'
+            className="flex-1 text-xs"
+          />
+          <Button variant="secondary" onClick={addAssertion} size="sm" disabled={!newAssertLabel.trim() || !newAssertText.trim()}>Add</Button>
+        </div>
+        {assertions.length > 0 && (
+          <div className="space-y-1.5 pt-1">
+            {assertions.map((a, i) => (
+              <div key={i} className="flex items-center gap-2 text-xs bg-muted/50 rounded-lg px-3 py-2">
+                <span className="font-medium flex-shrink-0">{a.label}:</span>
+                <code className="font-mono text-muted-foreground flex-1 truncate">{a.text}</code>
+                <button onClick={() => setAssertions(prev => prev.filter((_, j) => j !== i))} className="hover:text-destructive shrink-0">
+                  <Trash2 size={11} />
+                </button>
+              </div>
             ))}
           </div>
         )}
