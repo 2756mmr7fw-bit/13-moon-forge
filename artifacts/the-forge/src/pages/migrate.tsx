@@ -39,8 +39,8 @@ const PLATFORMS: Platform[] = [
     steps: [
       "Open your Replit project",
       "Click the Git icon in the left sidebar",
-      "Click "Connect to GitHub" and create or select a repo",
-      "Click "Commit All & Push"",
+      'Click "Connect to GitHub" and create or select a repo',
+      'Click "Commit All & Push"',
       "Copy the GitHub repo URL — paste it below",
     ],
     agentPrompt: `I want to move my Replit app to 13 Moon Forge so it runs on my own server. Here's what I need you to do:
