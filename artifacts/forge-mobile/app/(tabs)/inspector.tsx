@@ -140,7 +140,7 @@ function ReportDetail({
 
   useEffect(() => {
     if (!report) return;
-    fetch(`${API_BASE}/api/inspector/reports/${report.id}`, {
+    fetch(`${API_BASE}/api/inspector/cli-reports/${report.id}`, {
       headers: cliToken.current ? { Authorization: `Bearer ${cliToken.current}` } : {},
     })
       .then(r => r.json())
