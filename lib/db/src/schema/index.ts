@@ -17,3 +17,4 @@ export * from "./referrals";
 export * from "./debugTests";
 export * from "./academy";
 export * from "./gym";
+export * from "./repos";

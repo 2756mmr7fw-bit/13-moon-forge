@@ -54,6 +54,7 @@ import storageRouter from "./storage";
 import emailGatewayRouter from "./email-gateway";
 import aiGatewayRouter from "./ai-gateway";
 import marketplaceRouter from "./marketplace";
+import vaultRouter from "./vault";
 
 const router: IRouter = Router();
 
@@ -112,5 +113,6 @@ router.use(storageRouter);
 router.use(emailGatewayRouter);
 router.use(aiGatewayRouter);
 router.use(marketplaceRouter);
+router.use(vaultRouter);
 
 export default router;

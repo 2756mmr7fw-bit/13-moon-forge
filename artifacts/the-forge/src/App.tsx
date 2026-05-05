@@ -81,6 +81,7 @@ const GitDrill         = lazy(() => import("@/pages/academy/GitDrill"));
 const LogReader        = lazy(() => import("@/pages/academy/LogReader"));
 const GymHub           = lazy(() => import("@/pages/gym/GymHub"));
 const GymExercise      = lazy(() => import("@/pages/gym/ExercisePage"));
+const VaultPage        = lazy(() => import("@/pages/vault"));
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 const API_BASE = basePath;
@@ -333,6 +334,7 @@ function Router() {
                     <Route path="/log-reader"             component={LogReader} />
                     <Route path="/gym/:id"                component={GymExercise} />
                     <Route path="/gym"                    component={GymHub} />
+                    <Route path="/vault"                  component={VaultPage} />
                     <Route component={NotFound} />
                   </Switch>
                 </ProtectedRoute>
