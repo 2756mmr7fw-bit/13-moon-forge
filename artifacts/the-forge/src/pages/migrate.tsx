@@ -242,7 +242,7 @@ That's all I need — The Forge will auto-deploy from there.`,
     steps: [
       "Open your Glitch project",
       "Click Tools (bottom left) → Import and Export",
-      "Click "Export to GitHub" and create a new repo",
+      'Click "Export to GitHub" and create a new repo',
       "Copy the GitHub URL",
       "Paste it below",
     ],
