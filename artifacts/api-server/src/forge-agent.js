@@ -358,6 +358,8 @@ async function inspectApp(appUrl, options = {}) {
     token, loginUrl, username, password, pages = [], appName = appUrl,
     saveScreenshots = true, appId, recheckOf, headless = false,
     viewports: viewportList = ["desktop"], customAssertions = [], baselines = [],
+    environment = "production", buildSha = null, failOnErrors = false,
+    jsonOutput = false, perfBudgetMs = null,
   } = options;
 
   const crypto = require("crypto");
@@ -850,7 +852,22 @@ async function inspectApp(appUrl, options = {}) {
   println(`  ✓ ${oks} passed`, "green");
   if (saveScreenshots) println(`\n  Screenshots saved to:\n  ${outDir}`, "dim");
 
+  // ── Perf budget check ──────────────────────────────────────────────────────
+  if (perfBudgetMs && Object.keys(allPerformanceMetrics).length > 0) {
+    const slowPages = Object.entries(allPerformanceMetrics)
+      .filter(([, m]) => m.domContentLoaded && m.domContentLoaded > perfBudgetMs)
+      .map(([page]) => page);
+    if (slowPages.length > 0) {
+      finding("error", `Performance budget exceeded: ${slowPages.length} page${slowPages.length !== 1 ? "s" : ""} load > ${perfBudgetMs}ms`);
+      slowPages.forEach(p => {
+        const ms = allPerformanceMetrics[p]?.domContentLoaded;
+        finding("error", `  Load time ${ms}ms > budget ${perfBudgetMs}ms`, p);
+      });
+    }
+  }
+
   // ── Send report to Forge UI ────────────────────────────────────────────────
+  let reportId = null;
   if (token) {
     print("\n  Quill is writing up the issues...", "dim");
     try {
@@ -859,12 +876,15 @@ async function inspectApp(appUrl, options = {}) {
         appUrl,
         appId: appId ?? undefined,
         recheckOf: recheckOf ?? undefined,
+        environment,
+        buildSha: buildSha ?? undefined,
         findings: findings.map(({ type, message, page, detail }) => ({ type, message, page, detail })),
         screenshots: screenshots.map(s => ({ page: s.page, label: s.label, viewport: s.viewport ?? "desktop", data: s.data, hash: s.hash })),
         consoleErrors: allConsoleErrors,
         networkFailures: significantNetFails ?? allNetworkFailures.filter(f => !f.url.includes("axe")),
         performanceMetrics: allPerformanceMetrics,
         accessibilityViolations: allAxeViolations,
+        assertionResults: allAssertionResults,
         visualDiffs,
         inspectedAt: new Date().toISOString(),
         pagesChecked: allPages.length,
@@ -873,9 +893,10 @@ async function inspectApp(appUrl, options = {}) {
       }, token);
 
       if (result.status === 200 || result.status === 201) {
+        reportId = result.data?.reportId ?? null;
         println("\n  ✓ Quill's full report is ready.", "green");
         println("  View at: https://13moonforge.ai/app-inspector", "green");
-        if (result.data?.reportId) println(`  Report ID: ${result.data.reportId}`, "dim");
+        if (reportId) println(`  Report ID: ${reportId}`, "dim");
         if (result.data?.quillDoc) {
           println("\n  ─── Quill's Summary ─────────────────────────────────", "dim");
           const doc = result.data.quillDoc;
@@ -886,6 +907,28 @@ async function inspectApp(appUrl, options = {}) {
         println("\n  (Could not sync to Forge — screenshots saved locally)", "dim");
       }
     } catch { println("\n  (Could not reach Forge — screenshots saved locally)", "dim"); }
+  }
+
+  // ── JSON output for CI ──────────────────────────────────────────────────────
+  if (jsonOutput) {
+    const summary = {
+      appName, appUrl, environment,
+      buildSha: buildSha ?? null,
+      passed: errors === 0,
+      errorCount: errors,
+      warnCount: warns,
+      okCount: oks,
+      pagesChecked: allPages.length,
+      reportId,
+      inspectedAt: new Date().toISOString(),
+    };
+    process.stdout.write("\n__FORGE_JSON__" + JSON.stringify(summary) + "\n");
+  }
+
+  // ── Fail-on-errors exit code (for CI) ──────────────────────────────────────
+  if (failOnErrors && errors > 0) {
+    println(`\n  ✗ Exiting with code 1 — ${errors} error${errors !== 1 ? "s" : ""} found (--fail-on-errors)`, "red");
+    process.exit(1);
   }
 
   println("\n", "");
@@ -987,13 +1030,23 @@ async function runInspectMode(args, cfg) {
     const i = args.indexOf(flag);
     return i !== -1 && i + 1 < args.length ? args[i + 1] : null;
   };
+  const getFlagValue = (prefix) => {
+    const a = args.find(x => x.startsWith(prefix + "="));
+    return a ? a.slice(prefix.length + 1) : null;
+  };
   const hasFlag = (flag) => args.includes(flag);
 
   // Named apps (first positional arg that isn't a flag or URL)
   const appNamesArg = args.find(a => !a.startsWith("--") && !a.startsWith("http"));
   const saveScreenshots = !hasFlag("--no-screenshots");
   const headless = hasFlag("--headless") || hasFlag("--ci");
-  const viewports = getArg("--viewports")?.split(",").map(v => v.trim()).filter(Boolean) ?? ["desktop"];
+  const viewports = (getArg("--viewports") || getFlagValue("--viewports") || "desktop").split(",").map(v => v.trim()).filter(Boolean);
+  const environment = getArg("--env") || getFlagValue("--env") || "production";
+  const buildSha = getArg("--build-sha") || getFlagValue("--build-sha") || (process.env.GITHUB_SHA ?? null);
+  const failOnErrors = hasFlag("--fail-on-errors") || hasFlag("--fail-on-error");
+  const jsonOutput = hasFlag("--json") || hasFlag("--json-output");
+  const perfBudgetRaw = getArg("--perf-budget") || getFlagValue("--perf-budget");
+  const perfBudgetMs = perfBudgetRaw ? parseInt(perfBudgetRaw) : null;
 
   // ── Direct URL mode ────────────────────────────────────────────────────────
   if (directUrl) {
@@ -1003,7 +1056,11 @@ async function runInspectMode(args, cfg) {
     const pages = (getArg("--pages") || "").split(",").map(p => p.trim()).filter(Boolean);
     let password = null;
     if (username && !headless) password = await rlPassword(`  Password for ${username}: `);
-    await inspectApp(directUrl, { token: cfg.token, loginUrl, username, password, pages, appName, saveScreenshots, headless, viewports });
+    await inspectApp(directUrl, {
+      token: cfg.token, loginUrl, username, password, pages, appName,
+      saveScreenshots, headless, viewports,
+      environment, buildSha, failOnErrors, jsonOutput, perfBudgetMs,
+    });
     return;
   }
 
@@ -1079,6 +1136,11 @@ async function runInspectMode(args, cfg) {
       viewports: appViewports,
       customAssertions: appAssertions,
       baselines: appBaselines,
+      environment,
+      buildSha,
+      failOnErrors,
+      jsonOutput,
+      perfBudgetMs,
     });
 
     if (i < appsToInspect.length - 1) {
@@ -1173,8 +1235,10 @@ jobs:
           echo '{"token":"'\${{ secrets.FORGE_TOKEN }}'"}' > ~/.forge-agent.json
 
       - name: Run inspection
+        env:
+          GITHUB_SHA: \${{ github.sha }}
         run: |
-          node forge.js inspect ${appNameArg ? `"${appNameArg}"` : "all"} --headless --no-screenshots
+          node forge.js inspect ${appNameArg ? `"${appNameArg}"` : "all"} --headless --no-screenshots --fail-on-errors --env production --build-sha=\${{ github.sha }}
 
       - name: Upload screenshots on failure
         if: failure()
@@ -1298,6 +1362,52 @@ async function runMonitorMode(args, cfg) {
   }
 }
 
+// ── Status — show health summary of all saved apps ────────────────────────────
+async function runStatusMode(cfg) {
+  println("\n  📊  Forge Status — App Health Overview\n", "magenta");
+  println("  Fetching dashboard...", "dim");
+
+  try {
+    const r = await forgeGet("/api/inspector/dashboard", cfg.token);
+    if (r.status !== 200 || !r.data?.appsHealth) {
+      println("  No apps found. Add apps at https://13moonforge.ai/app-inspector\n", "yellow");
+      return;
+    }
+
+    const { appsHealth, totalOpenIssues, appsAtRisk, reportsThisWeek } = r.data;
+
+    if (appsHealth.length === 0) {
+      println("  No apps saved yet. Add apps at https://13moonforge.ai/app-inspector\n", "yellow");
+      return;
+    }
+
+    println(`  ${"APP".padEnd(28)} ${"HEALTH".padStart(7)} ${"ERRORS".padStart(7)} ${"WARNS".padStart(6)} ${"LAST INSPECTED".padStart(18)}`, "dim");
+    println("  " + "─".repeat(70), "dim");
+
+    for (const app of appsHealth) {
+      const score = app.healthScore;
+      const scoreStr = score === null ? "  n/a" : String(score).padStart(5) + "%";
+      const scoreColor = score === null ? "dim" : score >= 90 ? "green" : score >= 60 ? "yellow" : "red";
+      const errors = app.lastErrors !== null ? String(app.lastErrors).padStart(7) : "      -";
+      const warns = app.lastWarns !== null ? String(app.lastWarns).padStart(6) : "     -";
+      const lastRun = app.lastInspectedAt
+        ? new Date(app.lastInspectedAt).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }).padStart(18)
+        : "         Not yet run";
+      print(`  ${app.name.slice(0, 27).padEnd(27)} `, "reset");
+      print(scoreStr.padStart(7), scoreColor);
+      print(errors, app.lastErrors > 0 ? "red" : "reset");
+      print(warns, app.lastWarns > 0 ? "yellow" : "reset");
+      println(lastRun, "dim");
+    }
+
+    println("\n  " + "─".repeat(70), "dim");
+    println(`\n  Apps: ${appsHealth.length} | Open issues: ${totalOpenIssues} | At risk: ${appsAtRisk} | Reports this week: ${reportsThisWeek}`, "dim");
+    println("\n  View full dashboard: https://13moonforge.ai/app-inspector\n", "dim");
+  } catch (e) {
+    println(`  Could not fetch status: ${e.message}\n`, "red");
+  }
+}
+
 // ── Main ───────────────────────────────────────────────────────────────────────
 async function main() {
   const cliArgs = process.argv.slice(2);
@@ -1309,15 +1419,15 @@ async function main() {
   }
 
   // ── Commands that need a token ─────────────────────────────────────────────
-  const needsTokenCmds = ["inspect", "recheck", "approve", "monitor"];
+  const needsTokenCmds = ["inspect", "recheck", "approve", "monitor", "status"];
   if (needsTokenCmds.includes(cliArgs[0])) {
     const cmd = cliArgs[0];
-    const isInspector = ["inspect", "recheck", "approve"].includes(cmd);
 
     print("\n  ╔══════════════════════════════════════╗\n", "magenta");
     if (cmd === "recheck") print("  ║   🔁  Forge Recheck  v" + VERSION + "           ║\n", "magenta");
     else if (cmd === "approve") print("  ║   👁  Forge Approve  v" + VERSION + "           ║\n", "magenta");
     else if (cmd === "monitor") print("  ║   🕐  Forge Monitor  v" + VERSION + "           ║\n", "magenta");
+    else if (cmd === "status") print("  ║   📊  Forge Status   v" + VERSION + "           ║\n", "magenta");
     else print("  ║   🔍  Forge Inspector  v" + VERSION + "         ║\n", "magenta");
     print("  ║   13moonforge.ai                     ║\n", "magenta");
     print("  ╚══════════════════════════════════════╝\n\n", "magenta");
@@ -1336,6 +1446,7 @@ async function main() {
     if (cmd === "recheck") await runRecheckMode(cliArgs.slice(1), cfg);
     else if (cmd === "approve") await runApproveMode(cliArgs.slice(1), cfg);
     else if (cmd === "monitor") await runMonitorMode(cliArgs.slice(1), cfg);
+    else if (cmd === "status") await runStatusMode(cfg);
     else await runInspectMode(cliArgs.slice(1), cfg);
     return;
   }

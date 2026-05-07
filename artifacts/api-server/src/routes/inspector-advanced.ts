@@ -4,8 +4,10 @@ import {
   db,
   inspectorAppsTable,
   inspectorReportsTable,
+  inspectorIssuesTable,
   inspectorBaselinesTable,
   inspectorSchedulesTable,
+  inspectorCiRunsTable,
 } from "@workspace/db";
 import { eq, and, desc, asc, lte } from "drizzle-orm";
 
@@ -497,6 +499,241 @@ router.post("/inspector/internal/check-alerts", async (req, res) => {
 
   await sendAlerts(schedule, appName, appUrl, errorCount, warnCount, reportId);
   res.json({ sent: true });
+});
+
+// ── CI-run auth helper ─────────────────────────────────────────────────────────
+function getCliUserId(req: any): string | null {
+  const auth = req.headers?.authorization as string | undefined;
+  if (!auth?.startsWith("Bearer ")) return null;
+  try {
+    const secret = process.env.SESSION_SECRET ?? "forge-agent-secret";
+    const decoded = Buffer.from(auth.slice(7), "base64url").toString();
+    const lastColon = decoded.lastIndexOf(":");
+    const sig = decoded.slice(lastColon + 1);
+    const payload = decoded.slice(0, lastColon);
+    const expected = createHmac("sha256", secret).update(payload).digest("hex");
+    if (sig !== expected) return null;
+    const parts = payload.split(":");
+    if (parts.length < 2) return null;
+    const ts = parseInt(parts[parts.length - 1]);
+    if (Date.now() - ts > 365 * 24 * 60 * 60 * 1000) return null;
+    return parts.slice(0, -1).join(":");
+  } catch { return null; }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ── DASHBOARD — aggregate health across all apps ───────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+
+// GET /api/inspector/dashboard
+router.get("/inspector/dashboard", async (req, res) => {
+  const userId = authed(req);
+  if (!userId) { res.status(401).json({ error: "Unauthorized" }); return; }
+
+  const apps = await db.select().from(inspectorAppsTable).where(eq(inspectorAppsTable.userId, userId));
+  const recentReports = await db
+    .select({
+      id: inspectorReportsTable.id,
+      appId: inspectorReportsTable.appId,
+      appName: inspectorReportsTable.appName,
+      errorCount: inspectorReportsTable.errorCount,
+      warnCount: inspectorReportsTable.warnCount,
+      inspectedAt: inspectorReportsTable.inspectedAt,
+      environment: inspectorReportsTable.environment,
+    })
+    .from(inspectorReportsTable)
+    .where(eq(inspectorReportsTable.userId, userId))
+    .orderBy(desc(inspectorReportsTable.inspectedAt))
+    .limit(200);
+
+  const openIssues = await db
+    .select({ id: inspectorIssuesTable.id, appId: inspectorIssuesTable.appId, priority: inspectorIssuesTable.priority })
+    .from(inspectorIssuesTable)
+    .where(and(eq(inspectorIssuesTable.userId, userId), eq(inspectorIssuesTable.status, "open")));
+
+  // Build per-app health summary
+  const latestByApp: Record<string, typeof recentReports[0]> = {};
+  for (const r of recentReports) {
+    if (r.appId && !latestByApp[r.appId]) latestByApp[r.appId] = r;
+  }
+
+  const openByApp: Record<string, number> = {};
+  for (const i of openIssues) {
+    if (i.appId) openByApp[i.appId] = (openByApp[i.appId] ?? 0) + 1;
+  }
+
+  const appsHealth = apps.map(a => {
+    const latest = latestByApp[a.id];
+    const openCount = openByApp[a.id] ?? 0;
+    const score = a.healthScore ?? (latest ? Math.max(0, 100 - (latest.errorCount ?? 0) * 20 - (latest.warnCount ?? 0) * 5) : null);
+    return {
+      id: a.id, name: a.name, url: a.url,
+      healthScore: score,
+      lastInspectedAt: latest?.inspectedAt ?? a.lastInspectedAt ?? null,
+      lastErrors: latest?.errorCount ?? null,
+      lastWarns: latest?.warnCount ?? null,
+      openIssues: openCount,
+      environment: latest?.environment ?? "production",
+    };
+  });
+
+  const totalOpenIssues = openIssues.length;
+  const criticalIssues = openIssues.filter(i => (i as any).priority === "critical").length;
+  const appsAtRisk = appsHealth.filter(a => (a.healthScore ?? 100) < 60).length;
+  const reportsThisWeek = recentReports.filter(r => Date.now() - new Date(r.inspectedAt).getTime() < 7 * 86400000).length;
+
+  res.json({ appsHealth, totalOpenIssues, criticalIssues, appsAtRisk, reportsThisWeek, appCount: apps.length });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ── APP REPORT HISTORY ────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+
+// GET /api/inspector/app-reports/:appId — paginated report history for an app
+router.get("/inspector/app-reports/:appId", async (req, res) => {
+  const userId = authed(req);
+  if (!userId) { res.status(401).json({ error: "Unauthorized" }); return; }
+  const limit = Math.min(50, parseInt(req.query.limit as string ?? "20"));
+  const reports = await db
+    .select({
+      id: inspectorReportsTable.id,
+      appId: inspectorReportsTable.appId,
+      appName: inspectorReportsTable.appName,
+      appUrl: inspectorReportsTable.appUrl,
+      source: inspectorReportsTable.source,
+      status: inspectorReportsTable.status,
+      environment: inspectorReportsTable.environment,
+      buildSha: inspectorReportsTable.buildSha,
+      inspectedAt: inspectorReportsTable.inspectedAt,
+      pagesChecked: inspectorReportsTable.pagesChecked,
+      errorCount: inspectorReportsTable.errorCount,
+      warnCount: inspectorReportsTable.warnCount,
+      shareId: inspectorReportsTable.shareId,
+      recheckOf: inspectorReportsTable.recheckOf,
+    })
+    .from(inspectorReportsTable)
+    .where(and(eq(inspectorReportsTable.userId, userId), eq(inspectorReportsTable.appId, req.params.appId)))
+    .orderBy(desc(inspectorReportsTable.inspectedAt))
+    .limit(limit);
+  res.json({ reports });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ── ISSUES LIST (cross-app) ────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+
+// GET /api/inspector/issues-list — cross-app issue tracker with filters
+router.get("/inspector/issues-list", async (req, res) => {
+  const userId = authed(req);
+  if (!userId) { res.status(401).json({ error: "Unauthorized" }); return; }
+
+  const { appId, status, priority } = req.query as { appId?: string; status?: string; priority?: string };
+
+  const conditions = [eq(inspectorIssuesTable.userId, userId)];
+  if (appId) conditions.push(eq(inspectorIssuesTable.appId, appId));
+  if (status) conditions.push(eq(inspectorIssuesTable.status, status));
+  if (priority) conditions.push(eq(inspectorIssuesTable.priority, priority));
+
+  const issues = await db
+    .select()
+    .from(inspectorIssuesTable)
+    .where(and(...conditions))
+    .orderBy(desc(inspectorIssuesTable.createdAt))
+    .limit(100);
+
+  res.json({ issues });
+});
+
+// PATCH /api/inspector/issues/:id — update status + priority
+router.patch("/inspector/issues/:id", async (req, res) => {
+  const userId = authed(req);
+  if (!userId) { res.status(401).json({ error: "Unauthorized" }); return; }
+  const { status, priority } = req.body as { status?: string; priority?: string };
+  const updates: Record<string, any> = {};
+  if (status) {
+    updates.status = status;
+    updates.fixedAt = status === "fixed" ? new Date() : null;
+  }
+  if (priority) updates.priority = priority;
+  await db.update(inspectorIssuesTable)
+    .set(updates)
+    .where(and(eq(inspectorIssuesTable.id, req.params.id), eq(inspectorIssuesTable.userId, userId)));
+  res.json({ ok: true });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ── CI RUNS ───────────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+
+// POST /api/inspector/ci-run — record a CI run result
+router.post("/inspector/ci-run", async (req, res) => {
+  const userId = getCliUserId(req);
+  if (!userId) { res.status(401).json({ error: "Unauthorized" }); return; }
+
+  const { appId, reportId, ciPlatform, branch, buildSha, prNumber, passed, errorCount, warnCount } = req.body as {
+    appId: string; reportId?: string; ciPlatform?: string; branch?: string;
+    buildSha?: string; prNumber?: string; passed: boolean; errorCount: number; warnCount: number;
+  };
+  if (!appId) { res.status(400).json({ error: "appId required" }); return; }
+
+  const id = `ci_${randomBytes(8).toString("hex")}`;
+  await db.insert(inspectorCiRunsTable).values({
+    id, userId, appId,
+    reportId: reportId ?? null,
+    ciPlatform: ciPlatform ?? null,
+    branch: branch ?? null,
+    buildSha: buildSha ?? null,
+    prNumber: prNumber ?? null,
+    passed,
+    errorCount: errorCount ?? 0,
+    warnCount: warnCount ?? 0,
+  });
+  res.json({ ok: true, id });
+});
+
+// GET /api/inspector/ci-runs/:appId — CI run history for an app
+router.get("/inspector/ci-runs/:appId", async (req, res) => {
+  const userId = authed(req);
+  if (!userId) { res.status(401).json({ error: "Unauthorized" }); return; }
+  const runs = await db
+    .select()
+    .from(inspectorCiRunsTable)
+    .where(and(eq(inspectorCiRunsTable.appId, req.params.appId), eq(inspectorCiRunsTable.userId, userId)))
+    .orderBy(desc(inspectorCiRunsTable.createdAt))
+    .limit(20);
+  res.json({ runs });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ── HEALTH SCORE ──────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+
+// GET /api/inspector/health/:appId — compute health score from recent reports
+router.get("/inspector/health/:appId", async (req, res) => {
+  const userId = authed(req);
+  if (!userId) { res.status(401).json({ error: "Unauthorized" }); return; }
+
+  const reports = await db
+    .select({
+      errorCount: inspectorReportsTable.errorCount,
+      warnCount: inspectorReportsTable.warnCount,
+      inspectedAt: inspectorReportsTable.inspectedAt,
+    })
+    .from(inspectorReportsTable)
+    .where(and(eq(inspectorReportsTable.userId, userId), eq(inspectorReportsTable.appId, req.params.appId)))
+    .orderBy(desc(inspectorReportsTable.inspectedAt))
+    .limit(5);
+
+  if (reports.length === 0) { res.json({ score: null, label: "No data" }); return; }
+
+  const latest = reports[0];
+  const score = Math.max(0, 100 - (latest.errorCount ?? 0) * 20 - (latest.warnCount ?? 0) * 5);
+  const trend = reports.length >= 2
+    ? (score > Math.max(0, 100 - (reports[1].errorCount ?? 0) * 20 - (reports[1].warnCount ?? 0) * 5) ? "up" : "down")
+    : "stable";
+
+  const label = score >= 90 ? "Healthy" : score >= 70 ? "Good" : score >= 50 ? "Fair" : score >= 30 ? "Poor" : "Critical";
+  res.json({ score, label, trend, lastInspectedAt: latest.inspectedAt });
 });
 
 export default router;
