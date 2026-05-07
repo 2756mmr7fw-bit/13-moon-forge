@@ -22,8 +22,26 @@
 import { createProxyMiddleware } from "http-proxy-middleware";
 import type { RequestHandler } from "express";
 
-const CLERK_FAPI = "https://frontend-api.clerk.dev";
 export const CLERK_PROXY_PATH = "/api/__clerk";
+
+/**
+ * Derives the Clerk Frontend API URL from the publishable key.
+ * For Replit-managed Clerk, the key encodes the instance-specific FAPI host.
+ * e.g. pk_live_Y2xlcmsuMTNtb29uZm9yZ2UuYWkk → clerk.13moonforge.ai
+ */
+function deriveClerkFapiUrl(publishableKey: string): string {
+  try {
+    const encoded = publishableKey.split("_")[2];
+    if (!encoded) return "https://frontend-api.clerk.dev";
+    const decoded = Buffer.from(encoded, "base64").toString("utf8").replace(/\$+$/, "");
+    if (decoded && decoded.includes(".")) {
+      return `https://${decoded}`;
+    }
+  } catch {
+    // fall through
+  }
+  return "https://frontend-api.clerk.dev";
+}
 
 export function clerkProxyMiddleware(): RequestHandler {
   // Only run proxy in production — Clerk proxying doesn't work for dev instances
@@ -36,8 +54,11 @@ export function clerkProxyMiddleware(): RequestHandler {
     return (_req, _res, next) => next();
   }
 
+  const publishableKey = process.env.VITE_CLERK_PUBLISHABLE_KEY ?? "";
+  const clerkFapi = deriveClerkFapiUrl(publishableKey);
+
   return createProxyMiddleware({
-    target: CLERK_FAPI,
+    target: clerkFapi,
     changeOrigin: true,
     pathRewrite: (path: string) =>
       path.replace(new RegExp(`^${CLERK_PROXY_PATH}`), ""),

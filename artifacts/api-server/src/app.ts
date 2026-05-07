@@ -13,6 +13,7 @@ import { userIdMiddleware } from "./middlewares/userId";
 import { rateLimit } from "express-rate-limit";
 import { trackRequest, trackRlHit } from "./lib/trafficTracker";
 import { incrementUsage } from "./routes/quota";
+import { CLERK_PROXY_PATH, clerkProxyMiddleware } from "./middlewares/clerkProxyMiddleware";
 
 const app: Express = express();
 
@@ -57,6 +58,9 @@ app.use((req, res, next) => {
   res.on("close", () => clearTimeout(tid));
   next();
 });
+
+// Clerk proxy — must be before express.json()
+app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
 
 app.use(compression());
 app.use(cors({ credentials: true, origin: true }));
