@@ -269,6 +269,14 @@ router.post("/inspector/cli-report", async (req, res) => {
   const id = `report_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   const quillDoc = await generateQuillDoc(body.appName ?? body.appUrl, body.appUrl, body.findings);
 
+  const screenshotsMapped = (body.screenshots ?? []).map((s: any) => ({
+    page: s.page,
+    label: s.label,
+    viewport: s.viewport ?? "desktop",
+    hash: s.hash ?? null,
+    dataUrl: s.data ? `data:image/png;base64,${s.data}` : (s.dataUrl ?? null),
+  }));
+
   await db.insert(inspectorReportsTable).values({
     id, userId: uid,
     appId: body.appId ?? null,
@@ -280,9 +288,12 @@ router.post("/inspector/cli-report", async (req, res) => {
     errorCount: body.errorCount,
     warnCount: body.warnCount,
     findings: body.findings as any,
-    screenshots: (body.screenshots ?? []).map(s => ({
-      page: s.page, label: s.label, dataUrl: `data:image/png;base64,${s.data}`,
-    })) as any,
+    screenshots: screenshotsMapped as any,
+    consoleErrors: (body as any).consoleErrors ?? null,
+    networkFailures: (body as any).networkFailures ?? null,
+    performanceMetrics: (body as any).performanceMetrics ?? null,
+    accessibilityViolations: (body as any).accessibilityViolations ?? null,
+    visualDiffs: (body as any).visualDiffs ?? null,
     quillDoc,
     recheckOf: body.recheckOf ?? null,
   });
@@ -298,6 +309,19 @@ router.post("/inspector/cli-report", async (req, res) => {
       type: issue.type, message: issue.message,
       detail: issue.detail ?? null, status: "open",
     });
+  }
+
+  // Fire-and-forget alert check if errors found
+  if (body.errorCount > 0 && body.appId) {
+    fetch(`http://localhost:${process.env.PORT ?? 3000}/api/inspector/internal/check-alerts`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId: uid, appId: body.appId, appName: body.appName ?? body.appUrl,
+        appUrl: body.appUrl, reportId: id,
+        errorCount: body.errorCount, warnCount: body.warnCount,
+      }),
+    }).catch(() => {});
   }
 
   res.json({ ok: true, reportId: id, quillDoc });

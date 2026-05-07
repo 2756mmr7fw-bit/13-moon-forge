@@ -64,6 +64,8 @@ import inspectorRouter from "./inspector";
 import cliInspectRouter from "./cli-inspect";
 import inspectorAppsRouter from "./inspector-apps";
 import inspectorAdvancedRouter from "./inspector-advanced";
+import bugCheckerRouter from "./bug-checker";
+import appHealthRouter from "./app-health";
 
 const router: IRouter = Router();
 
@@ -132,5 +134,7 @@ router.use(inspectorRouter);
 router.use(cliInspectRouter);
 router.use(inspectorAppsRouter);
 router.use(inspectorAdvancedRouter);
+router.use(bugCheckerRouter);
+router.use(appHealthRouter);
 
 export default router;

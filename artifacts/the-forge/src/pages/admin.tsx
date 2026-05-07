@@ -52,18 +52,13 @@ export default function AdminPanel() {
   const { toast } = useToast();
   const qc = useQueryClient();
 
-  async function authHeaders() {
-    
-    return {
-      "Content-Type": "application/json",
-    };
-  }
-
   const { data, isLoading, isError, error, refetch } = useQuery<RegistryApp[]>({
     queryKey: ["admin-registry"],
     queryFn: async () => {
-      const headers = await authHeaders();
-      const r = await fetch(`${API_BASE}/api/admin/registry`, { headers });
+      const r = await fetch(`${API_BASE}/api/admin/registry`, {
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+      });
       if (r.status === 403) throw new Error("forbidden");
       if (!r.ok) throw new Error("Failed to load registry");
       return r.json();
@@ -74,8 +69,10 @@ export default function AdminPanel() {
   const { data: stats } = useQuery<AdminStats>({
     queryKey: ["admin-stats"],
     queryFn: async () => {
-      const headers = await authHeaders();
-      const r = await fetch(`${API_BASE}/api/admin/stats`, { headers });
+      const r = await fetch(`${API_BASE}/api/admin/stats`, {
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+      });
       if (!r.ok) throw new Error("Failed to load stats");
       return r.json();
     },
@@ -85,8 +82,11 @@ export default function AdminPanel() {
 
   const approveMut = useMutation({
     mutationFn: async (id: number) => {
-      const headers = await authHeaders();
-      const r = await fetch(`${API_BASE}/api/admin/registry/${id}/approve`, { method: "POST", headers });
+      const r = await fetch(`${API_BASE}/api/admin/registry/${id}/approve`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+      });
       if (!r.ok) throw new Error("Failed to approve");
       return r.json();
     },
@@ -96,8 +96,11 @@ export default function AdminPanel() {
 
   const rejectMut = useMutation({
     mutationFn: async (id: number) => {
-      const headers = await authHeaders();
-      const r = await fetch(`${API_BASE}/api/admin/registry/${id}/reject`, { method: "POST", headers });
+      const r = await fetch(`${API_BASE}/api/admin/registry/${id}/reject`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+      });
       if (!r.ok) throw new Error("Failed to reject");
       return r.json();
     },
@@ -107,8 +110,11 @@ export default function AdminPanel() {
 
   const deleteMut = useMutation({
     mutationFn: async (id: number) => {
-      const headers = await authHeaders();
-      const r = await fetch(`${API_BASE}/api/admin/registry/${id}`, { method: "DELETE", headers });
+      const r = await fetch(`${API_BASE}/api/admin/registry/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+      });
       if (!r.ok) throw new Error("Failed to delete");
       return r.json();
     },
