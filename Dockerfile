@@ -1,5 +1,5 @@
-FROM node:20-alpine AS base
-RUN npm install -g pnpm@9
+FROM node:24-alpine AS base
+RUN corepack enable
 WORKDIR /app
 
 # ─── Dependency layer ─────────────────────────────────────────────────────────
@@ -33,7 +33,7 @@ COPY artifacts/api-server ./artifacts/api-server
 RUN pnpm --filter @workspace/api-server run build
 
 # ─── Production image ─────────────────────────────────────────────────────────
-FROM node:20-alpine AS runner
+FROM node:24-alpine AS runner
 RUN corepack enable
 WORKDIR /app
 
