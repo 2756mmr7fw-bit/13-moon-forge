@@ -5,12 +5,18 @@ import {
 } from "@clerk/clerk-react";
 import { useLocation } from "wouter";
 
+const CLERK_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string | undefined;
+
 export default function ClerkCallbackPage() {
   const { isSignedIn, isLoaded } = useClerkAuth();
   const { session } = useSession();
   const [, navigate] = useLocation();
 
   useEffect(() => {
+    if (!CLERK_KEY) {
+      navigate("/sign-in");
+      return;
+    }
     if (!isLoaded) return;
 
     if (!isSignedIn || !session) {
