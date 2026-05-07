@@ -1,5 +1,5 @@
 FROM node:24-alpine AS base
-RUN corepack enable
+RUN npm install -g pnpm@9
 WORKDIR /app
 
 # ─── Dependency layer ─────────────────────────────────────────────────────────
@@ -17,7 +17,7 @@ RUN pnpm install
 
 # ─── Build frontend ──────────────────────────────────────────────────────────
 FROM deps AS web-build
-ARG CACHEBUST=3
+ARG CACHEBUST=4
 ARG VITE_CLERK_PUBLISHABLE_KEY
 ENV VITE_CLERK_PUBLISHABLE_KEY=$VITE_CLERK_PUBLISHABLE_KEY
 COPY tsconfig.base.json ./
@@ -34,7 +34,7 @@ RUN pnpm --filter @workspace/api-server run build
 
 # ─── Production image ─────────────────────────────────────────────────────────
 FROM node:24-alpine AS runner
-RUN corepack enable
+RUN npm install -g pnpm@9
 WORKDIR /app
 
 ENV NODE_ENV=production
@@ -48,7 +48,7 @@ COPY lib/api-client-react/package.json ./lib/api-client-react/
 COPY lib/integrations-openai-ai-server/package.json ./lib/integrations-openai-ai-server/
 COPY artifacts/api-server/package.json ./artifacts/api-server/
 
-RUN pnpm install --prod --filter @workspace/api-server --ignore-scripts
+RUN pnpm install --prod --filter @workspace/api-server
 
 COPY --from=api-build /app/artifacts/api-server/dist ./artifacts/api-server/dist
 COPY --from=web-build /app/artifacts/the-forge/dist/public  ./artifacts/api-server/dist/public
