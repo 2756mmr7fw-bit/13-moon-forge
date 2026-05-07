@@ -4,6 +4,11 @@ import { openai } from "@workspace/integrations-openai-ai-server";
 const router = Router();
 
 router.post("/bug-checker/analyze", async (req, res) => {
+  if (!req.body || typeof req.body !== "object") {
+    res.status(400).json({ error: "JSON body required" });
+    return;
+  }
+
   const { code, language, context } = req.body as {
     code?: string;
     language?: string;
@@ -11,7 +16,8 @@ router.post("/bug-checker/analyze", async (req, res) => {
   };
 
   if (!code || code.trim().length === 0) {
-    return res.status(400).json({ error: "No code provided" });
+    res.status(400).json({ error: "No code provided" });
+    return;
   }
 
   if (code.length > 50000) {
