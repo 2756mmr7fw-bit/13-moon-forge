@@ -62,4 +62,5 @@ jobs:
           build-args: |
             BUILD_DATE=${{ github.event.repository.updated_at }}
             GIT_SHA=${{ github.sha }}
+            CACHEBUST=${{ github.run_id }}
             VITE_CLERK_PUBLISHABLE_KEY=${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
