@@ -48,7 +48,7 @@ COPY lib/api-client-react/package.json ./lib/api-client-react/
 COPY lib/integrations-openai-ai-server/package.json ./lib/integrations-openai-ai-server/
 COPY artifacts/api-server/package.json ./artifacts/api-server/
 
-RUN pnpm install --prod --filter @workspace/api-server
+RUN pnpm install --prod --filter @workspace/api-server --ignore-scripts
 
 COPY --from=api-build /app/artifacts/api-server/dist ./artifacts/api-server/dist
 COPY --from=web-build /app/artifacts/the-forge/dist/public  ./artifacts/api-server/dist/public
