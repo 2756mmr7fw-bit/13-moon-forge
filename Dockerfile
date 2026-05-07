@@ -1,4 +1,4 @@
-FROM node:20-alpine AS base
+FROM node:24-alpine AS base
 RUN npm install -g pnpm@9
 WORKDIR /app
 
@@ -17,7 +17,7 @@ RUN pnpm install
 
 # ─── Build frontend ──────────────────────────────────────────────────────────
 FROM deps AS web-build
-ARG CACHEBUST=3
+ARG CACHEBUST=4
 ARG VITE_CLERK_PUBLISHABLE_KEY
 ENV VITE_CLERK_PUBLISHABLE_KEY=$VITE_CLERK_PUBLISHABLE_KEY
 COPY tsconfig.base.json ./
@@ -33,8 +33,8 @@ COPY artifacts/api-server ./artifacts/api-server
 RUN pnpm --filter @workspace/api-server run build
 
 # ─── Production image ─────────────────────────────────────────────────────────
-FROM node:20-alpine AS runner
-RUN corepack enable
+FROM node:24-alpine AS runner
+RUN npm install -g pnpm@9
 WORKDIR /app
 
 ENV NODE_ENV=production
