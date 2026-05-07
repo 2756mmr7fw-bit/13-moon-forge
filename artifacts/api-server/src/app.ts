@@ -154,6 +154,14 @@ app.use(["/api/secrets/import", "/api/secrets"], (req, res, next) => {
 });
 app.use("/api/payments/checkout", authLimiter);
 
+// x-auth routes — rewrite /x-auth/<path> → /auth/<path> and forward to
+// authRouter. This makes login, callback, logout, and the Clerk session bridge
+// reachable without an /api prefix, matching what the frontend expects.
+app.use("/x-auth", (req: Request, _res: Response, next: NextFunction) => {
+  req.url = "/auth" + req.url;
+  next();
+}, authRouter);
+
 app.use("/api", authRouter);
 app.use("/api", router);
 

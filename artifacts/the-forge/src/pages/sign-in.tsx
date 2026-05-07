@@ -1,27 +1,31 @@
-import { useEffect } from "react";
+import { SignIn } from "@clerk/clerk-react";
 
-const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+const CLERK_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string | undefined;
 
 export default function SignInPage() {
-  useEffect(() => {
-    const returnTo = basePath || "/";
-    fetch(`/x-auth/login?returnTo=${encodeURIComponent(returnTo)}`, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-    })
-      .then((res) => res.json())
-      .then((data: { loginUrl?: string }) => {
-        if (data.loginUrl) window.location.href = data.loginUrl;
-      })
-      .catch(() => {
-        window.location.href = `/x-auth/login?returnTo=${encodeURIComponent(returnTo)}`;
-      });
-  }, []);
+  if (!CLERK_KEY) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-center space-y-3 px-6">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mx-auto">
+            <span className="text-xl">🔒</span>
+          </div>
+          <p className="font-semibold text-foreground">Authentication not configured</p>
+          <p className="text-sm text-muted-foreground max-w-xs">
+            This deployment is missing a required key. Contact the site administrator.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      <SignIn
+        routing="hash"
+        forceRedirectUrl="/x-auth/clerk-callback"
+        signUpForceRedirectUrl="/x-auth/clerk-callback"
+      />
     </div>
   );
 }
