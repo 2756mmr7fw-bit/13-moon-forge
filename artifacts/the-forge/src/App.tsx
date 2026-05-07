@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, Component, type ReactNode, type ErrorInfo } from "react";
 import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ClerkProvider } from "@clerk/clerk-react";
 import { useAuth } from "@workspace/replit-auth-web";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -90,9 +91,10 @@ const ForgeCoderPage   = lazy(() => import("@/pages/forge-coder"));
 const ProjectRoomPage  = lazy(() => import("@/pages/project-room"));
 const MoonPage         = lazy(() => import("@/pages/moon-page"));
 const LedgerPage       = lazy(() => import("@/pages/moons/ledger"));
-const AppInspectorPage = lazy(() => import("@/pages/app-inspector"));
-const BugCheckerPage   = lazy(() => import("@/pages/bug-checker"));
-const AppHealthPage    = lazy(() => import("@/pages/app-health"));
+const AppInspectorPage  = lazy(() => import("@/pages/app-inspector"));
+const BugCheckerPage    = lazy(() => import("@/pages/bug-checker"));
+const AppHealthPage     = lazy(() => import("@/pages/app-health"));
+const ClerkCallbackPage = lazy(() => import("@/pages/clerk-callback"));
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 const API_BASE = basePath;
@@ -266,6 +268,7 @@ function Router() {
     <Suspense fallback={<PageLoader />}>
       <Switch>
         <Route path="/x-auth/callback" component={AuthCallback} />
+        <Route path="/x-auth/clerk-callback" component={ClerkCallbackPage} />
         <Route path="/sign-in/*?" component={SignInPage} />
         <Route path="/sign-up/*?" component={SignUpPage} />
         <Route path="/share/:id" component={ShareView} />
@@ -370,8 +373,10 @@ function Router() {
   );
 }
 
+const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string | undefined;
+
 function App() {
-  return (
+  const inner = (
     <WouterRouter base={basePath}>
       <QueryClientProvider client={queryClient}>
         <ReferralClaimHandler />
@@ -382,6 +387,14 @@ function App() {
         </TooltipProvider>
       </QueryClientProvider>
     </WouterRouter>
+  );
+
+  if (!CLERK_PUBLISHABLE_KEY) return inner;
+
+  return (
+    <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>
+      {inner}
+    </ClerkProvider>
   );
 }
 

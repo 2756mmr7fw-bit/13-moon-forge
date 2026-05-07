@@ -17,7 +17,9 @@ RUN pnpm install
 
 # ─── Build frontend ──────────────────────────────────────────────────────────
 FROM deps AS web-build
-ARG CACHEBUST=2
+ARG CACHEBUST=3
+ARG VITE_CLERK_PUBLISHABLE_KEY
+ENV VITE_CLERK_PUBLISHABLE_KEY=$VITE_CLERK_PUBLISHABLE_KEY
 COPY tsconfig.base.json ./
 COPY lib/ ./lib/
 COPY artifacts/the-forge ./artifacts/the-forge

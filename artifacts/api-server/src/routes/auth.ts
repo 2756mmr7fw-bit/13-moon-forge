@@ -423,4 +423,54 @@ router.post("/mobile-auth/logout", async (req: Request, res: Response) => {
   res.json(LogoutMobileSessionResponse.parse({ success: true }));
 });
 
+// ─── Clerk session bridge ─────────────────────────────────────────────────────
+// Exchange a Clerk front-end JWT for a backend session cookie.
+// This is the sign-in path when Replit OIDC is unavailable (e.g. self-hosted
+// on a custom domain such as 13moonforge.ai).
+router.post("/auth/clerk-session", async (req: Request, res: Response) => {
+  const { token } = req.body as { token?: string };
+  if (!token) {
+    res.status(400).json({ error: "token required" });
+    return;
+  }
+
+  const secretKey = process.env.CLERK_SECRET_KEY;
+  if (!secretKey) {
+    res.status(503).json({ error: "Clerk not configured on this server" });
+    return;
+  }
+
+  try {
+    const { createClerkClient, verifyToken } = await import("@clerk/backend");
+
+    const payload = await verifyToken(token, { secretKey });
+
+    const clerkClient = createClerkClient({ secretKey });
+    const clerkUser = await clerkClient.users.getUser(payload.sub);
+
+    const userData = {
+      id: clerkUser.id,
+      email: clerkUser.emailAddresses[0]?.emailAddress ?? null,
+      firstName: clerkUser.firstName ?? null,
+      lastName: clerkUser.lastName ?? null,
+      profileImageUrl: clerkUser.imageUrl ?? null,
+    };
+
+    await db
+      .insert(usersTable)
+      .values(userData)
+      .onConflictDoUpdate({
+        target: usersTable.id,
+        set: { ...userData, updatedAt: new Date() },
+      });
+
+    const sid = await createSession({ user: userData, access_token: token });
+    setSessionCookie(res, sid);
+    res.json({ ok: true });
+  } catch (err) {
+    req.log.warn({ err }, "clerk-session bridge error");
+    res.status(401).json({ error: "Invalid Clerk token" });
+  }
+});
+
 export default router;
