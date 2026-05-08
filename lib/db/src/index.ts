@@ -5,10 +5,11 @@ import * as schema from "./schema";
 const { Pool } = pg;
 
 // In production use the Neon DB (DATABASE_URL_PROD); fall back to DATABASE_URL for dev
+// Use || (not ??) so that empty strings also trigger the fallback
 const connectionString =
   (process.env.NODE_ENV === "production"
-    ? process.env.DATABASE_URL_PROD ?? process.env.DATABASE_URL
-    : process.env.DATABASE_URL ?? process.env.DATABASE_URL_PROD) ?? "";
+    ? process.env.DATABASE_URL_PROD || process.env.DATABASE_URL
+    : process.env.DATABASE_URL || process.env.DATABASE_URL_PROD) || "";
 
 if (!connectionString) {
   // Log a warning but don't crash — the server can still serve static files,
