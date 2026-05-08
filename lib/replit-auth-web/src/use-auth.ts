@@ -59,73 +59,71 @@ async function buildOidcLoginUrl(config: OidcConfig, returnTo: string): Promise<
 
 export function useAuth(): AuthState {
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const oidcConfigRef = useRef<OidcConfig | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
     const checkAuth = async () => {
-      // ── Strategy 1: GET /api/healthz ─────────────────────────────────────────
-      // This path is the deployment health-check endpoint, which Replit's
-      // infrastructure routes directly to Express (bypassing the CDN catch-all
-      // that returns the cached SPA shell for every other GET path).
-      // The server adds Vary: Cookie so that cookie-bearing requests from signed-in
-      // browsers are CDN misses and reach Express live, returning the real user.
-      // The response includes a "v" field only in the new version; an old CDN-
-      // cached response won't have it, so we fall through to Strategy 2.
       try {
-        const healthzRes = await fetch("/api/healthz", { credentials: "include" });
-        if (healthzRes.ok) {
-          const data = (await healthzRes.json()) as {
-            v?: string;
-            user?: AuthUser | null;
-            oidcClientId?: string;
-            issuerUrl?: string;
-            appUrl?: string;
-          };
+        // ── Strategy 1: GET /api/healthz ───────────────────────────────────────
+        // The server adds Vary: Cookie so cookie-bearing requests bypass any CDN
+        // cache and reach Express live, returning the real authenticated user.
+        // The response includes a "v" field only in the new version.
+        try {
+          const healthzRes = await fetch("/api/healthz", { credentials: "include" });
+          if (healthzRes.ok) {
+            const data = (await healthzRes.json()) as {
+              v?: string;
+              user?: AuthUser | null;
+              oidcClientId?: string;
+              issuerUrl?: string;
+              appUrl?: string;
+            };
 
-          if (data.v) {
-            // New healthz format — Vary: Cookie trick worked, data is fresh.
-            if (!cancelled) {
-              setUser(data.user ?? null);
-              if (data.oidcClientId) {
-                oidcConfigRef.current = {
-                  clientId: data.oidcClientId,
-                  issuerUrl: data.issuerUrl ?? "https://replit.com/oidc",
-                  appUrl: data.appUrl ?? window.location.origin,
-                };
+            if (data.v) {
+              // New healthz format — data is fresh.
+              if (!cancelled) {
+                setUser(data.user ?? null);
+                if (data.oidcClientId) {
+                  oidcConfigRef.current = {
+                    clientId: data.oidcClientId,
+                    issuerUrl: data.issuerUrl ?? "https://replit.com/oidc",
+                    appUrl: data.appUrl ?? window.location.origin,
+                  };
+                }
               }
+              return;
             }
+            // Old healthz (no "v" field) — fall through.
+          }
+        } catch {
+          /* network error — fall through */
+        }
+
+        // ── Strategy 2: POST /x-auth/me ──────────────────────────────────────
+        // POST requests bypass CDN caches and reach Express directly.
+        try {
+          const meRes = await fetch("/x-auth/me", {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            signal: AbortSignal.timeout(5000),
+          });
+          if (meRes.ok) {
+            const data = (await meRes.json()) as { user?: AuthUser | null };
+            if (!cancelled) setUser(data.user ?? null);
             return;
           }
-          // Old CDN-cached healthz (no "v" field) — fall through.
+        } catch {
+          /* network error — fall through */
         }
-      } catch {
-        /* network error — fall through */
-      }
 
-      // ── Strategy 2: POST /x-auth/me ──────────────────────────────────────────
-      // POST requests bypass Replit's CDN (which only caches GET/HEAD responses)
-      // and reach Express directly.  The inline handler in app.ts returns the
-      // authenticated user from the session cookie.
-      try {
-        const meRes = await fetch("/x-auth/me", {
-          method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          signal: AbortSignal.timeout(5000),
-        });
-        if (meRes.ok) {
-          const data = (await meRes.json()) as { user?: AuthUser | null };
-          if (!cancelled) setUser(data.user ?? null);
-          return;
-        }
-      } catch {
-        /* network error — fall through */
+        if (!cancelled) setUser(null);
+      } finally {
+        if (!cancelled) setIsLoading(false);
       }
-
-      if (!cancelled) setUser(null);
     };
 
     void checkAuth();
