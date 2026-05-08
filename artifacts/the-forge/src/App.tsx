@@ -187,33 +187,6 @@ function AuthSpinner() {
   );
 }
 
-// POST to /x-auth/login to get the OAuth URL (bypasses CDN), then navigate.
-function initiateLogin() {
-  const returnTo = basePath || "/";
-  fetch(`/x-auth/login?returnTo=${encodeURIComponent(returnTo)}`, {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-  })
-    .then((res) => res.json())
-    .then((data: { loginUrl?: string }) => {
-      if (data.loginUrl) window.location.href = data.loginUrl;
-    })
-    .catch(() => {
-      window.location.href = `/x-auth/login?returnTo=${encodeURIComponent(returnTo)}`;
-    });
-}
-
-function SignInPage() {
-  useEffect(() => { initiateLogin(); }, []);
-  return <AuthSpinner />;
-}
-
-function SignUpPage() {
-  useEffect(() => { initiateLogin(); }, []);
-  return <AuthSpinner />;
-}
-
 // Handles the OAuth callback when Replit redirects back to /x-auth/callback.
 // The CDN serves index.html for this GET, so the SPA mounts, reads the code
 // from the URL, and POSTs it to Express to complete the exchange.
@@ -272,8 +245,8 @@ function Router() {
       <Switch>
         <Route path="/x-auth/callback" component={AuthCallback} />
         <Route path="/x-auth/clerk-callback" component={ClerkCallbackPage} />
-        <Route path="/sign-in/*?" component={SignInPage} />
-        <Route path="/sign-up/*?" component={SignUpPage} />
+        <Route path="/sign-in/*?" component={ClerkSignInPage} />
+        <Route path="/sign-up/*?" component={ClerkSignUpPage} />
         <Route path="/share/:id" component={ShareView} />
         <Route path="/inspection/:shareId" component={InspectionPublicPage} />
         <Route path="/landing" component={Landing} />
