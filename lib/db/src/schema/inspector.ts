@@ -15,6 +15,9 @@ export const inspectorAppsTable = pgTable("inspector_apps", {
   customAssertions: jsonb("custom_assertions"),
   webhookSecret: text("webhook_secret"),
   description: text("description"),
+  alertThreshold: integer("alert_threshold").default(1),
+  lastInspectedAt: timestamp("last_inspected_at", { withTimezone: true }),
+  healthScore: integer("health_score"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 }, (t) => [
@@ -31,6 +34,9 @@ export const inspectorReportsTable = pgTable("inspector_reports", {
   appUrl: text("app_url").notNull(),
   source: text("source").default("cli"),
   status: text("status").default("done"),
+  environment: text("environment").default("production"),
+  buildSha: text("build_sha"),
+  ciRunId: text("ci_run_id"),
   inspectedAt: timestamp("inspected_at").notNull(),
   pagesChecked: integer("pages_checked").default(0),
   errorCount: integer("error_count").default(0),
@@ -41,6 +47,7 @@ export const inspectorReportsTable = pgTable("inspector_reports", {
   networkFailures: jsonb("network_failures"),
   performanceMetrics: jsonb("performance_metrics"),
   accessibilityViolations: jsonb("accessibility_violations"),
+  assertionResults: jsonb("assertion_results"),
   visualDiffs: jsonb("visual_diffs"),
   diffData: jsonb("diff_data"),
   quillDoc: text("quill_doc"),
@@ -65,6 +72,7 @@ export const inspectorIssuesTable = pgTable("inspector_issues", {
   type: text("type").notNull(),
   message: text("message").notNull(),
   detail: text("detail"),
+  priority: text("priority").notNull().default("medium"),
   status: text("status").default("open"),
   fixedAt: timestamp("fixed_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -76,7 +84,6 @@ export const inspectorIssuesTable = pgTable("inspector_issues", {
 
 export type InspectorIssue = typeof inspectorIssuesTable.$inferSelect;
 
-// Visual regression baselines — approved screenshot snapshots per page × viewport
 export const inspectorBaselinesTable = pgTable("inspector_baselines", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull(),
@@ -93,7 +100,6 @@ export const inspectorBaselinesTable = pgTable("inspector_baselines", {
 
 export type InspectorBaseline = typeof inspectorBaselinesTable.$inferSelect;
 
-// Continuous monitoring schedules
 export const inspectorSchedulesTable = pgTable("inspector_schedules", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull(),
@@ -114,3 +120,23 @@ export const inspectorSchedulesTable = pgTable("inspector_schedules", {
 ]);
 
 export type InspectorSchedule = typeof inspectorSchedulesTable.$inferSelect;
+
+export const inspectorCiRunsTable = pgTable("inspector_ci_runs", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  appId: text("app_id").notNull(),
+  reportId: text("report_id"),
+  ciPlatform: text("ci_platform"),
+  branch: text("branch"),
+  buildSha: text("build_sha"),
+  prNumber: text("pr_number"),
+  passed: boolean("passed").notNull().default(false),
+  errorCount: integer("error_count").notNull().default(0),
+  warnCount: integer("warn_count").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [
+  index("inspector_ci_runs_app_idx").on(t.appId),
+  index("inspector_ci_runs_user_idx").on(t.userId),
+]);
+
+export type InspectorCiRun = typeof inspectorCiRunsTable.$inferSelect;
