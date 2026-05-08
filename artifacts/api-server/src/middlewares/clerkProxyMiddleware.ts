@@ -3,7 +3,19 @@ import type { RequestHandler } from "express";
 
 export const CLERK_PROXY_PATH = "/api/__clerk";
 
-const CLERK_FAPI_URL = "https://frontend-api.clerk.com";
+function deriveClerkFapiUrl(publishableKey: string): string {
+  try {
+    const encoded = publishableKey.split("_")[2];
+    if (!encoded) return "https://clerk.dev";
+    const decoded = Buffer.from(encoded, "base64").toString("utf8").replace(/\$+$/, "");
+    if (decoded && decoded.includes(".")) {
+      return `https://${decoded}`;
+    }
+  } catch {
+    // fall through
+  }
+  return "https://clerk.dev";
+}
 
 export function clerkProxyMiddleware(): RequestHandler {
   if (process.env.NODE_ENV !== "production") {
@@ -15,8 +27,11 @@ export function clerkProxyMiddleware(): RequestHandler {
     return (_req, _res, next) => next();
   }
 
+  const publishableKey = process.env.VITE_CLERK_PUBLISHABLE_KEY ?? "";
+  const clerkFapi = deriveClerkFapiUrl(publishableKey);
+
   return createProxyMiddleware({
-    target: CLERK_FAPI_URL,
+    target: clerkFapi,
     changeOrigin: true,
     pathRewrite: (path: string) =>
       path.replace(new RegExp(`^${CLERK_PROXY_PATH}`), ""),
