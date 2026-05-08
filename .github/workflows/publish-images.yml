@@ -63,3 +63,18 @@ jobs:
             GIT_SHA=${{ github.sha }}
             CACHEBUST=${{ github.run_id }}
             VITE_CLERK_PUBLISHABLE_KEY=${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
+
+      - name: Redeploy on Coolify (stop then start to force image pull)
+        if: success()
+        env:
+          COOLIFY_API_KEY: ${{ secrets.FORGE_COOLIFY_API_KEY }}
+          COOLIFY_URL: http://5.78.154.21:8000
+          SERVICE_UUID: m7c7lrtb9seh441x60lwgd8y
+        run: |
+          echo "Stopping service..."
+          curl -s -X POST "$COOLIFY_URL/api/v1/services/$SERVICE_UUID/stop"             -H "Authorization: Bearer $COOLIFY_API_KEY" -H "Content-Type: application/json"
+          echo "Waiting 20s for container to stop..."
+          sleep 20
+          echo "Starting service (will pull latest image)..."
+          curl -s "$COOLIFY_URL/api/v1/deploy?uuid=$SERVICE_UUID&force=true"             -H "Authorization: Bearer $COOLIFY_API_KEY"
+          echo "Deploy triggered."
