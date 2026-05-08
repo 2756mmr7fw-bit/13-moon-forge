@@ -144,6 +144,59 @@ interface SavedApp {
   customAssertions?: CustomAssertion[];
 }
 
+// ── Dashboard / history types ─────────────────────────────────────────────────
+
+interface ReportSummary {
+  id: string;
+  appId: string;
+  appName: string;
+  appUrl: string;
+  source: string;
+  status: string;
+  environment: string;
+  buildSha?: string;
+  inspectedAt: string;
+  pagesChecked: number;
+  errorCount: number;
+  warnCount: number;
+  shareId?: string;
+  recheckOf?: string;
+}
+
+interface IssueItem {
+  id: string;
+  reportId: string;
+  appId?: string;
+  appName: string;
+  page?: string;
+  type: string;
+  message: string;
+  detail?: string;
+  priority: string;
+  status: string;
+  createdAt: string;
+}
+
+interface DashboardData {
+  appCount: number;
+  totalOpenIssues: number;
+  criticalIssues: number;
+  appsAtRisk: number;
+  reportsThisWeek: number;
+  appsHealth: Array<{
+    id: string; name: string; url: string;
+    healthScore: number | null; lastInspectedAt: string | null;
+    lastErrors: number | null; lastWarns: number | null; openIssues: number;
+  }>;
+}
+
+const PRIORITY_COLORS: Record<string, string> = {
+  critical: "text-red-400 bg-red-500/10 border-red-500/20",
+  high: "text-orange-400 bg-orange-500/10 border-orange-500/20",
+  medium: "text-yellow-400 bg-yellow-500/10 border-yellow-500/20",
+  low: "text-blue-400 bg-blue-500/10 border-blue-500/20",
+};
+
 function loadApps(): SavedApp[] {
   try { return JSON.parse(localStorage.getItem("forge:inspector:apps") ?? "[]") as SavedApp[]; }
   catch { return []; }
@@ -744,6 +797,44 @@ function NetworkTab({ failures, consoleErrors }: {
   );
 }
 
+// ── Assertions tab ────────────────────────────────────────────────────────────
+
+function AssertionsTab({ results }: {
+  results: Array<{ label: string; text?: string; passed: boolean; page?: string }>;
+}) {
+  if (results.length === 0) {
+    return <p className="text-xs text-muted-foreground py-4 text-center">No custom assertions were run in this report.</p>;
+  }
+  const passed = results.filter(r => r.passed).length;
+  return (
+    <div className="space-y-3">
+      <p className="text-xs font-medium flex items-center gap-2">
+        <Zap size={12} className="text-primary" />
+        {passed}/{results.length} assertion{results.length !== 1 ? "s" : ""} passed
+      </p>
+      {results.map((r, i) => (
+        <div key={i} className={cn(
+          "flex items-start gap-3 rounded-lg border px-3 py-2.5 text-xs",
+          r.passed ? "border-emerald-500/20 bg-emerald-500/5" : "border-red-500/20 bg-red-500/5"
+        )}>
+          {r.passed
+            ? <CheckCircle2 size={13} className="text-emerald-400 shrink-0 mt-0.5" />
+            : <AlertCircle size={13} className="text-red-400 shrink-0 mt-0.5" />
+          }
+          <div className="flex-1 min-w-0">
+            <p className="font-medium">{r.label}</p>
+            {r.text && <code className="text-muted-foreground font-mono text-[10px]">"{r.text}"</code>}
+            {r.page && <p className="text-[10px] text-muted-foreground mt-0.5">on {r.page}</p>}
+          </div>
+          <span className={cn("text-[10px] font-bold shrink-0 mt-0.5", r.passed ? "text-emerald-400" : "text-red-400")}>
+            {r.passed ? "PASS" : "FAIL"}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ── CI generator panel ────────────────────────────────────────────────────────
 
 function CiGeneratorButton({ appName }: { appName?: string }) {
@@ -792,6 +883,312 @@ function CiGeneratorButton({ appName }: { appName?: string }) {
   );
 }
 
+// ── Dashboard stats strip ─────────────────────────────────────────────────────
+
+function DashboardStats({ onNavigate }: { onNavigate: (mode: string) => void }) {
+  const [data, setData] = useState<DashboardData | null>(null);
+
+  useEffect(() => {
+    fetch(`${API_BASE}/api/inspector/dashboard`, { credentials: "include" })
+      .then(r => r.json())
+      .then(d => setData(d))
+      .catch(() => {});
+  }, []);
+
+  if (!data || data.appCount === 0) return null;
+
+  const items = [
+    { label: "Apps", value: data.appCount, color: "text-foreground", clickMode: null },
+    { label: "Open Issues", value: data.totalOpenIssues, color: data.totalOpenIssues > 0 ? "text-yellow-400" : "text-emerald-400", clickMode: "issues" },
+    { label: "At Risk", value: data.appsAtRisk, color: data.appsAtRisk > 0 ? "text-red-400" : "text-emerald-400", clickMode: "issues" },
+    { label: "Runs / Week", value: data.reportsThisWeek, color: "text-muted-foreground", clickMode: "history" },
+  ];
+
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+      {items.map(item => (
+        <button
+          key={item.label}
+          onClick={() => item.clickMode && onNavigate(item.clickMode)}
+          className={cn(
+            "border border-border/50 rounded-xl p-3 bg-card/30 text-center",
+            item.clickMode && "hover:border-primary/30 hover:bg-primary/5 transition-colors cursor-pointer"
+          )}
+        >
+          <p className={cn("text-2xl font-bold tabular-nums", item.color)}>{item.value}</p>
+          <p className="text-[10px] text-muted-foreground mt-0.5">{item.label}</p>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ── Report history panel ───────────────────────────────────────────────────────
+
+function ReportHistoryPanel({ apps, initialAppId }: { apps: { id: string; name: string }[]; initialAppId?: string | null }) {
+  const [selectedAppId, setSelectedAppId] = useState<string>(initialAppId ?? apps[0]?.id ?? "");
+  const [reports, setReports] = useState<ReportSummary[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
+  const [selectedReport, setSelectedReport] = useState<any>(null);
+  const [loadingReport, setLoadingReport] = useState(false);
+
+  useEffect(() => {
+    if (!selectedAppId) return;
+    setLoading(true);
+    setReports([]);
+    setSelectedReport(null);
+    setSelectedReportId(null);
+    fetch(`${API_BASE}/api/inspector/app-reports/${encodeURIComponent(selectedAppId)}`, { credentials: "include" })
+      .then(r => r.json())
+      .then(d => { setReports(d.reports ?? []); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, [selectedAppId]);
+
+  const loadReport = async (id: string) => {
+    setSelectedReportId(id);
+    setLoadingReport(true);
+    try {
+      const r = await fetch(`${API_BASE}/api/inspector/reports/${id}`, { credentials: "include" });
+      const d = await r.json();
+      setSelectedReport(d.report);
+    } catch { /* ignore */ } finally { setLoadingReport(false); }
+  };
+
+  return (
+    <div className="space-y-4">
+      {apps.length > 1 && (
+        <div className="flex gap-2 items-center">
+          <label className="text-xs text-muted-foreground shrink-0">App:</label>
+          <select
+            value={selectedAppId}
+            onChange={e => setSelectedAppId(e.target.value)}
+            className="flex-1 text-sm bg-background border border-border rounded-lg px-3 py-1.5 text-foreground"
+          >
+            {apps.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+          </select>
+        </div>
+      )}
+
+      {loading && <div className="flex justify-center py-8"><Loader2 size={16} className="animate-spin text-muted-foreground" /></div>}
+
+      {!loading && reports.length === 0 && (
+        <div className="border border-dashed border-border rounded-xl p-8 text-center space-y-2">
+          <Clock size={24} className="mx-auto text-muted-foreground/40" />
+          <p className="text-sm font-medium">No reports yet</p>
+          <p className="text-xs text-muted-foreground">Run an inspection to see history here.</p>
+        </div>
+      )}
+
+      {reports.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <p className="text-xs font-medium text-muted-foreground">
+              {reports.length} report{reports.length !== 1 ? "s" : ""}
+            </p>
+            {reports.map(r => {
+              const isSelected = r.id === selectedReportId;
+              const health = Math.max(0, 100 - r.errorCount * 20 - r.warnCount * 5);
+              const healthColor = health >= 90 ? "text-emerald-400" : health >= 60 ? "text-yellow-400" : "text-red-400";
+              return (
+                <button
+                  key={r.id}
+                  onClick={() => loadReport(r.id)}
+                  className={cn(
+                    "w-full text-left border rounded-xl px-3 py-2.5 space-y-1 transition-all",
+                    isSelected ? "border-primary/40 bg-primary/5" : "border-border hover:border-primary/20 hover:bg-muted/20"
+                  )}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-medium">{new Date(r.inspectedAt).toLocaleString()}</span>
+                    <div className="flex items-center gap-1.5">
+                      {r.environment && r.environment !== "production" && (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-blue-500/15 text-blue-400 font-medium">{r.environment}</span>
+                      )}
+                      <span className={cn("text-[10px] font-bold", healthColor)}>
+                        {health}%
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                    <span>{r.pagesChecked} page{r.pagesChecked !== 1 ? "s" : ""}</span>
+                    {r.errorCount > 0 && <span className="text-red-400">{r.errorCount} error{r.errorCount !== 1 ? "s" : ""}</span>}
+                    {r.warnCount > 0 && <span className="text-yellow-400">{r.warnCount} warn{r.warnCount !== 1 ? "s" : ""}</span>}
+                    {r.buildSha && <code className="font-mono bg-muted px-1 rounded">{r.buildSha.slice(0, 7)}</code>}
+                    {r.recheckOf && <span className="text-primary/70">recheck</span>}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="border border-border rounded-xl p-4 min-h-[200px]">
+            {loadingReport && <div className="flex justify-center py-8"><Loader2 size={14} className="animate-spin text-muted-foreground" /></div>}
+            {selectedReport && !loadingReport && (
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground">Findings</p>
+                <div className="space-y-1.5 max-h-80 overflow-y-auto">
+                  {((selectedReport.findings ?? []) as any[]).map((f: any, i: number) => (
+                    <FindingRow key={i} finding={{ ...f, ts: 0 }} />
+                  ))}
+                  {(selectedReport.findings ?? []).length === 0 && (
+                    <p className="text-xs text-emerald-400 flex items-center gap-1.5 py-4">
+                      <CheckCircle2 size={12} /> All clear — no issues found
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+            {!selectedReport && !loadingReport && (
+              <div className="flex items-center justify-center h-full text-xs text-muted-foreground">
+                Select a report to view findings
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Issues panel (cross-app issue tracker) ─────────────────────────────────────
+
+function IssuesPanel() {
+  const [issues, setIssues] = useState<IssueItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filterStatus, setFilterStatus] = useState("open");
+  const [filterPriority, setFilterPriority] = useState("");
+  const [updating, setUpdating] = useState<string | null>(null);
+
+  const fetchIssues = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({ status: filterStatus });
+      if (filterPriority) params.append("priority", filterPriority);
+      const r = await fetch(`${API_BASE}/api/inspector/issues-list?${params}`, { credentials: "include" });
+      const d = await r.json();
+      setIssues(d.issues ?? []);
+    } catch { /* ignore */ } finally { setLoading(false); }
+  }, [filterStatus, filterPriority]);
+
+  useEffect(() => { void fetchIssues(); }, [fetchIssues]);
+
+  const updateIssue = async (id: string, updates: { status?: string; priority?: string }) => {
+    setUpdating(id);
+    try {
+      await fetch(`${API_BASE}/api/inspector/issues/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(updates),
+      });
+      await fetchIssues();
+    } finally { setUpdating(null); }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-2">
+        <div className="flex gap-1 p-1 bg-muted/40 rounded-xl">
+          {["open", "fixed", "wont-fix"].map(s => (
+            <button
+              key={s}
+              onClick={() => setFilterStatus(s)}
+              className={cn(
+                "px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
+                filterStatus === s ? "bg-background text-foreground shadow-sm border border-border/50" : "text-muted-foreground hover:text-foreground"
+              )}
+            >{s}</button>
+          ))}
+        </div>
+        <div className="flex gap-1 p-1 bg-muted/40 rounded-xl">
+          {[{ v: "", l: "All" }, { v: "critical", l: "Critical" }, { v: "high", l: "High" }, { v: "medium", l: "Medium" }, { v: "low", l: "Low" }].map(({ v, l }) => (
+            <button
+              key={v}
+              onClick={() => setFilterPriority(v)}
+              className={cn(
+                "px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all",
+                filterPriority === v ? "bg-background text-foreground shadow-sm border border-border/50" : "text-muted-foreground hover:text-foreground"
+              )}
+            >{l}</button>
+          ))}
+        </div>
+      </div>
+
+      {loading && <div className="flex justify-center py-8"><Loader2 size={16} className="animate-spin text-muted-foreground" /></div>}
+
+      {!loading && issues.length === 0 && (
+        <div className="border border-dashed border-border rounded-xl p-8 text-center space-y-2">
+          <CheckCircle2 size={24} className="mx-auto text-emerald-400/40" />
+          <p className="text-sm font-medium">No {filterStatus} issues</p>
+          <p className="text-xs text-muted-foreground">Run an inspection to capture issues across your apps.</p>
+        </div>
+      )}
+
+      <div className="space-y-2">
+        {issues.map(issue => {
+          const prioClass = PRIORITY_COLORS[issue.priority] ?? PRIORITY_COLORS.medium;
+          return (
+            <div
+              key={issue.id}
+              className={cn(
+                "border rounded-xl px-4 py-3 space-y-2",
+                issue.type === "error" ? "border-red-500/15 bg-red-500/5" : "border-yellow-500/15 bg-yellow-500/5"
+              )}
+            >
+              <div className="flex items-start gap-2.5">
+                {issue.type === "error"
+                  ? <AlertCircle size={13} className="text-red-400 shrink-0 mt-0.5" />
+                  : <AlertTriangle size={13} className="text-yellow-400 shrink-0 mt-0.5" />
+                }
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm leading-snug">{issue.message}</p>
+                  <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                    <span className="text-[10px] text-muted-foreground font-medium">{issue.appName}</span>
+                    {issue.page && <code className="text-[10px] font-mono bg-muted px-1 rounded">{issue.page}</code>}
+                    <span className={cn("text-[10px] px-1.5 py-0.5 rounded-full border font-medium", prioClass)}>{issue.priority}</span>
+                    <span className="text-[10px] text-muted-foreground">{new Date(issue.createdAt).toLocaleDateString()}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {issue.status === "open" && (
+                    <>
+                      <select
+                        value={issue.priority}
+                        disabled={updating === issue.id}
+                        onChange={e => updateIssue(issue.id, { priority: e.target.value })}
+                        className="text-[10px] bg-background border border-border rounded px-1.5 py-0.5 text-muted-foreground"
+                      >
+                        {["critical", "high", "medium", "low"].map(p => <option key={p} value={p}>{p}</option>)}
+                      </select>
+                      <button
+                        onClick={() => updateIssue(issue.id, { status: "fixed" })}
+                        disabled={updating === issue.id}
+                        className="text-[10px] px-2 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 transition-colors"
+                      >
+                        {updating === issue.id ? "..." : "Fixed"}
+                      </button>
+                    </>
+                  )}
+                  {issue.status !== "open" && (
+                    <button
+                      onClick={() => updateIssue(issue.id, { status: "open" })}
+                      disabled={updating === issue.id}
+                      className="text-[10px] px-2 py-1 rounded-lg bg-muted hover:bg-muted/80 text-muted-foreground border border-border transition-colors"
+                    >
+                      Reopen
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ── Extended report type (DB-backed) ─────────────────────────────────────────
 
 interface DbReport extends CliReport {
@@ -799,6 +1196,9 @@ interface DbReport extends CliReport {
   quillDoc?: string;
   recheckOf?: string;
   shareId?: string;
+  environment?: string;
+  buildSha?: string;
+  assertionResults?: Array<{ label: string; text?: string; passed: boolean; page?: string }>;
   consoleErrors?: Array<{ text: string; url?: string; ts?: number }>;
   networkFailures?: Array<{ url: string; status: number; page?: string }>;
   performanceMetrics?: Record<string, PerfMetrics>;
@@ -809,7 +1209,7 @@ interface DbReport extends CliReport {
 
 // ── CLI report panel ──────────────────────────────────────────────────────────
 
-type ReportTab = "findings" | "perf" | "a11y" | "visual" | "network";
+type ReportTab = "findings" | "perf" | "a11y" | "visual" | "network" | "assertions";
 
 function CliReportPanel() {
   const [report, setReport] = useState<DbReport | null>(null);
@@ -946,7 +1346,19 @@ function CliReportPanel() {
       {/* Summary bar */}
       <div className="flex flex-wrap items-center gap-3 p-4 border border-border rounded-xl bg-card/50">
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-sm truncate">{report.appName}</p>
+          <div className="flex items-center gap-2 flex-wrap mb-0.5">
+            <p className="font-semibold text-sm truncate">{report.appName}</p>
+            {(report as DbReport).environment && (report as DbReport).environment !== "production" && (
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-500/15 text-blue-400 font-medium border border-blue-500/20">
+                {(report as DbReport).environment}
+              </span>
+            )}
+            {(report as DbReport).buildSha && (
+              <code className="text-[10px] font-mono bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
+                {((report as DbReport).buildSha ?? "").slice(0, 7)}
+              </code>
+            )}
+          </div>
           <p className="text-xs text-muted-foreground">
             {report.pagesChecked} page{report.pagesChecked !== 1 ? "s" : ""} · {new Date(report.inspectedAt).toLocaleString()}
           </p>
@@ -1009,12 +1421,16 @@ function CliReportPanel() {
         const hasA11yData = report.accessibilityViolations !== undefined;
         const hasVisualData = report.visualDiffs && report.visualDiffs.length > 0;
         const hasNetData = (report.networkFailures && report.networkFailures.length > 0) || (report.consoleErrors && report.consoleErrors.length > 0);
+        const assertionResults = (report as DbReport).assertionResults as Array<{ label: string; text?: string; passed: boolean; page?: string }> | undefined;
+        const hasAssertionData = assertionResults && assertionResults.length > 0;
+        const failedAssertions = assertionResults?.filter(a => !a.passed).length ?? 0;
         const tabs: Array<{ id: ReportTab; label: string; icon: React.ReactNode; count?: number }> = [
           { id: "findings", label: "Findings", icon: <ScanLine size={12} />, count: findings.length },
           ...(hasPerfData ? [{ id: "perf" as ReportTab, label: "Performance", icon: <Activity size={12} /> }] : []),
           ...(hasA11yData ? [{ id: "a11y" as ReportTab, label: "Accessibility", icon: <Shield size={12} />, count: Object.values(report.accessibilityViolations ?? {}).flat().length }] : []),
           ...(hasVisualData ? [{ id: "visual" as ReportTab, label: "Visual", icon: <Camera size={12} />, count: report.visualDiffs?.filter(d => d.changed).length }] : []),
           ...(hasNetData ? [{ id: "network" as ReportTab, label: "Network", icon: <Wifi size={12} />, count: report.networkFailures?.length }] : []),
+          ...(hasAssertionData ? [{ id: "assertions" as ReportTab, label: "Assertions", icon: <Zap size={12} />, count: failedAssertions > 0 ? failedAssertions : undefined }] : []),
         ];
         if (tabs.length <= 1) return null;
         return (
@@ -1100,6 +1516,12 @@ function CliReportPanel() {
         </div>
       )}
 
+      {activeTab === "assertions" && (
+        <div className="border border-border rounded-xl p-5">
+          <AssertionsTab results={((report as DbReport).assertionResults ?? []) as Array<{ label: string; text?: string; passed: boolean; page?: string }>} />
+        </div>
+      )}
+
       {/* Recheck / run again */}
       <div className="border border-border/40 rounded-xl p-4 text-xs text-muted-foreground space-y-1.5">
         {(report.errorCount > 0 || report.warnCount > 0) ? (
@@ -1166,6 +1588,18 @@ function AppCard({
               </span>
             )}
             {trend.length >= 2 && <TrendSparkline points={trend} />}
+            {trend.length > 0 && (() => {
+              const latest = trend[trend.length - 1];
+              const score = Math.max(0, 100 - (latest.errorCount ?? 0) * 20 - (latest.warnCount ?? 0) * 5);
+              const color = score >= 90 ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
+                : score >= 60 ? "text-yellow-400 bg-yellow-500/10 border-yellow-500/20"
+                : "text-red-400 bg-red-500/10 border-red-500/20";
+              return (
+                <span className={cn("text-[10px] font-bold px-1.5 py-0.5 rounded-full border", color)}>
+                  {score}%
+                </span>
+              );
+            })()}
           </div>
           <a href={app.url} target="_blank" rel="noopener noreferrer"
             className="text-xs text-muted-foreground hover:text-primary transition-colors truncate block">{app.url}</a>
@@ -1235,7 +1669,8 @@ function AppCard({
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function AppInspector() {
-  const [mode, setMode] = useState<"server" | "cli">("server");
+  const [mode, setMode] = useState<"server" | "cli" | "history" | "issues">("server");
+  const [historyAppId, setHistoryAppId] = useState<string | null>(null);
   const [apps, setApps] = useState<SavedApp[]>(loadApps);
   const [editingApp, setEditingApp] = useState<SavedApp | null>(null);
   const [addingApp, setAddingApp] = useState(false);
@@ -1358,8 +1793,11 @@ export default function AppInspector() {
         )}
       </div>
 
+      {/* Dashboard stats strip */}
+      <DashboardStats onNavigate={(m) => setMode(m as typeof mode)} />
+
       {/* Mode tabs */}
-      <div className="flex gap-1 p-1 bg-muted/50 rounded-xl w-fit">
+      <div className="flex flex-wrap gap-1 p-1 bg-muted/50 rounded-xl w-fit">
         <button
           onClick={() => setMode("server")}
           className={cn(
@@ -1384,6 +1822,30 @@ export default function AppInspector() {
           <Monitor size={14} />
           Browser (CLI)
           <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/20 text-primary font-semibold">Screenshots</span>
+        </button>
+        <button
+          onClick={() => setMode("history")}
+          className={cn(
+            "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
+            mode === "history"
+              ? "bg-background text-foreground shadow-sm border border-border/50"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          <Clock size={14} />
+          History
+        </button>
+        <button
+          onClick={() => setMode("issues")}
+          className={cn(
+            "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
+            mode === "issues"
+              ? "bg-background text-foreground shadow-sm border border-border/50"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          <AlertTriangle size={14} />
+          Issues
         </button>
       </div>
 
@@ -1506,6 +1968,49 @@ export default function AppInspector() {
           </div>
 
           <CliReportPanel />
+        </div>
+      )}
+
+      {/* ── HISTORY MODE ───────────────────────────────────────────────────────── */}
+      {mode === "history" && (
+        <div className="space-y-5">
+          <div className="flex gap-3 p-4 rounded-xl border border-border/40 bg-muted/10">
+            <Clock size={18} className="text-muted-foreground shrink-0 mt-0.5" />
+            <div className="text-sm space-y-1">
+              <p className="font-medium">Report History</p>
+              <p className="text-xs text-muted-foreground">
+                Browse past inspection reports for any of your apps. Select a report to view its findings.
+              </p>
+            </div>
+          </div>
+          {apps.length === 0 ? (
+            <div className="border border-dashed border-border rounded-xl p-8 text-center space-y-2">
+              <Clock size={24} className="mx-auto text-muted-foreground/40" />
+              <p className="text-sm font-medium">No apps saved yet</p>
+              <p className="text-xs text-muted-foreground">Add an app and run an inspection first.</p>
+            </div>
+          ) : (
+            <ReportHistoryPanel
+              apps={apps.map(a => ({ id: a.id, name: a.name }))}
+              initialAppId={historyAppId}
+            />
+          )}
+        </div>
+      )}
+
+      {/* ── ISSUES MODE ────────────────────────────────────────────────────────── */}
+      {mode === "issues" && (
+        <div className="space-y-5">
+          <div className="flex gap-3 p-4 rounded-xl border border-border/40 bg-muted/10">
+            <AlertTriangle size={18} className="text-muted-foreground shrink-0 mt-0.5" />
+            <div className="text-sm space-y-1">
+              <p className="font-medium">Issue Tracker</p>
+              <p className="text-xs text-muted-foreground">
+                All errors and warnings captured across your apps — with priority triage and status tracking.
+              </p>
+            </div>
+          </div>
+          <IssuesPanel />
         </div>
       )}
     </div>
