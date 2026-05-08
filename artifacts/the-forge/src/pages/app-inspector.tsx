@@ -177,6 +177,20 @@ interface IssueItem {
   createdAt: string;
 }
 
+interface CiRun {
+  id: string;
+  appId: string;
+  reportId?: string;
+  ciPlatform?: string;
+  branch?: string;
+  buildSha?: string;
+  prNumber?: string;
+  passed: boolean;
+  errorCount: number;
+  warnCount: number;
+  createdAt: string;
+}
+
 interface DashboardData {
   appCount: number;
   totalOpenIssues: number;
@@ -932,6 +946,8 @@ function ReportHistoryPanel({ apps, initialAppId }: { apps: { id: string; name: 
   const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
   const [selectedReport, setSelectedReport] = useState<any>(null);
   const [loadingReport, setLoadingReport] = useState(false);
+  const [reportTab, setReportTab] = useState<ReportTab>("findings");
+  const [ciRuns, setCiRuns] = useState<CiRun[]>([]);
 
   useEffect(() => {
     if (!selectedAppId) return;
@@ -939,15 +955,21 @@ function ReportHistoryPanel({ apps, initialAppId }: { apps: { id: string; name: 
     setReports([]);
     setSelectedReport(null);
     setSelectedReportId(null);
+    setCiRuns([]);
     fetch(`${API_BASE}/api/inspector/app-reports/${encodeURIComponent(selectedAppId)}`, { credentials: "include" })
       .then(r => r.json())
       .then(d => { setReports(d.reports ?? []); setLoading(false); })
       .catch(() => setLoading(false));
+    fetch(`${API_BASE}/api/inspector/ci-runs/${encodeURIComponent(selectedAppId)}`, { credentials: "include" })
+      .then(r => r.json())
+      .then(d => setCiRuns(d.runs ?? []))
+      .catch(() => {});
   }, [selectedAppId]);
 
   const loadReport = async (id: string) => {
     setSelectedReportId(id);
     setLoadingReport(true);
+    setReportTab("findings");
     try {
       const r = await fetch(`${API_BASE}/api/inspector/reports/${id}`, { credentials: "include" });
       const d = await r.json();
@@ -981,8 +1003,9 @@ function ReportHistoryPanel({ apps, initialAppId }: { apps: { id: string; name: 
       )}
 
       {reports.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-1.5">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+          {/* Report list */}
+          <div className="lg:col-span-2 space-y-1.5">
             <p className="text-xs font-medium text-muted-foreground">
               {reports.length} report{reports.length !== 1 ? "s" : ""}
             </p>
@@ -1005,9 +1028,7 @@ function ReportHistoryPanel({ apps, initialAppId }: { apps: { id: string; name: 
                       {r.environment && r.environment !== "production" && (
                         <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-blue-500/15 text-blue-400 font-medium">{r.environment}</span>
                       )}
-                      <span className={cn("text-[10px] font-bold", healthColor)}>
-                        {health}%
-                      </span>
+                      <span className={cn("text-[10px] font-bold", healthColor)}>{health}%</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
@@ -1016,34 +1037,198 @@ function ReportHistoryPanel({ apps, initialAppId }: { apps: { id: string; name: 
                     {r.warnCount > 0 && <span className="text-yellow-400">{r.warnCount} warn{r.warnCount !== 1 ? "s" : ""}</span>}
                     {r.buildSha && <code className="font-mono bg-muted px-1 rounded">{r.buildSha.slice(0, 7)}</code>}
                     {r.recheckOf && <span className="text-primary/70">recheck</span>}
+                    {r.source && r.source === "ci" && <span className="text-blue-400 bg-blue-500/10 px-1 rounded">CI</span>}
                   </div>
                 </button>
               );
             })}
           </div>
 
-          <div className="border border-border rounded-xl p-4 min-h-[200px]">
-            {loadingReport && <div className="flex justify-center py-8"><Loader2 size={14} className="animate-spin text-muted-foreground" /></div>}
-            {selectedReport && !loadingReport && (
-              <div className="space-y-2">
-                <p className="text-xs font-medium text-muted-foreground">Findings</p>
-                <div className="space-y-1.5 max-h-80 overflow-y-auto">
-                  {((selectedReport.findings ?? []) as any[]).map((f: any, i: number) => (
-                    <FindingRow key={i} finding={{ ...f, ts: 0 }} />
-                  ))}
-                  {(selectedReport.findings ?? []).length === 0 && (
-                    <p className="text-xs text-emerald-400 flex items-center gap-1.5 py-4">
-                      <CheckCircle2 size={12} /> All clear — no issues found
-                    </p>
+          {/* Full report detail panel */}
+          <div className="lg:col-span-3 border border-border rounded-xl overflow-hidden min-h-[240px]">
+            {loadingReport && (
+              <div className="flex justify-center py-10"><Loader2 size={14} className="animate-spin text-muted-foreground" /></div>
+            )}
+
+            {!selectedReport && !loadingReport && (
+              <div className="flex items-center justify-center h-full min-h-[200px] text-xs text-muted-foreground">
+                Select a report to view details
+              </div>
+            )}
+
+            {selectedReport && !loadingReport && (() => {
+              const hasPerfData = selectedReport.performanceMetrics && Object.keys(selectedReport.performanceMetrics).length > 0;
+              const hasA11yData = selectedReport.accessibilityViolations && Object.keys(selectedReport.accessibilityViolations).length > 0;
+              const hasVisualData = Array.isArray(selectedReport.visualDiffs) && selectedReport.visualDiffs.length > 0;
+              const hasNetData = (selectedReport.networkFailures?.length > 0) || (selectedReport.consoleErrors?.length > 0);
+              const hasAssertions = Array.isArray(selectedReport.assertionResults) && selectedReport.assertionResults.length > 0;
+
+              const tabs: Array<{ id: ReportTab; label: string; icon: React.ReactNode; badge?: number }> = [
+                { id: "findings", label: "Findings", icon: <ScanLine size={11} />, badge: (selectedReport.findings ?? []).length },
+                ...(hasPerfData ? [{ id: "perf" as ReportTab, label: "Perf", icon: <Activity size={11} /> }] : []),
+                ...(hasA11yData ? [{ id: "a11y" as ReportTab, label: "A11y", icon: <Shield size={11} />, badge: Object.values(selectedReport.accessibilityViolations as Record<string, unknown[]>).reduce((s, v) => s + v.length, 0) as number }] : []),
+                ...(hasVisualData ? [{ id: "visual" as ReportTab, label: "Visual", icon: <Camera size={11} /> }] : []),
+                ...(hasNetData ? [{ id: "network" as ReportTab, label: "Network", icon: <Wifi size={11} /> }] : []),
+                ...(hasAssertions ? [{ id: "assertions" as ReportTab, label: "Checks", icon: <Zap size={11} /> }] : []),
+              ];
+
+              const appId = selectedReport.appId as string | undefined;
+
+              return (
+                <div className="flex flex-col h-full">
+                  {/* Summary header */}
+                  <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-card/30">
+                    <div className="flex-1 min-w-0 space-y-0.5">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {selectedReport.errorCount > 0 && <span className="text-xs text-red-400 font-semibold">{selectedReport.errorCount} error{selectedReport.errorCount !== 1 ? "s" : ""}</span>}
+                        {selectedReport.warnCount > 0 && <span className="text-xs text-yellow-400 font-semibold">{selectedReport.warnCount} warning{selectedReport.warnCount !== 1 ? "s" : ""}</span>}
+                        {selectedReport.errorCount === 0 && selectedReport.warnCount === 0 && <span className="text-xs text-emerald-400 font-semibold">All clear</span>}
+                        {selectedReport.environment && selectedReport.environment !== "production" && (
+                          <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-blue-500/15 text-blue-400 font-medium">{selectedReport.environment}</span>
+                        )}
+                      </div>
+                      <p className="text-[10px] text-muted-foreground">
+                        {new Date(selectedReport.inspectedAt).toLocaleString()} · {selectedReport.pagesChecked} page{selectedReport.pagesChecked !== 1 ? "s" : ""}
+                        {selectedReport.buildSha && <> · <code className="font-mono">{selectedReport.buildSha.slice(0, 7)}</code></>}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {selectedReport.id && <ShareButton reportId={selectedReport.id as string} />}
+                      {selectedReport.id && <DiffBadge reportId={selectedReport.id as string} />}
+                    </div>
+                  </div>
+
+                  {/* Tab bar — only show if there's more than just findings */}
+                  {tabs.length > 1 && (
+                    <div className="flex gap-0.5 p-1 border-b border-border bg-muted/20 overflow-x-auto shrink-0">
+                      {tabs.map(tab => (
+                        <button
+                          key={tab.id}
+                          onClick={() => setReportTab(tab.id)}
+                          className={cn(
+                            "flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] font-medium whitespace-nowrap transition-all",
+                            reportTab === tab.id
+                              ? "bg-background text-foreground shadow-sm"
+                              : "text-muted-foreground hover:text-foreground"
+                          )}
+                        >
+                          {tab.icon}
+                          {tab.label}
+                          {tab.badge !== undefined && tab.badge > 0 && (
+                            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-muted tabular-nums">{tab.badge}</span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
                   )}
+
+                  {/* Tab content */}
+                  <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                    {reportTab === "findings" && (
+                      <div className="space-y-1.5">
+                        {((selectedReport.findings ?? []) as any[]).map((f: any, i: number) => (
+                          <FindingRow key={i} finding={{ ...f, ts: 0 }} />
+                        ))}
+                        {(selectedReport.findings ?? []).length === 0 && (
+                          <p className="text-xs text-emerald-400 flex items-center gap-1.5 py-4">
+                            <CheckCircle2 size={12} /> All clear — no issues found
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    {reportTab === "perf" && hasPerfData && (
+                      <PerformanceTab metrics={selectedReport.performanceMetrics as Record<string, PerfMetrics>} />
+                    )}
+
+                    {reportTab === "a11y" && (
+                      <AccessibilityTab violations={selectedReport.accessibilityViolations as Record<string, AxeViolation[]>} />
+                    )}
+
+                    {reportTab === "visual" && hasVisualData && (
+                      <VisualTab
+                        diffs={selectedReport.visualDiffs as VisualDiff[]}
+                        screenshots={(selectedReport.screenshots ?? []).map((ss: any) => ({
+                          page: ss.page as string,
+                          viewport: (ss.viewport ?? "desktop") as string,
+                          dataUrl: ss.data ? `data:image/png;base64,${ss.data as string}` : (ss.dataUrl ?? "") as string,
+                          label: (ss.label ?? ss.page) as string,
+                        }))}
+                        onApprove={async (page, viewport, data) => {
+                          if (!appId) return;
+                          await fetch(`${API_BASE}/api/inspector/baselines`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            credentials: "include",
+                            body: JSON.stringify({ appId, page, viewport, screenshotData: data }),
+                          });
+                        }}
+                      />
+                    )}
+
+                    {reportTab === "network" && (
+                      <NetworkTab
+                        failures={(selectedReport.networkFailures ?? []) as Array<{ url: string; status: number; page?: string }>}
+                        consoleErrors={(selectedReport.consoleErrors ?? []) as Array<{ text: string; url?: string }>}
+                      />
+                    )}
+
+                    {reportTab === "assertions" && hasAssertions && (
+                      <AssertionsTab results={selectedReport.assertionResults as Array<{ label: string; text?: string; passed: boolean; page?: string }>} />
+                    )}
+
+                    {/* Quill analysis — shown in all tabs at bottom */}
+                    {selectedReport.quillDoc && reportTab === "findings" && (
+                      <details className="border-t border-border/40 pt-3 mt-3">
+                        <summary className="text-xs text-sky-400 cursor-pointer flex items-center gap-1.5">
+                          <Terminal size={11} /> Quill's Analysis
+                        </summary>
+                        <pre className="mt-2 text-[11px] text-muted-foreground bg-muted/30 rounded-lg p-3 whitespace-pre-wrap overflow-x-auto">
+                          {selectedReport.quillDoc as string}
+                        </pre>
+                      </details>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+      )}
+
+      {/* CI Run History */}
+      {ciRuns.length > 0 && (
+        <div className="border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-2.5 border-b border-border flex items-center gap-2 bg-muted/10">
+            <GitBranch size={13} className="text-muted-foreground" />
+            <p className="text-xs font-semibold">CI Run History</p>
+            <span className="text-[10px] text-muted-foreground ml-auto">{ciRuns.length} run{ciRuns.length !== 1 ? "s" : ""}</span>
+          </div>
+          <div className="divide-y divide-border/40">
+            {ciRuns.slice(0, 12).map(run => (
+              <div key={run.id} className="flex items-center gap-3 px-4 py-2.5">
+                <div className={cn("w-2 h-2 rounded-full shrink-0", run.passed ? "bg-emerald-400" : "bg-red-400")} />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 text-xs flex-wrap">
+                    {run.branch && <code className="font-mono text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">{run.branch}</code>}
+                    {run.buildSha && <code className="font-mono text-[10px] bg-muted px-1 rounded text-muted-foreground">{run.buildSha.slice(0, 7)}</code>}
+                    {run.prNumber && <span className="text-[10px] text-blue-400">PR #{run.prNumber}</span>}
+                    {run.errorCount > 0 && <span className="text-[10px] text-red-400">{run.errorCount} error{run.errorCount !== 1 ? "s" : ""}</span>}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  {run.ciPlatform && (
+                    <span className="text-[9px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded font-medium uppercase">{run.ciPlatform}</span>
+                  )}
+                  <span className="text-[10px] text-muted-foreground">
+                    {new Date(run.createdAt).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                  </span>
+                  <span className={cn("text-[10px] font-bold w-8 text-right", run.passed ? "text-emerald-400" : "text-red-400")}>
+                    {run.passed ? "PASS" : "FAIL"}
+                  </span>
                 </div>
               </div>
-            )}
-            {!selectedReport && !loadingReport && (
-              <div className="flex items-center justify-center h-full text-xs text-muted-foreground">
-                Select a report to view findings
-              </div>
-            )}
+            ))}
           </div>
         </div>
       )}
@@ -1666,10 +1851,159 @@ function AppCard({
   );
 }
 
+// ── Dashboard mode ────────────────────────────────────────────────────────────
+
+function DashboardMode({ onInspect, onHistory }: {
+  onInspect: () => void;
+  onHistory: (appId: string) => void;
+}) {
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const refresh = () => {
+    setLoading(true);
+    fetch(`${API_BASE}/api/inspector/dashboard`, { credentials: "include" })
+      .then(r => r.json())
+      .then(d => { setData(d as DashboardData); setLoading(false); })
+      .catch(() => setLoading(false));
+  };
+
+  useEffect(() => { refresh(); }, []);
+
+  if (loading) {
+    return <div className="flex justify-center py-12"><Loader2 size={18} className="animate-spin text-muted-foreground" /></div>;
+  }
+
+  if (!data || data.appCount === 0) {
+    return (
+      <div className="border border-dashed border-border rounded-xl p-12 text-center space-y-3">
+        <BarChart2 size={28} className="mx-auto text-muted-foreground/40" />
+        <p className="font-medium">No apps tracked yet</p>
+        <p className="text-sm text-muted-foreground">Switch to Server-side mode to add your first app.</p>
+        <Button variant="secondary" onClick={onInspect} className="gap-2 mt-2">
+          <Plus size={15} /> Add an app
+        </Button>
+      </div>
+    );
+  }
+
+  const stats = [
+    { label: "Apps monitored", value: data.appCount, color: "text-foreground" },
+    { label: "Open issues", value: data.totalOpenIssues, color: data.totalOpenIssues > 0 ? "text-yellow-400" : "text-emerald-400" },
+    { label: "At risk", value: data.appsAtRisk, color: data.appsAtRisk > 0 ? "text-red-400" : "text-emerald-400" },
+    { label: "Runs this week", value: data.reportsThisWeek, color: "text-muted-foreground" },
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* Stats strip */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {stats.map(s => (
+          <div key={s.label} className="border border-border/50 rounded-xl p-4 bg-card/30 text-center">
+            <p className={cn("text-3xl font-bold tabular-nums", s.color)}>{s.value}</p>
+            <p className="text-[11px] text-muted-foreground mt-1">{s.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Per-app health table */}
+      <div className="border border-border rounded-xl overflow-hidden">
+        <div className="px-4 py-3 border-b border-border flex items-center gap-2 bg-muted/10">
+          <BarChart2 size={14} className="text-muted-foreground" />
+          <p className="text-sm font-semibold">App Health</p>
+          <button onClick={refresh} className="ml-auto text-muted-foreground hover:text-foreground transition-colors">
+            <RefreshCw size={13} />
+          </button>
+        </div>
+
+        <div className="divide-y divide-border/40">
+          {data.appsHealth.map(app => {
+            const score = app.healthScore;
+            const scoreColor = score === null ? "text-muted-foreground" : score >= 90 ? "text-emerald-400" : score >= 60 ? "text-yellow-400" : "text-red-400";
+            const barColor = score === null ? "bg-muted" : score >= 90 ? "bg-emerald-500" : score >= 60 ? "bg-yellow-500" : "bg-red-500";
+
+            return (
+              <div key={app.id} className="flex items-center gap-4 px-4 py-3 hover:bg-muted/10 transition-colors">
+                {/* App name + URL */}
+                <div className="flex-1 min-w-0 space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-medium truncate">{app.name}</p>
+                    {app.openIssues > 0 && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 font-medium shrink-0">
+                        {app.openIssues} issue{app.openIssues !== 1 ? "s" : ""}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-muted-foreground truncate">{app.url}</p>
+                </div>
+
+                {/* Health bar + score */}
+                <div className="hidden sm:flex items-center gap-2 w-32 shrink-0">
+                  <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className={cn("h-full rounded-full transition-all", barColor)}
+                      style={{ width: score !== null ? `${score}%` : "0%" }}
+                    />
+                  </div>
+                  <span className={cn("text-xs font-bold w-8 text-right tabular-nums", scoreColor)}>
+                    {score !== null ? `${score}%` : "—"}
+                  </span>
+                </div>
+
+                {/* Last run stats */}
+                <div className="hidden md:flex items-center gap-3 text-[11px] shrink-0">
+                  {app.lastErrors !== null && app.lastErrors > 0
+                    ? <span className="text-red-400 font-medium">{app.lastErrors}e</span>
+                    : <span className="text-emerald-400">✓</span>
+                  }
+                  {app.lastWarns !== null && app.lastWarns > 0 && (
+                    <span className="text-yellow-400">{app.lastWarns}w</span>
+                  )}
+                  <span className="text-muted-foreground">
+                    {app.lastInspectedAt
+                      ? new Date(app.lastInspectedAt).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
+                      : "Never run"
+                    }
+                  </span>
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    onClick={() => { onHistory(app.id); }}
+                    className="text-[11px] px-2.5 py-1.5 rounded-lg border border-border hover:border-primary/30 hover:bg-primary/5 text-muted-foreground hover:text-foreground transition-all"
+                  >
+                    History
+                  </button>
+                  <button
+                    onClick={onInspect}
+                    className="text-[11px] px-2.5 py-1.5 rounded-lg border border-primary/30 bg-primary/5 hover:bg-primary/10 text-primary transition-all"
+                  >
+                    Inspect
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {data.criticalIssues > 0 && (
+        <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-red-500/20 bg-red-500/5">
+          <AlertCircle size={15} className="text-red-400 shrink-0" />
+          <p className="text-sm text-red-400 font-medium">
+            {data.criticalIssues} critical issue{data.criticalIssues !== 1 ? "s" : ""} need your attention
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function AppInspector() {
-  const [mode, setMode] = useState<"server" | "cli" | "history" | "issues">("server");
+  const [mode, setMode] = useState<"dashboard" | "server" | "cli" | "history" | "issues">("server");
   const [historyAppId, setHistoryAppId] = useState<string | null>(null);
   const [apps, setApps] = useState<SavedApp[]>(loadApps);
   const [editingApp, setEditingApp] = useState<SavedApp | null>(null);
@@ -1798,56 +2132,43 @@ export default function AppInspector() {
 
       {/* Mode tabs */}
       <div className="flex flex-wrap gap-1 p-1 bg-muted/50 rounded-xl w-fit">
-        <button
-          onClick={() => setMode("server")}
-          className={cn(
-            "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
-            mode === "server"
-              ? "bg-background text-foreground shadow-sm border border-border/50"
-              : "text-muted-foreground hover:text-foreground"
-          )}
-        >
-          <Globe size={14} />
-          Server-side
-        </button>
-        <button
-          onClick={() => setMode("cli")}
-          className={cn(
-            "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
-            mode === "cli"
-              ? "bg-background text-foreground shadow-sm border border-border/50"
-              : "text-muted-foreground hover:text-foreground"
-          )}
-        >
-          <Monitor size={14} />
-          Browser (CLI)
-          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/20 text-primary font-semibold">Screenshots</span>
-        </button>
-        <button
-          onClick={() => setMode("history")}
-          className={cn(
-            "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
-            mode === "history"
-              ? "bg-background text-foreground shadow-sm border border-border/50"
-              : "text-muted-foreground hover:text-foreground"
-          )}
-        >
-          <Clock size={14} />
-          History
-        </button>
-        <button
-          onClick={() => setMode("issues")}
-          className={cn(
-            "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
-            mode === "issues"
-              ? "bg-background text-foreground shadow-sm border border-border/50"
-              : "text-muted-foreground hover:text-foreground"
-          )}
-        >
-          <AlertTriangle size={14} />
-          Issues
-        </button>
+        {(["dashboard", "server", "cli", "history", "issues"] as const).map(m => {
+          const labels: Record<typeof m, React.ReactNode> = {
+            dashboard: <><BarChart2 size={14} />Dashboard</>,
+            server: <><Globe size={14} />Server-side</>,
+            cli: <><Monitor size={14} />Browser (CLI)<span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/20 text-primary font-semibold">Screenshots</span></>,
+            history: <><Clock size={14} />History</>,
+            issues: <><AlertTriangle size={14} />Issues</>,
+          };
+          return (
+            <button
+              key={m}
+              onClick={() => setMode(m)}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
+                mode === m
+                  ? "bg-background text-foreground shadow-sm border border-border/50"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {labels[m]}
+            </button>
+          );
+        })}
       </div>
+
+      {/* ── DASHBOARD MODE ───────────────────────────────────────────────────── */}
+      {mode === "dashboard" && (
+        <div className="space-y-5">
+          <DashboardMode
+            onInspect={() => setMode("server")}
+            onHistory={(appId) => {
+              setHistoryAppId(appId);
+              setMode("history");
+            }}
+          />
+        </div>
+      )}
 
       {/* ── SERVER-SIDE MODE ─────────────────────────────────────────────────── */}
       {mode === "server" && (
