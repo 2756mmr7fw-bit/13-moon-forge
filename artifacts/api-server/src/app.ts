@@ -206,14 +206,29 @@ app.get("/api/debug/static", async (_req: Request, res: Response) => {
   res.json(results);
 });
 
+// Serve hashed assets explicitly with long-lived cache headers
+app.get("/assets/*", (req: Request, res: Response) => {
+  const fs = require("node:fs") as typeof import("node:fs");
+  const filePath = path.join(STATIC_DIR, req.path);
+  if (!fs.existsSync(filePath)) {
+    res.status(404).send("Not found");
+    return;
+  }
+  res.setHeader("Cache-Control", "public, max-age=604800, immutable");
+  res.sendFile(filePath, (err) => {
+    if (err && !res.headersSent) res.status(404).send("Not found");
+  });
+});
+
+// Serve other static files (favicon, manifest, etc.)
 app.use(
   express.static(STATIC_DIR, {
-    maxAge: "7d",
-    immutable: true,
+    maxAge: "1d",
     index: false,
   }),
 );
 
+// SPA fallback — all non-API, non-asset routes serve index.html
 app.get(/^\/(?!api\/).*/, (_req: Request, res: Response) => {
   res.sendFile(path.join(STATIC_DIR, "index.html"), (err) => {
     if (err && !res.headersSent) res.status(404).send("Not found");
