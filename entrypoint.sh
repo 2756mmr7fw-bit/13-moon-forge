@@ -11,7 +11,7 @@ echo "[entrypoint] Starting server in background..." >&2
 node --enable-source-maps /app/artifacts/api-server/dist/index.mjs >"$LOG" 2>&1 &
 NODE_PID=$!
 
-# Wait up to 20s for the server to be ready
+# Wait up to 20s for the server to be ready (check each second if process is still alive)
 i=0
 while [ $i -lt 20 ]; do
   sleep 1
@@ -47,8 +47,7 @@ if kill -0 $NODE_PID 2>/dev/null; then
     }).on('error', e => {
       clearTimeout(timer);
       const ms = Date.now() - startMs;
-      const msg = '[selftest] connection error after ' + ms + 'ms: ' + e.message;
-      process.stderr.write(msg + '\n');
+      process.stderr.write('[selftest] error after ' + ms + 'ms: ' + e.message + '\n');
       require('fs').writeFileSync('/tmp/selftest.txt', JSON.stringify({ ok: false, reason: 'error', error: e.message, ms }));
       process.exit(1);
     });
@@ -57,26 +56,33 @@ if kill -0 $NODE_PID 2>/dev/null; then
   echo "[entrypoint] Self-test exit code: $SELFTEST_EXIT" >&2
 
   if [ $SELFTEST_EXIT -eq 0 ]; then
-    echo "[entrypoint] Server is healthy on localhost! Keeping alive." >&2
-    # Server responds fine locally — wait for it in foreground
+    echo "[entrypoint] Server is healthy on localhost — waiting for it to run." >&2
     wait $NODE_PID
     EXIT=$?
     echo "[entrypoint] Server exited with code $EXIT" >&2
     cat "$LOG" >&2
   else
-    echo "[entrypoint] Server NOT responding on localhost — hanging or error. Killing." >&2
-    kill $NODE_PID 2>/dev/null
-    sleep 2
+    echo "[entrypoint] Server NOT responding — killing with SIGKILL and starting diagnostic." >&2
+    kill -9 $NODE_PID 2>/dev/null
+    # Wait for port 8080 to be released (up to 10s)
+    j=0
+    while [ $j -lt 10 ]; do
+      sleep 1
+      j=$((j + 1))
+      if ! kill -0 $NODE_PID 2>/dev/null; then
+        echo "[entrypoint] Server process gone after ${j}s." >&2
+        break
+      fi
+    done
+    sleep 1
     EXIT=99
     cat "$LOG" >&2
   fi
 else
-  # Process died during startup wait
   wait $NODE_PID 2>/dev/null
   EXIT=$?
   echo "[entrypoint] Server died with code $EXIT" >&2
   cat "$LOG" >&2
-  SELFTEST_EXIT=0
   echo '{"ok":false,"reason":"crashed before selftest"}' > "$SELFTEST_FILE"
 fi
 
@@ -87,10 +93,19 @@ const fs   = require('fs');
 const log  = (() => { try { return fs.readFileSync('/tmp/forge.log','utf8').slice(-8000); } catch(e){ return 'no log: '+e; } })();
 const st   = (() => { try { return JSON.parse(fs.readFileSync('/tmp/selftest.txt','utf8')); } catch(e){ return {error:''+e}; } })();
 const body = JSON.stringify({ status:'crashed', exitCode:'$EXIT', selftest: st, log });
-http.createServer((req, res) => {
+const srv = http.createServer((req, res) => {
   res.writeHead(200, { 'Content-Type':'application/json' });
   res.end(body);
-}).listen(8080, () => {
+});
+srv.on('error', (e) => {
+  if (e.code === 'EADDRINUSE') {
+    process.stderr.write('[diag] Port 8080 still in use, retrying in 3s...\n');
+    setTimeout(() => srv.listen(8080), 3000);
+  } else {
+    process.stderr.write('[diag] Server error: ' + e.message + '\n');
+  }
+});
+srv.listen(8080, () => {
   process.stderr.write('[diag] Diagnostic server running on :8080\n');
 });
 "
