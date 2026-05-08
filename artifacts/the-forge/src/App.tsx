@@ -381,6 +381,7 @@ function Router() {
 }
 
 const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string | undefined;
+const CLERK_PROXY_URL = `${basePath}/api/__clerk`;
 
 function App() {
   const inner = (
@@ -399,7 +400,7 @@ function App() {
   if (!CLERK_PUBLISHABLE_KEY) return inner;
 
   return (
-    <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>
+    <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY} proxyUrl={CLERK_PROXY_URL}>
       {inner}
     </ClerkProvider>
   );
