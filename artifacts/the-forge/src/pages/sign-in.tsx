@@ -1,6 +1,36 @@
-import { SignIn } from "@clerk/clerk-react";
+import { SignIn, useClerk } from "@clerk/clerk-react";
 
 const CLERK_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string | undefined;
+
+function ClerkSignInWidget() {
+  const clerk = useClerk();
+
+  if (!clerk.loaded) {
+    return (
+      <div className="text-center space-y-4">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto" />
+        <p className="text-sm text-muted-foreground">Connecting to auth service…</p>
+        <p className="text-xs text-muted-foreground opacity-60">
+          If this takes more than 10 seconds,{" "}
+          <a
+            href="https://accounts.13moonforge.ai/sign-in"
+            className="underline text-primary"
+          >
+            sign in here instead
+          </a>
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <SignIn
+      forceRedirectUrl="/x-auth/clerk-callback"
+      signUpForceRedirectUrl="/x-auth/clerk-callback"
+      signUpUrl="/sign-up"
+    />
+  );
+}
 
 export default function SignInPage() {
   if (!CLERK_KEY) {
@@ -21,11 +51,7 @@ export default function SignInPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
-      <SignIn
-        forceRedirectUrl="/x-auth/clerk-callback"
-        signUpForceRedirectUrl="/x-auth/clerk-callback"
-        signUpUrl="/sign-up"
-      />
+      <ClerkSignInWidget />
     </div>
   );
 }

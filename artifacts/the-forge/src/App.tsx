@@ -372,7 +372,13 @@ function App() {
   if (!CLERK_PUBLISHABLE_KEY) return inner;
 
   return (
-    <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>
+    <ClerkProvider
+      publishableKey={CLERK_PUBLISHABLE_KEY}
+      signInUrl="/sign-in"
+      signUpUrl="/sign-up"
+      afterSignInUrl="/x-auth/clerk-callback"
+      afterSignUpUrl="/x-auth/clerk-callback"
+    >
       {inner}
     </ClerkProvider>
   );
