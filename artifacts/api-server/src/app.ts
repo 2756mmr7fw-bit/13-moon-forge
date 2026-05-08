@@ -206,17 +206,12 @@ app.get("/api/debug/static", async (_req: Request, res: Response) => {
   res.json(results);
 });
 
-// Serve hashed assets explicitly with long-lived cache headers
-app.get("/assets/*", (req: Request, res: Response) => {
-  const fs = require("node:fs") as typeof import("node:fs");
+// Serve hashed assets explicitly with long-lived cache headers (regex for Express 5 compatibility)
+app.get(/^\/assets\//, (req: Request, res: Response) => {
   const filePath = path.join(STATIC_DIR, req.path);
-  if (!fs.existsSync(filePath)) {
-    res.status(404).send("Not found");
-    return;
-  }
   res.setHeader("Cache-Control", "public, max-age=604800, immutable");
   res.sendFile(filePath, (err) => {
-    if (err && !res.headersSent) res.status(404).send("Not found");
+    if (err && !res.headersSent) res.status(404).send("Asset not found");
   });
 });
 
