@@ -95,8 +95,9 @@ const AppInspectorPage  = lazy(() => import("@/pages/app-inspector"));
 const BugCheckerPage    = lazy(() => import("@/pages/bug-checker"));
 const AppHealthPage     = lazy(() => import("@/pages/app-health"));
 const ClerkCallbackPage = lazy(() => import("@/pages/clerk-callback"));
-const ClerkSignInPage   = lazy(() => import("@/pages/sign-in"));
-const ClerkSignUpPage   = lazy(() => import("@/pages/sign-up"));
+const ClerkSignInPage      = lazy(() => import("@/pages/sign-in"));
+const ClerkSignUpPage      = lazy(() => import("@/pages/sign-up"));
+const InspectionPublicPage = lazy(() => import("@/pages/inspection-public"));
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 const API_BASE = basePath;
@@ -274,6 +275,7 @@ function Router() {
         <Route path="/sign-in/*?" component={ClerkSignInPage} />
         <Route path="/sign-up/*?" component={ClerkSignUpPage} />
         <Route path="/share/:id" component={ShareView} />
+        <Route path="/inspection/:shareId" component={InspectionPublicPage} />
         <Route path="/" component={Landing} />
         <Route>
           <Layout>
