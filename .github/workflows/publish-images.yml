@@ -54,11 +54,10 @@ jobs:
           file: Dockerfile
           platforms: linux/amd64
           push: true
+          no-cache: true
           tags: |
             ${{ steps.meta.outputs.latest_tag }}
             ${{ steps.meta.outputs.versioned_tag }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
           build-args: |
             BUILD_DATE=${{ github.event.repository.updated_at }}
             GIT_SHA=${{ github.sha }}
