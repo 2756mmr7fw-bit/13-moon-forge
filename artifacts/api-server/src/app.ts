@@ -187,6 +187,25 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const STATIC_DIR = path.join(__dirname, "public");
 
+// Temporary debug endpoint — lists static dir contents
+app.get("/api/debug/static", async (_req: Request, res: Response) => {
+  const fs = await import("node:fs");
+  const results: Record<string, unknown> = { staticDir: STATIC_DIR, dirname: __dirname };
+  try {
+    results.root = fs.readdirSync(STATIC_DIR);
+    const assetsDir = path.join(STATIC_DIR, "assets");
+    if (fs.existsSync(assetsDir)) {
+      results.assets = fs.readdirSync(assetsDir).map(f => {
+        const stat = fs.statSync(path.join(assetsDir, f));
+        return { name: f, size: stat.size };
+      });
+    }
+  } catch (e: unknown) {
+    results.error = String(e);
+  }
+  res.json(results);
+});
+
 app.use(
   express.static(STATIC_DIR, {
     maxAge: "7d",
