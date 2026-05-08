@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, Component, type ReactNode, type ErrorInfo } from "react";
-import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
+import { Switch, Route, Router as WouterRouter, useLocation, Redirect } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ClerkProvider } from "@clerk/clerk-react";
 import { useAuth } from "@workspace/replit-auth-web";
@@ -276,7 +276,10 @@ function Router() {
         <Route path="/sign-up/*?" component={ClerkSignUpPage} />
         <Route path="/share/:id" component={ShareView} />
         <Route path="/inspection/:shareId" component={InspectionPublicPage} />
-        <Route path="/" component={Landing} />
+        <Route path="/landing" component={Landing} />
+        <Route path="/">
+          <Redirect to="/dashboard" />
+        </Route>
         <Route>
           <Layout>
             <Switch>
