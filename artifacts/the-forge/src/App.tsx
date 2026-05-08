@@ -272,8 +272,8 @@ function Router() {
       <Switch>
         <Route path="/x-auth/callback" component={AuthCallback} />
         <Route path="/x-auth/clerk-callback" component={ClerkCallbackPage} />
-        <Route path="/sign-in/*?" component={ClerkSignInPage} />
-        <Route path="/sign-up/*?" component={ClerkSignUpPage} />
+        <Route path="/sign-in/*?" component={SignInPage} />
+        <Route path="/sign-up/*?" component={SignUpPage} />
         <Route path="/share/:id" component={ShareView} />
         <Route path="/inspection/:shareId" component={InspectionPublicPage} />
         <Route path="/landing" component={Landing} />
