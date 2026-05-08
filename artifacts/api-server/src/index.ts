@@ -4,6 +4,18 @@ import { logger } from "./lib/logger";
 import { createRemoteWss } from "./routes/remote";
 import { startUptimePoller } from "./routes/uptime";
 
+// ─── Crash Guards ─────────────────────────────────────────────────────────────
+// Prevent unhandled promise rejections and unexpected exceptions from taking
+// down the entire process.  We log them as fatal-level errors so they are
+// visible in Coolify / Docker logs without restarting the container.
+process.on("uncaughtException", (err: Error) => {
+  logger.fatal({ err }, "uncaughtException — keeping server alive");
+});
+
+process.on("unhandledRejection", (reason: unknown) => {
+  logger.fatal({ reason }, "unhandledRejection — keeping server alive");
+});
+
 const rawPort = process.env["PORT"];
 
 if (!rawPort) {
