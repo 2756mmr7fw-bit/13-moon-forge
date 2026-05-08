@@ -1,5 +1,5 @@
 FROM node:24-alpine AS base
-RUN npm install -g pnpm@9
+RUN npm install -g pnpm@10
 WORKDIR /app
 
 # ─── Dependency layer ─────────────────────────────────────────────────────────
@@ -13,7 +13,7 @@ COPY lib/replit-auth-web/package.json ./lib/replit-auth-web/
 COPY lib/integrations-openai-ai-server/package.json ./lib/integrations-openai-ai-server/
 COPY artifacts/the-forge/package.json ./artifacts/the-forge/
 COPY artifacts/api-server/package.json ./artifacts/api-server/
-RUN pnpm install
+RUN pnpm install --frozen-lockfile
 
 # ─── Build frontend ──────────────────────────────────────────────────────────
 FROM deps AS web-build
@@ -36,7 +36,7 @@ RUN pnpm --filter @workspace/api-server run build
 
 # ─── Production image ─────────────────────────────────────────────────────────
 FROM node:24-alpine AS runner
-RUN npm install -g pnpm@9
+RUN npm install -g pnpm@10
 WORKDIR /app
 
 ENV NODE_ENV=production
@@ -53,7 +53,7 @@ COPY lib/replit-auth-web/package.json ./lib/replit-auth-web/
 COPY lib/integrations-openai-ai-server/package.json ./lib/integrations-openai-ai-server/
 COPY artifacts/api-server/package.json ./artifacts/api-server/
 
-RUN pnpm install --prod --no-frozen-lockfile --filter @workspace/api-server
+RUN pnpm install --prod --frozen-lockfile --filter @workspace/api-server
 
 COPY --from=api-build /app/artifacts/api-server/dist ./artifacts/api-server/dist
 COPY --from=web-build /app/artifacts/the-forge/dist/public  ./artifacts/api-server/dist/public
