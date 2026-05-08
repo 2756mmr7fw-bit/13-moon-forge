@@ -57,7 +57,9 @@ RUN pnpm install --prod --frozen-lockfile --filter @workspace/api-server
 
 COPY --from=api-build /app/artifacts/api-server/dist ./artifacts/api-server/dist
 COPY --from=web-build /app/artifacts/the-forge/dist/public  ./artifacts/api-server/dist/public
-COPY lib/db/src ./lib/db/src
+
+# Diagnostic entrypoint — captures crash output and serves it via HTTP if server exits
+COPY entrypoint.sh ./entrypoint.sh
 
 EXPOSE 8080
-CMD ["node", "--enable-source-maps", "artifacts/api-server/dist/index.mjs"]
+CMD ["/bin/sh", "/app/entrypoint.sh"]
