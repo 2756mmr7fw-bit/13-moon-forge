@@ -1,4 +1,4 @@
-FROM node:24-alpine AS base
+FROM node:24-slim AS base
 RUN npm install -g pnpm@10
 WORKDIR /app
 
@@ -35,7 +35,7 @@ COPY artifacts/api-server ./artifacts/api-server
 RUN pnpm --filter @workspace/api-server run build
 
 # ─── Production image ─────────────────────────────────────────────────────────
-FROM node:24-alpine AS runner
+FROM node:24-slim AS runner
 RUN npm install -g pnpm@10
 WORKDIR /app
 
