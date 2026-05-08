@@ -25,6 +25,15 @@ export const pool = new Pool({
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 5000,
 });
+
+// CRITICAL: Without this handler, idle-connection errors from Neon (which closes
+// connections after a period of inactivity) emit an unhandled 'error' event that
+// crashes the Node.js process. pg.Pool inherits from EventEmitter — any 'error'
+// event with no listener is a fatal uncaught exception.
+pool.on("error", (err) => {
+  console.error("[db] Pool idle client error (non-fatal):", err.message);
+});
+
 export const db = drizzle(pool, { schema });
 
 export * from "./schema";
