@@ -17,9 +17,12 @@ router.get("/healthz", (req: Request, res: Response) => {
   const domains = process.env.REPLIT_DOMAINS?.split(",").map((d) => d.trim()) ?? [];
   const appUrl = process.env.APP_URL ?? (domains[0] ? `https://${domains[0]}` : null);
 
+  const buildId = process.env.BUILD_ID ?? "local";
+
   res.json({
     status: "ok",
-    v: "2026-05-04",
+    v: "2026-05-10",
+    buildId,
     user,
     oidcClientId,
     issuerUrl,

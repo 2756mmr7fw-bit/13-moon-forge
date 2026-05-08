@@ -62,4 +62,66 @@ jobs:
             BUILD_DATE=${{ github.event.repository.updated_at }}
             GIT_SHA=${{ github.sha }}
             CACHEBUST=${{ github.run_id }}
+            BUILD_ID=${{ github.ref_name }}-${{ github.run_id }}
             VITE_CLERK_PUBLISHABLE_KEY=${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
+
+      - name: Redeploy on Coolify (pull_policy always + new image)
+        if: success()
+        env:
+          COOLIFY_API_KEY: ${{ secrets.FORGE_COOLIFY_API_KEY }}
+          COOLIFY_URL: http://5.78.154.21:8000
+          SERVICE_UUID: m7c7lrtb9seh441x60lwgd8y
+        run: |
+          set -e
+          IMAGE="${{ steps.meta.outputs.versioned_tag }}"
+          BUST="${{ github.ref_name }}-${{ github.run_id }}"
+
+          COMPOSE=$(cat <<YAML
+          services:
+            forge:
+              image: '${IMAGE}'
+              pull_policy: always
+              restart: unless-stopped
+              expose:
+                - '8080'
+              environment:
+                NODE_ENV: production
+                PORT: '8080'
+                APP_URL: '\${APP_URL}'
+                DATABASE_URL: '\${DATABASE_URL}'
+                DATABASE_URL_PROD: '\${DATABASE_URL_PROD}'
+                SESSION_SECRET: '\${SESSION_SECRET}'
+                MOON_API_KEY: '\${MOON_API_KEY}'
+                TPTS_MOON_API_KEY: '\${TPTS_MOON_API_KEY}'
+                TSQ_MOON_API_KEY: '\${TSQ_MOON_API_KEY}'
+                TPTS_INBOUND_KEY: '\${TPTS_INBOUND_KEY}'
+                CLERK_SECRET_KEY: '\${CLERK_SECRET_KEY}'
+                VITE_CLERK_PUBLISHABLE_KEY: '\${VITE_CLERK_PUBLISHABLE_KEY}'
+                RESEND_API_KEY: '\${RESEND_API_KEY}'
+                ELEVENLABS_API_KEY: '\${ELEVENLABS_API_KEY}'
+                SQUARE_API_KEY: '\${SQUARE_API_KEY}'
+                OIDC_CLIENT_ID: '\${OIDC_CLIENT_ID}'
+                FORGEJO_URL: '\${FORGEJO_URL}'
+                FORGEJO_TOKEN: '\${FORGEJO_TOKEN}'
+                FORGE_COOLIFY_URL: '\${FORGE_COOLIFY_URL}'
+                FORGE_COOLIFY_API_KEY: '\${FORGE_COOLIFY_API_KEY}'
+                FORGE_COOLIFY_PROJECT_UUID: '\${FORGE_COOLIFY_PROJECT_UUID}'
+                FORGE_COOLIFY_SERVER_UUID: '\${FORGE_COOLIFY_SERVER_UUID}'
+                DEPLOY_BUST: '${BUST}'
+          YAML
+          )
+
+          B64=$(echo "$COMPOSE" | base64 -w 0)
+          PAYLOAD="{\"docker_compose_raw\":\"${B64}\"}"
+
+          echo "Patching Coolify compose (image=${IMAGE}, bust=${BUST})..."
+          curl -s -X PATCH "${COOLIFY_URL}/api/v1/services/${SERVICE_UUID}" \
+            -H "Authorization: Bearer ${COOLIFY_API_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "${PAYLOAD}"
+
+          echo ""
+          echo "Triggering deploy..."
+          curl -s "${COOLIFY_URL}/api/v1/deploy?uuid=${SERVICE_UUID}&force=true" \
+            -H "Authorization: Bearer ${COOLIFY_API_KEY}"
+          echo "Done."
