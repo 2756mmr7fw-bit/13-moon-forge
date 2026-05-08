@@ -277,12 +277,17 @@ router.post("/inspector/cli-report", async (req, res) => {
     dataUrl: s.data ? `data:image/png;base64,${s.data}` : (s.dataUrl ?? null),
   }));
 
+  const healthScore = Math.max(0, 100 - body.errorCount * 20 - body.warnCount * 5);
+
   await db.insert(inspectorReportsTable).values({
     id, userId: uid,
     appId: body.appId ?? null,
     appName: body.appName ?? body.appUrl,
     appUrl: body.appUrl,
     source: "cli", status: "done",
+    environment: (body as any).environment ?? "production",
+    buildSha: (body as any).buildSha ?? null,
+    ciRunId: (body as any).ciRunId ?? null,
     inspectedAt: new Date(body.inspectedAt),
     pagesChecked: body.pagesChecked,
     errorCount: body.errorCount,
@@ -293,13 +298,22 @@ router.post("/inspector/cli-report", async (req, res) => {
     networkFailures: (body as any).networkFailures ?? null,
     performanceMetrics: (body as any).performanceMetrics ?? null,
     accessibilityViolations: (body as any).accessibilityViolations ?? null,
+    assertionResults: (body as any).assertionResults ?? null,
     visualDiffs: (body as any).visualDiffs ?? null,
     quillDoc,
     recheckOf: body.recheckOf ?? null,
   });
 
+  // Update app's lastInspectedAt + healthScore
+  if (body.appId) {
+    await db.update(inspectorAppsTable)
+      .set({ lastInspectedAt: new Date(body.inspectedAt), healthScore, updatedAt: new Date() })
+      .where(and(eq(inspectorAppsTable.id, body.appId), eq(inspectorAppsTable.userId, uid)));
+  }
+
   // Save individual issues
   for (const issue of body.findings.filter(f => f.type === "error" || f.type === "warn")) {
+    const priority = issue.type === "error" ? "high" : "medium";
     await db.insert(inspectorIssuesTable).values({
       id: `issue_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
       reportId: id, userId: uid,
@@ -308,6 +322,7 @@ router.post("/inspector/cli-report", async (req, res) => {
       page: issue.page ?? null,
       type: issue.type, message: issue.message,
       detail: issue.detail ?? null, status: "open",
+      priority,
     });
   }
 
