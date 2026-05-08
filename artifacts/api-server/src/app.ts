@@ -175,6 +175,7 @@ xauth("post", "/logout");
 xauth("get",  "/logout");
 xauth("post", "/me");
 xauth("get",  "/me");
+xauth("post", "/clerk-session");
 
 app.use("/api", authRouter);
 app.use("/api", router);

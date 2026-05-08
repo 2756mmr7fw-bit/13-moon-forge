@@ -501,26 +501,6 @@ router.post("/inspector/internal/check-alerts", async (req, res) => {
   res.json({ sent: true });
 });
 
-// ── CI-run auth helper ─────────────────────────────────────────────────────────
-function getCliUserId(req: any): string | null {
-  const auth = req.headers?.authorization as string | undefined;
-  if (!auth?.startsWith("Bearer ")) return null;
-  try {
-    const secret = process.env.SESSION_SECRET ?? "forge-agent-secret";
-    const decoded = Buffer.from(auth.slice(7), "base64url").toString();
-    const lastColon = decoded.lastIndexOf(":");
-    const sig = decoded.slice(lastColon + 1);
-    const payload = decoded.slice(0, lastColon);
-    const expected = createHmac("sha256", secret).update(payload).digest("hex");
-    if (sig !== expected) return null;
-    const parts = payload.split(":");
-    if (parts.length < 2) return null;
-    const ts = parseInt(parts[parts.length - 1]);
-    if (Date.now() - ts > 365 * 24 * 60 * 60 * 1000) return null;
-    return parts.slice(0, -1).join(":");
-  } catch { return null; }
-}
-
 // ══════════════════════════════════════════════════════════════════════════════
 // ── DASHBOARD — aggregate health across all apps ───────────────────────────
 // ══════════════════════════════════════════════════════════════════════════════
