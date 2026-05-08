@@ -11,13 +11,16 @@ const connectionString =
     : process.env.DATABASE_URL ?? process.env.DATABASE_URL_PROD) ?? "";
 
 if (!connectionString) {
-  throw new Error(
-    "No database URL found. Set DATABASE_URL (dev) or DATABASE_URL_PROD (production).",
+  // Log a warning but don't crash — the server can still serve static files,
+  // healthz, and unauthenticated routes.  DB-backed routes will return errors.
+  console.warn(
+    "[db] WARNING: No database URL found. Set DATABASE_URL (dev) or " +
+    "DATABASE_URL_PROD (production). DB operations will fail until this is fixed.",
   );
 }
 
 export const pool = new Pool({
-  connectionString,
+  connectionString: connectionString || "postgres://localhost/forge",
   max: 20,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 5000,
