@@ -62,19 +62,78 @@ jobs:
             BUILD_DATE=${{ github.event.repository.updated_at }}
             GIT_SHA=${{ github.sha }}
             CACHEBUST=${{ github.run_id }}
+            BUILD_ID=${{ github.ref_name }}-${{ github.run_id }}
             VITE_CLERK_PUBLISHABLE_KEY=${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
 
-      - name: Redeploy on Coolify (stop then start to force image pull)
+      - name: Redeploy on Coolify (patch compose + force pull)
         if: success()
         env:
           COOLIFY_API_KEY: ${{ secrets.FORGE_COOLIFY_API_KEY }}
           COOLIFY_URL: http://5.78.154.21:8000
           SERVICE_UUID: m7c7lrtb9seh441x60lwgd8y
+          IMAGE_TAG: ${{ steps.meta.outputs.versioned_tag }}
+          DEPLOY_BUST: ${{ github.ref_name }}-${{ github.run_id }}
         run: |
-          echo "Stopping service..."
-          curl -s -X POST "$COOLIFY_URL/api/v1/services/$SERVICE_UUID/stop"             -H "Authorization: Bearer $COOLIFY_API_KEY" -H "Content-Type: application/json"
-          echo "Waiting 20s for container to stop..."
-          sleep 20
-          echo "Starting service (will pull latest image)..."
-          curl -s "$COOLIFY_URL/api/v1/deploy?uuid=$SERVICE_UUID&force=true"             -H "Authorization: Bearer $COOLIFY_API_KEY"
+          set -e
+          echo "Patching Coolify service compose with new image + pull_policy: always..."
+          python3 - <<'EOF'
+          import subprocess, base64, os, json
+
+          image_tag = os.environ["IMAGE_TAG"]
+          deploy_bust = os.environ["DEPLOY_BUST"]
+          coolify_url = os.environ["COOLIFY_URL"]
+          api_key = os.environ["COOLIFY_API_KEY"]
+          service_uuid = os.environ["SERVICE_UUID"]
+
+          compose = f"""services:
+            forge:
+              image: '{image_tag}'
+              pull_policy: always
+              restart: unless-stopped
+              expose:
+                - '8080'
+              environment:
+                NODE_ENV: production
+                PORT: '8080'
+                APP_URL: '${{APP_URL}}'
+                DATABASE_URL: '${{DATABASE_URL}}'
+                SESSION_SECRET: '${{SESSION_SECRET}}'
+                MOON_API_KEY: '${{MOON_API_KEY}}'
+                TPTS_MOON_API_KEY: '${{TPTS_MOON_API_KEY}}'
+                TSQ_MOON_API_KEY: '${{TSQ_MOON_API_KEY}}'
+                TPTS_INBOUND_KEY: '${{TPTS_INBOUND_KEY}}'
+                CLERK_SECRET_KEY: '${{CLERK_SECRET_KEY}}'
+                VITE_CLERK_PUBLISHABLE_KEY: '${{VITE_CLERK_PUBLISHABLE_KEY}}'
+                RESEND_API_KEY: '${{RESEND_API_KEY}}'
+                ELEVENLABS_API_KEY: '${{ELEVENLABS_API_KEY}}'
+                SQUARE_API_KEY: '${{SQUARE_API_KEY}}'
+                OIDC_CLIENT_ID: '${{OIDC_CLIENT_ID}}'
+                FORGEJO_URL: '${{FORGEJO_URL}}'
+                FORGEJO_TOKEN: '${{FORGEJO_TOKEN}}'
+                FORGE_COOLIFY_URL: '${{FORGE_COOLIFY_URL}}'
+                FORGE_COOLIFY_API_KEY: '${{FORGE_COOLIFY_API_KEY}}'
+                FORGE_COOLIFY_PROJECT_UUID: '${{FORGE_COOLIFY_PROJECT_UUID}}'
+                FORGE_COOLIFY_SERVER_UUID: '${{FORGE_COOLIFY_SERVER_UUID}}'
+                DEPLOY_BUST: '{deploy_bust}'
+          """
+
+          compose_b64 = base64.b64encode(compose.encode()).decode()
+          payload = json.dumps({"docker_compose_raw": compose_b64})
+
+          result = subprocess.run([
+            "curl", "-s", "-X", "PATCH",
+            f"{coolify_url}/api/v1/services/{service_uuid}",
+            "-H", f"Authorization: Bearer {api_key}",
+            "-H", "Content-Type: application/json",
+            "-d", payload
+          ], capture_output=True, text=True)
+          print("PATCH result:", result.stdout[:200])
+
+          result2 = subprocess.run([
+            "curl", "-s",
+            f"{coolify_url}/api/v1/deploy?uuid={service_uuid}&force=true",
+            "-H", f"Authorization: Bearer {api_key}"
+          ], capture_output=True, text=True)
+          print("Deploy result:", result2.stdout[:200])
+          EOF
           echo "Deploy triggered."

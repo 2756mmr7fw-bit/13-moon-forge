@@ -27,6 +27,8 @@ RUN pnpm --filter @workspace/the-forge run build
 
 # ─── Build API server ────────────────────────────────────────────────────────
 FROM deps AS api-build
+ARG BUILD_ID=dev
+ENV BUILD_ID=$BUILD_ID
 COPY tsconfig.base.json ./
 COPY lib/ ./lib/
 COPY artifacts/api-server ./artifacts/api-server
@@ -39,6 +41,8 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV PORT=8080
+ARG BUILD_ID=dev
+ENV BUILD_ID=$BUILD_ID
 
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY lib/db/package.json ./lib/db/
