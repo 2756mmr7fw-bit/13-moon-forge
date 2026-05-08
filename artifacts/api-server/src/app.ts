@@ -46,8 +46,9 @@ app.use(
   }),
 );
 
-// Hard 10-second timeout for every request
+// Hard 10-second timeout for every request (exempt Clerk proxy — it needs longer)
 app.use((req, res, next) => {
+  if (req.url.startsWith(CLERK_PROXY_PATH)) { next(); return; }
   const tid = setTimeout(() => {
     if (!res.headersSent) {
       logger.warn({ url: req.url?.split("?")[0] }, "hard request timeout");
