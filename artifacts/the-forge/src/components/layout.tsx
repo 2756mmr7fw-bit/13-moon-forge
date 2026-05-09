@@ -4,7 +4,7 @@ import {
   Flame, FolderKanban, PlusCircle, CreditCard, ExternalLink,
   Sparkles, Code2, Wand2, Layers, Scale, Crosshair, Activity,
   GraduationCap, ArrowRightLeft, Wrench, BookOpen, Archive, Gamepad2, Rocket, LogOut,
-  Shield, Github, Package, User, Users, LogIn, Menu, X, Settings, KeyRound, ShieldAlert, PlugZap, Swords, Monitor, MonitorPlay, Globe, Download, Wifi, LayoutTemplate, PencilLine, Mail, Search, Grid3X3, Server, Upload, ScanLine, Bug, Timer, Vault, Zap,
+  Shield, Github, Package, User, Users, LogIn, Menu, X, Settings, KeyRound, ShieldAlert, ShieldCheck, PlugZap, Swords, Monitor, MonitorPlay, Globe, Download, Wifi, LayoutTemplate, PencilLine, Mail, Search, Grid3X3, Server, Upload, ScanLine, Bug, Timer, Vault, Zap,
   Compass, Receipt, Dumbbell, Megaphone, Feather, Terminal,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -22,6 +22,7 @@ interface NavItem {
   label: string;
   icon: React.ComponentType<{ size: number }>;
   tip: string;
+  green?: boolean;
 }
 
 const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -89,6 +90,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   ];
 
   const selfHostItems: NavItem[] = [
+    { href: "/freedom-center",  label: "Freedom Center",    icon: ShieldCheck, green: true, tip: "Move your app here — affordable hosting we'll never shut down"     },
     { href: "/forge-coder",     label: "Forge Coder",       icon: Flame,    tip: "Describe anything — Forge writes the complete code and deploys it for you"         },
     { href: "/app-inspector",   label: "Forge Inspector",   icon: ScanLine, tip: "Forge logs into your apps, visits every page, and reports what's broken"           },
     { href: "/get-forge",  label: "Forge Agent (CLI)",   icon: Terminal,        tip: "Stuck? Install Forge on your computer — tell it what you need, it does it"   },
@@ -122,16 +124,20 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const isActive = (href: string) =>
     location === href || (href !== "/" && href !== "/dashboard" && location.startsWith(href)) || (href === "/dashboard" && location === "/dashboard");
 
-  const NavLink = ({ href, label, icon: Icon, tip, onClick }: NavItem & { onClick?: () => void }) => (
+  const NavLink = ({ href, label, icon: Icon, tip, green, onClick }: NavItem & { onClick?: () => void }) => (
     <Link
       href={href}
       onClick={onClick}
       title={tip}
       className={cn(
         "flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 group",
-        isActive(href)
-          ? "bg-primary/10 text-primary font-medium"
-          : "text-muted-foreground hover:text-foreground hover:bg-muted"
+        green
+          ? isActive(href)
+            ? "bg-green-500/15 text-green-400 font-semibold border border-green-500/30"
+            : "text-green-500 hover:text-green-300 hover:bg-green-500/10 font-medium"
+          : isActive(href)
+            ? "bg-primary/10 text-primary font-medium"
+            : "text-muted-foreground hover:text-foreground hover:bg-muted"
       )}
     >
       <Icon size={18} />

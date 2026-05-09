@@ -94,6 +94,7 @@ const LedgerPage       = lazy(() => import("@/pages/moons/ledger"));
 const AppInspectorPage  = lazy(() => import("@/pages/app-inspector"));
 const BugCheckerPage    = lazy(() => import("@/pages/bug-checker"));
 const AppHealthPage     = lazy(() => import("@/pages/app-health"));
+const FreedomCenter     = lazy(() => import("@/pages/freedom-center"));
 const ClerkCallbackPage = lazy(() => import("@/pages/clerk-callback"));
 const ClerkSignInPage      = lazy(() => import("@/pages/sign-in"));
 const ClerkSignUpPage      = lazy(() => import("@/pages/sign-up"));
@@ -340,6 +341,7 @@ function Router() {
                     <Route path="/app-inspector"         component={AppInspectorPage} />
                     <Route path="/bug-checker"           component={BugCheckerPage} />
                     <Route path="/app-health"            component={AppHealthPage} />
+                    <Route path="/freedom-center"        component={FreedomCenter} />
                     <Route component={NotFound} />
                   </Switch>
                 </ProtectedRoute>
