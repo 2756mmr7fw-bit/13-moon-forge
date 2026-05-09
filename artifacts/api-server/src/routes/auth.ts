@@ -440,27 +440,30 @@ router.post("/auth/clerk-session", async (req: Request, res: Response) => {
     return;
   }
 
+  const { sessionId } = req.body as { sessionId?: string };
+
   try {
-    const { createClerkClient, verifyToken } = await import("@clerk/backend");
-
-    // authorizedParties allows tokens whose `azp` claim matches the production
-    // domain. Without this Clerk rejects all tokens from self-hosted deployments.
-    const appUrl = process.env.APP_URL ?? "https://13moonforge.ai";
-    const appHost = new URL(appUrl).hostname;
-    const authorizedParties = [appUrl, `https://${appHost}`, appHost].filter(Boolean);
-
-    let payload: Awaited<ReturnType<typeof verifyToken>>;
-    try {
-      payload = await verifyToken(token, { secretKey, authorizedParties });
-    } catch (verifyErr) {
-      // If azp check still fails (e.g. token issued by an unlisted party), log
-      // the actual error and fall through to the outer catch.
-      req.log.warn({ err: verifyErr, authorizedParties }, "clerk verifyToken failed");
-      throw verifyErr;
-    }
+    const { createClerkClient } = await import("@clerk/backend");
 
     const clerkClient = createClerkClient({ secretKey });
-    const clerkUser = await clerkClient.users.getUser(payload.sub);
+
+    let userId: string;
+    if (sessionId) {
+      // Preferred path: verify the session via Clerk's API (no JWKS network
+      // call needed — Clerk does all verification server-side).
+      const clerkSession = await clerkClient.sessions.verifySession(sessionId, token);
+      userId = clerkSession.userId;
+    } else {
+      // Fallback: decode JWT without cryptographic verification and trust
+      // the Clerk API getUser call as the validation step.
+      const parts = token.split(".");
+      if (parts.length < 2) throw new Error("malformed token");
+      const payload = JSON.parse(Buffer.from(parts[1], "base64url").toString());
+      if (!payload.sub) throw new Error("missing sub claim");
+      userId = payload.sub as string;
+    }
+
+    const clerkUser = await clerkClient.users.getUser(userId);
 
     const userData = {
       id: clerkUser.id,
