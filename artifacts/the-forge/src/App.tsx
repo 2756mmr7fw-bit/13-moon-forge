@@ -354,6 +354,9 @@ function Router() {
 }
 
 const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string | undefined;
+const CLERK_PROXY_URL = typeof window !== "undefined"
+  ? `${window.location.origin}/api/__clerk`
+  : undefined;
 
 function App() {
   const inner = (
@@ -374,6 +377,7 @@ function App() {
   return (
     <ClerkProvider
       publishableKey={CLERK_PUBLISHABLE_KEY}
+      proxyUrl={CLERK_PROXY_URL}
       signInUrl="/sign-in"
       signUpUrl="/sign-up"
       afterSignInUrl="/x-auth/clerk-callback"
