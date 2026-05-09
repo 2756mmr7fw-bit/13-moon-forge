@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import {
   Activity, Database, Cpu, MemoryStick, Clock, Users, FolderOpen,
-  MessageSquare, Shield, TrendingUp, RefreshCw, CheckCircle2, AlertTriangle, XCircle, Loader2,
+  MessageSquare, Shield, TrendingUp, RefreshCw, CheckCircle2, AlertTriangle,
+  XCircle, Loader2, HardDrive, ArrowUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -14,6 +15,7 @@ interface HealthCheck {
   status: CheckStatus;
   latencyMs?: number;
   detail?: string;
+  pct?: number;
 }
 
 interface HealthData {
@@ -42,9 +44,93 @@ const CHECK_META: Record<string, { label: string; icon: React.ComponentType<any>
   database: { label: "Database",    icon: Database },
   memory:   { label: "Memory",      icon: MemoryStick },
   cpu:      { label: "CPU Load",    icon: Cpu },
+  disk:     { label: "Disk",        icon: HardDrive },
   uptime:   { label: "Uptime",      icon: Clock },
   api:      { label: "API Latency", icon: Activity },
 };
+
+function gaugeColor(pct: number) {
+  if (pct >= 85) return "#f87171"; // red-400
+  if (pct >= 65) return "#fbbf24"; // amber-400
+  return "#34d399";                 // emerald-400
+}
+
+function ArcGauge({ pct, label, detail }: { pct: number; label: string; detail?: string }) {
+  const r = 38;
+  const arcLen = Math.PI * r;
+  const filled = arcLen * (pct / 100);
+  const color = gaugeColor(pct);
+
+  const d = `M ${50 - r},54 A ${r},${r} 0 0,1 ${50 + r},54`;
+
+  return (
+    <div className="flex flex-col items-center">
+      <svg viewBox="0 0 100 60" className="w-36 h-[86px]">
+        <path d={d} fill="none" stroke="#27272a" strokeWidth="9" strokeLinecap="round" />
+        <path
+          d={d}
+          fill="none"
+          stroke={color}
+          strokeWidth="9"
+          strokeLinecap="round"
+          strokeDasharray={`${filled} ${arcLen}`}
+          strokeDashoffset="0"
+          style={{ transition: "stroke-dasharray 0.6s ease" }}
+        />
+        <text x="50" y="46" textAnchor="middle" fontSize="17" fontWeight="800" fill="white">
+          {pct}%
+        </text>
+      </svg>
+      <p className="text-xs font-semibold text-zinc-300 -mt-1">{label}</p>
+      {detail && <p className="text-[10px] text-zinc-500 mt-0.5 text-center max-w-[120px] leading-tight">{detail}</p>}
+    </div>
+  );
+}
+
+function UpgradeBanner({ cpu, mem, disk }: { cpu?: number; mem?: number; disk?: number }) {
+  const max = Math.max(cpu ?? 0, mem ?? 0, disk ?? 0);
+  const which = [
+    cpu  != null && cpu  >= 65 ? `CPU (${cpu}%)`  : null,
+    mem  != null && mem  >= 65 ? `RAM (${mem}%)`  : null,
+    disk != null && disk >= 65 ? `Disk (${disk}%)` : null,
+  ].filter(Boolean);
+
+  if (max < 65) {
+    return (
+      <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4 flex items-center gap-3">
+        <CheckCircle2 size={18} className="text-emerald-400 shrink-0" />
+        <div>
+          <p className="text-sm font-semibold text-emerald-300">You're good — no action needed</p>
+          <p className="text-xs text-zinc-500">All three resources are well under the upgrade threshold. Keep building.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (max < 85) {
+    return (
+      <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 flex items-center gap-3">
+        <AlertTriangle size={18} className="text-amber-400 shrink-0" />
+        <div>
+          <p className="text-sm font-semibold text-amber-300">Keep an eye on this — {which.join(", ")} climbing</p>
+          <p className="text-xs text-zinc-500">Not urgent yet, but check back over the next few days. If it keeps rising, plan your next server tier.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-xl border border-red-500/30 bg-red-500/5 p-4 flex items-center gap-3">
+      <ArrowUp size={18} className="text-red-400 shrink-0" />
+      <div>
+        <p className="text-sm font-semibold text-red-300">Time to upgrade — {which.join(", ")} at {max}%</p>
+        <p className="text-xs text-zinc-500">
+          Go to Hetzner Cloud → your server → Rescale. Pick the next tier up. Takes about 5 minutes, no data loss.
+        </p>
+      </div>
+    </div>
+  );
+}
 
 function StatusPill({ status }: { status: CheckStatus }) {
   const cfg = STATUS_CONFIG[status];
@@ -142,6 +228,10 @@ export default function AppHealth() {
   const lastUpdated = dataUpdatedAt ? new Date(dataUpdatedAt).toLocaleTimeString() : null;
   const maxUsage = Math.max(...(metrics?.messageUsage.map(u => u.total) ?? [1]));
 
+  const cpuPct  = health?.checks.cpu?.pct;
+  const memPct  = health?.checks.memory?.pct;
+  const diskPct = health?.checks.disk?.pct;
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center gap-3">
@@ -168,6 +258,24 @@ export default function AppHealth() {
         </div>
       ) : health ? (
         <>
+          {/* ── Server Gauges ─────────────────────────────────────────── */}
+          <div>
+            <h2 className="text-sm font-bold mb-3 flex items-center gap-2">
+              <Cpu size={15} className="text-muted-foreground" />
+              Server Resources
+              <span className="text-[10px] font-normal text-muted-foreground ml-1">— refreshes every 30 s</span>
+            </h2>
+            <div className="rounded-xl border border-border bg-card p-6">
+              <div className="flex items-center justify-center gap-8 flex-wrap mb-5">
+                {cpuPct  != null && <ArcGauge pct={cpuPct}  label="CPU"  detail={health.checks.cpu?.detail} />}
+                {memPct  != null && <ArcGauge pct={memPct}  label="RAM"  detail={health.checks.memory?.detail} />}
+                {diskPct != null && <ArcGauge pct={diskPct} label="Disk" detail={health.checks.disk?.detail} />}
+              </div>
+              <UpgradeBanner cpu={cpuPct} mem={memPct} disk={diskPct} />
+            </div>
+          </div>
+
+          {/* ── Overall status ────────────────────────────────────────── */}
           <div className="rounded-xl border border-border bg-card p-4 flex items-center gap-4">
             <StatusPill status={health.status} />
             <div className="text-xs text-muted-foreground">
@@ -189,6 +297,7 @@ export default function AppHealth() {
         <div className="text-center py-16 text-muted-foreground text-sm">Failed to load health data</div>
       )}
 
+      {/* ── Platform Metrics ──────────────────────────────────────────── */}
       <div>
         <h2 className="text-sm font-bold mb-3 flex items-center gap-2">
           <TrendingUp size={15} className="text-muted-foreground" />

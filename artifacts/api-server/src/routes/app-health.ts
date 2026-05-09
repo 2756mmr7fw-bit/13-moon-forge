@@ -2,13 +2,14 @@ import { Router } from "express";
 import { db, forgeUsersTable, projectsTable, chatSessions, inspectorReportsTable, messageUsageTable, paymentsTable } from "@workspace/db";
 import { sql, gte, desc } from "drizzle-orm";
 import os from "os";
+import { execSync } from "child_process";
 
 const router = Router();
 
 router.get("/app-health", async (req, res) => {
   const start = Date.now();
 
-  const checks: Record<string, { status: "ok" | "warn" | "error"; latencyMs?: number; detail?: string }> = {};
+  const checks: Record<string, { status: "ok" | "warn" | "error"; latencyMs?: number; detail?: string; pct?: number }> = {};
 
   const dbStart = Date.now();
   try {
@@ -20,19 +21,38 @@ router.get("/app-health", async (req, res) => {
 
   const totalMemory = os.totalmem();
   const freeMemory = os.freemem();
-  const usedPct = Math.round(((totalMemory - freeMemory) / totalMemory) * 100);
+  const memPct = Math.round(((totalMemory - freeMemory) / totalMemory) * 100);
   checks.memory = {
-    status: usedPct > 90 ? "error" : usedPct > 75 ? "warn" : "ok",
-    detail: `${usedPct}% used (${Math.round((totalMemory - freeMemory) / 1024 / 1024)} MB / ${Math.round(totalMemory / 1024 / 1024)} MB)`,
+    status: memPct > 90 ? "error" : memPct > 75 ? "warn" : "ok",
+    detail: `${memPct}% used — ${Math.round((totalMemory - freeMemory) / 1024 / 1024)} MB of ${Math.round(totalMemory / 1024 / 1024)} MB`,
+    pct: memPct,
   };
 
   const loadAvg = os.loadavg()[0];
   const cpuCount = os.cpus().length;
-  const loadPct = Math.round((loadAvg / cpuCount) * 100);
+  const cpuPct = Math.min(100, Math.round((loadAvg / cpuCount) * 100));
   checks.cpu = {
-    status: loadPct > 90 ? "error" : loadPct > 70 ? "warn" : "ok",
-    detail: `Load avg ${loadAvg.toFixed(2)} on ${cpuCount} core${cpuCount > 1 ? "s" : ""} (${loadPct}%)`,
+    status: cpuPct > 90 ? "error" : cpuPct > 70 ? "warn" : "ok",
+    detail: `${cpuPct}% load — avg ${loadAvg.toFixed(2)} across ${cpuCount} core${cpuCount > 1 ? "s" : ""}`,
+    pct: cpuPct,
   };
+
+  try {
+    const dfOut = execSync("df -k / 2>/dev/null", { timeout: 3000 }).toString().trim().split("\n")[1];
+    const parts = dfOut.split(/\s+/);
+    const totalKb  = parseInt(parts[1]);
+    const usedKb   = parseInt(parts[2]);
+    const diskPct  = Math.round((usedKb / totalKb) * 100);
+    const usedGb   = (usedKb  / 1024 / 1024).toFixed(1);
+    const totalGb  = (totalKb / 1024 / 1024).toFixed(1);
+    checks.disk = {
+      status: diskPct > 90 ? "error" : diskPct > 75 ? "warn" : "ok",
+      detail: `${diskPct}% used — ${usedGb} GB of ${totalGb} GB`,
+      pct: diskPct,
+    };
+  } catch {
+    checks.disk = { status: "ok", detail: "Disk info unavailable" };
+  }
 
   const uptimeSeconds = Math.round(process.uptime());
   const hours = Math.floor(uptimeSeconds / 3600);
