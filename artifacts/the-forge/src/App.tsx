@@ -354,6 +354,27 @@ function Router() {
 }
 
 const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string | undefined;
+
+// Derive the Clerk FAPI hostname from the publishable key so we can build a
+// direct CDN URL for the clerk.browser.js script.  When proxyUrl is set the
+// SDK may construct the script URL using only the origin as its base, which
+// causes Express to serve index.html instead of the real JS file.  Providing
+// clerkJSUrl explicitly bypasses that URL-construction logic entirely; the
+// proxyUrl prop still causes clerk-js to route all API calls through our proxy
+// via the data-clerk-proxy-url attribute set on the injected <script> element.
+function getClerkFapiHost(pk: string): string {
+  try {
+    const part = pk.split("_")[2];
+    if (!part) return "";
+    return atob(part).replace(/\$+$/, "");
+  } catch { return ""; }
+}
+
+const CLERK_FAPI_HOST = CLERK_PUBLISHABLE_KEY ? getClerkFapiHost(CLERK_PUBLISHABLE_KEY) : "";
+const CLERK_JS_URL = CLERK_FAPI_HOST
+  ? `https://${CLERK_FAPI_HOST}/npm/@clerk/clerk-js@5/dist/clerk.browser.js`
+  : undefined;
+
 const CLERK_PROXY_URL = typeof window !== "undefined"
   ? `${window.location.origin}/api/__clerk`
   : undefined;
@@ -378,6 +399,7 @@ function App() {
     <ClerkProvider
       publishableKey={CLERK_PUBLISHABLE_KEY}
       proxyUrl={CLERK_PROXY_URL}
+      clerkJSUrl={CLERK_JS_URL}
       signInUrl="/sign-in"
       signUpUrl="/sign-up"
       afterSignInUrl="/x-auth/clerk-callback"
