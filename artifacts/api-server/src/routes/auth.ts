@@ -443,7 +443,21 @@ router.post("/auth/clerk-session", async (req: Request, res: Response) => {
   try {
     const { createClerkClient, verifyToken } = await import("@clerk/backend");
 
-    const payload = await verifyToken(token, { secretKey });
+    // authorizedParties allows tokens whose `azp` claim matches the production
+    // domain. Without this Clerk rejects all tokens from self-hosted deployments.
+    const appUrl = process.env.APP_URL ?? "https://13moonforge.ai";
+    const appHost = new URL(appUrl).hostname;
+    const authorizedParties = [appUrl, `https://${appHost}`, appHost].filter(Boolean);
+
+    let payload: Awaited<ReturnType<typeof verifyToken>>;
+    try {
+      payload = await verifyToken(token, { secretKey, authorizedParties });
+    } catch (verifyErr) {
+      // If azp check still fails (e.g. token issued by an unlisted party), log
+      // the actual error and fall through to the outer catch.
+      req.log.warn({ err: verifyErr, authorizedParties }, "clerk verifyToken failed");
+      throw verifyErr;
+    }
 
     const clerkClient = createClerkClient({ secretKey });
     const clerkUser = await clerkClient.users.getUser(payload.sub);
@@ -463,6 +477,24 @@ router.post("/auth/clerk-session", async (req: Request, res: Response) => {
         target: usersTable.id,
         set: { ...userData, updatedAt: new Date() },
       });
+
+    // Also upsert into forge_users so req.userId resolves correctly
+    await db.insert(forgeUsersTable).values({
+      id: userData.id,
+      email: userData.email,
+      displayName: [userData.firstName, userData.lastName].filter(Boolean).join(" ") || null,
+      avatarUrl: userData.profileImageUrl,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }).onConflictDoUpdate({
+      target: forgeUsersTable.id,
+      set: {
+        email: userData.email,
+        displayName: [userData.firstName, userData.lastName].filter(Boolean).join(" ") || null,
+        avatarUrl: userData.profileImageUrl,
+        updatedAt: new Date(),
+      },
+    });
 
     const sid = await createSession({ user: userData, access_token: token });
     setSessionCookie(res, sid);
