@@ -11,6 +11,8 @@ const FORGE_COOLIFY_KEY     = process.env.FORGE_COOLIFY_API_KEY ?? "";
 const FORGE_DOMAIN          = process.env.FORGE_DOMAIN ?? "13moonforge.ai";
 const FORGE_PROJECT_UUID    = process.env.FORGE_COOLIFY_PROJECT_UUID ?? "";
 const FORGE_SERVER_UUID     = process.env.FORGE_COOLIFY_SERVER_UUID ?? "";
+const FORGEJO_URL           = (process.env.FORGEJO_URL ?? "").replace(/\/+$/, "");
+const FORGEJO_TOKEN         = process.env.FORGEJO_TOKEN ?? "";
 
 function coolify(path: string, opts: RequestInit = {}) {
   const base = FORGE_COOLIFY_URL.replace(/\/+$/, "");
@@ -35,6 +37,22 @@ function ghFetch(token: string, path: string) {
   });
 }
 
+function forgejoFetch(path: string) {
+  return fetch(`${FORGEJO_URL}/api/v1${path}`, {
+    headers: {
+      Authorization: `token ${FORGEJO_TOKEN}`,
+      "Content-Type": "application/json",
+    },
+  });
+}
+
+function forgejoGitUrl(fullName: string): string {
+  const host = FORGEJO_URL.replace(/^https?:\/\//, "");
+  return FORGEJO_TOKEN
+    ? `https://forge-deploy:${FORGEJO_TOKEN}@${host}/${fullName}`
+    : `${FORGEJO_URL}/${fullName}`;
+}
+
 function slugify(str: string) {
   return str.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
@@ -49,13 +67,7 @@ async function getApp(idStr: string, userId: string) {
   return app ?? null;
 }
 
-async function detectStack(token: string, repo: string, branch: string): Promise<{ stack: string; port: number; buildPack: string }> {
-  const treeRes = await ghFetch(token, `/repos/${repo}/git/trees/${branch}?recursive=1`);
-  if (!treeRes.ok) return { stack: "node", port: 3000, buildPack: "nixpacks" };
-
-  const tree = await treeRes.json() as { tree?: { path: string }[] };
-  const paths = (tree.tree ?? []).map(f => f.path);
-
+function detectStackFromPaths(paths: string[]): { stack: string; port: number; buildPack: string } {
   if (paths.includes("Dockerfile") || paths.includes("dockerfile")) {
     return { stack: "docker", port: 8080, buildPack: "dockerfile" };
   }
@@ -82,6 +94,20 @@ async function detectStack(token: string, repo: string, branch: string): Promise
     return { stack: "static", port: 80, buildPack: "static" };
   }
   return { stack: "node", port: 3000, buildPack: "nixpacks" };
+}
+
+async function detectStack(token: string, repo: string, branch: string): Promise<{ stack: string; port: number; buildPack: string }> {
+  const treeRes = await ghFetch(token, `/repos/${repo}/git/trees/${branch}?recursive=1`);
+  if (!treeRes.ok) return { stack: "node", port: 3000, buildPack: "nixpacks" };
+  const tree = await treeRes.json() as { tree?: { path: string }[] };
+  return detectStackFromPaths((tree.tree ?? []).map(f => f.path));
+}
+
+async function detectStackForgejo(repo: string, branch: string): Promise<{ stack: string; port: number; buildPack: string }> {
+  const treeRes = await forgejoFetch(`/repos/${repo}/git/trees/${branch}?recursive=true`);
+  if (!treeRes.ok) return { stack: "node", port: 3000, buildPack: "nixpacks" };
+  const tree = await treeRes.json() as { tree?: { path: string }[] };
+  return detectStackFromPaths((tree.tree ?? []).map(f => f.path));
 }
 
 function getCoolifyIds() {
@@ -116,17 +142,57 @@ router.get("/launch/apps", async (req, res) => {
   }
 });
 
+// ─── GET /api/launch/forgejo/repos ───────────────────────────────────────────
+router.get("/launch/forgejo/repos", async (req, res) => {
+  if (!FORGEJO_URL || !FORGEJO_TOKEN) {
+    return res.status(503).json({ error: "Forgejo not configured" });
+  }
+  try {
+    const r = await forgejoFetch("/repos/search?limit=50&sort=updated");
+    if (!r.ok) return res.status(r.status).json({ error: "Failed to fetch Forgejo repos" });
+    const data = await r.json() as { data?: Record<string, unknown>[] };
+    const repos = (data.data ?? []).map((repo: Record<string, unknown>) => ({
+      id: repo.id,
+      fullName: repo.full_name,
+      name: repo.name,
+      private: repo.private ?? false,
+      description: repo.description ?? null,
+      language: repo.language ?? null,
+      defaultBranch: repo.default_branch ?? "main",
+      updatedAt: repo.updated,
+    }));
+    return res.json(repos);
+  } catch (err) {
+    req.log.error({ err }, "forgejo/repos failed");
+    return res.status(500).json({ error: "Failed to fetch Forgejo repos" });
+  }
+});
+
+// ─── GET /api/launch/forgejo/detect ──────────────────────────────────────────
+router.get("/launch/forgejo/detect", async (req, res) => {
+  const { repo, branch = "main" } = req.query as { repo?: string; branch?: string };
+  if (!repo) return res.status(400).json({ error: "repo is required" });
+  try {
+    const result = await detectStackForgejo(repo, branch);
+    return res.json(result);
+  } catch (err) {
+    req.log.error({ err }, "forgejo/detect failed");
+    return res.status(500).json({ error: "Stack detection failed" });
+  }
+});
+
 // ─── POST /api/launch/deploy ──────────────────────────────────────────────────
 router.post("/launch/deploy", async (req, res) => {
   if (!FORGE_COOLIFY_URL || !FORGE_COOLIFY_KEY) {
     return res.status(503).json({ error: "Managed hosting not configured yet." });
   }
 
-  const { repo, branch = "main", name, envVars = {} } = req.body as {
+  const { repo, branch = "main", name, envVars = {}, source = "github" } = req.body as {
     repo: string;
     branch?: string;
     name: string;
     envVars?: Record<string, string>;
+    source?: "github" | "forgejo";
   };
 
   if (!repo || !name) {
@@ -144,16 +210,28 @@ router.post("/launch/deploy", async (req, res) => {
     return res.status(400).json({ error: `The name "${name}" is already taken. Choose a different name.` });
   }
 
-  const [githubConn] = await db
-    .select()
-    .from(githubConnectionsTable)
-    .where(eq(githubConnectionsTable.userId, req.userId));
+  let gitUrl: string;
+  let stack: string, port: number, buildPack: string;
 
-  if (!githubConn) {
-    return res.status(400).json({ error: "Connect your GitHub account first." });
+  if (source === "forgejo") {
+    if (!FORGEJO_URL || !FORGEJO_TOKEN) {
+      return res.status(503).json({ error: "Forgejo not configured." });
+    }
+    ({ stack, port, buildPack } = await detectStackForgejo(repo, branch));
+    gitUrl = forgejoGitUrl(repo);
+  } else {
+    const [githubConn] = await db
+      .select()
+      .from(githubConnectionsTable)
+      .where(eq(githubConnectionsTable.userId, req.userId));
+
+    if (!githubConn) {
+      return res.status(400).json({ error: "Connect your GitHub account first." });
+    }
+    ({ stack, port, buildPack } = await detectStack(githubConn.accessToken, repo, branch));
+    gitUrl = `https://github.com/${repo}`;
   }
 
-  const { stack, port, buildPack } = await detectStack(githubConn.accessToken, repo, branch);
   const fqdn = `https://${subdomain}.${FORGE_DOMAIN}`;
   const webhookSecret = randomBytes(24).toString("hex");
 
@@ -167,7 +245,7 @@ router.post("/launch/deploy", async (req, res) => {
       project_uuid: projectUuid,
       server_uuid: serverUuid,
       environment_name: "production",
-      git_repository: `https://github.com/${repo}`,
+      git_repository: gitUrl,
       git_branch: branch,
       build_pack: buildPack,
       name: `${subdomain}-${req.userId.slice(0, 6)}`,

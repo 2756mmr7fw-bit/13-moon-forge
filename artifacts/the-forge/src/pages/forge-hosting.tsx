@@ -115,6 +115,9 @@ export default function ForgeHosting() {
   const [apps, setApps] = useState<UserApp[]>([]);
   const [githubStatus, setGithubStatus] = useState<GitHubStatus>({ connected: false });
   const [repos, setRepos] = useState<Repo[]>([]);
+  const [forgejoRepos, setForgejoRepos] = useState<Repo[]>([]);
+  const [forgejoReposLoaded, setForgejoReposLoaded] = useState(false);
+  const [gitSource, setGitSource] = useState<"github" | "forgejo">("forgejo");
   const [loading, setLoading] = useState(true);
   const [showDeploy, setShowDeploy] = useState(false);
   const [repoSearch, setRepoSearch] = useState("");
@@ -176,12 +179,21 @@ export default function ForgeHosting() {
   useEffect(() => { fetchData(); }, [fetchData]);
 
   useEffect(() => {
-    if (githubStatus.connected && showDeploy && repos.length === 0) {
+    if (!showDeploy) return;
+    if (gitSource === "github" && githubStatus.connected && repos.length === 0) {
       fetch(`${API}/api/github/repos`, { credentials: "include" })
         .then(r => r.json())
         .then(data => setRepos(Array.isArray(data) ? data : []));
     }
-  }, [githubStatus.connected, showDeploy, repos.length]);
+    if (gitSource === "forgejo" && !forgejoReposLoaded) {
+      fetch(`${API}/api/launch/forgejo/repos`, { credentials: "include" })
+        .then(r => r.json())
+        .then(data => {
+          setForgejoRepos(Array.isArray(data) ? data : []);
+          setForgejoReposLoaded(true);
+        });
+    }
+  }, [githubStatus.connected, showDeploy, repos.length, gitSource, forgejoReposLoaded]);
 
   useEffect(() => {
     if (selectedRepo) {
@@ -189,17 +201,27 @@ export default function ForgeHosting() {
       setAppName(selectedRepo.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"));
       setDetectedStack(null);
       setDetecting(true);
-      fetch(`${API}/api/launch/detect`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ repo: selectedRepo.fullName, branch: selectedRepo.defaultBranch }),
-      })
-        .then(r => r.json())
-        .then(d => setDetectedStack(d))
-        .finally(() => setDetecting(false));
+      if (gitSource === "forgejo") {
+        fetch(
+          `${API}/api/launch/forgejo/detect?repo=${encodeURIComponent(selectedRepo.fullName)}&branch=${encodeURIComponent(selectedRepo.defaultBranch)}`,
+          { credentials: "include" }
+        )
+          .then(r => r.json())
+          .then(d => setDetectedStack(d))
+          .finally(() => setDetecting(false));
+      } else {
+        fetch(`${API}/api/launch/detect`, {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ repo: selectedRepo.fullName, branch: selectedRepo.defaultBranch }),
+        })
+          .then(r => r.json())
+          .then(d => setDetectedStack(d))
+          .finally(() => setDetecting(false));
+      }
     }
-  }, [selectedRepo]);
+  }, [selectedRepo, gitSource]);
 
   const fetchLogs = useCallback(async (appId: number) => {
     setLogsLoading(true);
@@ -283,7 +305,7 @@ export default function ForgeHosting() {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ repo: selectedRepo.fullName, branch, name: appName.trim() }),
+        body: JSON.stringify({ repo: selectedRepo.fullName, branch, name: appName.trim(), source: gitSource }),
       });
       const data = await res.json();
       if (!res.ok) { setDeployError(data.error ?? "Deploy failed"); return; }
@@ -450,7 +472,8 @@ export default function ForgeHosting() {
     }
   };
 
-  const filteredRepos = repos.filter(r =>
+  const activeRepos = gitSource === "forgejo" ? forgejoRepos : repos;
+  const filteredRepos = activeRepos.filter(r =>
     r.fullName.toLowerCase().includes(repoSearch.toLowerCase()) ||
     (r.description ?? "").toLowerCase().includes(repoSearch.toLowerCase())
   );
@@ -475,7 +498,7 @@ export default function ForgeHosting() {
             <Flame size={20} className="text-orange-400" />
             <h1 className="text-2xl font-bold text-white">Forge Hosting</h1>
           </div>
-          <p className="text-sm text-zinc-400">Deploy any app from GitHub in minutes. Runs on your server.</p>
+          <p className="text-sm text-zinc-400">Deploy any app from GitHub or your Forge Git server. Runs on your VPS.</p>
         </div>
         <Button
           onClick={() => setShowDeploy(true)}
@@ -486,18 +509,13 @@ export default function ForgeHosting() {
         </Button>
       </div>
 
-      {/* GitHub not connected warning */}
+      {/* Info: Forgejo is available */}
       {!githubStatus.connected && (
-        <div className="mb-6 rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-4 flex items-start gap-3">
-          <AlertCircle size={16} className="text-yellow-400 mt-0.5 shrink-0" />
+        <div className="mb-6 rounded-xl border border-zinc-700 bg-zinc-800/30 p-4 flex items-start gap-3">
+          <GitBranch size={16} className="text-orange-400 mt-0.5 shrink-0" />
           <div className="flex-1">
-            <p className="text-sm font-semibold text-yellow-300 mb-1">GitHub not connected</p>
-            <p className="text-xs text-zinc-400 mb-3">Connect GitHub to deploy your repos to this server.</p>
-            <Link href="/github">
-              <Button size="sm" variant="outline" className="border-yellow-500/40 text-yellow-300 hover:bg-yellow-500/10">
-                <Github size={13} className="mr-1.5" /> Connect GitHub
-              </Button>
-            </Link>
+            <p className="text-sm font-semibold text-zinc-200 mb-1">Deploy from git.13moonforge.ai</p>
+            <p className="text-xs text-zinc-400">Your self-hosted Forge Git server is ready to use — no GitHub required. Push any app there and deploy it here.</p>
           </div>
         </div>
       )}
@@ -821,8 +839,8 @@ export default function ForgeHosting() {
                       {app.autoDeployEnabled && app.webhookSecret && (
                         <div className="space-y-3">
                           <div className="rounded-lg border border-zinc-800 bg-zinc-800/20 p-3 space-y-2">
-                            <p className="text-[11px] font-semibold text-zinc-400">GitHub webhook setup</p>
-                            <p className="text-[11px] text-zinc-500">In your GitHub repo → Settings → Webhooks → Add webhook:</p>
+                            <p className="text-[11px] font-semibold text-zinc-400">Webhook setup</p>
+                            <p className="text-[11px] text-zinc-500">In your repo settings (GitHub or Forgejo) → Webhooks → Add webhook:</p>
                             <div className="space-y-2">
                               <div>
                                 <p className="text-[10px] text-zinc-600 mb-1">Payload URL</p>
@@ -1059,17 +1077,46 @@ export default function ForgeHosting() {
           <div className="w-full max-w-lg bg-zinc-900 border border-zinc-700 rounded-2xl overflow-hidden">
             <div className="flex items-center justify-between p-5 border-b border-zinc-800">
               <div>
-                <h2 className="font-bold text-white">Deploy from GitHub</h2>
-                <p className="text-xs text-zinc-400 mt-0.5">Pick a repo, we'll detect the stack and deploy it.</p>
+                <h2 className="font-bold text-white">Deploy an App</h2>
+                <p className="text-xs text-zinc-400 mt-0.5">Pick a repo, we'll detect the stack and deploy it to your server.</p>
               </div>
-              <button onClick={() => { setShowDeploy(false); setSelectedRepo(null); setDeployError(""); }} className="text-zinc-500 hover:text-white">
+              <button onClick={() => { setShowDeploy(false); setSelectedRepo(null); setDeployError(""); setRepoSearch(""); }} className="text-zinc-500 hover:text-white">
                 <X size={18} />
               </button>
             </div>
 
             <div className="p-5 space-y-4 max-h-[70vh] overflow-y-auto">
-              {!githubStatus.connected ? (
-                <div className="text-center py-6">
+              {/* Source picker */}
+              <div>
+                <Label className="text-xs text-zinc-400 mb-2 block">1. Git source</Label>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => { setGitSource("forgejo"); setSelectedRepo(null); setDetectedStack(null); setRepoSearch(""); }}
+                    className={cn(
+                      "flex-1 flex items-center justify-center gap-2 rounded-lg border py-2.5 text-xs font-medium transition-colors",
+                      gitSource === "forgejo"
+                        ? "border-orange-500/50 bg-orange-500/10 text-orange-300"
+                        : "border-zinc-700 text-zinc-400 hover:border-zinc-600"
+                    )}
+                  >
+                    <GitBranch size={13} /> git.13moonforge.ai
+                  </button>
+                  <button
+                    onClick={() => { setGitSource("github"); setSelectedRepo(null); setDetectedStack(null); setRepoSearch(""); }}
+                    className={cn(
+                      "flex-1 flex items-center justify-center gap-2 rounded-lg border py-2.5 text-xs font-medium transition-colors",
+                      gitSource === "github"
+                        ? "border-orange-500/50 bg-orange-500/10 text-orange-300"
+                        : "border-zinc-700 text-zinc-400 hover:border-zinc-600"
+                    )}
+                  >
+                    <Github size={13} /> GitHub
+                  </button>
+                </div>
+              </div>
+
+              {gitSource === "github" && !githubStatus.connected ? (
+                <div className="text-center py-6 rounded-xl border border-zinc-800 bg-zinc-800/20">
                   <Github size={28} className="text-zinc-500 mx-auto mb-3" />
                   <p className="text-sm text-zinc-400 mb-4">Connect GitHub first to deploy from your repos.</p>
                   <Link href="/github">
@@ -1079,7 +1126,7 @@ export default function ForgeHosting() {
               ) : (
                 <>
                   <div>
-                    <Label className="text-xs text-zinc-400 mb-2 block">1. Pick a repository</Label>
+                    <Label className="text-xs text-zinc-400 mb-2 block">2. Pick a repository</Label>
                     <Input
                       placeholder="Search repos..."
                       value={repoSearch}
@@ -1087,10 +1134,19 @@ export default function ForgeHosting() {
                       className="bg-zinc-800 border-zinc-700 text-white mb-2 h-8 text-sm"
                     />
                     <div className="space-y-1 max-h-48 overflow-y-auto">
-                      {filteredRepos.length === 0 ? (
+                      {gitSource === "forgejo" && !forgejoReposLoaded ? (
                         <div className="text-center py-4">
                           <Loader2 size={16} className="animate-spin text-zinc-500 mx-auto mb-1" />
-                          <p className="text-xs text-zinc-500">Loading repos...</p>
+                          <p className="text-xs text-zinc-500">Loading repos from git.13moonforge.ai...</p>
+                        </div>
+                      ) : filteredRepos.length === 0 ? (
+                        <div className="text-center py-4">
+                          <GitBranch size={16} className="text-zinc-600 mx-auto mb-1" />
+                          <p className="text-xs text-zinc-500">
+                            {gitSource === "forgejo"
+                              ? "No repos found on git.13moonforge.ai"
+                              : "No repos found"}
+                          </p>
                         </div>
                       ) : filteredRepos.map(repo => (
                         <button
@@ -1120,7 +1176,7 @@ export default function ForgeHosting() {
                   {selectedRepo && (
                     <>
                       <div>
-                        <Label className="text-xs text-zinc-400 mb-1.5 block">2. App name (becomes your subdomain)</Label>
+                        <Label className="text-xs text-zinc-400 mb-1.5 block">3. App name (becomes your subdomain)</Label>
                         <div className="flex items-center gap-2">
                           <Input
                             value={appName}
@@ -1133,7 +1189,7 @@ export default function ForgeHosting() {
                       </div>
 
                       <div>
-                        <Label className="text-xs text-zinc-400 mb-1.5 block">3. Branch</Label>
+                        <Label className="text-xs text-zinc-400 mb-1.5 block">4. Branch</Label>
                         <Input
                           value={branch}
                           onChange={e => setBranch(e.target.value)}
