@@ -355,29 +355,11 @@ function Router() {
 
 const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string | undefined;
 
-// Derive the Clerk FAPI hostname from the publishable key.
-//
-// Why clerkJSUrl?  When proxyUrl is set, the SDK constructs the clerk.browser.js
-// script URL using only the proxy origin as its base, causing Express to serve
-// index.html instead of real JS.  clerkJSUrl bypasses that construction entirely.
-//
-// Why no proxyUrl?  The proxy stripped domain=.clerk.accounts.dev from Set-Cookie
-// headers, so the dev-browser JWT was never stored and every /v1/client call
-// returned 401, keeping clerk.loaded false forever.  The dev FAPI already has
-// CORS configured for 13moonforge.ai, so the browser can talk directly to the
-// FAPI — cookies work, no proxy required.
-function getClerkFapiHost(pk: string): string {
-  try {
-    const part = pk.split("_")[2];
-    if (!part) return "";
-    return atob(part).replace(/\$+$/, "");
-  } catch { return ""; }
-}
-
-const CLERK_FAPI_HOST = CLERK_PUBLISHABLE_KEY ? getClerkFapiHost(CLERK_PUBLISHABLE_KEY) : "";
-const CLERK_JS_URL = CLERK_FAPI_HOST
-  ? `https://${CLERK_FAPI_HOST}/npm/@clerk/clerk-js@5/dist/clerk.browser.js`
-  : undefined;
+// clerk-js is pre-loaded synchronously in index.html via document.write before
+// React mounts. This is necessary because @clerk/clerk-react@5.61.3 tries to
+// dynamically load clerk-js@5.61.3 which returns 404 on the Clerk FAPI CDN.
+// When window.Clerk is already set by the time IsomorphicClerk initialises it
+// skips its own broken dynamic load and uses the pre-loaded instance instead.
 
 function App() {
   const inner = (
@@ -398,7 +380,6 @@ function App() {
   return (
     <ClerkProvider
       publishableKey={CLERK_PUBLISHABLE_KEY}
-      clerkJSUrl={CLERK_JS_URL}
       signInUrl="/sign-in"
       signUpUrl="/sign-up"
       afterSignInUrl="/x-auth/clerk-callback"
