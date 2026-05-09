@@ -18,16 +18,11 @@ function deriveClerkFapiUrl(publishableKey: string): string {
 }
 
 export function clerkProxyMiddleware(): RequestHandler {
-  if (process.env.NODE_ENV !== "production") {
-    return (_req, _res, next) => next();
-  }
-
-  const secretKey = process.env.CLERK_SECRET_KEY;
-  if (!secretKey) {
-    return (_req, _res, next) => next();
-  }
-
   const publishableKey = process.env.VITE_CLERK_PUBLISHABLE_KEY ?? "";
+  if (!publishableKey) {
+    return (_req, _res, next) => next();
+  }
+
   const clerkFapi = deriveClerkFapiUrl(publishableKey);
 
   return createProxyMiddleware({
@@ -36,22 +31,13 @@ export function clerkProxyMiddleware(): RequestHandler {
     pathRewrite: (path: string) =>
       path.replace(new RegExp(`^${CLERK_PROXY_PATH}`), ""),
     on: {
-      proxyReq: (proxyReq, req) => {
-        const protocol = req.headers["x-forwarded-proto"] || "https";
-        const host = req.headers.host || "";
-        const proxyUrl = `${protocol}://${host}${CLERK_PROXY_PATH}`;
-
-        proxyReq.setHeader("Clerk-Proxy-Url", proxyUrl);
-        proxyReq.setHeader("Clerk-Secret-Key", secretKey);
-
-        const xff = req.headers["x-forwarded-for"];
-        const clientIp =
-          (Array.isArray(xff) ? xff[0] : xff)?.split(",")[0]?.trim() ||
-          req.socket?.remoteAddress ||
-          "";
-        if (clientIp) {
-          proxyReq.setHeader("X-Forwarded-For", clientIp);
-        }
+      proxyReq: (proxyReq) => {
+        proxyReq.removeHeader("Clerk-Proxy-Url");
+        proxyReq.removeHeader("Clerk-Secret-Key");
+        proxyReq.removeHeader("X-Forwarded-Host");
+        proxyReq.removeHeader("X-Forwarded-Port");
+        proxyReq.removeHeader("X-Forwarded-Proto");
+        proxyReq.removeHeader("X-Forwarded-For");
       },
     },
   }) as RequestHandler;
