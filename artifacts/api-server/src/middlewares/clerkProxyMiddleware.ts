@@ -31,17 +31,13 @@ export function clerkProxyMiddleware(): RequestHandler {
     pathRewrite: (path: string) =>
       path.replace(new RegExp(`^${CLERK_PROXY_PATH}`), ""),
     on: {
-      proxyReq: (proxyReq, req) => {
-        const xff = req.headers["x-forwarded-for"];
-        const clientIp =
-          (Array.isArray(xff) ? xff[0] : xff)?.split(",")[0]?.trim() ||
-          req.socket?.remoteAddress ||
-          "";
-        if (clientIp) {
-          proxyReq.setHeader("X-Forwarded-For", clientIp);
-        }
+      proxyReq: (proxyReq) => {
         proxyReq.removeHeader("Clerk-Proxy-Url");
         proxyReq.removeHeader("Clerk-Secret-Key");
+        proxyReq.removeHeader("X-Forwarded-Host");
+        proxyReq.removeHeader("X-Forwarded-Port");
+        proxyReq.removeHeader("X-Forwarded-Proto");
+        proxyReq.removeHeader("X-Forwarded-For");
       },
     },
   }) as RequestHandler;
