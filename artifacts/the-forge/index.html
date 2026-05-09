@@ -20,6 +20,29 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Pre-load clerk-js synchronously before React mounts.
+         @clerk/clerk-react@5.61.3 tries to dynamically load clerk-js@5.61.3 which
+         returns 404 on the Clerk FAPI CDN (only 5.125.x+ is hosted there). By using
+         document.write here (runs synchronously, before any defer/module scripts)
+         clerk-js is fully loaded when IsomorphicClerk initialises, so it uses the
+         already-present window.Clerk rather than attempting its own broken load. -->
+    <script>
+      (function () {
+        var k = '%VITE_CLERK_PUBLISHABLE_KEY%';
+        if (!k || k.charAt(0) === '%') return;
+        try {
+          var h = atob(k.split('_')[2]).replace(/\$+$/, '');
+          if (!h || h.indexOf('.') === -1) return;
+          document.write(
+            '\x3Cscript src="https://' + h +
+            '/npm/@clerk/clerk-js@5/dist/clerk.browser.js"' +
+            ' data-clerk-publishable-key="' + k + '"' +
+            ' crossorigin="anonymous"' +
+            '\x3E\x3C/script\x3E'
+          );
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
