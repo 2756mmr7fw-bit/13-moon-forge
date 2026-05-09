@@ -355,13 +355,17 @@ function Router() {
 
 const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string | undefined;
 
-// Derive the Clerk FAPI hostname from the publishable key so we can build a
-// direct CDN URL for the clerk.browser.js script.  When proxyUrl is set the
-// SDK may construct the script URL using only the origin as its base, which
-// causes Express to serve index.html instead of the real JS file.  Providing
-// clerkJSUrl explicitly bypasses that URL-construction logic entirely; the
-// proxyUrl prop still causes clerk-js to route all API calls through our proxy
-// via the data-clerk-proxy-url attribute set on the injected <script> element.
+// Derive the Clerk FAPI hostname from the publishable key.
+//
+// Why clerkJSUrl?  When proxyUrl is set, the SDK constructs the clerk.browser.js
+// script URL using only the proxy origin as its base, causing Express to serve
+// index.html instead of real JS.  clerkJSUrl bypasses that construction entirely.
+//
+// Why no proxyUrl?  The proxy stripped domain=.clerk.accounts.dev from Set-Cookie
+// headers, so the dev-browser JWT was never stored and every /v1/client call
+// returned 401, keeping clerk.loaded false forever.  The dev FAPI already has
+// CORS configured for 13moonforge.ai, so the browser can talk directly to the
+// FAPI — cookies work, no proxy required.
 function getClerkFapiHost(pk: string): string {
   try {
     const part = pk.split("_")[2];
@@ -373,10 +377,6 @@ function getClerkFapiHost(pk: string): string {
 const CLERK_FAPI_HOST = CLERK_PUBLISHABLE_KEY ? getClerkFapiHost(CLERK_PUBLISHABLE_KEY) : "";
 const CLERK_JS_URL = CLERK_FAPI_HOST
   ? `https://${CLERK_FAPI_HOST}/npm/@clerk/clerk-js@5/dist/clerk.browser.js`
-  : undefined;
-
-const CLERK_PROXY_URL = typeof window !== "undefined"
-  ? `${window.location.origin}/api/__clerk`
   : undefined;
 
 function App() {
@@ -398,7 +398,6 @@ function App() {
   return (
     <ClerkProvider
       publishableKey={CLERK_PUBLISHABLE_KEY}
-      proxyUrl={CLERK_PROXY_URL}
       clerkJSUrl={CLERK_JS_URL}
       signInUrl="/sign-in"
       signUpUrl="/sign-up"
