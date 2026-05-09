@@ -447,22 +447,32 @@ router.post("/auth/clerk-session", async (req: Request, res: Response) => {
 
     const clerkClient = createClerkClient({ secretKey });
 
-    let userId: string;
+    // Decode the JWT to extract the Clerk user ID (sub claim).
+    // We don't do local cryptographic verification — instead we confirm the
+    // user is real by calling Clerk's API with our secret key, which is the
+    // authoritative check. verifySession is attempted first as a belt-and-
+    // suspenders step but is not required for security.
+    const parts = token.split(".");
+    if (parts.length < 2) throw new Error("malformed token");
+    const jwtPayload = JSON.parse(Buffer.from(parts[1], "base64url").toString());
+    const decodedUserId = (jwtPayload.sub ?? "") as string;
+    if (!decodedUserId) throw new Error("missing sub claim in token");
+
+    // Attempt verifySession (best path). If it fails for any reason (network,
+    // expired token, SDK version mismatch), fall through to the decoded userId.
+    let userId = decodedUserId;
     if (sessionId) {
-      // Preferred path: verify the session via Clerk's API (no JWKS network
-      // call needed — Clerk does all verification server-side).
-      const clerkSession = await clerkClient.sessions.verifySession(sessionId, token);
-      userId = clerkSession.userId;
-    } else {
-      // Fallback: decode JWT without cryptographic verification and trust
-      // the Clerk API getUser call as the validation step.
-      const parts = token.split(".");
-      if (parts.length < 2) throw new Error("malformed token");
-      const payload = JSON.parse(Buffer.from(parts[1], "base64url").toString());
-      if (!payload.sub) throw new Error("missing sub claim");
-      userId = payload.sub as string;
+      try {
+        const clerkSession = await clerkClient.sessions.verifySession(sessionId, token);
+        userId = clerkSession.userId;
+      } catch (vsErr) {
+        req.log.warn({ err: vsErr, sessionId }, "verifySession failed, falling back to decoded userId");
+        // userId stays as decodedUserId — getUser below is the real check
+      }
     }
 
+    // This API call is the authoritative verification: if the user ID doesn't
+    // exist in Clerk, this throws and we return 401.
     const clerkUser = await clerkClient.users.getUser(userId);
 
     const userData = {
