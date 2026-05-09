@@ -64,7 +64,6 @@ jobs:
             CACHEBUST=${{ github.run_id }}
             BUILD_ID=${{ github.ref_name }}-${{ github.run_id }}
             VITE_CLERK_PUBLISHABLE_KEY=${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
-            VITE_CLERK_PROXY_URL=https://13moonforge.ai/api/__clerk
 
       - name: Redeploy on Coolify (pull_policy always + new image)
         if: success()
