@@ -195,8 +195,15 @@ router.get("/help/cli-token", (req, res) => {
 
 // ── GET /api/help/forge-agent.js — serve the downloadable CLI script ───────────
 router.get("/help/forge-agent.js", (_req, res) => {
-  const scriptPath = path.join(__dirname, "..", "forge-agent.js");
-  if (fs.existsSync(scriptPath)) {
+  // In the bundled dist output __dirname === dist/ — forge-agent.js is copied there by build.mjs.
+  // Fallback: also check one level up (src/ layout used in some dev setups).
+  const candidates = [
+    path.join(__dirname, "forge-agent.js"),
+    path.join(__dirname, "..", "src", "forge-agent.js"),
+    path.join(__dirname, "..", "forge-agent.js"),
+  ];
+  const scriptPath = candidates.find(p => fs.existsSync(p));
+  if (scriptPath) {
     res.setHeader("Content-Type", "application/javascript");
     res.setHeader("Content-Disposition", 'attachment; filename="forge.js"');
     res.sendFile(scriptPath);

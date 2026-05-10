@@ -2,7 +2,7 @@ import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { build as esbuild } from "esbuild";
-import { rm } from "node:fs/promises";
+import { rm, copyFile } from "node:fs/promises";
 
 // Plugins (e.g. 'esbuild-plugin-pino') may use `require` to resolve dependencies
 globalThis.require = createRequire(import.meta.url);
@@ -21,6 +21,7 @@ async function buildAll() {
     outdir: distDir,
     outExtension: { ".js": ".mjs" },
     logLevel: "info",
+    // forge-agent.js is a plain JS CLI — not bundled, served as-is via /api/help/forge-agent.js
     // Some packages may not be bundleable, so we externalize them, we can add more here as needed.
     // Some of the packages below may not be imported or installed, but we're adding them in case they are in the future.
     // Examples of unbundleable packages:
@@ -102,8 +103,6 @@ async function buildAll() {
       "pdf-parse",
     ],
     sourcemap: "linked",
-    // esbuildPluginPino removed — logger uses pino.destination({ sync: true }) in production
-    // which bypasses thread-stream workers entirely, so no worker bundling is needed.
     plugins: [],
     // Make sure packages that are cjs only (e.g. express) but are bundled continue to work in our esm output file
     banner: {
@@ -117,6 +116,13 @@ globalThis.__dirname = __bannerPath.dirname(globalThis.__filename);
     `,
     },
   });
+
+  // Copy forge-agent.js (plain JS CLI) into dist so the help route can serve it
+  await copyFile(
+    path.resolve(artifactDir, "src/forge-agent.js"),
+    path.resolve(distDir, "forge-agent.js"),
+  );
+  console.log("  ✓ forge-agent.js copied to dist/");
 }
 
 buildAll().catch((err) => {
