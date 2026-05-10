@@ -1371,6 +1371,52 @@ These are the features that make the Forge the best place to own and run your ow
 
 ---
 
+### Domain Hub — Own Your Addresses
+
+Right now connecting a domain to a deployed app is a five-tab process: Coolify for the domain config, GoDaddy (or wherever) for the DNS record, dnschecker.org to watch propagation, then back to Coolify to confirm SSL. Nobody should have to bounce between that many windows.
+
+The Domain Hub consolidates all of it into one screen inside the Forge.
+
+**What it does:**
+
+*Domain Registry* — a saved list of every domain you own, regardless of where it's registered. You add it once. The Forge remembers it. Each domain shows:
+- The registrar (GoDaddy, Namecheap, Cloudflare, etc.)
+- Expiration date — with a warning when it's 60 days out
+- What app or service it's connected to
+- Current status indicator
+
+*Status Indicators — the dot system:*
+- **Orange dot** — DNS is propagating. The A record exists but hasn't reached all resolvers yet.
+- **Green dot** — Fully live. DNS resolved globally, SSL certificate active, app responding.
+- **Red dot** — Something is wrong. DNS not resolving, SSL expired, or the connected app is down.
+- **Grey dot** — Domain saved but not yet pointed anywhere.
+
+The dot updates automatically — no manual refresh. The Forge polls DNS resolution and the Coolify health endpoint for the connected app in the background.
+
+*Propagation View* — when a domain is orange, clicking it opens a panel showing real-time propagation status across major DNS servers worldwide (same data as dnschecker.org, built in). The user watches the map go green without leaving Forge.
+
+*Connect to App* — each domain has a "Connected to" field. Pick from your deployed apps in the App Hub. The Forge shows the Coolify service UUID, the domain config, and the expected A record value. Copy-ready DNS instructions for whatever registrar you use.
+
+*Buy a Domain* — a direct link to purchase from a preferred registrar (Namecheap or Cloudflare Registrar — both have APIs that would allow in-app purchase eventually). Phase 1 is just linking out with the search pre-filled. Phase 2 is in-app purchase and automatic DNS configuration.
+
+**The organizational layer:**
+
+Every domain in your vault shows its connection map:
+```
+13moonantivirus.ai → Antivirus app (VPS / Coolify) → 🟢 Live
+www.13moonantivirus.ai → CNAME → 🟢 Live
+13moonforge.ai → Forge app (VPS / Coolify) → 🟢 Live
+api.13moonforge.ai → API Server → 🟢 Live
+```
+
+At a glance: every domain you own, what it does, whether it's working. No tabs. No separate tools. No hunting.
+
+**Why this matters:**
+
+The person running 5 apps across 8 domains currently manages this entirely in their head and across browser tabs. That scales to zero. The Domain Hub is the single source of truth for everything you've deployed and where it lives on the internet.
+
+---
+
 ### Per-App Monitoring Gauges *(next to build)*
 
 Every customer who deploys an app through Forge should be able to see live health for their own apps — not the server, their containers.
