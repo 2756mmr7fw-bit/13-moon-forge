@@ -1451,6 +1451,12 @@ async function main() {
     return;
   }
 
+  // Daemon / bridge mode
+  if (cliArgs[0] === "daemon" || cliArgs[0] === "connect" || cliArgs[0] === "bridge") {
+    await runDaemon();
+    return;
+  }
+
   print("\n  ╔══════════════════════════════════════╗\n", "green");
   print("  ║   🔥  Forge Agent  v" + VERSION + "            ║\n", "green");
   print("  ║   13moonforge.ai                     ║\n", "green");
@@ -1548,6 +1554,190 @@ async function main() {
       }
     }
   }
+}
+
+// ════════════════════════════════════════════════════════════════════════════════
+// ── DAEMON MODE — persistent bridge to Forge ─────────────────────────────────
+// ════════════════════════════════════════════════════════════════════════════════
+
+let _daemonToken = "";
+
+function getSystemInfo() {
+  const totalMem = os.totalmem();
+  const freeMem = os.freemem();
+  return JSON.stringify({
+    hostname: os.hostname(),
+    platform: os.platform(),
+    arch: os.arch(),
+    cpus: os.cpus().length,
+    totalMemGb: (totalMem / 1024 / 1024 / 1024).toFixed(1),
+    freeMemGb: (freeMem / 1024 / 1024 / 1024).toFixed(1),
+    uptime: Math.floor(os.uptime() / 3600) + "h",
+    nodeVersion: process.version,
+    cwd: process.cwd(),
+  });
+}
+
+async function executeBridgeCommand(type, payload) {
+  switch (type) {
+    case "chat": {
+      const msgs = [{ role: "user", content: payload.message || String(payload) }];
+      return await forgeChat(msgs, _daemonToken);
+    }
+    case "shell": {
+      const r = run(payload.command, payload.cwd || process.cwd());
+      return r.out || "(no output)";
+    }
+    case "tool": {
+      return await handleTool(payload.name, payload.args || {}, loadConfig());
+    }
+    case "system_info": {
+      return getSystemInfo();
+    }
+    case "list_apps": {
+      const r = run("docker ps --format '{{.Names}}\\t{{.Status}}\\t{{.Image}}'");
+      return r.ok ? (r.out || "(no containers running)") : "Docker not available: " + r.out;
+    }
+    case "install_app": {
+      const { image, name, port, env } = payload;
+      if (!image || !name) return "image and name are required";
+      const envFlags = Object.entries(env || {}).map(([k, v]) => `-e ${k}="${v}"`).join(" ");
+      const portFlag = port ? `-p ${port}:${port}` : "";
+      const cmd = `docker run -d --name ${name} --restart unless-stopped ${portFlag} ${envFlags} ${image}`;
+      const r = run(cmd);
+      return r.ok ? `Started container: ${name}` : `Failed: ${r.out}`;
+    }
+    default:
+      return `Unknown command type: ${type}`;
+  }
+}
+
+async function handleBridgeEvent(event, data, sessionId) {
+  if (event === "command") {
+    const { commandId, type, payload } = data;
+    let result, error;
+    try {
+      result = await executeBridgeCommand(type, payload);
+    } catch (e) {
+      error = e.message;
+    }
+    await forgePost(`/api/agent-bridge/result/${sessionId}`, { commandId, result, error }, _daemonToken).catch(() => {});
+  } else if (event === "relay") {
+    const { commandId, message } = data;
+    println(`\n[Relay from Forge]: ${message}`, "cyan");
+    try {
+      const response = await forgeChat([{ role: "user", content: message }], _daemonToken);
+      await forgePost(`/api/agent-bridge/relay/${sessionId}`, { from: "agent", message: response }, _daemonToken).catch(() => {});
+    } catch (e) {
+      await forgePost(`/api/agent-bridge/result/${sessionId}`, { commandId, error: e.message }, _daemonToken).catch(() => {});
+    }
+  }
+}
+
+function connectBridgeStream(sessionId) {
+  const isHttps = FORGE_HOST !== "localhost";
+  const lib = isHttps ? https : http;
+
+  function connect() {
+    const req = lib.request({
+      hostname: FORGE_HOST,
+      port: isHttps ? 443 : 80,
+      path: `/api/agent-bridge/stream/${sessionId}`,
+      method: "GET",
+      headers: { "Authorization": `Bearer ${_daemonToken}` },
+    }, (res) => {
+      let buffer = "";
+      let currentEvent = "message";
+
+      res.on("data", (chunk) => {
+        buffer += chunk.toString();
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          if (line.startsWith("event: ")) {
+            currentEvent = line.slice(7).trim();
+          } else if (line.startsWith("data: ")) {
+            const raw = line.slice(6).trim();
+            if (!raw) continue;
+            try {
+              const parsed = JSON.parse(raw);
+              handleBridgeEvent(currentEvent, parsed, sessionId).catch(() => {});
+            } catch { /* skip malformed */ }
+          } else if (line === "") {
+            currentEvent = "message";
+          }
+        }
+      });
+
+      res.on("end", () => {
+        println("Bridge disconnected — reconnecting in 5s...", "yellow");
+        setTimeout(connect, 5000);
+      });
+
+      res.on("error", () => setTimeout(connect, 5000));
+    });
+
+    req.on("error", () => {
+      println("Bridge connection error — retrying in 5s...", "yellow");
+      setTimeout(connect, 5000);
+    });
+
+    req.end();
+  }
+
+  connect();
+}
+
+async function runDaemon() {
+  print("\n  ╔══════════════════════════════════════╗\n", "cyan");
+  print("  ║   🔥  Forge Agent — Bridge Mode       ║\n", "cyan");
+  print("  ║   Connected to 13moonforge.ai         ║\n", "cyan");
+  print("  ╚══════════════════════════════════════╝\n\n", "cyan");
+
+  let cfg = loadConfig();
+  if (!cfg.token) {
+    print("  No CLI token found. Run: node forge.js\n", "red");
+    process.exit(1);
+  }
+  _daemonToken = cfg.token;
+
+  const sysInfo = {
+    machine: os.hostname(),
+    os: `${os.platform()} ${os.release()}`,
+    version: VERSION,
+    cwd: process.cwd(),
+  };
+
+  println(`  Registering: ${sysInfo.machine} (${sysInfo.os})`, "dim");
+
+  const reg = await forgePost("/api/agent-bridge/register", sysInfo, cfg.token);
+  if (!reg.data?.sessionId) {
+    println("  Registration failed. Check your connection and CLI token.", "red");
+    process.exit(1);
+  }
+
+  const sessionId = reg.data.sessionId;
+  println(`  Session ID: ${sessionId.slice(0, 12)}...`, "green");
+  println(`  Forge can now reach this machine: ${sysInfo.machine}`, "green");
+  println(`  Waiting for commands from Forge... (Ctrl+C to exit)\n`, "dim");
+
+  // Heartbeat every 30s
+  setInterval(() => {
+    forgePost(`/api/agent-bridge/heartbeat/${sessionId}`, {}, cfg.token).catch(() => {});
+  }, 30_000);
+
+  // Connect SSE stream
+  connectBridgeStream(sessionId);
+
+  // Keep process alive
+  process.on("SIGINT", () => {
+    println("\n  Disconnected from bridge. Goodbye.", "dim");
+    process.exit(0);
+  });
+
+  // Block forever
+  await new Promise(() => {});
 }
 
 main().catch(err => {

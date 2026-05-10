@@ -69,6 +69,7 @@ import appHealthRouter from "./app-health";
 import domainsRouter from "./domains";
 import codeVaultRouter from "./code-vault-route";
 import appLogsRouter from "./app-logs";
+import agentBridgeRouter from "./agent-bridge";
 
 const router: IRouter = Router();
 
@@ -142,5 +143,6 @@ router.use(appHealthRouter);
 router.use(domainsRouter);
 router.use(codeVaultRouter);
 router.use(appLogsRouter);
+router.use(agentBridgeRouter);
 
 export default router;

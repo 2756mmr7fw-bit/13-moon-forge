@@ -102,6 +102,7 @@ const InspectionPublicPage = lazy(() => import("@/pages/inspection-public"));
 const DomainHub            = lazy(() => import("@/pages/domain-hub"));
 const CodeVaultPage        = lazy(() => import("@/pages/code-vault-page"));
 const AppLogsPage          = lazy(() => import("@/pages/app-logs-page"));
+const AgentBridgePage      = lazy(() => import("@/pages/agent-bridge-page"));
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 const API_BASE = basePath;
@@ -348,6 +349,7 @@ function Router() {
                     <Route path="/domain-hub"            component={DomainHub} />
                     <Route path="/code-vault"            component={CodeVaultPage} />
                     <Route path="/app-logs"              component={AppLogsPage} />
+                    <Route path="/agent-bridge"          component={AgentBridgePage} />
                     <Route component={NotFound} />
                   </Switch>
                 </ProtectedRoute>

@@ -8,7 +8,7 @@ import {
   ShieldAlert, ShieldCheck, PlugZap, Swords, Monitor, MonitorPlay, Globe, Download,
   LayoutTemplate, PencilLine, Mail, Search, Grid3X3, Server, Upload, ScanLine,
   Bug, Timer, Vault, Zap, Compass, Receipt, Dumbbell, Megaphone, Feather, Terminal,
-  HardDrive,
+  HardDrive, Radio,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LogoMark, LogoWordmark } from "@/components/logo";
@@ -40,7 +40,7 @@ const TAB_PREFIXES: Record<SidebarTab, string[]> = {
            "/migrate", "/deploys", "/vault", "/activity", "/github", "/wizard", "/migration",
            "/leaving", "/sovereign", "/forge-drop", "/app-hub", "/registry", "/secrets",
            "/monitor", "/connections", "/antivirus", "/mail-scanner", "/admin",
-           "/domain-hub", "/code-vault", "/app-logs"],
+           "/domain-hub", "/code-vault", "/app-logs", "/agent-bridge"],
 };
 
 function detectTab(path: string): SidebarTab {
@@ -160,6 +160,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/domain-hub",     label: "Domain Hub",         icon: Globe,       tip: "Track all your domains — DNS status, SSL health, and expiry alerts" },
     { href: "/code-vault",     label: "Code Vault",         icon: Archive,     tip: "Every version of your code — auto-saved on every push, always downloadable" },
     { href: "/app-logs",       label: "App Logs",           icon: Terminal,    tip: "Live container logs from your deployed Coolify apps" },
+    { href: "/agent-bridge",   label: "Agent Bridge",       icon: Radio,       tip: "Connect local Forge Agents — send commands, relay messages, install apps remotely" },
   ];
 
   const TAB_ITEMS: Record<SidebarTab, NavItem[]> = {
