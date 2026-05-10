@@ -3,6 +3,9 @@ import { openai } from "@workspace/integrations-openai-ai-server";
 import { createHmac } from "crypto";
 import path from "path";
 import fs from "fs";
+import { db } from "@workspace/db";
+import { cliTokensTable } from "@workspace/db";
+import { eq } from "drizzle-orm";
 
 const router = Router();
 
@@ -218,7 +221,20 @@ router.post("/help/cli-chat", async (req, res) => {
   if (!authHeader?.startsWith("Bearer ")) {
     return res.status(401).json({ error: "Bearer token required" });
   }
-  const userId = verifyCliToken(authHeader.slice(7));
+  const rawToken = authHeader.slice(7);
+
+  // Try DB-stored token first (generated via /get-forge page)
+  let userId: string | null = null;
+  try {
+    const [record] = await db.select().from(cliTokensTable).where(eq(cliTokensTable.token, rawToken));
+    if (record) {
+      userId = record.userId;
+      await db.update(cliTokensTable).set({ lastUsedAt: new Date() }).where(eq(cliTokensTable.id, record.id));
+    }
+  } catch { /* fall through to HMAC check */ }
+
+  // Fall back to HMAC-signed token (older flow)
+  if (!userId) userId = verifyCliToken(rawToken);
   if (!userId) return res.status(401).json({ error: "Invalid or expired CLI token" });
 
   const { messages } = req.body as {
