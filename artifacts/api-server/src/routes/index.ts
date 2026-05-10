@@ -70,6 +70,7 @@ import domainsRouter from "./domains";
 import codeVaultRouter from "./code-vault-route";
 import appLogsRouter from "./app-logs";
 import agentBridgeRouter from "./agent-bridge";
+import autoSyncRouter from "./auto-sync";
 
 const router: IRouter = Router();
 
@@ -144,5 +145,6 @@ router.use(domainsRouter);
 router.use(codeVaultRouter);
 router.use(appLogsRouter);
 router.use(agentBridgeRouter);
+router.use(autoSyncRouter);
 
 export default router;

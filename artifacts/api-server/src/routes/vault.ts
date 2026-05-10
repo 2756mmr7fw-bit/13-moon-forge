@@ -118,6 +118,26 @@ router.post("/vault/repos", async (req, res) => {
     }
 
     res.status(201).json(repo);
+
+    // Auto-register Code Vault push webhook on the new repo (fire-and-forget)
+    void (async () => {
+      try {
+        const owner = forgejoRepo.owner.login;
+        const repoName = body.data.name;
+        const APP_URL = process.env["APP_URL"] ?? "https://13moonforge.ai";
+        const INBOUND_KEY = process.env["TPTS_INBOUND_KEY"] ?? "";
+        const webhookUrl = `${APP_URL}/api/code-vault/webhook`;
+        await forgejoApi("POST", `/repos/${owner}/${repoName}/hooks`, {
+          type: "forgejo",
+          config: { url: webhookUrl, content_type: "json", secret: INBOUND_KEY },
+          events: ["push"],
+          active: true,
+        });
+        req.log.info({ owner, repoName }, "Code Vault webhook auto-registered");
+      } catch (e) {
+        req.log.warn({ err: e }, "Auto-register webhook failed — skipping");
+      }
+    })();
   } catch (err) {
     req.log.error({ err }, "Failed to create repo");
     res.status(500).json({ error: "Internal server error" });
@@ -219,6 +239,24 @@ router.post("/vault/import/github", async (req, res) => {
       await db.update(importsTable)
         .set({ status: "done", updatedAt: new Date() })
         .where(eq(importsTable.id, imp.id));
+
+      // Auto-register Code Vault webhook on imported repo (fire-and-forget)
+      void (async () => {
+        try {
+          const APP_URL = process.env["APP_URL"] ?? "https://13moonforge.ai";
+          const INBOUND_KEY = process.env["TPTS_INBOUND_KEY"] ?? "";
+          const webhookUrl = `${APP_URL}/api/code-vault/webhook`;
+          await forgejoApi("POST", `/repos/${forgejoRepo.owner.login}/${derivedName}/hooks`, {
+            type: "forgejo",
+            config: { url: webhookUrl, content_type: "json", secret: INBOUND_KEY },
+            events: ["push"],
+            active: true,
+          });
+          req.log.info({ repo: derivedName }, "Code Vault webhook auto-registered on import");
+        } catch (e) {
+          req.log.warn({ err: e }, "Auto-register webhook on import failed — skipping");
+        }
+      })();
     } catch (err) {
       req.log.error({ err }, "GitHub migration failed");
       await db.update(importsTable)

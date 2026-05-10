@@ -14,6 +14,7 @@ import {
 import {
   KeyRound, Plus, Trash2, Eye, EyeOff, Download, Upload, Loader2,
   ChevronDown, ChevronRight, Copy, Check, ShieldCheck, Info, AlertTriangle, RotateCcw,
+  RefreshCw, Server, Zap, CloudDownload,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@workspace/replit-auth-web";
@@ -532,6 +533,112 @@ function AppGroup({ appName, secrets, onDelete, onExport }: {
   );
 }
 
+// ─── Coolify Pull Panel ───────────────────────────────────────────────────────
+
+interface SyncStatus {
+  coolify: { connected: boolean; url: string | null; name: string | null; appCount: number };
+  secrets: { total: number; fromCoolify: number };
+}
+
+function CoolifyPullPanel({ onPulled }: { onPulled: () => void }) {
+  const [status, setStatus] = useState<SyncStatus | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const [result, setResult] = useState<{ saved: number; skipped: number; totalApps: number } | null>(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    fetch(`${API_BASE}/api/auto-sync/status`, { credentials: "include" })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setStatus(data as SyncStatus); })
+      .catch(() => {});
+  }, [result]);
+
+  async function handlePull(force = false) {
+    setSyncing(true);
+    setError("");
+    setResult(null);
+    try {
+      const r = await fetch(`${API_BASE}/api/auto-sync/pull-coolify-envs`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ force }),
+      });
+      const data = await r.json() as { ok?: boolean; saved?: number; skipped?: number; totalApps?: number; error?: string };
+      if (!r.ok) { setError(data.error ?? "Sync failed"); return; }
+      setResult({ saved: data.saved ?? 0, skipped: data.skipped ?? 0, totalApps: data.totalApps ?? 0 });
+      if ((data.saved ?? 0) > 0) onPulled();
+    } catch {
+      setError("Network error — try again");
+    } finally {
+      setSyncing(false);
+    }
+  }
+
+  if (!status) return null;
+  if (!status.coolify.connected) return null;
+
+  return (
+    <div className="rounded-xl border border-blue-500/25 bg-blue-500/5 p-4">
+      <div className="flex items-start gap-3">
+        <div className="mt-0.5 shrink-0 rounded-lg bg-blue-500/15 p-2">
+          <Server size={16} className="text-blue-400" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div>
+              <p className="text-sm font-semibold text-blue-300 flex items-center gap-1.5">
+                <Zap size={13} /> Auto-Sync from Coolify
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Connected to <span className="text-blue-400 font-medium">{status.coolify.name ?? status.coolify.url}</span>
+                {" · "}{status.coolify.appCount} app{status.coolify.appCount !== 1 ? "s" : ""}
+                {" · "}{status.secrets.fromCoolify} key{status.secrets.fromCoolify !== 1 ? "s" : ""} already synced
+              </p>
+            </div>
+            <div className="flex gap-2 shrink-0">
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1.5 border-blue-500/30 text-blue-300 hover:bg-blue-500/10 text-xs"
+                onClick={() => handlePull(false)}
+                disabled={syncing}
+              >
+                {syncing ? <Loader2 size={12} className="animate-spin" /> : <CloudDownload size={12} />}
+                Pull New Keys
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1.5 border-blue-500/20 text-blue-400/70 hover:bg-blue-500/10 text-xs"
+                onClick={() => handlePull(true)}
+                disabled={syncing}
+              >
+                <RefreshCw size={12} className={syncing ? "animate-spin" : ""} />
+                Force Refresh All
+              </Button>
+            </div>
+          </div>
+
+          {result && (
+            <div className="mt-3 flex items-center gap-2 rounded-lg bg-green-500/10 border border-green-500/20 px-3 py-2">
+              <Check size={13} className="text-green-400 shrink-0" />
+              <span className="text-xs text-green-300">
+                Synced {result.totalApps} app{result.totalApps !== 1 ? "s" : ""} —{" "}
+                <strong>{result.saved}</strong> key{result.saved !== 1 ? "s" : ""} saved
+                {result.skipped > 0 ? `, ${result.skipped} already up-to-date` : ""}
+              </span>
+            </div>
+          )}
+          {error && (
+            <p className="mt-2 text-xs text-red-400">{error}</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function SecretsVault() {
@@ -628,6 +735,9 @@ export default function SecretsVault() {
           </Button>
         </div>
       </div>
+
+      {/* Coolify auto-sync panel */}
+      {isAuthenticated && <CoolifyPullPanel onPulled={loadSecrets} />}
 
       {/* Rotation warnings */}
       {(() => {
