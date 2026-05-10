@@ -223,6 +223,44 @@ This also means every level advances all three builds at once. After Level 6, th
 
 ---
 
+### The Code Dojo — Typing Speed for Developers
+
+Every trade has repetitive drills. A carpenter swings a hammer ten thousand times before the motion becomes unconscious. A pianist plays scales every morning for the same reason. Coding is no different — and yet almost no one trains it this way.
+
+The Code Dojo is a focused practice tool inside the Academy. Not a game. Not a leaderboard gimmick. A dojo — a place for deliberate repetition that drives real code from your eyes into your fingers until it lives there without thinking.
+
+**What gets practiced:**
+
+*Common Code Patterns* — the things developers type ten times a day. Variable declarations. Function signatures. If/else chains. Array methods. Import statements. Database queries. API calls. These aren't chosen randomly — they're the actual patterns that appear most often in real codebases. The student who has typed `const [state, setState] = useState(null)` fifty times doesn't have to think about it anymore. Their hands know it.
+
+*Read and Copy* — a line (or block) of real code appears on screen. The student reads it, understands it, then types it exactly. Not transcribing — reading first, then reproducing from comprehension. This trains two things simultaneously: the ability to parse what code says quickly, and the physical memory of how to write it. The brain encodes differently when it reads-then-writes versus simply copying. It sticks deeper.
+
+*Progressive Patterns* — difficulty scales with level. Level 1 students type variable assignments and simple conditionals. Level 5 students type function definitions and loop structures. Level 9 students type class definitions, async/await patterns, and real SQL. The Dojo knows where the student is in the Academy and only offers what they've already learned — no practicing patterns you haven't been taught yet.
+
+*Language-Specific Exercises* — JavaScript, Python, SQL, HTML/CSS, Bash. Each language has its own muscle memory. The Dojo tracks them separately. You can be fast in Python and slow in JavaScript — that's information worth having.
+
+**How a session works:**
+
+The student picks a language and a pattern category. The Dojo shows a block of real code — not invented for the exercise, pulled from actual code that exists in real projects. They read it for five seconds. Then they type it. The Dojo tracks:
+- Words per minute (on code, not prose — the metric is honest)
+- Accuracy to the character
+- Time from first read to last keystroke
+- Streak — how many sessions in a row without a significant accuracy drop
+
+No time pressure. No penalty for going slow. Speed is a byproduct of accuracy practiced enough times. The Dojo never rewards rushing.
+
+**The science behind it:**
+
+Reading code and then typing it is not the same as looking at code. The read-then-reproduce cycle forces the brain to process meaning first — which means the pattern is encoded with context, not just as a visual sequence. That's why surgeons narrate procedures while practicing them. The narration (or the typing) transforms passive observation into active encoding. The student who has reproduced a `fetch` call with proper error handling twenty times doesn't just type it faster — they understand it differently. It's in the body now, not just the notes.
+
+**How it fits into the Academy:**
+
+The Dojo is available from Level 1 onward. It's never required — it's a place a student can go when they want to cement something, or when they feel their hands falling behind their brain. By Level 6 (Apprentice), a student who has used the Dojo regularly types code at a speed that feels natural. By Level 9, they're writing real code without hunting for syntax.
+
+The 13 Moon connection: Rhythmic days (Moon Tone 6 — Balance) are good Dojo days. The Forge will suggest it: *"Today is a Rhythmic day — good for repetition, refinement, and cleaning up what's rough. Ten minutes in the Dojo?"*
+
+---
+
 ### The Return and Improve Rule
 
 At any level, a student can go back to something they built earlier and make it better with what they know now.
