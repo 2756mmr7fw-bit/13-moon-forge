@@ -1395,7 +1395,32 @@ The dot updates automatically — no manual refresh. The Forge polls DNS resolut
 
 *Propagation View* — when a domain is orange, clicking it opens a panel showing real-time propagation status across major DNS servers worldwide (same data as dnschecker.org, built in). The user watches the map go green without leaving Forge.
 
-*Connect to App* — each domain has a "Connected to" field. Pick from your deployed apps in the App Hub. The Forge shows the Coolify service UUID, the domain config, and the expected A record value. Copy-ready DNS instructions for whatever registrar you use.
+*Connect to App* — each domain has a "Connected to" field. Pick from your deployed apps in the App Hub. The Forge shows the Coolify service UUID, the domain config, and the expected A record value.
+
+*Copy-Ready DNS Setup* — the moment you connect a domain to an app, the Forge generates a DNS setup card showing every record that needs to exist, formatted exactly as the registrar expects it, with a copy button on each value:
+
+```
+Add these records to your DNS provider:
+
+┌──────────────────────────────────────────────────────┐
+│  Type   Name   Value              TTL    Proxy        │
+├──────────────────────────────────────────────────────┤
+│  A      @      5.78.154.21        Auto   DNS only ⚠️  │
+│  CNAME  www    13moonantivirus.ai Auto   DNS only ⚠️  │
+└──────────────────────────────────────────────────────┘
+
+⚠️  If your DNS is managed by Cloudflare, set Proxy status
+    to "DNS only" (grey cloud) on both records. The orange
+    proxy will interfere with SSL certificate generation.
+
+Cloudflare users:  dash.cloudflare.com → your domain → DNS → Records
+GoDaddy users:     dcc.godaddy.com → DNS → Manage
+Namecheap users:   namecheap.com → Domain List → Manage → Advanced DNS
+```
+
+The card detects which registrar the domain is likely using (based on the nameservers) and shows instructions specific to that registrar — not generic steps. A GoDaddy user sees GoDaddy steps. A Cloudflare user sees a Cloudflare-specific warning about the orange proxy.
+
+After the user saves their DNS records, the Forge polls the domain automatically and moves the status dot from grey → orange → green as propagation completes. No manual checking required.
 
 *Buy a Domain* — a direct link to purchase from a preferred registrar (Namecheap or Cloudflare Registrar — both have APIs that would allow in-app purchase eventually). Phase 1 is just linking out with the search pre-filled. Phase 2 is in-app purchase and automatic DNS configuration.
 
