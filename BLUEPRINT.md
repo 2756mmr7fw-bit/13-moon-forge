@@ -1707,4 +1707,162 @@ Once both are added, redeploy the Call Guardian Coolify app and run `pnpm --filt
 
 ---
 
+## The Forge Protection System — Full Safeguard Stack
+
+The goal: every person who builds on Forge should have their work protected by multiple independent layers, so that no single failure — a database going down, a domain expiring, a host going offline, a key being revoked — can take everything away from them. The platform that protects the most is the platform people trust the most.
+
+---
+
+### Layer 1 — Forge Code Vault (Per-App Code Backup)
+
+Every app a user builds or migrates gets its own isolated Code Vault entry inside Forge. This is completely separate from Forgejo (which is the live deploy repo). The Vault is a snapshot archive.
+
+**What it stores per app:**
+- Full source code snapshot at every push — not just the latest, every version
+- Each snapshot is timestamped and labeled with the commit message if available
+- Users can browse snapshot history and restore any version with one click
+- The code is stored encrypted in object storage (Cloudflare R2 or Backblaze B2) — not in the database, just indexed there
+
+**How it stays updated:**
+- When a user pushes to Forgejo, a webhook fires to Forge and a new snapshot is created automatically
+- No manual action needed — every push = a new vault entry
+- The vault entry shows: app name, snapshot date, file count, size, and a diff preview vs the previous version
+
+**What users can do with it:**
+- Download a full zip of any snapshot at any time — they own the code, they can take it anywhere
+- Restore a previous version to Forgejo with one click (triggers a Coolify redeploy from the restored code)
+- Compare any two snapshots side by side — see exactly what changed between versions
+- Share a read-only link to a snapshot for collaboration or review
+
+**Per-app separation:**
+- Each app has its own vault namespace — Antivirus code never mixes with Call Guardian code
+- Vault is visible inside the App Hub under each app's detail page
+- Admin can see vault usage across all users; users only see their own
+
+---
+
+### Layer 2 — Dual Database Protection (Per App)
+
+Every app gets two independent databases:
+
+| Database | Role |
+|----------|------|
+| Primary (Replit Postgres or VPS Postgres) | Live, read-write, serves all requests |
+| Neon (secondary) | Hot standby — receives writes in parallel, can be promoted instantly |
+
+**How it works:**
+- Write operations go to both databases simultaneously via a thin write-relay layer built into the API server
+- Reads come from the primary only (faster)
+- If the primary goes down, the app automatically switches reads to Neon — zero downtime for the user
+- A daily automated dump of both databases is stored in the Code Vault alongside the code snapshots
+- Database backups are retained for 30 days
+
+**Status shown in App Hub:**
+- Each app shows both database connections: green (connected), yellow (degraded), red (unreachable)
+- If Neon falls behind the primary, an alert fires to the user
+
+---
+
+### Layer 3 — API Key Vault with Health Monitoring
+
+Every API key a user adds to their app is stored encrypted in the Forge Secrets Vault (AES-256-GCM). Keys are grouped per app.
+
+**Extra protections beyond storage:**
+- **Expiry tracking** — if a key has a known expiry (Stripe webhooks, JWT secrets with rotation policies), Forge tracks it and sends an alert 30 days before expiry
+- **Usage monitoring** — if a key stops being used (API calls drop to zero for 7+ days), Forge flags it as possibly revoked or rotated
+- **Key health check** — for supported services (Twilio, Resend, OpenAI, etc.), Forge can ping a lightweight validation endpoint to confirm the key still works — daily
+- **Rotation reminders** — for security-sensitive keys (payment processors, auth secrets), Forge suggests rotation every 90 days
+- **Duplicate detection** — if the same key value appears in two apps, Forge warns the user (a key shared across apps is a single point of failure)
+
+---
+
+### Layer 4 — Domain Registry with Expiry Protection
+
+Every domain a user connects to Forge is tracked in the Domain Hub.
+
+**Protection features:**
+- **Expiry alerts** — 60 days, 30 days, 14 days, and 7 days before a domain expires, the user gets a notification inside Forge and optionally by email
+- **Registrar detection** — Forge identifies where the domain is registered (GoDaddy, Namecheap, Cloudflare, etc.) and links directly to the renewal page
+- **DNS health check** — daily verification that the domain still points to the correct IP. If DNS drifts (someone changed the A record), Forge alerts immediately
+- **SSL certificate monitoring** — checks cert expiry daily. Alerts at 30 days, 14 days, 7 days. If cert renewal fails (Let's Encrypt issue), Forge flags it with instructions to fix
+- **Propagation archive** — every time a DNS change is made, Forge logs the before/after state so the user has a record of every change
+
+---
+
+### Layer 5 — Uptime & App Health Monitoring
+
+Every deployed app is monitored continuously.
+
+**What's tracked:**
+- HTTP health check every 5 minutes — is the app responding?
+- Response time tracking — is it getting slower?
+- Container status via Coolify API — CPU/RAM/restarts
+- Crash detection — if a container restarts unexpectedly, Forge logs it and alerts the user
+
+**What happens on failure:**
+- User gets an in-app notification immediately
+- The incident is logged with timestamp, duration, and resolution
+- A 30-day uptime timeline is visible per app (see Uptime Timeline blueprint entry)
+- If the app has been down for 10+ minutes with no user action, Forge offers a one-click restart
+
+---
+
+### Layer 6 — Code Origin Protection (Where It Came From)
+
+For every app on Forge, the origin is recorded permanently:
+
+- Where it was originally built (Replit, GitHub, local upload, Forge itself)
+- The original repo URL if it was imported
+- The migration date and who performed it
+- Every deployment event: who deployed, when, what commit
+
+This creates an immutable chain of custody for the code. If there's ever a dispute about ownership, the Forge has the full history.
+
+---
+
+### Full Protection Summary — What Every User Gets
+
+| Layer | What it protects | How many copies |
+|-------|-----------------|-----------------|
+| Code Vault snapshots | Source code | 1 per push, unlimited history |
+| Forgejo repo | Live deploy code | 1 live + full git history |
+| Replit project (if kept) | Origin backup | 1 |
+| Primary database | User data | 1 live |
+| Neon database | User data | 1 hot standby |
+| Daily DB dump in Vault | User data | 30 days of daily snapshots |
+| Secrets Vault | API keys | Encrypted, per-app |
+| Domain Registry | Domain ownership | Tracked with expiry alerts |
+| SSL monitoring | HTTPS availability | Daily checks |
+| Uptime monitoring | App availability | Check every 5 minutes |
+| Code origin log | Ownership record | Immutable history |
+
+**Result: every person on Forge has at minimum 3 copies of their code, 2 copies of their data, and active monitoring on their keys, domains, and app health — all visible from one dashboard.**
+
+---
+
+### What Else to Consider (Additional Safeguards)
+
+These were flagged as worth adding:
+
+- **Dependency vulnerability alerts** — weekly scan of each app's package.json for known CVEs (via npm audit). Alert the user if a critical vulnerability is found with a plain-English explanation and a fix suggestion.
+- **Secrets leak detection** — scan every code push for accidentally committed API keys, passwords, or tokens. Block the commit from reaching Forgejo and alert the user immediately.
+- **Offsite cold storage** — monthly archive of the Code Vault to a second cloud provider (e.g., if primary is Cloudflare R2, cold backup goes to Backblaze). Completely independent infrastructure.
+- **User data export** — at any time, a user can request a full data export: their code, their database schema, their API key names (not values), their domain records, their uptime logs — packaged as a single downloadable zip. They can take everything and leave, no friction.
+- **Forge Emergency Kit** — a single document generated per app that contains: the Forgejo repo URL, the Coolify app UUID, the domain DNS records, the database connection string locations, and step-by-step instructions to redeploy from scratch if Forge itself ever went away. Plain English. Printable.
+
+---
+
+**Priority order for building this:**
+1. Code Vault snapshots (webhook from Forgejo → snapshot on push) — highest impact
+2. Domain expiry alerts — simplest to build, highest perceived value
+3. API key health monitoring — builds on existing Secrets Vault
+4. Dual database write relay — requires per-app API server changes
+5. Secrets leak detection on push — requires git hook integration
+6. Dependency vulnerability alerts — npm audit wrapper
+7. Full user data export
+8. Forge Emergency Kit generator
+9. Offsite cold storage
+
+---
+
 *Sovereign Digital LLC — 13moonforge.ai*
