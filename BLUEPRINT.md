@@ -1327,6 +1327,66 @@ That's the foundation everything else is built on.
 
 ---
 
+## Self-Host Feature Roadmap — The Infrastructure Layer
+
+These are the features that make the Forge the best place to own and run your own stack. They get built in order of what makes the biggest difference to the person who's already hosting.
+
+---
+
+### Per-App Monitoring Gauges *(next to build)*
+
+Every customer who deploys an app through Forge should be able to see live health for their own apps — not the server, their containers.
+
+**What it looks like:**
+Go to App Hub → click any deployed app → see arc gauges showing CPU %, RAM %, Uptime, and last deploy timestamp. Green/yellow/red signals using the same threshold logic as the admin gauges on the Monitor page. Optional restart button for apps they own.
+
+**How it works:**
+Pull `status` and `server_status` from the Coolify API per service UUID. Pair that with Docker stats from the server resource endpoint. Each user's deployed service UUIDs are already partially tracked in the DB — wire them to a new route `GET /api/apps/:uuid/health` that returns `{ cpu, ram, uptime, status }`. Reuse the existing arc gauge component from App Health — the same visual, applied to their app instead of the whole server.
+
+Admin sees all apps. Regular users see only their own.
+
+---
+
+### Secrets Vault → Coolify Env Sync
+
+When a user stores a key in the Forge Secrets Vault, offer a one-click "push to deployed app" that injects it as a Coolify env var on their service — and triggers a redeploy. Eliminates re-pasting API keys every time you spin up a new service. This is the bridge between "I have a key" and "my deployed app can use it" with zero copy-paste friction.
+
+---
+
+### In-App App Push (Guided Migration Flow)
+
+Right now getting an app from Replit (or anywhere) to Forgejo + Coolify takes 5 manual shell commands that the user has to run themselves. That's fine for technical users. Not fine for The Dreamer.
+
+The guided flow:
+1. User pastes their repo URL or picks a Replit project
+2. Forge creates the Forgejo repo (API already built)
+3. Forge gives them the exact 3 shell commands for their specific project — pre-filled, copy-ready
+4. Forge detects the stack from the Forgejo contents (Node, Python, Docker, etc.)
+5. Forge proposes a Coolify build config — user confirms or edits
+6. Deploy → domain → env vars — all from inside Forge
+
+Every step they currently do manually becomes a guided screen with one action.
+
+---
+
+### Multi-App Dashboard
+
+A single page showing every app a customer has deployed — at a glance. Status badge (running / stopped / errored), domain name as a clickable link, last deployed timestamp, and quick actions: Redeploy, Stop, View Logs. The person who runs 4 apps shouldn't have to open Coolify directly to get a pulse on all of them.
+
+---
+
+### Log Viewer (Per App)
+
+Pull container logs from Coolify and stream them inside Forge. Customer sees their app's stdout/stderr in real time without leaving Forge or logging into the VPS. Especially useful right after a deploy — the log view opens automatically and shows what happened.
+
+---
+
+### Forge CLI *(stretch goal)*
+
+A terminal tool — `forge deploy`, `forge logs`, `forge env set`, `forge status` — that wraps the Forge API so power users can manage their whole stack from their own machine. The Builder persona doesn't want to open a browser for this. They want one command from their terminal to know if their app is up.
+
+---
+
 ## The Closing Thought
 
 The name "Forge" is ancient. Nobody owns that word. A blacksmith's forge is the simplest possible thing — heat, iron, hammer, and someone who knows what they're doing. You bring raw material. You leave with something made.
