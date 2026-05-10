@@ -1661,4 +1661,24 @@ Build something. Own it. Take it home.
 
 ---
 
+## Database Status — Apps Missing Neon
+
+Tracked as of May 2026. All apps should have both a primary database (Replit PostgreSQL or equivalent) and a Neon secondary database for redundancy and user data protection.
+
+| App | Primary DB | Neon DB |
+|-----|-----------|---------|
+| 13 Moon Forge | Replit PostgreSQL (`DATABASE_URL`) | Neon (`DATABASE_URL_PROD`) ✅ |
+| 13 Moon Antivirus | Replit PostgreSQL (`DATABASE_URL`) | Neon (`NEON_DATABASE_URL`) ✅ |
+| 13 Moon Call Guardian | MISSING ❌ | MISSING ❌ |
+
+### Action Required — 13 Moon Call Guardian
+
+Go into the Call Guardian Replit project and:
+1. Create a Replit PostgreSQL database → copy the `DATABASE_URL` into Coolify and Call Guardian secrets
+2. Create a new project at [neon.tech](https://neon.tech) for Call Guardian → copy the connection string as `NEON_DATABASE_URL` into Coolify and Call Guardian secrets
+
+Once both are added, redeploy the Call Guardian Coolify app and run `pnpm --filter @workspace/db run push-force` (or equivalent) to push the schema to both databases.
+
+---
+
 *Sovereign Digital LLC — 13moonforge.ai*
