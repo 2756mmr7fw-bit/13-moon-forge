@@ -396,6 +396,77 @@ function SecretRow({ secret, onDelete }: { secret: Secret; onDelete: (id: number
   );
 }
 
+// ─── Coolify Sync Dialog ──────────────────────────────────────────────────────
+
+function CoolifySyncDialog({ appName, onClose }: { appName: string; onClose: () => void }) {
+  const [coolifyUuid, setCoolifyUuid] = useState("");
+  const [syncing, setSyncing] = useState(false);
+  const [result, setResult] = useState<{ succeeded?: number; total?: number; error?: string } | null>(null);
+
+  async function sync() {
+    if (!coolifyUuid.trim()) return;
+    setSyncing(true); setResult(null);
+    try {
+      const r = await fetch(`${API_BASE}/api/secrets/push-app-to-coolify`, {
+        method: "POST", headers: await headers(),
+        body: JSON.stringify({ appName, coolifyAppUuid: coolifyUuid.trim() }),
+      });
+      const d = await r.json() as { succeeded?: number; total?: number; error?: string };
+      setResult(d);
+    } catch { setResult({ error: "Network error — try again." }); }
+    finally { setSyncing(false); }
+  }
+
+  return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <RotateCcw size={16} /> Push to Coolify — {appName}
+          </DialogTitle>
+          <DialogDescription>
+            Push all secrets for <strong>{appName}</strong> as environment variables to a Coolify app. The app must be redeployed after syncing for changes to take effect.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 pt-1">
+          <div>
+            <Label>Coolify App UUID</Label>
+            <Input
+              value={coolifyUuid}
+              onChange={e => setCoolifyUuid(e.target.value)}
+              placeholder="e.g. kerhwzsawrxbvvldfdkvmuem"
+              className="mt-1 font-mono text-sm"
+            />
+            <p className="text-[11px] text-muted-foreground mt-1">
+              Find this in Coolify → your app → Settings → UUID at the top.
+            </p>
+          </div>
+
+          {result && !result.error && (
+            <div className="rounded-md bg-green-500/10 border border-green-500/20 p-3 text-sm text-green-400">
+              <ShieldCheck size={14} className="inline mr-1" />
+              {result.succeeded}/{result.total} keys pushed to Coolify. Redeploy the app for changes to apply.
+            </div>
+          )}
+          {result?.error && (
+            <div className="rounded-md bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-400">
+              <AlertTriangle size={14} className="inline mr-1" />
+              {result.error}
+            </div>
+          )}
+
+          <div className="flex gap-2">
+            <Button onClick={sync} disabled={syncing || !coolifyUuid.trim()} className="flex-1">
+              {syncing ? <><Loader2 size={14} className="animate-spin mr-1" />Syncing…</> : "Push to Coolify"}
+            </Button>
+            <Button variant="outline" onClick={onClose}>Close</Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // ─── App Group ────────────────────────────────────────────────────────────────
 
 function AppGroup({ appName, secrets, onDelete, onExport }: {
@@ -405,6 +476,7 @@ function AppGroup({ appName, secrets, onDelete, onExport }: {
   onExport: (appName: string) => void;
 }) {
   const [open, setOpen] = useState(true);
+  const [showCoolifySync, setShowCoolifySync] = useState(false);
 
   const byService = secrets.reduce<Record<string, Secret[]>>((acc, s) => {
     if (!acc[s.serviceName]) acc[s.serviceName] = [];
@@ -423,12 +495,21 @@ function AppGroup({ appName, secrets, onDelete, onExport }: {
           <span className="font-semibold text-sm">{appName}</span>
           <Badge variant="secondary" className="text-[10px] h-4">{secrets.length} key{secrets.length !== 1 ? "s" : ""}</Badge>
         </div>
-        <button
-          onClick={e => { e.stopPropagation(); onExport(appName); }}
-          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded hover:bg-muted"
-        >
-          <Download size={12} /> Export .env
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={e => { e.stopPropagation(); setShowCoolifySync(true); }}
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded hover:bg-muted"
+            title="Push all secrets for this app to Coolify as env vars"
+          >
+            <RotateCcw size={12} /> Sync to Coolify
+          </button>
+          <button
+            onClick={e => { e.stopPropagation(); onExport(appName); }}
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded hover:bg-muted"
+          >
+            <Download size={12} /> Export .env
+          </button>
+        </div>
       </button>
 
       {open && (
@@ -442,6 +523,10 @@ function AppGroup({ appName, secrets, onDelete, onExport }: {
             </div>
           ))}
         </div>
+      )}
+
+      {showCoolifySync && (
+        <CoolifySyncDialog appName={appName} onClose={() => setShowCoolifySync(false)} />
       )}
     </div>
   );

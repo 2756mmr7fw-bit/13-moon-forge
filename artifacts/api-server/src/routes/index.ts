@@ -66,6 +66,9 @@ import inspectorAppsRouter from "./inspector-apps";
 import inspectorAdvancedRouter from "./inspector-advanced";
 import bugCheckerRouter from "./bug-checker";
 import appHealthRouter from "./app-health";
+import domainsRouter from "./domains";
+import codeVaultRouter from "./code-vault-route";
+import appLogsRouter from "./app-logs";
 
 const router: IRouter = Router();
 
@@ -136,5 +139,8 @@ router.use(inspectorAppsRouter);
 router.use(inspectorAdvancedRouter);
 router.use(bugCheckerRouter);
 router.use(appHealthRouter);
+router.use(domainsRouter);
+router.use(codeVaultRouter);
+router.use(appLogsRouter);
 
 export default router;

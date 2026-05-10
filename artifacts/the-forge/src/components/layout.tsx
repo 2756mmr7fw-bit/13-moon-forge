@@ -39,7 +39,8 @@ const TAB_PREFIXES: Record<SidebarTab, string[]> = {
   own:    ["/freedom-center", "/forge-hosting", "/forge-coder", "/app-inspector", "/get-forge",
            "/migrate", "/deploys", "/vault", "/activity", "/github", "/wizard", "/migration",
            "/leaving", "/sovereign", "/forge-drop", "/app-hub", "/registry", "/secrets",
-           "/monitor", "/connections", "/antivirus", "/mail-scanner", "/admin"],
+           "/monitor", "/connections", "/antivirus", "/mail-scanner", "/admin",
+           "/domain-hub", "/code-vault", "/app-logs"],
 };
 
 function detectTab(path: string): SidebarTab {
@@ -156,6 +157,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/connections",    label: "Integrations",       icon: PlugZap,     tip: "Connect third-party services to the Forge" },
     { href: "/antivirus",      label: "Antivirus Link",     icon: ShieldAlert, tip: "Link 13 Moon Antivirus — extract emailed code and send it to Forge" },
     { href: "/mail-scanner",   label: "Mail Scanner",       icon: ScanLine,    tip: "Scan email attachments and route clean files to any app" },
+    { href: "/domain-hub",     label: "Domain Hub",         icon: Globe,       tip: "Track all your domains — DNS status, SSL health, and expiry alerts" },
+    { href: "/code-vault",     label: "Code Vault",         icon: Archive,     tip: "Every version of your code — auto-saved on every push, always downloadable" },
+    { href: "/app-logs",       label: "App Logs",           icon: Terminal,    tip: "Live container logs from your deployed Coolify apps" },
   ];
 
   const TAB_ITEMS: Record<SidebarTab, NavItem[]> = {

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { createCipheriv, createDecipheriv, randomBytes, createHash } from "crypto";
-import { db, appSecretsTable } from "@workspace/db";
+import { db, appSecretsTable, serverConnectionsTable } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
 
 export const router = Router();
@@ -201,6 +201,121 @@ router.post("/secrets/migrate", async (req, res) => {
   } catch (err) {
     req.log.error({ err }, "secrets migrate failed");
     return res.status(500).json({ error: "Migration failed" });
+  }
+});
+
+// ─── POST /api/secrets/:id/push-to-coolify ───────────────────────────────────
+// Pushes a single secret as an environment variable to the user's Coolify app.
+// Body: { coolifyAppUuid }
+router.post("/secrets/:id/push-to-coolify", async (req, res) => {
+  const id = Number(req.params.id);
+  const { coolifyAppUuid } = req.body as { coolifyAppUuid?: string };
+  if (!coolifyAppUuid?.trim()) return res.status(400).json({ error: "coolifyAppUuid is required" });
+
+  try {
+    const [row] = await db
+      .select()
+      .from(appSecretsTable)
+      .where(and(eq(appSecretsTable.id, id), eq(appSecretsTable.userId, req.userId)));
+    if (!row) return res.status(404).json({ error: "Secret not found" });
+
+    const value = decrypt(row.encryptedValue);
+
+    // Get the user's Coolify connection
+    const [conn] = await db.select().from(serverConnectionsTable).where(eq(serverConnectionsTable.userId, req.userId));
+    if (!conn) return res.status(400).json({ error: "No Coolify server connected" });
+
+    const base = conn.coolifyUrl.replace(/\/+$/, "");
+
+    // Fetch current env vars for the app
+    const envRes = await fetch(`${base}/api/v1/applications/${coolifyAppUuid.trim()}/envs`, {
+      headers: { Authorization: `Bearer ${conn.coolifyApiKey}`, Accept: "application/json" },
+      signal: AbortSignal.timeout(8000),
+    });
+
+    if (!envRes.ok) {
+      return res.status(envRes.status).json({ error: "Failed to fetch Coolify env vars" });
+    }
+
+    const envData = await envRes.json() as { data?: { key: string; value: string; is_secret?: boolean }[] } | unknown[];
+    const existing = Array.isArray(envData)
+      ? envData as { key: string; value: string; is_secret?: boolean }[]
+      : ((envData as { data?: { key: string; value: string; is_secret?: boolean }[] }).data ?? []);
+
+    const alreadyExists = existing.find(e => e.key === row.keyName);
+
+    let pushRes: Response;
+    if (alreadyExists) {
+      pushRes = await fetch(`${base}/api/v1/applications/${coolifyAppUuid.trim()}/envs`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${conn.coolifyApiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ key: row.keyName, value, is_secret: true }),
+        signal: AbortSignal.timeout(8000),
+      });
+    } else {
+      pushRes = await fetch(`${base}/api/v1/applications/${coolifyAppUuid.trim()}/envs`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${conn.coolifyApiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ key: row.keyName, value, is_secret: true }),
+        signal: AbortSignal.timeout(8000),
+      });
+    }
+
+    if (!pushRes.ok) {
+      const errText = await pushRes.text();
+      return res.status(pushRes.status).json({ error: "Coolify rejected the env var", detail: errText });
+    }
+
+    return res.json({ ok: true, key: row.keyName, updated: !!alreadyExists });
+  } catch (err) {
+    req.log.error({ err }, "secrets push-to-coolify failed");
+    return res.status(500).json({ error: "Failed to push secret to Coolify" });
+  }
+});
+
+// ─── POST /api/secrets/push-app-to-coolify ────────────────────────────────────
+// Pushes ALL secrets for a given appName to a Coolify app UUID at once.
+// Body: { appName, coolifyAppUuid }
+router.post("/secrets/push-app-to-coolify", async (req, res) => {
+  const { appName, coolifyAppUuid } = req.body as { appName?: string; coolifyAppUuid?: string };
+  if (!appName?.trim() || !coolifyAppUuid?.trim()) {
+    return res.status(400).json({ error: "appName and coolifyAppUuid are required" });
+  }
+
+  try {
+    const rows = await db
+      .select()
+      .from(appSecretsTable)
+      .where(and(eq(appSecretsTable.userId, req.userId), eq(appSecretsTable.appName, appName.trim())));
+
+    if (rows.length === 0) return res.status(404).json({ error: "No secrets found for this app" });
+
+    const [conn] = await db.select().from(serverConnectionsTable).where(eq(serverConnectionsTable.userId, req.userId));
+    if (!conn) return res.status(400).json({ error: "No Coolify server connected" });
+
+    const base = conn.coolifyUrl.replace(/\/+$/, "");
+
+    const results: { key: string; ok: boolean; error?: string }[] = [];
+    for (const row of rows) {
+      try {
+        const value = decrypt(row.encryptedValue);
+        const r = await fetch(`${base}/api/v1/applications/${coolifyAppUuid.trim()}/envs`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${conn.coolifyApiKey}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ key: row.keyName, value, is_secret: true }),
+          signal: AbortSignal.timeout(8000),
+        });
+        results.push({ key: row.keyName, ok: r.ok });
+      } catch (e) {
+        results.push({ key: row.keyName, ok: false, error: String(e) });
+      }
+    }
+
+    const succeeded = results.filter(r => r.ok).length;
+    return res.json({ ok: true, total: rows.length, succeeded, results });
+  } catch (err) {
+    req.log.error({ err }, "secrets bulk push failed");
+    return res.status(500).json({ error: "Bulk push failed" });
   }
 });
 

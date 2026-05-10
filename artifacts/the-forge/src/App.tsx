@@ -99,6 +99,9 @@ const ClerkCallbackPage = lazy(() => import("@/pages/clerk-callback"));
 const ClerkSignInPage      = lazy(() => import("@/pages/sign-in"));
 const ClerkSignUpPage      = lazy(() => import("@/pages/sign-up"));
 const InspectionPublicPage = lazy(() => import("@/pages/inspection-public"));
+const DomainHub            = lazy(() => import("@/pages/domain-hub"));
+const CodeVaultPage        = lazy(() => import("@/pages/code-vault-page"));
+const AppLogsPage          = lazy(() => import("@/pages/app-logs-page"));
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 const API_BASE = basePath;
@@ -342,6 +345,9 @@ function Router() {
                     <Route path="/bug-checker"           component={BugCheckerPage} />
                     <Route path="/app-health"            component={AppHealthPage} />
                     <Route path="/freedom-center"        component={FreedomCenter} />
+                    <Route path="/domain-hub"            component={DomainHub} />
+                    <Route path="/code-vault"            component={CodeVaultPage} />
+                    <Route path="/app-logs"              component={AppLogsPage} />
                     <Route component={NotFound} />
                   </Switch>
                 </ProtectedRoute>
