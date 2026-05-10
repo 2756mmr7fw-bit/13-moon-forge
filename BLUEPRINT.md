@@ -1471,6 +1471,159 @@ A terminal tool — `forge deploy`, `forge logs`, `forge env set`, `forge status
 
 ---
 
+## Additional Product Ideas — What Gets Built Next
+
+These are features that don't exist yet anywhere in the Forge. Each one is self-contained, worth building on its own terms, and fits the philosophy without bending it.
+
+---
+
+### The Skill Tree — A Map of Where You Stand
+
+The Academy has 12 levels and dozens of concepts inside them. Right now that structure exists as text. It should also exist as a visual.
+
+The Skill Tree is a node map — like a game's progression screen, but honest about what it represents. Each node is a concept: variables, loops, functions, CSS layout, async/await, database queries, deployment. Nodes are connected by dependency lines. You can't get to "Build a REST API" without passing through "Understand HTTP" and "Write a function."
+
+What makes it useful and not just decorative:
+- Completed nodes glow. Unlocked-but-not-started nodes are dim. Locked nodes are dark.
+- Clicking any node shows a one-paragraph description of the concept, which level it lives in, and a "practice it now" button that drops you into a Dojo session for that pattern.
+- The tree updates as the student progresses. It's a live record, not a static diagram.
+- The student can see exactly what's between them and Journeyman — not in terms of levels, but in terms of concepts. That's motivating in a way that "you're on Level 4" is not.
+
+The tree also serves as a diagnostic. A student who places at Level 6 can look at the lower nodes and quickly see if there are gaps — things they haven't formally covered even if they've used them in practice. The Forge can suggest filling those gaps before moving on.
+
+---
+
+### Moon Sprint Planner — Project Planning That Follows a Real Rhythm
+
+Every project gets broken down into tasks. Right now people do this in Notion, Jira, a sticky note on their monitor, or nowhere. The Forge can do it better because it knows two things nobody else does: what you're building, and what the moon is doing.
+
+The Sprint Planner works like this:
+
+The user describes what they want to accomplish in the next moon cycle (28 days). The Forge breaks it into tasks. Then it maps those tasks to the 13 tones of the moon cycle — not randomly, but by fit:
+
+- A task that involves defining the purpose of a feature goes on Magnetic day (tone 1 — purpose)
+- A task that involves cleaning up technical debt goes on Rhythmic day (tone 6 — balance)
+- A task that involves shipping something to real users goes on Planetary day (tone 10 — manifestation)
+- A task that involves deleting things that don't belong goes on Spectral day (tone 11 — liberation)
+
+The result is a 28-day plan that doesn't feel like a corporate sprint. It feels like a season. The kind of plan you'd actually follow because it respects the fact that different kinds of work fit different kinds of days.
+
+What this is not: a rigid schedule. The Forge proposes — the user adjusts. If they want to move a task, they move it. The planner is a suggestion, not a manager.
+
+The planner also remembers. At the end of a cycle, the Forge shows what got done, what got moved, and what got dropped. Over time, a student or builder learns their own rhythm — which tones they actually do their best work in — and the Forge adapts its suggestions accordingly.
+
+---
+
+### Stack Scanner — What Is This, and Can I Own It?
+
+The Guided Migration Flow tells you how to move an app to your own server. The Stack Scanner tells you what you're actually moving — before you commit.
+
+Point the Stack Scanner at any public Git repository (GitHub, GitLab, Forgejo, Bitbucket). It reads the repo and returns:
+
+- **Language and framework** — Node/Express, Python/Flask, Next.js, etc.
+- **Dependencies** — what packages it needs and whether any are unusual or heavyweight
+- **Database requirements** — does it need Postgres, SQLite, Redis, MongoDB?
+- **Environment variables** — which ones are required, which are optional, what they're for based on their names and how they're used
+- **Build complexity** — simple (one command), moderate (multi-step), or complex (requires specialized setup)
+- **Self-host estimate** — how much RAM and CPU it would likely need on the VPS, and what it would cost per month at current VPS pricing
+- **Dockerfile check** — does it already have one? Is it production-ready? If not, what would a basic one look like?
+
+The output is a plain-English briefing. Not a report full of jargon. A briefing: "This is a Node.js app. It uses Postgres and needs four environment variables. It already has a Dockerfile but it's missing a health check endpoint. Self-hosting this would use roughly 256MB RAM and cost about $3/month at your current server tier. Want me to prepare the migration?"
+
+This is the tool that turns "I found a cool open-source app" into "I own a running instance of it" without needing to read the entire repo first.
+
+---
+
+### Uptime Timeline — 30 Days in One View
+
+Current monitoring shows whether an app is up right now. That's useful but incomplete. What happened last Tuesday at 3am? How many times has this app restarted this month? What was the longest outage?
+
+The Uptime Timeline answers those questions with a simple horizontal bar per app — like GitHub's contribution graph, but for uptime. Each day is a block. Green is clean. Yellow had a hiccup. Red had an outage. Clicking any block shows what happened: when it went down, how long it was down, what the last log entry was before the crash.
+
+Built from data the Forge already collects — health check results stored at regular intervals. No new infrastructure. Just a view that makes the existing data meaningful over time.
+
+The practical value: when something breaks, the first question is always "has this happened before?" The timeline answers that in two seconds. It also builds confidence — a user who sees 28 green blocks and 2 yellow ones knows their stack is solid. That's worth knowing.
+
+---
+
+### API Key Health Monitor — Know Before It Breaks
+
+The Secrets Vault stores API keys. API keys expire. API keys get rotated. API keys hit rate limits. API keys get revoked when a billing card fails. Right now there is no warning before any of this happens — the app just stops working and the user has to diagnose why.
+
+The API Key Health Monitor runs silent checks on keys stored in the Vault that belong to supported services (OpenAI, Resend, Stripe, ElevenLabs, and others). For each key it checks:
+
+- Is it currently valid? (Makes a minimal authenticated call and checks for a 401)
+- When does it expire, if the API exposes that?
+- Is usage near a rate limit or quota ceiling?
+- How long since it was last rotated?
+
+Results are shown as a table in the Secrets Vault interface: key name, last checked, status (green/yellow/red), and a one-line note if something needs attention. A yellow key means "check this soon." A red key means "this is broken right now and something in production is likely failing because of it."
+
+No key value is ever sent anywhere outside the server. The check is done server-side and only the status result is returned to the UI.
+
+The monitor runs once per day automatically. The user can also trigger a manual check at any time.
+
+---
+
+### Forge Pair Mode — Build With Someone
+
+Right now the Forge is a solo experience. You and the AI. That's right for most sessions. But sometimes you want another person there — a collaborator, a mentor, a friend you're building something with.
+
+Pair Mode is not full multiplayer. It's simpler and more deliberate:
+
+One person (the driver) shares a session link. One other person (the navigator) joins. The navigator sees everything happening in real time — the AI conversation, the code being generated, the project state — and has a sidebar where they can type comments and suggestions that the driver can see. The driver decides what to act on. The AI is talking to the driver. The navigator is watching and advising.
+
+This maps to how real pair programming works: one person drives, one person thinks out loud. The Forge doesn't try to reinvent collaboration. It just makes the model that works in person possible remotely.
+
+Session links expire. Nothing is shared permanently unless both people have accounts and agree to it. The session ends when the driver closes it.
+
+Use cases this serves:
+- A mentor guiding a learner through a build without taking the keyboard
+- Two founders building their first app together from different cities
+- A developer showing a non-technical partner exactly what they're building and how
+- Academy office hours — a teacher joins a student's session to help them through a stuck point
+
+---
+
+### Waitlist Generator — Ship the Door Before the House Is Built
+
+When you're building a new app, the instinct is to wait until it's done to tell anyone. That's wrong. The right move is to tell people it's coming, collect their interest, and build an audience before you've finished building the product.
+
+The Waitlist Generator does this in under two minutes:
+
+1. You name the app and write one sentence describing it
+2. The Forge generates a simple landing page — clean, on-brand, honest about the status ("Coming soon — join the list to be first in")
+3. You pick a domain (from your Domain Hub) or use a Forge subdomain temporarily
+4. The page is live in one deploy
+5. Email addresses go into a list inside the Forge
+6. When you're ready to launch, the Forge sends the announcement to the list in one click
+
+No third-party email tool required for the waitlist itself (uses Resend under the hood, already integrated). No separate landing page builder. No Mailchimp account. Just: describe the thing, deploy the page, collect the interest, launch when it's ready.
+
+The landing page is not fancy. It's not supposed to be. It's supposed to be real — a human being telling other human beings that something is coming. The Forge's AI can draft the copy based on the one-sentence description. The user approves, edits, or replaces it.
+
+---
+
+### AI Code Reviewer — A Senior Engineer Who Has Time for You
+
+The Forge AI builds things. This is different: it reviews things.
+
+The Code Reviewer is a deliberate mode you enter when you want a second opinion on something that already exists. You open a project, select the code you want reviewed, and ask for a review. The AI reads it the way a senior engineer would — not just "does this work" but:
+
+- Is this the right approach for the problem?
+- What would break this under load, or with bad input?
+- What would be confusing to someone reading this in six months?
+- Is there a simpler way to accomplish the same thing?
+- What's missing — error handling, logging, validation?
+
+The output is not a list of complaints. It's a conversation. The Forge explains each observation and asks if you want to see what it would look like fixed. If you say yes, it shows the change. It doesn't make the change without asking.
+
+This serves The Builder (who wants a real second opinion, not just working code) and The Learner (who built something themselves and wants to know if they built it right). The feedback is calibrated to the user's skill level — a Level 3 student gets different language than a Level 9 builder, even on the same code.
+
+The reviewer is also the mode the Academy uses for homework. Submit your Level 5 homework and the Forge reviews it the same way a teacher would — specific, honest, constructive, and always pointing toward what to do next.
+
+---
+
 ## The Closing Thought
 
 The name "Forge" is ancient. Nobody owns that word. A blacksmith's forge is the simplest possible thing — heat, iron, hammer, and someone who knows what they're doing. You bring raw material. You leave with something made.
