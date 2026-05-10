@@ -1681,4 +1681,30 @@ Once both are added, redeploy the Call Guardian Coolify app and run `pnpm --filt
 
 ---
 
+## Feature Idea — Automatic API Key Sync to Secrets Vault
+
+**Goal**: When an API key is added to any app (via Coolify env vars or Replit Secrets), it should automatically appear in the Forge Secrets Vault so the user has one single place to see and manage all keys across all apps.
+
+**How it should work**:
+- Each app (Antivirus, Call Guardian, future apps) registers with the Forge
+- When a secret is added or updated in Coolify via the API, a webhook or sync job pushes a copy to the Forge Secrets Vault under that app's namespace
+- The Forge Secrets Vault shows keys grouped by app — Forge, Antivirus, Call Guardian, etc.
+- Editing a key in the Vault optionally pushes the update back to Coolify automatically
+- Replit secrets are read on first deploy and seeded into the Vault if not already present
+
+**Why this matters**:
+- Right now keys live in three places: Replit Secrets, Coolify env vars, and the Forge Vault — they can drift out of sync
+- The Vault becomes the single source of truth
+- No more manually copying keys between Replit, Coolify, and the Vault
+
+**Implementation notes**:
+- Coolify has a webhook system — trigger a Forge endpoint on env var change
+- Forge Secrets Vault already uses AES-256-GCM encryption — extend it to support per-app namespacing
+- Add a "Connected Apps" concept to the Vault UI showing which apps each key belongs to
+- For Replit → Vault sync: run a one-time import script on first self-host deploy
+
+**Priority**: Medium — implement after Call Guardian migration is complete
+
+---
+
 *Sovereign Digital LLC — 13moonforge.ai*
