@@ -10,6 +10,7 @@ import NewProject from "@/pages/new-project";
 import Editor from "@/pages/editor";
 import ProjectSettings from "@/pages/project-settings";
 import Landing from "@/pages/landing";
+import SignIn from "@/pages/sign-in";
 import { Layout } from "@/components/layout";
 
 const queryClient = new QueryClient();
@@ -40,6 +41,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Landing} />
+      <Route path="/sign-in" component={SignIn} />
       <Route path="/dashboard" component={() => (
         <ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>
       )} />
