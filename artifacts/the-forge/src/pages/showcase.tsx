@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
-import { Sparkles, Globe, MonitorSmartphone, LayoutTemplate, Server, Megaphone, ArrowRight, CheckCircle, TrendingUp, ExternalLink } from "lucide-react";
+import { useMemo, useState, useEffect } from "react";
+import { Sparkles, Globe, MonitorSmartphone, LayoutTemplate, Server, Megaphone, ArrowRight, CheckCircle, TrendingUp, ExternalLink, ThumbsUp } from "lucide-react";
+import { getAuthToken } from "@workspace/api-client-react";
 import { useListShowcaseApps } from "@workspace/api-client-react";
 import type { ShowcaseApp } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
@@ -377,7 +378,39 @@ function AppCard({ app, variant }: { app: ShowcaseApp; variant: "featured" | "co
   const getInitials = (name: string) => name.substring(0, 2).toUpperCase();
   const isFeatured = variant === "featured";
   const [imgFailed, setImgFailed] = useState(false);
+  const [upvotes, setUpvotes] = useState(0);
+  const [myVote, setMyVote] = useState(false);
+  const [voting, setVoting] = useState(false);
   const shot = screenshotSrc(app);
+
+  useEffect(() => {
+    fetch(`/api/showcase/${app.id}/reviews`)
+      .then(r => r.json())
+      .then((d: { upvotes?: number; myVote?: boolean }) => {
+        if (typeof d.upvotes === "number") setUpvotes(d.upvotes);
+        if (typeof d.myVote === "boolean") setMyVote(d.myVote);
+      })
+      .catch(() => {});
+  }, [app.id]);
+
+  async function handleUpvote(e: React.MouseEvent) {
+    e.preventDefault();
+    if (voting) return;
+    setVoting(true);
+    try {
+      const token = await getAuthToken();
+      const res = await fetch(`/api/showcase/${app.id}/upvote`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const d = await res.json() as { upvoted: boolean };
+        setMyVote(d.upvoted);
+        setUpvotes(v => d.upvoted ? v + 1 : Math.max(0, v - 1));
+      }
+    } catch {}
+    setVoting(false);
+  }
 
   return (
     <div className={`flex flex-col group overflow-hidden rounded-2xl border transition-all duration-300 hover:shadow-lg ${
@@ -466,6 +499,19 @@ function AppCard({ app, variant }: { app: ShowcaseApp; variant: "featured" | "co
           </div>
 
           <div className="flex items-center gap-1">
+            <button
+              onClick={handleUpvote}
+              disabled={voting}
+              className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs transition-colors ${
+                myVote
+                  ? "bg-primary/15 text-primary font-medium"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              }`}
+              title={myVote ? "Remove upvote" : "Upvote this app"}
+            >
+              <ThumbsUp className={`w-3 h-3 ${myVote ? "fill-primary" : ""}`} />
+              {upvotes > 0 && <span>{upvotes}</span>}
+            </button>
             {app.websiteUrl && (
               <a
                 href={app.websiteUrl}

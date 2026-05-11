@@ -8,7 +8,7 @@ import {
   ShieldAlert, ShieldCheck, PlugZap, Swords, Monitor, MonitorPlay, Globe, Download,
   LayoutTemplate, PencilLine, Mail, Search, Grid3X3, Server, Upload, ScanLine,
   Bug, Timer, Vault, Zap, Compass, Receipt, Dumbbell, Megaphone, Feather, Terminal,
-  HardDrive, Radio,
+  HardDrive, Radio, Bell, BarChart2, Gift, ScrollText, Database,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LogoMark, LogoWordmark } from "@/components/logo";
@@ -31,7 +31,7 @@ interface NavItem {
 type SidebarTab = "home" | "build" | "create" | "learn" | "own";
 
 const TAB_PREFIXES: Record<SidebarTab, string[]> = {
-  home:   ["/dashboard", "/showcase", "/projects", "/brainstorm", "/town-square", "/gallery", "/mailbox", "/academy", "/pricing", "/promise"],
+  home:   ["/dashboard", "/showcase", "/projects", "/brainstorm", "/town-square", "/gallery", "/mailbox", "/academy", "/pricing", "/promise", "/notifications", "/changelog", "/usage", "/referral", "/builder"],
   build:  ["/workspace", "/build-with-me", "/starters", "/project-room", "/moons", "/hawk", "/snippets"],
   create: ["/site-forge", "/tools", "/code-forge", "/game-doc", "/game-tools", "/game-studio",
            "/computer-advisor", "/screen-coach", "/launch", "/legal", "/fix", "/download"],
@@ -40,7 +40,8 @@ const TAB_PREFIXES: Record<SidebarTab, string[]> = {
            "/migrate", "/deploys", "/vault", "/activity", "/github", "/wizard", "/migration",
            "/leaving", "/sovereign", "/forge-drop", "/app-hub", "/registry", "/secrets",
            "/monitor", "/connections", "/antivirus", "/mail-scanner", "/admin",
-           "/domain-hub", "/code-vault", "/app-logs", "/agent-bridge"],
+           "/domain-hub", "/analytics", "/env-manager", "/cron-jobs", "/backup-restore",
+           "/database-manager", "/team", "/code-vault", "/app-logs", "/agent-bridge"],
 };
 
 function detectTab(path: string): SidebarTab {
@@ -87,15 +88,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
   // ── Nav item groups ──────────────────────────────────────────────────────
 
   const homeItems: NavItem[] = [
-    { href: "/dashboard",    label: "Home",           icon: Flame,         tip: "Your dashboard — projects, stats, quick actions" },
-    { href: "/showcase",     label: "Showcase",       icon: Sparkles,      tip: "Free broadcast for apps hosted by Forge" },
-    { href: "/projects",     label: "My Projects",    icon: FolderKanban,  tip: "View and manage all your projects" },
-    { href: "/projects/new", label: "New Project",    icon: PlusCircle,    tip: "Start a brand-new project from scratch" },
-    { href: "/brainstorm",   label: "Brainstorm",     icon: Sparkles,      tip: "AI helps you flesh out and plan your idea" },
-    { href: "/town-square",  label: "Town Square",    icon: Users,         tip: "The full family of apps — one account, one subscription" },
-    { href: "/gallery",      label: "Forge Gallery",  icon: Grid3X3,       tip: "See what people have built — public shared outputs" },
-    { href: "/mailbox",      label: "Forge Inbox",    icon: Mail,          tip: "Forward emails here — attachments land in Workspace" },
-    { href: "/academy",      label: "Forge Academy",  icon: GraduationCap, tip: "The coding school — sovereign coders, not order takers" },
+    { href: "/dashboard",      label: "Home",           icon: Flame,         tip: "Your dashboard — projects, stats, quick actions" },
+    { href: "/notifications",  label: "Notifications",  icon: Bell,          tip: "Alerts for deploys, domain expiry, and more" },
+    { href: "/usage",          label: "Usage & Plan",   icon: BarChart2,     tip: "Your message quota, Moon entitlements, and plan details" },
+    { href: "/showcase",       label: "Showcase",       icon: Sparkles,      tip: "Free broadcast for apps hosted by Forge" },
+    { href: "/projects",       label: "My Projects",    icon: FolderKanban,  tip: "View and manage all your projects" },
+    { href: "/projects/new",   label: "New Project",    icon: PlusCircle,    tip: "Start a brand-new project from scratch" },
+    { href: "/brainstorm",     label: "Brainstorm",     icon: Sparkles,      tip: "AI helps you flesh out and plan your idea" },
+    { href: "/town-square",    label: "Town Square",    icon: Users,         tip: "The full family of apps — one account, one subscription" },
+    { href: "/gallery",        label: "Forge Gallery",  icon: Grid3X3,       tip: "See what people have built — public shared outputs" },
+    { href: "/mailbox",        label: "Forge Inbox",    icon: Mail,          tip: "Forward emails here — attachments land in Workspace" },
+    { href: "/academy",        label: "Forge Academy",  icon: GraduationCap, tip: "The coding school — sovereign coders, not order takers" },
+    { href: "/referral",       label: "Invite Friends", icon: Gift,          tip: "Share your referral link — earn 50 bonus messages per invite" },
+    { href: "/changelog",      label: "What's New",     icon: ScrollText,    tip: "Everything that's shipped in The Forge, newest first" },
   ];
 
   const buildItems: NavItem[] = [
@@ -159,6 +164,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/antivirus",      label: "Antivirus Link",     icon: ShieldAlert, tip: "Link 13 Moon Antivirus — extract emailed code and send it to Forge" },
     { href: "/mail-scanner",   label: "Mail Scanner",       icon: ScanLine,    tip: "Scan email attachments and route clean files to any app" },
     { href: "/domain-hub",     label: "Domain Hub",         icon: Globe,       tip: "Track all your domains — DNS status, SSL health, and expiry alerts" },
+    { href: "/analytics",      label: "Analytics",          icon: BarChart2,   tip: "Page-view tracking for your hosted domains — add a snippet, see data instantly" },
+    { href: "/env-manager",    label: "Env Manager",        icon: KeyRound,    tip: "View and edit environment variables for your deployed Coolify apps" },
+    { href: "/cron-jobs",      label: "Cron Jobs",          icon: Timer,       tip: "Schedule recurring tasks — cleanups, reports, notifications — on your server" },
+    { href: "/backup-restore", label: "Backup & Restore",   icon: HardDrive,   tip: "Snapshot and restore your Forge data with one click" },
+    { href: "/database-manager", label: "DB Manager",       icon: Database,    tip: "Run SQL queries and browse tables in your Forge database" },
+    { href: "/team",           label: "Team",               icon: Users,       tip: "Invite collaborators — editors and viewers with role-based access" },
     { href: "/code-vault",     label: "Code Vault",         icon: Archive,     tip: "Every version of your code — auto-saved on every push, always downloadable" },
     { href: "/app-logs",       label: "App Logs",           icon: Terminal,    tip: "Live container logs from your deployed Coolify apps" },
     { href: "/agent-bridge",   label: "Agent Bridge",       icon: Radio,       tip: "Connect local Forge Agents — send commands, relay messages, install apps remotely" },

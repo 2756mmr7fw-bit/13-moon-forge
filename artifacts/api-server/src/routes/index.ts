@@ -73,6 +73,15 @@ import agentBridgeRouter from "./agent-bridge";
 import autoSyncRouter from "./auto-sync";
 import filmRouter from "./film";
 import showcaseRouter from "./showcase";
+import notificationsRouter from "./notifications";
+import siteAnalyticsRouter from "./site-analytics";
+import showcaseReviewsRouter from "./showcase-reviews";
+import builderProfileRouter from "./builder-profile";
+import coolifyEnvsRouter from "./coolify-envs";
+import cronJobsRouter from "./cron-jobs";
+import backupsRouter from "./backups";
+import dbManagerRouter from "./db-manager";
+import teamRouter from "./team";
 
 const router: IRouter = Router();
 
@@ -150,5 +159,14 @@ router.use(agentBridgeRouter);
 router.use(autoSyncRouter);
 router.use(filmRouter);
 router.use(showcaseRouter);
+router.use(notificationsRouter);
+router.use(siteAnalyticsRouter);
+router.use(showcaseReviewsRouter);
+router.use(builderProfileRouter);
+router.use(coolifyEnvsRouter);
+router.use(cronJobsRouter);
+router.use(backupsRouter);
+router.use(dbManagerRouter);
+router.use(teamRouter);
 
 export default router;

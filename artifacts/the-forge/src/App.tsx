@@ -104,6 +104,17 @@ const DomainHub            = lazy(() => import("@/pages/domain-hub"));
 const CodeVaultPage        = lazy(() => import("@/pages/code-vault-page"));
 const AppLogsPage          = lazy(() => import("@/pages/app-logs-page"));
 const AgentBridgePage      = lazy(() => import("@/pages/agent-bridge-page"));
+const ReferralPage         = lazy(() => import("@/pages/referral"));
+const ChangelogPage        = lazy(() => import("@/pages/changelog"));
+const UsageDashboard       = lazy(() => import("@/pages/usage-dashboard"));
+const NotificationsPage    = lazy(() => import("@/pages/notifications-page"));
+const AnalyticsPage        = lazy(() => import("@/pages/analytics-page"));
+const EnvManagerPage       = lazy(() => import("@/pages/env-manager"));
+const BuilderProfilePage   = lazy(() => import("@/pages/builder-profile"));
+const CronJobsPage         = lazy(() => import("@/pages/cron-jobs"));
+const BackupRestorePage    = lazy(() => import("@/pages/backup-restore"));
+const DatabaseManagerPage  = lazy(() => import("@/pages/database-manager"));
+const TeamCollaborationPage = lazy(() => import("@/pages/team-collaboration"));
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 const API_BASE = basePath;
@@ -352,6 +363,17 @@ function Router() {
                     <Route path="/code-vault"            component={CodeVaultPage} />
                     <Route path="/app-logs"              component={AppLogsPage} />
                     <Route path="/agent-bridge"          component={AgentBridgePage} />
+                    <Route path="/referral"              component={ReferralPage} />
+                    <Route path="/changelog"             component={ChangelogPage} />
+                    <Route path="/usage"                 component={UsageDashboard} />
+                    <Route path="/notifications"         component={NotificationsPage} />
+                    <Route path="/analytics"             component={AnalyticsPage} />
+                    <Route path="/env-manager"           component={EnvManagerPage} />
+                    <Route path="/builder/:userId"       component={BuilderProfilePage} />
+                    <Route path="/cron-jobs"             component={CronJobsPage} />
+                    <Route path="/backup-restore"        component={BackupRestorePage} />
+                    <Route path="/database-manager"      component={DatabaseManagerPage} />
+                    <Route path="/team"                  component={TeamCollaborationPage} />
                     <Route component={NotFound} />
                   </Switch>
                 </ProtectedRoute>
