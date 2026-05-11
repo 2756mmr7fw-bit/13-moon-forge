@@ -224,6 +224,28 @@ app.use(
   }),
 );
 
+// Sitemaps — served explicitly before SPA fallback so Google can fetch them
+app.get("/sitemap.xml", (_req: Request, res: Response) => {
+  res.setHeader("Content-Type", "application/xml");
+  res.send(`<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://13moonforge.ai/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
+  <url><loc>https://13moonforge.ai/press</loc><changefreq>hourly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://13moonforge.ai/discover</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
+  <url><loc>https://13moonforge.ai/pricing</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://13moonforge.ai/sign-up</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+</urlset>`);
+});
+
+app.get("/press/sitemap.xml", (_req: Request, res: Response) => {
+  res.setHeader("Content-Type", "application/xml");
+  res.send(`<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+  <url><loc>https://13moonforge.ai/press</loc><changefreq>hourly</changefreq><priority>1.0</priority></url>
+</urlset>`);
+});
+
 // SPA fallback — all non-API, non-asset routes serve index.html
 app.get(/^\/(?!api\/).*/, (_req: Request, res: Response) => {
   res.sendFile(path.join(STATIC_DIR, "index.html"), (err) => {
