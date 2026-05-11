@@ -52,42 +52,57 @@ const DIST_OPTIONS = [
   {
     name: "PRLog",
     url: "https://www.prlog.org",
+    signupUrl: "https://www.prlog.org/register.html",
     price: "Free",
-    note: "Indexes in Google News — good starting point",
+    model: "Free account",
+    note: "Create an account, paste your article, publish. Shows in Google News.",
     badge: "Free",
     badgeColor: "bg-green-500/15 text-green-400 border-green-500/30",
+    setupNote: "Sign up → Submit Release → done.",
   },
   {
     name: "OpenPR",
     url: "https://www.openpr.com",
+    signupUrl: "https://www.openpr.com/register",
     price: "Free",
-    note: "Free worldwide distribution to journalists",
+    model: "Free account",
+    note: "Free worldwide distribution. Reaches journalists and Google News.",
     badge: "Free",
     badgeColor: "bg-green-500/15 text-green-400 border-green-500/30",
+    setupNote: "Register → New Press Release → paste and publish.",
   },
   {
     name: "IssueWire",
     url: "https://www.issuewire.com",
-    price: "From $19/release",
-    note: "Budget-friendly with AP/NBC/CBS reach on higher tiers",
-    badge: "Budget",
+    signupUrl: "https://www.issuewire.com/register",
+    price: "From $19",
+    model: "Pay per release — no subscription",
+    note: "No monthly fee. Pay only when you publish. Higher tiers reach AP/NBC/CBS.",
+    badge: "Per Release",
     badgeColor: "bg-blue-500/15 text-blue-400 border-blue-500/30",
+    setupNote: "Create account free → buy a release credit when ready to publish.",
   },
   {
     name: "Send2Press",
     url: "https://www.send2press.com",
-    price: "$89/release",
-    note: "Solid mid-tier — real newsrooms pick it up",
-    badge: "Mid",
+    signupUrl: "https://www.send2press.com/wire/",
+    price: "$89",
+    model: "Pay per release — no subscription",
+    note: "No monthly fee. One flat rate per release. Solid newsroom pickup.",
+    badge: "Per Release",
     badgeColor: "bg-blue-500/15 text-blue-400 border-blue-500/30",
+    setupNote: "Go to their site → submit your release → pay at checkout.",
   },
   {
     name: "PRWeb",
     url: "https://www.prweb.com",
-    price: "From $99/release",
-    note: "Established service, wide digital media reach",
-    badge: "Mid",
+    signupUrl: "https://app.prweb.com/prweb/register.aspx",
+    price: "From $99",
+    model: "Pay per release — no subscription",
+    note: "No monthly fee. Wide digital media reach. Owned by Cision.",
+    badge: "Per Release",
     badgeColor: "bg-blue-500/15 text-blue-400 border-blue-500/30",
+    setupNote: "Create account free → submit and pay per release.",
   },
 ];
 
@@ -423,35 +438,41 @@ export default function ForgePress() {
             <div className="border border-border rounded-xl overflow-hidden">
               <div className="px-4 py-3 bg-muted/20 border-b border-border">
                 <p className="text-sm font-semibold">Now distribute it</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Copy or download your article above, then submit to any of these services.</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Copy or download your article above, then submit to any of these.
+                  The paid ones are <span className="font-semibold text-foreground">pay-per-release</span> — no monthly fees, no subscriptions. You pay only when you publish.
+                </p>
               </div>
               <div className="divide-y divide-border">
                 {DIST_OPTIONS.map(s => (
-                  <a
-                    key={s.name}
-                    href={s.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-between px-4 py-3 hover:bg-muted/20 transition-colors group"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", s.badgeColor)}>
-                        {s.badge}
-                      </span>
-                      <div>
-                        <span className="text-sm font-medium group-hover:text-primary transition-colors">{s.name}</span>
-                        <p className="text-xs text-muted-foreground">{s.note}</p>
+                  <div key={s.name} className="px-4 py-3 space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border shrink-0", s.badgeColor)}>
+                          {s.badge}
+                        </span>
+                        <span className="text-sm font-semibold">{s.name}</span>
+                        <span className="text-xs text-muted-foreground hidden sm:inline">{s.model}</span>
                       </div>
+                      <span className="text-sm font-bold text-primary shrink-0">{s.price}</span>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-xs font-semibold text-muted-foreground">{s.price}</span>
-                      <ExternalLink size={11} className="text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground leading-relaxed pl-0.5">{s.note}</p>
+                    <div className="flex items-center gap-3 pl-0.5">
+                      <span className="text-[11px] text-muted-foreground/70 italic">{s.setupNote}</span>
+                      <a
+                        href={s.signupUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline font-medium shrink-0"
+                      >
+                        Sign up <ExternalLink size={10} />
+                      </a>
                     </div>
-                  </a>
+                  </div>
                 ))}
               </div>
-              <div className="bg-green-500/5 px-4 py-2.5 text-[11px] text-muted-foreground border-t border-border">
-                Start with PRLog or OpenPR — both are free and get you into Google News immediately.
+              <div className="bg-green-500/5 border-t border-border px-4 py-2.5 text-[11px] text-muted-foreground">
+                <span className="font-semibold text-green-400">Start free:</span> PRLog and OpenPR cost nothing and get you into Google News right away. Use them first, then upgrade to paid if you want broader newsroom reach.
               </div>
             </div>
           )}
