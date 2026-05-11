@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
-import { Sparkles, Globe, MonitorSmartphone, LayoutTemplate, Server, Megaphone, ArrowRight, CheckCircle } from "lucide-react";
+import { Sparkles, Globe, MonitorSmartphone, LayoutTemplate, Server, Megaphone, ArrowRight, CheckCircle, TrendingUp, ExternalLink } from "lucide-react";
 import { useListShowcaseApps } from "@workspace/api-client-react";
-import type { ShowcaseApp } from "@workspace/api-client-react/src/generated/api.schemas";
+import type { ShowcaseApp } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
@@ -133,11 +133,8 @@ export default function ShowcasePage() {
             </div>
             <h3 className="text-lg font-medium mb-2">No community apps yet</h3>
             <p className="text-muted-foreground max-w-md mx-auto mb-6">
-              Be the first builder to claim your spot on the town square board.
+              Apps hosted on Forge appear here automatically. Host your app to claim your spot.
             </p>
-            <Button onClick={() => setIsSubmitOpen(true)} variant="outline" className="rounded-full">
-              Submit Your App
-            </Button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -147,9 +144,120 @@ export default function ShowcasePage() {
           </div>
         )}
       </section>
+
+      {/* Get Your App Seen */}
+      <section className="space-y-6">
+        <div className="flex items-center gap-3 px-2 border-b pb-3">
+          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+            <TrendingUp className="w-4 h-4 text-primary" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-serif font-bold leading-tight">Get Your App Seen</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">Platforms and services that help builders reach more people</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {ADVERTISING_PARTNERS.map((partner) => (
+            <a
+              key={partner.name}
+              href={partner.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex flex-col gap-3 rounded-2xl border bg-card p-5 hover:border-primary/40 hover:shadow-md transition-all duration-200"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-lg shrink-0">
+                    {partner.emoji}
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm leading-snug">{partner.name}</p>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground font-medium uppercase tracking-wider">
+                      {partner.tag}
+                    </span>
+                  </div>
+                </div>
+                <ExternalLink className="w-3.5 h-3.5 text-muted-foreground shrink-0 mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed">{partner.description}</p>
+            </a>
+          ))}
+        </div>
+
+        <p className="text-xs text-muted-foreground text-center pt-2">
+          These are independent platforms — Forge is not affiliated with or responsible for their services.
+        </p>
+      </section>
     </div>
   );
 }
+
+const ADVERTISING_PARTNERS = [
+  {
+    name: "The People's Town Square",
+    url: "https://thepeoplestownsq.com",
+    emoji: "🏛️",
+    tag: "Community",
+    description: "A free community marketplace for goods, services, and ideas. List your app where real people connect and discover.",
+  },
+  {
+    name: "Product Hunt",
+    url: "https://www.producthunt.com",
+    emoji: "🐱",
+    tag: "Launch Platform",
+    description: "The go-to platform for launching new products. Get featured in front of thousands of early adopters and tech enthusiasts.",
+  },
+  {
+    name: "FameHero",
+    url: "https://famehero.com",
+    emoji: "📈",
+    tag: "SEO & Branding",
+    description: "Brand analysis and SEO boost service. Understand your search presence and grow your visibility in Google results.",
+  },
+  {
+    name: "AppSumo",
+    url: "https://appsumo.com",
+    emoji: "🔥",
+    tag: "Deals & Exposure",
+    description: "Run a lifetime deal campaign to acquire thousands of customers fast. Best for SaaS tools ready to scale.",
+  },
+  {
+    name: "BetaList",
+    url: "https://betalist.com",
+    emoji: "🚀",
+    tag: "Early Access",
+    description: "Submit your app to get early users and feedback before a full launch. Great for pre-launch and beta signups.",
+  },
+  {
+    name: "Indie Hackers",
+    url: "https://www.indiehackers.com",
+    emoji: "🛠️",
+    tag: "Community",
+    description: "A community of independent builders. Post your app, share your story, and get honest feedback from fellow makers.",
+  },
+  {
+    name: "Hacker News",
+    url: "https://news.ycombinator.com/show",
+    emoji: "🧡",
+    tag: "Show & Tell",
+    description: "Post a \"Show HN\" to share your project with one of the most engaged tech audiences on the internet.",
+  },
+  {
+    name: "Reddit",
+    url: "https://www.reddit.com",
+    emoji: "👾",
+    tag: "Communities",
+    description: "Find subreddits that match your niche — r/SideProject, r/startups, r/entrepreneur — and share your work with targeted audiences.",
+  },
+  {
+    name: "Twitter / X",
+    url: "https://x.com",
+    emoji: "✦",
+    tag: "Social",
+    description: "Build in public. Share your launch, progress, and milestones with the #buildinpublic community for organic reach.",
+  },
+];
 
 function screenshotSrc(app: ShowcaseApp): string | null {
   if (app.screenshotUrl) return app.screenshotUrl;
