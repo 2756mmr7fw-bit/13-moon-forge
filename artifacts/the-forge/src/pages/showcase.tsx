@@ -1,97 +1,13 @@
 import { useMemo, useState } from "react";
-import { Sparkles, Globe, MonitorSmartphone, Plus, LayoutTemplate, Server, Megaphone } from "lucide-react";
-import { useListShowcaseApps, getListShowcaseAppsQueryKey, useSubmitShowcaseApp } from "@workspace/api-client-react";
-import type { ShowcaseApp, ShowcaseSubmission } from "@workspace/api-client-react/src/generated/api.schemas";
-import { useQueryClient } from "@tanstack/react-query";
-import { useToast } from "@/hooks/use-toast";
-
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Sparkles, Globe, MonitorSmartphone, LayoutTemplate, Server, Megaphone, ArrowRight, CheckCircle } from "lucide-react";
+import { useListShowcaseApps } from "@workspace/api-client-react";
+import type { ShowcaseApp } from "@workspace/api-client-react/src/generated/api.schemas";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import * as z from "zod";
-
-const formSchema = z.object({
-  name: z.string().min(2, "App name is required").max(50),
-  tagline: z.string().min(5, "Tagline is required").max(100),
-  description: z.string().min(10, "Description is required").max(1000),
-  websiteUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
-  iosUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
-  androidUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
-  logoUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
-  screenshotUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
-  category: z.string().min(1, "Category is required"),
-  listingType: z.enum(["advertise", "hosted"]).default("advertise"),
-  builderName: z.string().min(2, "Builder name is required").max(50),
-});
+import { Link } from "wouter";
 
 export default function ShowcasePage() {
   const { data: apps, isLoading } = useListShowcaseApps();
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-  const [isSubmitOpen, setIsSubmitOpen] = useState(false);
-
-  const submitMutation = useSubmitShowcaseApp();
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      tagline: "",
-      description: "",
-      websiteUrl: "",
-      iosUrl: "",
-      androidUrl: "",
-      logoUrl: "",
-      screenshotUrl: "",
-      category: "",
-      listingType: "advertise",
-      builderName: "",
-    },
-  });
-
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    submitMutation.mutate(
-      { data: values as ShowcaseSubmission },
-      {
-        onSuccess: () => {
-          toast({
-            title: "App Submitted",
-            description: "Your app has been submitted for review. We'll approve it shortly.",
-          });
-          queryClient.invalidateQueries({ queryKey: getListShowcaseAppsQueryKey() });
-          setIsSubmitOpen(false);
-          form.reset();
-        },
-        onError: () => {
-          toast({
-            title: "Submission Failed",
-            description: "There was an error submitting your app. Please try again.",
-            variant: "destructive",
-          });
-        },
-      }
-    );
-  };
 
   const featured = apps?.featured ?? [];
   const rawCommunity = apps?.community ?? [];
@@ -112,249 +28,51 @@ export default function ShowcasePage() {
           The Forge Showcase
         </h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-          A public bulletin board for apps built and broadcast by Forge builders.
-          No algorithm, no pay-to-play ranking — every app gets its fair shot on the town square board.
+          Every app hosted on Forge gets broadcast here automatically.
+          No algorithm, no ranking — real apps, real builders, equal visibility.
         </p>
 
-        {/* Tier cards */}
+        {/* Two paths */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto pt-2 text-left">
-          <div className="bg-card border rounded-2xl p-5 space-y-2">
+          <div className="bg-card border border-primary/30 rounded-2xl p-5 space-y-3">
+            <div className="flex items-center gap-2 font-semibold text-sm">
+              <Server className="w-4 h-4 text-primary" />
+              Host with Forge
+            </div>
+            <ul className="space-y-1.5">
+              {["Your app runs on Forge infrastructure", "Automatically listed here the moment it's live", "Description is yours to write — we broadcast it"].map(t => (
+                <li key={t} className="flex items-start gap-2 text-sm text-muted-foreground">
+                  <CheckCircle className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
+                  {t}
+                </li>
+              ))}
+            </ul>
+            <Link href="/forge-hosting">
+              <Button size="sm" className="w-full mt-1">
+                Start Hosting <ArrowRight className="w-3.5 h-3.5 ml-1" />
+              </Button>
+            </Link>
+          </div>
+
+          <div className="bg-card border rounded-2xl p-5 space-y-3">
             <div className="flex items-center gap-2 font-semibold text-sm">
               <Megaphone className="w-4 h-4 text-primary" />
               Advertise Only
             </div>
-            <p className="text-sm text-muted-foreground">
-              List your app on the Showcase board. Bring your own hosting — we just broadcast your link to the community.
-            </p>
-          </div>
-          <div className="bg-card border border-primary/30 rounded-2xl p-5 space-y-2">
-            <div className="flex items-center gap-2 font-semibold text-sm">
-              <Server className="w-4 h-4 text-primary" />
-              Host + Advertise
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Host your app on Forge infrastructure and get automatic Showcase placement. Same price, everything included.
-            </p>
-          </div>
-        </div>
-
-        <div className="pt-4">
-          <Dialog open={isSubmitOpen} onOpenChange={setIsSubmitOpen}>
-            <DialogTrigger asChild>
-              <Button size="lg" className="rounded-full px-8 shadow-md">
-                <Plus className="w-4 h-4 mr-2" />
-                Submit Your App
+            <ul className="space-y-1.5">
+              {["You host your app anywhere you like", "Pay for a Showcase listing — we add you", "Manually reviewed and added by our team"].map(t => (
+                <li key={t} className="flex items-start gap-2 text-sm text-muted-foreground">
+                  <CheckCircle className="w-3.5 h-3.5 text-muted-foreground/50 mt-0.5 shrink-0" />
+                  {t}
+                </li>
+              ))}
+            </ul>
+            <a href="https://thepeoplestownsq.com" target="_blank" rel="noopener noreferrer">
+              <Button size="sm" variant="outline" className="w-full mt-1">
+                Get a Listing <ArrowRight className="w-3.5 h-3.5 ml-1" />
               </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[620px] max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Submit to the Showcase</DialogTitle>
-                <DialogDescription>
-                  Choose whether you want to advertise your app, or host it with Forge and get automatic listing. Both tiers are the same price.
-                </DialogDescription>
-              </DialogHeader>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 pt-4">
-
-                  {/* Listing type */}
-                  <FormField
-                    control={form.control}
-                    name="listingType"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Listing Type</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Choose a tier" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="advertise">Advertise Only — broadcast my app, I host it myself</SelectItem>
-                            <SelectItem value="hosted">Host + Advertise — host on Forge infrastructure</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>App Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="My Awesome App" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="category"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Category</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select a category" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="productivity">Productivity</SelectItem>
-                              <SelectItem value="social">Social</SelectItem>
-                              <SelectItem value="media">Media</SelectItem>
-                              <SelectItem value="education">Education</SelectItem>
-                              <SelectItem value="tools">Tools</SelectItem>
-                              <SelectItem value="games">Games</SelectItem>
-                              <SelectItem value="finance">Finance</SelectItem>
-                              <SelectItem value="health">Health</SelectItem>
-                              <SelectItem value="creative">Creative</SelectItem>
-                              <SelectItem value="other">Other</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <FormField
-                    control={form.control}
-                    name="tagline"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Tagline</FormLabel>
-                        <FormControl>
-                          <Input placeholder="A short, catchy description" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Description</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="What does your app do? Who is it for?"
-                            className="min-h-[90px]"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="builderName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Your Name / Studio</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Jane Doe" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="websiteUrl"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Website URL (optional)</FormLabel>
-                          <FormControl>
-                            <Input placeholder="https://..." {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="iosUrl"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>iOS App Store URL (optional)</FormLabel>
-                          <FormControl>
-                            <Input placeholder="https://apps.apple.com/..." {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="androidUrl"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Play Store URL (optional)</FormLabel>
-                          <FormControl>
-                            <Input placeholder="https://play.google.com/..." {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="logoUrl"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Logo URL (optional)</FormLabel>
-                          <FormControl>
-                            <Input placeholder="https://..." {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="screenshotUrl"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Screenshot URL (optional)</FormLabel>
-                          <FormControl>
-                            <Input placeholder="https://..." {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <div className="pt-4 flex justify-end gap-3 border-t">
-                    <Button variant="ghost" type="button" onClick={() => setIsSubmitOpen(false)}>
-                      Cancel
-                    </Button>
-                    <Button type="submit" disabled={submitMutation.isPending}>
-                      {submitMutation.isPending ? "Submitting..." : "Submit App"}
-                    </Button>
-                  </div>
-                </form>
-              </Form>
-            </DialogContent>
-          </Dialog>
+            </a>
+          </div>
         </div>
       </section>
 
