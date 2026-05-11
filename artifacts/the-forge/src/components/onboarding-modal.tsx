@@ -54,14 +54,17 @@ export function OnboardingModal() {
   const [name, setName] = useState("");
   const [building, setBuilding] = useState("");
   const [saving, setSaving] = useState(false);
-  const [, navigate] = useLocation();
-  
+  const [location, navigate] = useLocation();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
+    const publicPaths = ["/", "/discover", "/press", "/sign-in", "/sign-up", "/pricing"];
+    const isPublic = publicPaths.some(p => location === p || location.startsWith("/press/"));
+    if (!isAuthenticated || isPublic) return;
     try {
       if (!localStorage.getItem(FLAG)) setOpen(true);
     } catch { /* silent */ }
-  }, []);
+  }, [isAuthenticated, location]);
 
   const dismiss = () => {
     try { localStorage.setItem(FLAG, "1"); } catch {}

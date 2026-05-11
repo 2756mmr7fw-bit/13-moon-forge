@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Flame, X, ArrowRight, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
+import { useAuth } from "@workspace/replit-auth-web";
 
 const TOUR_KEY = "forge:welcomed:v2";
 
@@ -52,15 +53,22 @@ const SLIDES = [
 export function WelcomeTour() {
   const [visible, setVisible] = useState(false);
   const [slide, setSlide] = useState(0);
-  const [, navigate] = useLocation();
+  const [location, navigate] = useLocation();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
+    // Only show for authenticated users inside the app — never on public landing pages
+    const publicPaths = ["/", "/discover", "/press", "/sign-in", "/sign-up", "/pricing"];
+    const isPublic = publicPaths.some(p => location === p || location.startsWith("/press/"));
+    if (!isAuthenticated || isPublic) return undefined;
+
     const done = localStorage.getItem(TOUR_KEY);
     if (!done) {
       const timer = setTimeout(() => setVisible(true), 1200);
       return () => clearTimeout(timer);
     }
-  }, []);
+    return undefined;
+  }, [isAuthenticated, location]);
 
   function dismiss() {
     localStorage.setItem(TOUR_KEY, "1");

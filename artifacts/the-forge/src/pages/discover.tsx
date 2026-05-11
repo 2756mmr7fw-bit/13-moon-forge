@@ -3,7 +3,7 @@ import {
   Search, ExternalLink, Flame, ArrowRight, Globe,
   Gamepad2, Smartphone, Wrench, Palette, Users,
   Sparkles, LogIn, LayoutDashboard, Star, Plus,
-  Shuffle,
+  Shuffle, X, CheckCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -73,6 +73,7 @@ export default function Discover() {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<FilterCat>("All");
   const [shuffleKey, setShuffleKey] = useState(0);
+  const [showSubmit, setShowSubmit] = useState(false);
 
   useEffect(() => {
     fetch(`${API_BASE}/api/showcase`)
@@ -153,11 +154,9 @@ export default function Discover() {
             >
               Enter Forge <ArrowRight size={15} />
             </Button>
-            <Link href="/sign-up">
-              <Button size="lg" variant="outline" className="gap-2">
-                <Plus size={14} /> Submit Your Listing
-              </Button>
-            </Link>
+            <Button size="lg" variant="outline" className="gap-2" onClick={() => setShowSubmit(true)}>
+              <Plus size={14} /> Submit Your Listing
+            </Button>
           </div>
         </div>
       </div>
@@ -199,11 +198,9 @@ export default function Discover() {
 
           <div className="pt-2 border-t border-border/50 flex items-center justify-between flex-wrap gap-3">
             <span className="text-xs text-muted-foreground">— Ezekiel, Builder of 13 Moon Forge</span>
-            <Link href="/sign-up">
-              <Button size="sm" variant="outline" className="gap-1.5 text-xs">
-                <Plus size={11} /> List Your App Free
-              </Button>
-            </Link>
+            <Button size="sm" variant="outline" className="gap-1.5 text-xs" onClick={() => setShowSubmit(true)}>
+              <Plus size={11} /> List Your App Free
+            </Button>
           </div>
         </div>
       </div>
@@ -295,11 +292,9 @@ export default function Discover() {
             <p className="text-sm text-muted-foreground">
               {query ? "Nothing matches your search." : "No listings in this category yet."}
             </p>
-            <Link href="/sign-up">
-              <Button size="sm" variant="outline" className="gap-1.5">
-                <Plus size={12} /> Be the First
-              </Button>
-            </Link>
+            <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setShowSubmit(true)}>
+              <Plus size={12} /> Be the First
+            </Button>
           </div>
         ) : null}
 
@@ -316,12 +311,8 @@ export default function Discover() {
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button
-              size="lg"
-              className="gap-2"
-              onClick={() => navigate(isAuthenticated ? "/dashboard" : "/sign-up")}
-            >
-              Enter Forge <ArrowRight size={14} />
+            <Button size="lg" className="gap-2" onClick={() => setShowSubmit(true)}>
+              <Plus size={14} /> Submit Your Listing
             </Button>
             <Link href="/press">
               <Button size="lg" variant="outline" className="gap-2">
@@ -331,6 +322,8 @@ export default function Discover() {
           </div>
         </div>
       </div>
+
+      {showSubmit && <SubmitModal onClose={() => setShowSubmit(false)} />}
     </div>
   );
 }
@@ -365,6 +358,181 @@ function FeaturedCard({ app }: { app: ShowcaseApp }) {
               Visit <ExternalLink size={10} />
             </Button>
           </a>
+        )}
+      </div>
+    </div>
+  );
+}
+
+const CATEGORIES = [
+  { value: "productivity", label: "Productivity" },
+  { value: "social", label: "Social" },
+  { value: "media", label: "Media" },
+  { value: "education", label: "Education" },
+  { value: "tools", label: "Tools" },
+  { value: "games", label: "Games" },
+  { value: "finance", label: "Finance" },
+  { value: "health", label: "Health" },
+  { value: "creative", label: "Creative" },
+  { value: "other", label: "Other" },
+];
+
+function SubmitModal({ onClose }: { onClose: () => void }) {
+  const [form, setForm] = useState({
+    name: "", tagline: "", description: "",
+    websiteUrl: "", category: "other", builderName: "",
+  });
+  const [submitting, setSubmitting] = useState(false);
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState("");
+
+  function set(key: string, val: string) {
+    setForm(f => ({ ...f, [key]: val }));
+  }
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setSubmitting(true);
+    setError("");
+    try {
+      const body: Record<string, string> = {
+        name: form.name.trim(),
+        tagline: form.tagline.trim(),
+        description: form.description.trim(),
+        category: form.category,
+      };
+      if (form.websiteUrl.trim()) body.websiteUrl = form.websiteUrl.trim();
+      if (form.builderName.trim()) body.builderName = form.builderName.trim();
+
+      const res = await fetch(`${API_BASE}/api/showcase/submit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error("Submission failed");
+      setDone(true);
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative z-10 w-full max-w-lg bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-md bg-primary/15 flex items-center justify-center">
+              <Flame size={13} className="text-primary" />
+            </div>
+            <span className="font-bold text-sm">Submit Your Listing</span>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground">
+            <X size={14} />
+          </button>
+        </div>
+
+        {done ? (
+          <div className="p-8 text-center space-y-4">
+            <CheckCircle size={40} className="mx-auto text-green-500" />
+            <div>
+              <h3 className="font-bold text-base">Submitted for review</h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                Your listing is in the queue. We review submissions within 24 hours.
+                Once approved it'll appear in the community section.
+              </p>
+            </div>
+            <Button onClick={onClose} className="gap-2">Done</Button>
+          </div>
+        ) : (
+          <form onSubmit={submit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+            <p className="text-xs text-muted-foreground">
+              Free listings for apps, games, websites, and tools. All submissions are reviewed before going live.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-xs font-medium">App / Project Name *</label>
+                <input
+                  required
+                  value={form.name}
+                  onChange={e => set("name", e.target.value)}
+                  placeholder="My Awesome App"
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-border bg-muted/20 focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium">Category *</label>
+                <select
+                  value={form.category}
+                  onChange={e => set("category", e.target.value)}
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-border bg-muted/20 focus:outline-none focus:ring-1 focus:ring-primary"
+                >
+                  {CATEGORIES.map(c => (
+                    <option key={c.value} value={c.value}>{c.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-medium">Tagline *</label>
+              <input
+                required
+                value={form.tagline}
+                onChange={e => set("tagline", e.target.value)}
+                placeholder="One sentence that sells it"
+                className="w-full px-3 py-2 text-sm rounded-lg border border-border bg-muted/20 focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-medium">Description *</label>
+              <textarea
+                required
+                rows={3}
+                value={form.description}
+                onChange={e => set("description", e.target.value)}
+                placeholder="What does it do? Who is it for? What makes it different?"
+                className="w-full px-3 py-2 text-sm rounded-lg border border-border bg-muted/20 focus:outline-none focus:ring-1 focus:ring-primary resize-none"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-xs font-medium">Website URL</label>
+                <input
+                  type="url"
+                  value={form.websiteUrl}
+                  onChange={e => set("websiteUrl", e.target.value)}
+                  placeholder="https://yourapp.com"
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-border bg-muted/20 focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium">Your Name</label>
+                <input
+                  value={form.builderName}
+                  onChange={e => set("builderName", e.target.value)}
+                  placeholder="Who built it?"
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-border bg-muted/20 focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+              </div>
+            </div>
+
+            {error && <p className="text-xs text-red-500">{error}</p>}
+
+            <div className="flex gap-3 pt-1">
+              <Button type="button" variant="outline" onClick={onClose} className="flex-1">Cancel</Button>
+              <Button type="submit" disabled={submitting} className="flex-1 gap-2">
+                {submitting ? "Submitting…" : <><Plus size={13} /> Submit Free</>}
+              </Button>
+            </div>
+          </form>
         )}
       </div>
     </div>
