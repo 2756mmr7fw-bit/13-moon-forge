@@ -22,6 +22,18 @@ import type {
   DashboardSummary,
   ExchangeMobileAuthorizationCodeBody,
   ExchangeMobileAuthorizationCodeResponse,
+  EzquillDashboard,
+  EzquillDocument,
+  EzquillDocumentInput,
+  EzquillDocumentUpdate,
+  EzquillField,
+  EzquillFieldInput,
+  EzquillFieldUpdate,
+  EzquillProfile,
+  EzquillProfileInput,
+  EzquillSignInput,
+  EzquillSignature,
+  EzquillSignatureInput,
   FilmClip,
   FilmClipInput,
   FilmClipUpdate,
@@ -2629,6 +2641,1340 @@ export function useGetFilmProjectStats<
   },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getGetFilmProjectStatsQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary List all documents for the current user
+ */
+export const getListEzquillDocumentsUrl = () => {
+  return `/api/ezquill/documents`;
+};
+
+export const listEzquillDocuments = async (
+  options?: RequestInit,
+): Promise<EzquillDocument[]> => {
+  return customFetch<EzquillDocument[]>(getListEzquillDocumentsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListEzquillDocumentsQueryKey = () => {
+  return [`/api/ezquill/documents`] as const;
+};
+
+export const getListEzquillDocumentsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listEzquillDocuments>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listEzquillDocuments>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListEzquillDocumentsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listEzquillDocuments>>
+  > = ({ signal }) => listEzquillDocuments({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listEzquillDocuments>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListEzquillDocumentsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listEzquillDocuments>>
+>;
+export type ListEzquillDocumentsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all documents for the current user
+ */
+
+export function useListEzquillDocuments<
+  TData = Awaited<ReturnType<typeof listEzquillDocuments>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listEzquillDocuments>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListEzquillDocumentsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create a new document
+ */
+export const getCreateEzquillDocumentUrl = () => {
+  return `/api/ezquill/documents`;
+};
+
+export const createEzquillDocument = async (
+  ezquillDocumentInput: EzquillDocumentInput,
+  options?: RequestInit,
+): Promise<EzquillDocument> => {
+  return customFetch<EzquillDocument>(getCreateEzquillDocumentUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(ezquillDocumentInput),
+  });
+};
+
+export const getCreateEzquillDocumentMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createEzquillDocument>>,
+    TError,
+    { data: BodyType<EzquillDocumentInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createEzquillDocument>>,
+  TError,
+  { data: BodyType<EzquillDocumentInput> },
+  TContext
+> => {
+  const mutationKey = ["createEzquillDocument"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createEzquillDocument>>,
+    { data: BodyType<EzquillDocumentInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createEzquillDocument(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateEzquillDocumentMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createEzquillDocument>>
+>;
+export type CreateEzquillDocumentMutationBody = BodyType<EzquillDocumentInput>;
+export type CreateEzquillDocumentMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Create a new document
+ */
+export const useCreateEzquillDocument = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createEzquillDocument>>,
+    TError,
+    { data: BodyType<EzquillDocumentInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createEzquillDocument>>,
+  TError,
+  { data: BodyType<EzquillDocumentInput> },
+  TContext
+> => {
+  return useMutation(getCreateEzquillDocumentMutationOptions(options));
+};
+
+/**
+ * @summary Get a document by ID
+ */
+export const getGetEzquillDocumentUrl = (id: number) => {
+  return `/api/ezquill/documents/${id}`;
+};
+
+export const getEzquillDocument = async (
+  id: number,
+  options?: RequestInit,
+): Promise<EzquillDocument> => {
+  return customFetch<EzquillDocument>(getGetEzquillDocumentUrl(id), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetEzquillDocumentQueryKey = (id: number) => {
+  return [`/api/ezquill/documents/${id}`] as const;
+};
+
+export const getGetEzquillDocumentQueryOptions = <
+  TData = Awaited<ReturnType<typeof getEzquillDocument>>,
+  TError = ErrorType<void>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getEzquillDocument>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetEzquillDocumentQueryKey(id);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getEzquillDocument>>
+  > = ({ signal }) => getEzquillDocument(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getEzquillDocument>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetEzquillDocumentQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getEzquillDocument>>
+>;
+export type GetEzquillDocumentQueryError = ErrorType<void>;
+
+/**
+ * @summary Get a document by ID
+ */
+
+export function useGetEzquillDocument<
+  TData = Awaited<ReturnType<typeof getEzquillDocument>>,
+  TError = ErrorType<void>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getEzquillDocument>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetEzquillDocumentQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Update a document (rename, change status)
+ */
+export const getUpdateEzquillDocumentUrl = (id: number) => {
+  return `/api/ezquill/documents/${id}`;
+};
+
+export const updateEzquillDocument = async (
+  id: number,
+  ezquillDocumentUpdate: EzquillDocumentUpdate,
+  options?: RequestInit,
+): Promise<EzquillDocument> => {
+  return customFetch<EzquillDocument>(getUpdateEzquillDocumentUrl(id), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(ezquillDocumentUpdate),
+  });
+};
+
+export const getUpdateEzquillDocumentMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateEzquillDocument>>,
+    TError,
+    { id: number; data: BodyType<EzquillDocumentUpdate> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateEzquillDocument>>,
+  TError,
+  { id: number; data: BodyType<EzquillDocumentUpdate> },
+  TContext
+> => {
+  const mutationKey = ["updateEzquillDocument"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateEzquillDocument>>,
+    { id: number; data: BodyType<EzquillDocumentUpdate> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateEzquillDocument(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateEzquillDocumentMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateEzquillDocument>>
+>;
+export type UpdateEzquillDocumentMutationBody = BodyType<EzquillDocumentUpdate>;
+export type UpdateEzquillDocumentMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update a document (rename, change status)
+ */
+export const useUpdateEzquillDocument = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateEzquillDocument>>,
+    TError,
+    { id: number; data: BodyType<EzquillDocumentUpdate> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateEzquillDocument>>,
+  TError,
+  { id: number; data: BodyType<EzquillDocumentUpdate> },
+  TContext
+> => {
+  return useMutation(getUpdateEzquillDocumentMutationOptions(options));
+};
+
+/**
+ * @summary Delete a document
+ */
+export const getDeleteEzquillDocumentUrl = (id: number) => {
+  return `/api/ezquill/documents/${id}`;
+};
+
+export const deleteEzquillDocument = async (
+  id: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteEzquillDocumentUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteEzquillDocumentMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteEzquillDocument>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteEzquillDocument>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["deleteEzquillDocument"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteEzquillDocument>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteEzquillDocument(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteEzquillDocumentMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteEzquillDocument>>
+>;
+
+export type DeleteEzquillDocumentMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Delete a document
+ */
+export const useDeleteEzquillDocument = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteEzquillDocument>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteEzquillDocument>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getDeleteEzquillDocumentMutationOptions(options));
+};
+
+/**
+ * @summary List all fields in a document
+ */
+export const getListEzquillFieldsUrl = (id: number) => {
+  return `/api/ezquill/documents/${id}/fields`;
+};
+
+export const listEzquillFields = async (
+  id: number,
+  options?: RequestInit,
+): Promise<EzquillField[]> => {
+  return customFetch<EzquillField[]>(getListEzquillFieldsUrl(id), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListEzquillFieldsQueryKey = (id: number) => {
+  return [`/api/ezquill/documents/${id}/fields`] as const;
+};
+
+export const getListEzquillFieldsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listEzquillFields>>,
+  TError = ErrorType<unknown>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listEzquillFields>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListEzquillFieldsQueryKey(id);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listEzquillFields>>
+  > = ({ signal }) => listEzquillFields(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof listEzquillFields>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListEzquillFieldsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listEzquillFields>>
+>;
+export type ListEzquillFieldsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all fields in a document
+ */
+
+export function useListEzquillFields<
+  TData = Awaited<ReturnType<typeof listEzquillFields>>,
+  TError = ErrorType<unknown>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listEzquillFields>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListEzquillFieldsQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Add a field to a document
+ */
+export const getCreateEzquillFieldUrl = (id: number) => {
+  return `/api/ezquill/documents/${id}/fields`;
+};
+
+export const createEzquillField = async (
+  id: number,
+  ezquillFieldInput: EzquillFieldInput,
+  options?: RequestInit,
+): Promise<EzquillField> => {
+  return customFetch<EzquillField>(getCreateEzquillFieldUrl(id), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(ezquillFieldInput),
+  });
+};
+
+export const getCreateEzquillFieldMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createEzquillField>>,
+    TError,
+    { id: number; data: BodyType<EzquillFieldInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createEzquillField>>,
+  TError,
+  { id: number; data: BodyType<EzquillFieldInput> },
+  TContext
+> => {
+  const mutationKey = ["createEzquillField"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createEzquillField>>,
+    { id: number; data: BodyType<EzquillFieldInput> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return createEzquillField(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateEzquillFieldMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createEzquillField>>
+>;
+export type CreateEzquillFieldMutationBody = BodyType<EzquillFieldInput>;
+export type CreateEzquillFieldMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Add a field to a document
+ */
+export const useCreateEzquillField = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createEzquillField>>,
+    TError,
+    { id: number; data: BodyType<EzquillFieldInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createEzquillField>>,
+  TError,
+  { id: number; data: BodyType<EzquillFieldInput> },
+  TContext
+> => {
+  return useMutation(getCreateEzquillFieldMutationOptions(options));
+};
+
+/**
+ * @summary Update a field value or position
+ */
+export const getUpdateEzquillFieldUrl = (id: number, fieldId: number) => {
+  return `/api/ezquill/documents/${id}/fields/${fieldId}`;
+};
+
+export const updateEzquillField = async (
+  id: number,
+  fieldId: number,
+  ezquillFieldUpdate: EzquillFieldUpdate,
+  options?: RequestInit,
+): Promise<EzquillField> => {
+  return customFetch<EzquillField>(getUpdateEzquillFieldUrl(id, fieldId), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(ezquillFieldUpdate),
+  });
+};
+
+export const getUpdateEzquillFieldMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateEzquillField>>,
+    TError,
+    { id: number; fieldId: number; data: BodyType<EzquillFieldUpdate> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateEzquillField>>,
+  TError,
+  { id: number; fieldId: number; data: BodyType<EzquillFieldUpdate> },
+  TContext
+> => {
+  const mutationKey = ["updateEzquillField"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateEzquillField>>,
+    { id: number; fieldId: number; data: BodyType<EzquillFieldUpdate> }
+  > = (props) => {
+    const { id, fieldId, data } = props ?? {};
+
+    return updateEzquillField(id, fieldId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateEzquillFieldMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateEzquillField>>
+>;
+export type UpdateEzquillFieldMutationBody = BodyType<EzquillFieldUpdate>;
+export type UpdateEzquillFieldMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update a field value or position
+ */
+export const useUpdateEzquillField = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateEzquillField>>,
+    TError,
+    { id: number; fieldId: number; data: BodyType<EzquillFieldUpdate> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateEzquillField>>,
+  TError,
+  { id: number; fieldId: number; data: BodyType<EzquillFieldUpdate> },
+  TContext
+> => {
+  return useMutation(getUpdateEzquillFieldMutationOptions(options));
+};
+
+/**
+ * @summary Delete a field
+ */
+export const getDeleteEzquillFieldUrl = (id: number, fieldId: number) => {
+  return `/api/ezquill/documents/${id}/fields/${fieldId}`;
+};
+
+export const deleteEzquillField = async (
+  id: number,
+  fieldId: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteEzquillFieldUrl(id, fieldId), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteEzquillFieldMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteEzquillField>>,
+    TError,
+    { id: number; fieldId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteEzquillField>>,
+  TError,
+  { id: number; fieldId: number },
+  TContext
+> => {
+  const mutationKey = ["deleteEzquillField"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteEzquillField>>,
+    { id: number; fieldId: number }
+  > = (props) => {
+    const { id, fieldId } = props ?? {};
+
+    return deleteEzquillField(id, fieldId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteEzquillFieldMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteEzquillField>>
+>;
+
+export type DeleteEzquillFieldMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Delete a field
+ */
+export const useDeleteEzquillField = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteEzquillField>>,
+    TError,
+    { id: number; fieldId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteEzquillField>>,
+  TError,
+  { id: number; fieldId: number },
+  TContext
+> => {
+  return useMutation(getDeleteEzquillFieldMutationOptions(options));
+};
+
+/**
+ * @summary Sign a document (attach signature image and mark as signed)
+ */
+export const getSignEzquillDocumentUrl = (id: number) => {
+  return `/api/ezquill/documents/${id}/sign`;
+};
+
+export const signEzquillDocument = async (
+  id: number,
+  ezquillSignInput: EzquillSignInput,
+  options?: RequestInit,
+): Promise<EzquillDocument> => {
+  return customFetch<EzquillDocument>(getSignEzquillDocumentUrl(id), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(ezquillSignInput),
+  });
+};
+
+export const getSignEzquillDocumentMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof signEzquillDocument>>,
+    TError,
+    { id: number; data: BodyType<EzquillSignInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof signEzquillDocument>>,
+  TError,
+  { id: number; data: BodyType<EzquillSignInput> },
+  TContext
+> => {
+  const mutationKey = ["signEzquillDocument"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof signEzquillDocument>>,
+    { id: number; data: BodyType<EzquillSignInput> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return signEzquillDocument(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SignEzquillDocumentMutationResult = NonNullable<
+  Awaited<ReturnType<typeof signEzquillDocument>>
+>;
+export type SignEzquillDocumentMutationBody = BodyType<EzquillSignInput>;
+export type SignEzquillDocumentMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Sign a document (attach signature image and mark as signed)
+ */
+export const useSignEzquillDocument = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof signEzquillDocument>>,
+    TError,
+    { id: number; data: BodyType<EzquillSignInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof signEzquillDocument>>,
+  TError,
+  { id: number; data: BodyType<EzquillSignInput> },
+  TContext
+> => {
+  return useMutation(getSignEzquillDocumentMutationOptions(options));
+};
+
+/**
+ * @summary One-shot autofill all repetitive fields using saved profile data
+ */
+export const getAutofillEzquillDocumentUrl = (id: number) => {
+  return `/api/ezquill/documents/${id}/autofill`;
+};
+
+export const autofillEzquillDocument = async (
+  id: number,
+  options?: RequestInit,
+): Promise<EzquillField[]> => {
+  return customFetch<EzquillField[]>(getAutofillEzquillDocumentUrl(id), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getAutofillEzquillDocumentMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof autofillEzquillDocument>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof autofillEzquillDocument>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["autofillEzquillDocument"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof autofillEzquillDocument>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return autofillEzquillDocument(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AutofillEzquillDocumentMutationResult = NonNullable<
+  Awaited<ReturnType<typeof autofillEzquillDocument>>
+>;
+
+export type AutofillEzquillDocumentMutationError = ErrorType<unknown>;
+
+/**
+ * @summary One-shot autofill all repetitive fields using saved profile data
+ */
+export const useAutofillEzquillDocument = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof autofillEzquillDocument>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof autofillEzquillDocument>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getAutofillEzquillDocumentMutationOptions(options));
+};
+
+/**
+ * @summary Get the user's saved autofill profile
+ */
+export const getGetEzquillProfileUrl = () => {
+  return `/api/ezquill/profile`;
+};
+
+export const getEzquillProfile = async (
+  options?: RequestInit,
+): Promise<EzquillProfile> => {
+  return customFetch<EzquillProfile>(getGetEzquillProfileUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetEzquillProfileQueryKey = () => {
+  return [`/api/ezquill/profile`] as const;
+};
+
+export const getGetEzquillProfileQueryOptions = <
+  TData = Awaited<ReturnType<typeof getEzquillProfile>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getEzquillProfile>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetEzquillProfileQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getEzquillProfile>>
+  > = ({ signal }) => getEzquillProfile({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getEzquillProfile>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetEzquillProfileQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getEzquillProfile>>
+>;
+export type GetEzquillProfileQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get the user's saved autofill profile
+ */
+
+export function useGetEzquillProfile<
+  TData = Awaited<ReturnType<typeof getEzquillProfile>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getEzquillProfile>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetEzquillProfileQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Save the user's autofill profile
+ */
+export const getSaveEzquillProfileUrl = () => {
+  return `/api/ezquill/profile`;
+};
+
+export const saveEzquillProfile = async (
+  ezquillProfileInput: EzquillProfileInput,
+  options?: RequestInit,
+): Promise<EzquillProfile> => {
+  return customFetch<EzquillProfile>(getSaveEzquillProfileUrl(), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(ezquillProfileInput),
+  });
+};
+
+export const getSaveEzquillProfileMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof saveEzquillProfile>>,
+    TError,
+    { data: BodyType<EzquillProfileInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof saveEzquillProfile>>,
+  TError,
+  { data: BodyType<EzquillProfileInput> },
+  TContext
+> => {
+  const mutationKey = ["saveEzquillProfile"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof saveEzquillProfile>>,
+    { data: BodyType<EzquillProfileInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return saveEzquillProfile(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SaveEzquillProfileMutationResult = NonNullable<
+  Awaited<ReturnType<typeof saveEzquillProfile>>
+>;
+export type SaveEzquillProfileMutationBody = BodyType<EzquillProfileInput>;
+export type SaveEzquillProfileMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Save the user's autofill profile
+ */
+export const useSaveEzquillProfile = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof saveEzquillProfile>>,
+    TError,
+    { data: BodyType<EzquillProfileInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof saveEzquillProfile>>,
+  TError,
+  { data: BodyType<EzquillProfileInput> },
+  TContext
+> => {
+  return useMutation(getSaveEzquillProfileMutationOptions(options));
+};
+
+/**
+ * @summary Get the user's saved signature image (base64 data URL)
+ */
+export const getGetEzquillSignatureUrl = () => {
+  return `/api/ezquill/signature`;
+};
+
+export const getEzquillSignature = async (
+  options?: RequestInit,
+): Promise<EzquillSignature> => {
+  return customFetch<EzquillSignature>(getGetEzquillSignatureUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetEzquillSignatureQueryKey = () => {
+  return [`/api/ezquill/signature`] as const;
+};
+
+export const getGetEzquillSignatureQueryOptions = <
+  TData = Awaited<ReturnType<typeof getEzquillSignature>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getEzquillSignature>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetEzquillSignatureQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getEzquillSignature>>
+  > = ({ signal }) => getEzquillSignature({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getEzquillSignature>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetEzquillSignatureQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getEzquillSignature>>
+>;
+export type GetEzquillSignatureQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get the user's saved signature image (base64 data URL)
+ */
+
+export function useGetEzquillSignature<
+  TData = Awaited<ReturnType<typeof getEzquillSignature>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getEzquillSignature>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetEzquillSignatureQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Save a signature image (base64 data URL from photo or drawing)
+ */
+export const getSaveEzquillSignatureUrl = () => {
+  return `/api/ezquill/signature`;
+};
+
+export const saveEzquillSignature = async (
+  ezquillSignatureInput: EzquillSignatureInput,
+  options?: RequestInit,
+): Promise<EzquillSignature> => {
+  return customFetch<EzquillSignature>(getSaveEzquillSignatureUrl(), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(ezquillSignatureInput),
+  });
+};
+
+export const getSaveEzquillSignatureMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof saveEzquillSignature>>,
+    TError,
+    { data: BodyType<EzquillSignatureInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof saveEzquillSignature>>,
+  TError,
+  { data: BodyType<EzquillSignatureInput> },
+  TContext
+> => {
+  const mutationKey = ["saveEzquillSignature"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof saveEzquillSignature>>,
+    { data: BodyType<EzquillSignatureInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return saveEzquillSignature(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SaveEzquillSignatureMutationResult = NonNullable<
+  Awaited<ReturnType<typeof saveEzquillSignature>>
+>;
+export type SaveEzquillSignatureMutationBody = BodyType<EzquillSignatureInput>;
+export type SaveEzquillSignatureMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Save a signature image (base64 data URL from photo or drawing)
+ */
+export const useSaveEzquillSignature = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof saveEzquillSignature>>,
+    TError,
+    { data: BodyType<EzquillSignatureInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof saveEzquillSignature>>,
+  TError,
+  { data: BodyType<EzquillSignatureInput> },
+  TContext
+> => {
+  return useMutation(getSaveEzquillSignatureMutationOptions(options));
+};
+
+/**
+ * @summary Get dashboard stats (doc counts by status, recent activity)
+ */
+export const getGetEzquillDashboardUrl = () => {
+  return `/api/ezquill/dashboard`;
+};
+
+export const getEzquillDashboard = async (
+  options?: RequestInit,
+): Promise<EzquillDashboard> => {
+  return customFetch<EzquillDashboard>(getGetEzquillDashboardUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetEzquillDashboardQueryKey = () => {
+  return [`/api/ezquill/dashboard`] as const;
+};
+
+export const getGetEzquillDashboardQueryOptions = <
+  TData = Awaited<ReturnType<typeof getEzquillDashboard>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getEzquillDashboard>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetEzquillDashboardQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getEzquillDashboard>>
+  > = ({ signal }) => getEzquillDashboard({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getEzquillDashboard>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetEzquillDashboardQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getEzquillDashboard>>
+>;
+export type GetEzquillDashboardQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get dashboard stats (doc counts by status, recent activity)
+ */
+
+export function useGetEzquillDashboard<
+  TData = Awaited<ReturnType<typeof getEzquillDashboard>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getEzquillDashboard>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetEzquillDashboardQueryOptions(options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

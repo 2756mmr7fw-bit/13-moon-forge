@@ -89,6 +89,7 @@ import dbManagerRouter from "./db-manager";
 import teamRouter from "./team";
 import brandScoutRouter from "./brand-scout";
 import forgePressRouter from "./forge-press";
+import ezquillRouter from "./ezquill";
 
 const router: IRouter = Router();
 
@@ -182,5 +183,6 @@ router.use(dbManagerRouter);
 router.use(teamRouter);
 router.use(brandScoutRouter);
 router.use(forgePressRouter);
+router.use(ezquillRouter);
 
 export default router;

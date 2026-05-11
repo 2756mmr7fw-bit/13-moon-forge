@@ -322,6 +322,189 @@ export interface FilmProjectStats {
   trackCount: number;
 }
 
+export type EzquillDocumentStatus =
+  (typeof EzquillDocumentStatus)[keyof typeof EzquillDocumentStatus];
+
+export const EzquillDocumentStatus = {
+  draft: "draft",
+  pending: "pending",
+  signed: "signed",
+  completed: "completed",
+} as const;
+
+export interface EzquillDocument {
+  id: number;
+  userId: string;
+  title: string;
+  /** @nullable */
+  description?: string | null;
+  status: EzquillDocumentStatus;
+  pageCount: number;
+  /** @nullable */
+  signedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EzquillDocumentInput {
+  title: string;
+  description?: string;
+}
+
+export type EzquillDocumentUpdateStatus =
+  (typeof EzquillDocumentUpdateStatus)[keyof typeof EzquillDocumentUpdateStatus];
+
+export const EzquillDocumentUpdateStatus = {
+  draft: "draft",
+  pending: "pending",
+  signed: "signed",
+  completed: "completed",
+} as const;
+
+export interface EzquillDocumentUpdate {
+  title?: string;
+  description?: string;
+  status?: EzquillDocumentUpdateStatus;
+}
+
+export type EzquillFieldFieldType =
+  (typeof EzquillFieldFieldType)[keyof typeof EzquillFieldFieldType];
+
+export const EzquillFieldFieldType = {
+  text: "text",
+  date: "date",
+  email: "email",
+  phone: "phone",
+  address: "address",
+  name: "name",
+  signature: "signature",
+  checkbox: "checkbox",
+  initials: "initials",
+} as const;
+
+export interface EzquillField {
+  id: number;
+  documentId: number;
+  label: string;
+  fieldType: EzquillFieldFieldType;
+  /** @nullable */
+  value?: string | null;
+  /** @nullable */
+  placeholder?: string | null;
+  page: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  required: boolean;
+  order: number;
+  createdAt: string;
+}
+
+export type EzquillFieldInputFieldType =
+  (typeof EzquillFieldInputFieldType)[keyof typeof EzquillFieldInputFieldType];
+
+export const EzquillFieldInputFieldType = {
+  text: "text",
+  date: "date",
+  email: "email",
+  phone: "phone",
+  address: "address",
+  name: "name",
+  signature: "signature",
+  checkbox: "checkbox",
+  initials: "initials",
+} as const;
+
+export interface EzquillFieldInput {
+  label: string;
+  fieldType: EzquillFieldInputFieldType;
+  value?: string;
+  placeholder?: string;
+  page: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  required?: boolean;
+  order?: number;
+}
+
+export interface EzquillFieldUpdate {
+  label?: string;
+  value?: string;
+  placeholder?: string;
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  required?: boolean;
+  order?: number;
+}
+
+export interface EzquillSignInput {
+  signatureDataUrl: string;
+  /** @nullable */
+  fieldId?: number | null;
+}
+
+export interface EzquillProfile {
+  id: number;
+  userId: string;
+  /** @nullable */
+  fullName?: string | null;
+  /** @nullable */
+  email?: string | null;
+  /** @nullable */
+  phone?: string | null;
+  /** @nullable */
+  address?: string | null;
+  /** @nullable */
+  city?: string | null;
+  /** @nullable */
+  state?: string | null;
+  /** @nullable */
+  zip?: string | null;
+  /** @nullable */
+  company?: string | null;
+  /** @nullable */
+  title?: string | null;
+  updatedAt: string;
+}
+
+export interface EzquillProfileInput {
+  fullName?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
+  company?: string;
+  title?: string;
+}
+
+export interface EzquillSignature {
+  id: number;
+  userId: string;
+  /** @nullable */
+  dataUrl?: string | null;
+  updatedAt: string;
+}
+
+export interface EzquillSignatureInput {
+  dataUrl: string;
+}
+
+export interface EzquillDashboard {
+  totalDocuments: number;
+  draft: number;
+  pending: number;
+  signed: number;
+  completed: number;
+  recentDocuments: EzquillDocument[];
+}
+
 export type ShowcaseAppCategory =
   (typeof ShowcaseAppCategory)[keyof typeof ShowcaseAppCategory];
 

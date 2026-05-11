@@ -26,6 +26,8 @@ tags:
     description: Clips within a film project
   - name: film-ai
     description: AI assistant for the film editor
+  - name: ezquill
+    description: EzQuill document signing and autofill
 paths:
   /auth/me:
     get:
@@ -606,6 +608,306 @@ paths:
               schema:
                 $ref: "#/components/schemas/FilmProjectStats"
 
+  /ezquill/documents:
+    get:
+      operationId: listEzquillDocuments
+      tags: [ezquill]
+      summary: List all documents for the current user
+      responses:
+        "200":
+          description: List of documents
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EzquillDocument"
+    post:
+      operationId: createEzquillDocument
+      tags: [ezquill]
+      summary: Create a new document
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EzquillDocumentInput"
+      responses:
+        "201":
+          description: Document created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EzquillDocument"
+
+  /ezquill/documents/{id}:
+    get:
+      operationId: getEzquillDocument
+      tags: [ezquill]
+      summary: Get a document by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Document
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EzquillDocument"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateEzquillDocument
+      tags: [ezquill]
+      summary: Update a document (rename, change status)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EzquillDocumentUpdate"
+      responses:
+        "200":
+          description: Updated document
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EzquillDocument"
+    delete:
+      operationId: deleteEzquillDocument
+      tags: [ezquill]
+      summary: Delete a document
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /ezquill/documents/{id}/fields:
+    get:
+      operationId: listEzquillFields
+      tags: [ezquill]
+      summary: List all fields in a document
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of fields
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EzquillField"
+    post:
+      operationId: createEzquillField
+      tags: [ezquill]
+      summary: Add a field to a document
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EzquillFieldInput"
+      responses:
+        "201":
+          description: Field created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EzquillField"
+
+  /ezquill/documents/{id}/fields/{fieldId}:
+    patch:
+      operationId: updateEzquillField
+      tags: [ezquill]
+      summary: Update a field value or position
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: fieldId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EzquillFieldUpdate"
+      responses:
+        "200":
+          description: Updated field
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EzquillField"
+    delete:
+      operationId: deleteEzquillField
+      tags: [ezquill]
+      summary: Delete a field
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: fieldId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /ezquill/documents/{id}/sign:
+    post:
+      operationId: signEzquillDocument
+      tags: [ezquill]
+      summary: Sign a document (attach signature image and mark as signed)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EzquillSignInput"
+      responses:
+        "200":
+          description: Signed document
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EzquillDocument"
+
+  /ezquill/documents/{id}/autofill:
+    post:
+      operationId: autofillEzquillDocument
+      tags: [ezquill]
+      summary: One-shot autofill all repetitive fields using saved profile data
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Autofilled fields
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EzquillField"
+
+  /ezquill/profile:
+    get:
+      operationId: getEzquillProfile
+      tags: [ezquill]
+      summary: Get the user's saved autofill profile
+      responses:
+        "200":
+          description: Autofill profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EzquillProfile"
+    put:
+      operationId: saveEzquillProfile
+      tags: [ezquill]
+      summary: Save the user's autofill profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EzquillProfileInput"
+      responses:
+        "200":
+          description: Saved profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EzquillProfile"
+
+  /ezquill/signature:
+    get:
+      operationId: getEzquillSignature
+      tags: [ezquill]
+      summary: Get the user's saved signature image (base64 data URL)
+      responses:
+        "200":
+          description: Saved signature
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EzquillSignature"
+    put:
+      operationId: saveEzquillSignature
+      tags: [ezquill]
+      summary: Save a signature image (base64 data URL from photo or drawing)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EzquillSignatureInput"
+      responses:
+        "200":
+          description: Saved signature
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EzquillSignature"
+
+  /ezquill/dashboard:
+    get:
+      operationId: getEzquillDashboard
+      tags: [ezquill]
+      summary: Get dashboard stats (doc counts by status, recent activity)
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EzquillDashboard"
+
   /film/recent:
     get:
       operationId: getRecentFilmProjects
@@ -1074,6 +1376,280 @@ components:
         - imageClips
         - textClips
         - trackCount
+
+    EzquillDocument:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [draft, pending, signed, completed]
+        pageCount:
+          type: integer
+        signedAt:
+          type: ["string", "null"]
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - userId
+        - title
+        - status
+        - pageCount
+        - createdAt
+        - updatedAt
+
+    EzquillDocumentInput:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+      required:
+        - title
+
+    EzquillDocumentUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum: [draft, pending, signed, completed]
+
+    EzquillField:
+      type: object
+      properties:
+        id:
+          type: integer
+        documentId:
+          type: integer
+        label:
+          type: string
+        fieldType:
+          type: string
+          enum: [text, date, email, phone, address, name, signature, checkbox, initials]
+        value:
+          type: ["string", "null"]
+        placeholder:
+          type: ["string", "null"]
+        page:
+          type: integer
+        x:
+          type: number
+        y:
+          type: number
+        width:
+          type: number
+        height:
+          type: number
+        required:
+          type: boolean
+        order:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - documentId
+        - label
+        - fieldType
+        - page
+        - x
+        - y
+        - width
+        - height
+        - required
+        - order
+        - createdAt
+
+    EzquillFieldInput:
+      type: object
+      properties:
+        label:
+          type: string
+        fieldType:
+          type: string
+          enum: [text, date, email, phone, address, name, signature, checkbox, initials]
+        value:
+          type: string
+        placeholder:
+          type: string
+        page:
+          type: integer
+        x:
+          type: number
+        y:
+          type: number
+        width:
+          type: number
+        height:
+          type: number
+        required:
+          type: boolean
+        order:
+          type: integer
+      required:
+        - label
+        - fieldType
+        - page
+        - x
+        - y
+        - width
+        - height
+
+    EzquillFieldUpdate:
+      type: object
+      properties:
+        label:
+          type: string
+        value:
+          type: string
+        placeholder:
+          type: string
+        x:
+          type: number
+        y:
+          type: number
+        width:
+          type: number
+        height:
+          type: number
+        required:
+          type: boolean
+        order:
+          type: integer
+
+    EzquillSignInput:
+      type: object
+      properties:
+        signatureDataUrl:
+          type: string
+        fieldId:
+          type: ["integer", "null"]
+      required:
+        - signatureDataUrl
+
+    EzquillProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        fullName:
+          type: ["string", "null"]
+        email:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        address:
+          type: ["string", "null"]
+        city:
+          type: ["string", "null"]
+        state:
+          type: ["string", "null"]
+        zip:
+          type: ["string", "null"]
+        company:
+          type: ["string", "null"]
+        title:
+          type: ["string", "null"]
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - userId
+        - updatedAt
+
+    EzquillProfileInput:
+      type: object
+      properties:
+        fullName:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        zip:
+          type: string
+        company:
+          type: string
+        title:
+          type: string
+
+    EzquillSignature:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        dataUrl:
+          type: ["string", "null"]
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - userId
+        - updatedAt
+
+    EzquillSignatureInput:
+      type: object
+      properties:
+        dataUrl:
+          type: string
+      required:
+        - dataUrl
+
+    EzquillDashboard:
+      type: object
+      properties:
+        totalDocuments:
+          type: integer
+        draft:
+          type: integer
+        pending:
+          type: integer
+        signed:
+          type: integer
+        completed:
+          type: integer
+        recentDocuments:
+          type: array
+          items:
+            $ref: "#/components/schemas/EzquillDocument"
+      required:
+        - totalDocuments
+        - draft
+        - pending
+        - signed
+        - completed
+        - recentDocuments
 
     ShowcaseApp:
       type: object

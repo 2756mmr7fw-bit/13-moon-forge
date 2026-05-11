@@ -688,6 +688,363 @@ export const GetFilmProjectStatsResponse = zod.object({
 });
 
 /**
+ * @summary List all documents for the current user
+ */
+export const ListEzquillDocumentsResponseItem = zod.object({
+  id: zod.number(),
+  userId: zod.string(),
+  title: zod.string(),
+  description: zod.string().nullish(),
+  status: zod.enum(["draft", "pending", "signed", "completed"]),
+  pageCount: zod.number(),
+  signedAt: zod.coerce.date().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+export const ListEzquillDocumentsResponse = zod.array(
+  ListEzquillDocumentsResponseItem,
+);
+
+/**
+ * @summary Create a new document
+ */
+export const CreateEzquillDocumentBody = zod.object({
+  title: zod.string(),
+  description: zod.string().optional(),
+});
+
+/**
+ * @summary Get a document by ID
+ */
+export const GetEzquillDocumentParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetEzquillDocumentResponse = zod.object({
+  id: zod.number(),
+  userId: zod.string(),
+  title: zod.string(),
+  description: zod.string().nullish(),
+  status: zod.enum(["draft", "pending", "signed", "completed"]),
+  pageCount: zod.number(),
+  signedAt: zod.coerce.date().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Update a document (rename, change status)
+ */
+export const UpdateEzquillDocumentParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateEzquillDocumentBody = zod.object({
+  title: zod.string().optional(),
+  description: zod.string().optional(),
+  status: zod.enum(["draft", "pending", "signed", "completed"]).optional(),
+});
+
+export const UpdateEzquillDocumentResponse = zod.object({
+  id: zod.number(),
+  userId: zod.string(),
+  title: zod.string(),
+  description: zod.string().nullish(),
+  status: zod.enum(["draft", "pending", "signed", "completed"]),
+  pageCount: zod.number(),
+  signedAt: zod.coerce.date().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete a document
+ */
+export const DeleteEzquillDocumentParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary List all fields in a document
+ */
+export const ListEzquillFieldsParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const ListEzquillFieldsResponseItem = zod.object({
+  id: zod.number(),
+  documentId: zod.number(),
+  label: zod.string(),
+  fieldType: zod.enum([
+    "text",
+    "date",
+    "email",
+    "phone",
+    "address",
+    "name",
+    "signature",
+    "checkbox",
+    "initials",
+  ]),
+  value: zod.string().nullish(),
+  placeholder: zod.string().nullish(),
+  page: zod.number(),
+  x: zod.number(),
+  y: zod.number(),
+  width: zod.number(),
+  height: zod.number(),
+  required: zod.boolean(),
+  order: zod.number(),
+  createdAt: zod.coerce.date(),
+});
+export const ListEzquillFieldsResponse = zod.array(
+  ListEzquillFieldsResponseItem,
+);
+
+/**
+ * @summary Add a field to a document
+ */
+export const CreateEzquillFieldParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const CreateEzquillFieldBody = zod.object({
+  label: zod.string(),
+  fieldType: zod.enum([
+    "text",
+    "date",
+    "email",
+    "phone",
+    "address",
+    "name",
+    "signature",
+    "checkbox",
+    "initials",
+  ]),
+  value: zod.string().optional(),
+  placeholder: zod.string().optional(),
+  page: zod.number(),
+  x: zod.number(),
+  y: zod.number(),
+  width: zod.number(),
+  height: zod.number(),
+  required: zod.boolean().optional(),
+  order: zod.number().optional(),
+});
+
+/**
+ * @summary Update a field value or position
+ */
+export const UpdateEzquillFieldParams = zod.object({
+  id: zod.coerce.number(),
+  fieldId: zod.coerce.number(),
+});
+
+export const UpdateEzquillFieldBody = zod.object({
+  label: zod.string().optional(),
+  value: zod.string().optional(),
+  placeholder: zod.string().optional(),
+  x: zod.number().optional(),
+  y: zod.number().optional(),
+  width: zod.number().optional(),
+  height: zod.number().optional(),
+  required: zod.boolean().optional(),
+  order: zod.number().optional(),
+});
+
+export const UpdateEzquillFieldResponse = zod.object({
+  id: zod.number(),
+  documentId: zod.number(),
+  label: zod.string(),
+  fieldType: zod.enum([
+    "text",
+    "date",
+    "email",
+    "phone",
+    "address",
+    "name",
+    "signature",
+    "checkbox",
+    "initials",
+  ]),
+  value: zod.string().nullish(),
+  placeholder: zod.string().nullish(),
+  page: zod.number(),
+  x: zod.number(),
+  y: zod.number(),
+  width: zod.number(),
+  height: zod.number(),
+  required: zod.boolean(),
+  order: zod.number(),
+  createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete a field
+ */
+export const DeleteEzquillFieldParams = zod.object({
+  id: zod.coerce.number(),
+  fieldId: zod.coerce.number(),
+});
+
+/**
+ * @summary Sign a document (attach signature image and mark as signed)
+ */
+export const SignEzquillDocumentParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const SignEzquillDocumentBody = zod.object({
+  signatureDataUrl: zod.string(),
+  fieldId: zod.number().nullish(),
+});
+
+export const SignEzquillDocumentResponse = zod.object({
+  id: zod.number(),
+  userId: zod.string(),
+  title: zod.string(),
+  description: zod.string().nullish(),
+  status: zod.enum(["draft", "pending", "signed", "completed"]),
+  pageCount: zod.number(),
+  signedAt: zod.coerce.date().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary One-shot autofill all repetitive fields using saved profile data
+ */
+export const AutofillEzquillDocumentParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const AutofillEzquillDocumentResponseItem = zod.object({
+  id: zod.number(),
+  documentId: zod.number(),
+  label: zod.string(),
+  fieldType: zod.enum([
+    "text",
+    "date",
+    "email",
+    "phone",
+    "address",
+    "name",
+    "signature",
+    "checkbox",
+    "initials",
+  ]),
+  value: zod.string().nullish(),
+  placeholder: zod.string().nullish(),
+  page: zod.number(),
+  x: zod.number(),
+  y: zod.number(),
+  width: zod.number(),
+  height: zod.number(),
+  required: zod.boolean(),
+  order: zod.number(),
+  createdAt: zod.coerce.date(),
+});
+export const AutofillEzquillDocumentResponse = zod.array(
+  AutofillEzquillDocumentResponseItem,
+);
+
+/**
+ * @summary Get the user's saved autofill profile
+ */
+export const GetEzquillProfileResponse = zod.object({
+  id: zod.number(),
+  userId: zod.string(),
+  fullName: zod.string().nullish(),
+  email: zod.string().nullish(),
+  phone: zod.string().nullish(),
+  address: zod.string().nullish(),
+  city: zod.string().nullish(),
+  state: zod.string().nullish(),
+  zip: zod.string().nullish(),
+  company: zod.string().nullish(),
+  title: zod.string().nullish(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Save the user's autofill profile
+ */
+export const SaveEzquillProfileBody = zod.object({
+  fullName: zod.string().optional(),
+  email: zod.string().optional(),
+  phone: zod.string().optional(),
+  address: zod.string().optional(),
+  city: zod.string().optional(),
+  state: zod.string().optional(),
+  zip: zod.string().optional(),
+  company: zod.string().optional(),
+  title: zod.string().optional(),
+});
+
+export const SaveEzquillProfileResponse = zod.object({
+  id: zod.number(),
+  userId: zod.string(),
+  fullName: zod.string().nullish(),
+  email: zod.string().nullish(),
+  phone: zod.string().nullish(),
+  address: zod.string().nullish(),
+  city: zod.string().nullish(),
+  state: zod.string().nullish(),
+  zip: zod.string().nullish(),
+  company: zod.string().nullish(),
+  title: zod.string().nullish(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Get the user's saved signature image (base64 data URL)
+ */
+export const GetEzquillSignatureResponse = zod.object({
+  id: zod.number(),
+  userId: zod.string(),
+  dataUrl: zod.string().nullish(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Save a signature image (base64 data URL from photo or drawing)
+ */
+export const SaveEzquillSignatureBody = zod.object({
+  dataUrl: zod.string(),
+});
+
+export const SaveEzquillSignatureResponse = zod.object({
+  id: zod.number(),
+  userId: zod.string(),
+  dataUrl: zod.string().nullish(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Get dashboard stats (doc counts by status, recent activity)
+ */
+export const GetEzquillDashboardResponse = zod.object({
+  totalDocuments: zod.number(),
+  draft: zod.number(),
+  pending: zod.number(),
+  signed: zod.number(),
+  completed: zod.number(),
+  recentDocuments: zod.array(
+    zod.object({
+      id: zod.number(),
+      userId: zod.string(),
+      title: zod.string(),
+      description: zod.string().nullish(),
+      status: zod.enum(["draft", "pending", "signed", "completed"]),
+      pageCount: zod.number(),
+      signedAt: zod.coerce.date().nullish(),
+      createdAt: zod.coerce.date(),
+      updatedAt: zod.coerce.date(),
+    }),
+  ),
+});
+
+/**
  * @summary Get recently edited film projects
  */
 export const GetRecentFilmProjectsResponseItem = zod.object({

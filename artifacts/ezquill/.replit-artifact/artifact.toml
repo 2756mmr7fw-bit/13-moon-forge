@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/ezquill/"
+title = "EzQuill"
+version = "1.0.0"
+id = "artifacts/ezquill"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/ezquill/" ]
+localPort = 20750
+
+[services.development]
+run = "pnpm --filter @workspace/ezquill run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/ezquill", "run", "build" ]
+publicDir = "artifacts/ezquill/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20750"
+BASE_PATH = "/ezquill/"
