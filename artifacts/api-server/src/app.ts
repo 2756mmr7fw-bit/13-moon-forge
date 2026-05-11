@@ -207,6 +207,41 @@ app.get("/api/debug/static", async (_req: Request, res: Response) => {
   res.json(results);
 });
 
+const FILM_EDITOR_DIR = path.join(STATIC_DIR, "film-editor");
+const FILM_EDITOR_DOMAINS = new Set(["13moonsfilmeditor.ai", "www.13moonsfilmeditor.ai"]);
+
+// ── Film Editor domain redirect ───────────────────────────────────────────────
+// Visitors to 13moonsfilmeditor.ai/* are transparently redirected to /film-editor/*
+// so auth cookies (scoped to the same server) continue to work.
+app.use((req: Request, res: Response, next) => {
+  const host = (req.headers.host ?? "").split(":")[0];
+  if (FILM_EDITOR_DOMAINS.has(host) && !req.path.startsWith("/film-editor") && !req.path.startsWith("/api")) {
+    const dest = `/film-editor${req.path === "/" ? "/" : req.path}`;
+    res.redirect(302, dest);
+    return;
+  }
+  next();
+});
+
+// Film Editor static assets (hashed — long cache)
+app.get(/^\/film-editor\/assets\//, (req: Request, res: Response) => {
+  const filePath = path.join(STATIC_DIR, req.path);
+  res.setHeader("Cache-Control", "public, max-age=604800, immutable");
+  res.sendFile(filePath, (err) => {
+    if (err && !res.headersSent) res.status(404).send("Asset not found");
+  });
+});
+
+// Film Editor static files (favicon, etc.)
+app.use("/film-editor", express.static(FILM_EDITOR_DIR, { maxAge: "1d", index: false }));
+
+// Film Editor SPA fallback — all /film-editor/* routes serve film-editor/index.html
+app.get(/^\/film-editor(\/.*)?$/, (_req: Request, res: Response) => {
+  res.sendFile(path.join(FILM_EDITOR_DIR, "index.html"), (err) => {
+    if (err && !res.headersSent) res.status(404).send("Not found");
+  });
+});
+
 // Serve hashed assets explicitly with long-lived cache headers (regex for Express 5 compatibility)
 app.get(/^\/assets\//, (req: Request, res: Response) => {
   const filePath = path.join(STATIC_DIR, req.path);

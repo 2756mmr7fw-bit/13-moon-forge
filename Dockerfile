@@ -12,10 +12,11 @@ COPY lib/api-client-react/package.json ./lib/api-client-react/
 COPY lib/replit-auth-web/package.json ./lib/replit-auth-web/
 COPY lib/integrations-openai-ai-server/package.json ./lib/integrations-openai-ai-server/
 COPY artifacts/the-forge/package.json ./artifacts/the-forge/
+COPY artifacts/film-editor/package.json ./artifacts/film-editor/
 COPY artifacts/api-server/package.json ./artifacts/api-server/
 RUN pnpm install --frozen-lockfile
 
-# ─── Build frontend ──────────────────────────────────────────────────────────
+# ─── Build Forge frontend ─────────────────────────────────────────────────────
 FROM deps AS web-build
 ARG CACHEBUST=4
 ARG VITE_CLERK_PUBLISHABLE_KEY
@@ -24,6 +25,17 @@ COPY tsconfig.base.json ./
 COPY lib/ ./lib/
 COPY artifacts/the-forge ./artifacts/the-forge
 RUN pnpm --filter @workspace/the-forge run build
+
+# ─── Build Film Editor frontend ───────────────────────────────────────────────
+FROM deps AS film-build
+ARG CACHEBUST=4
+ENV PORT=3000
+ENV BASE_PATH=/film-editor/
+ENV NODE_ENV=production
+COPY tsconfig.base.json ./
+COPY lib/ ./lib/
+COPY artifacts/film-editor ./artifacts/film-editor
+RUN pnpm --filter @workspace/film-editor run build
 
 # ─── Build API server ────────────────────────────────────────────────────────
 FROM deps AS api-build
@@ -56,7 +68,8 @@ COPY artifacts/api-server/package.json ./artifacts/api-server/
 RUN pnpm install --prod --frozen-lockfile --filter @workspace/api-server
 
 COPY --from=api-build /app/artifacts/api-server/dist ./artifacts/api-server/dist
-COPY --from=web-build /app/artifacts/the-forge/dist/public  ./artifacts/api-server/dist/public
+COPY --from=web-build /app/artifacts/the-forge/dist/public ./artifacts/api-server/dist/public
+COPY --from=film-build /app/artifacts/film-editor/dist/public ./artifacts/api-server/dist/public/film-editor
 
 # Diagnostic entrypoint — captures crash output and serves it via HTTP if server exits
 COPY entrypoint.sh ./entrypoint.sh
