@@ -1,4 +1,4 @@
-import { pgTable, serial, text, timestamp, index } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, timestamp, integer, index } from "drizzle-orm/pg-core";
 
 export const domainsTable = pgTable("domains", {
   id:               serial("id").primaryKey(),
@@ -13,6 +13,7 @@ export const domainsTable = pgTable("domains", {
   sslStatus:        text("ssl_status").notNull().default("unknown"),
   resolvedIp:       text("resolved_ip"),
   expectedIp:       text("expected_ip"),
+  reminderDaysBefore: integer("reminder_days_before").notNull().default(30),
   notes:            text("notes"),
   lastCheckedAt:    timestamp("last_checked_at"),
   createdAt:        timestamp("created_at").notNull().defaultNow(),

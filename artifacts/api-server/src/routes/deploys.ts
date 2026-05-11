@@ -1,7 +1,12 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { serverConnectionsTable, userAppsTable } from "@workspace/db";
+import { serverConnectionsTable, userAppsTable, showcaseAppsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
+
+function isAdminUser(userId: string): boolean {
+  const ids = (process.env.ADMIN_USER_IDS ?? "").split(",").map(s => s.trim()).filter(Boolean);
+  return ids.includes(userId);
+}
 import { z } from "zod";
 
 const router = Router();
@@ -216,6 +221,23 @@ router.post("/deploys/connect", async (req, res) => {
     });
   } catch (_e) {
     // Non-fatal
+  }
+
+  // Auto-add to Showcase — every Forge-hosted app gets broadcast automatically
+  try {
+    const adminActive = isAdminUser(req.user.id);
+    await db.insert(showcaseAppsTable).values({
+      name: body.data.name,
+      tagline: "Hosted on 13 Moon Forge",
+      description: "This app is hosted on 13 Moon Forge. Description coming soon.",
+      listingType: "hosted",
+      isFeatured: false,
+      isActive: adminActive,
+      isPlaceholder: false,
+      submittedBy: req.user.id,
+    });
+  } catch (_e) {
+    // Non-fatal — showcase entry will be created next deploy if this fails
   }
 
   res.json({ ok: true, appId, message: "App connected and deploying" });

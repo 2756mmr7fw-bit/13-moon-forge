@@ -26,6 +26,7 @@ interface Domain {
   domain: string;
   registrar?: string | null;
   expiresAt?: string | null;
+  reminderDaysBefore?: number | null;
   connectedAppName?: string | null;
   connectedAppUrl?: string | null;
   expectedIp?: string | null;
@@ -86,6 +87,7 @@ function AddDomainDialog({ onClose, onAdded }: { onClose: () => void; onAdded: (
   const [domain, setDomain]     = useState("");
   const [registrar, setRegistrar] = useState("");
   const [expiresAt, setExpiresAt] = useState("");
+  const [reminderDays, setReminderDays] = useState("30");
   const [appName, setAppName]   = useState("");
   const [appUrl, setAppUrl]     = useState("");
   const [expectedIp, setExpectedIp] = useState("");
@@ -102,7 +104,9 @@ function AddDomainDialog({ onClose, onAdded }: { onClose: () => void; onAdded: (
         method: "POST", headers: h, credentials: "include",
         body: JSON.stringify({
           domain: domain.trim(), registrar: registrar || null,
-          expiresAt: expiresAt || null, connectedAppName: appName || null,
+          expiresAt: expiresAt || null,
+          reminderDaysBefore: Number(reminderDays) || 30,
+          connectedAppName: appName || null,
           connectedAppUrl: appUrl || null, expectedIp: expectedIp || null, notes: notes || null,
         }),
       });
@@ -135,6 +139,11 @@ function AddDomainDialog({ onClose, onAdded }: { onClose: () => void; onAdded: (
               <Label>Expiry date</Label>
               <Input type="date" value={expiresAt} onChange={e => setExpiresAt(e.target.value)} className="mt-1" />
             </div>
+          </div>
+          <div>
+            <Label>Remind me (days before expiry)</Label>
+            <Input type="number" min="1" max="365" value={reminderDays} onChange={e => setReminderDays(e.target.value)} placeholder="30" className="mt-1" />
+            <p className="text-[11px] text-muted-foreground mt-1">Alert shows in Domain Hub this many days before the domain expires.</p>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
@@ -285,6 +294,7 @@ function DomainCard({ domain, onDelete, onCheck }: {
 
 export default function DomainHub() {
   const [domains, setDomains] = useState<Domain[]>([]);
+  const [reminders, setReminders] = useState<Domain[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [checkingAll, setCheckingAll] = useState(false);
@@ -293,8 +303,12 @@ export default function DomainHub() {
     setLoading(true);
     try {
       const h = await authHeaders();
-      const r = await fetch(`${API_BASE}/api/domains`, { headers: h, credentials: "include" });
-      if (r.ok) setDomains(await r.json() as Domain[]);
+      const [domainsRes, remindersRes] = await Promise.all([
+        fetch(`${API_BASE}/api/domains`, { headers: h, credentials: "include" }),
+        fetch(`${API_BASE}/api/domains/reminders`, { headers: h, credentials: "include" }),
+      ]);
+      if (domainsRes.ok) setDomains(await domainsRes.json() as Domain[]);
+      if (remindersRes.ok) setReminders(await remindersRes.json() as Domain[]);
     } finally { setLoading(false); }
   }, []);
 
@@ -333,6 +347,52 @@ export default function DomainHub() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
+      {/* Renewal reminder banner */}
+      {reminders.length > 0 && (
+        <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-4">
+          <div className="flex items-start gap-3">
+            <AlertTriangle size={18} className="text-red-400 mt-0.5 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-red-400 text-sm mb-1">
+                {reminders.length === 1 ? "1 domain needs renewal" : `${reminders.length} domains need renewal`}
+              </p>
+              <ul className="space-y-1">
+                {reminders.map(d => {
+                  const days = d.expiresAt
+                    ? Math.ceil((new Date(d.expiresAt).getTime() - Date.now()) / 86400000)
+                    : null;
+                  const registrarLinks: Record<string, string> = {
+                    godaddy: "https://dcc.godaddy.com/manage/dns",
+                    namecheap: "https://ap.www.namecheap.com/domains/list",
+                    cloudflare: "https://dash.cloudflare.com",
+                  };
+                  const regLower = (d.registrar ?? "").toLowerCase();
+                  const regLink = Object.entries(registrarLinks).find(([k]) => regLower.includes(k))?.[1];
+                  return (
+                    <li key={d.id} className="text-xs text-red-300 flex items-center gap-2 flex-wrap">
+                      <span className="font-mono">{d.domain}</span>
+                      {days !== null && (
+                        <span className={days < 0 ? "text-red-400 font-semibold" : "text-orange-400"}>
+                          {days < 0 ? "EXPIRED" : `expires in ${days}d`}
+                        </span>
+                      )}
+                      {(d.registrar || regLink) && (
+                        <span className="text-muted-foreground">
+                          — renew at{" "}
+                          {regLink
+                            ? <a href={regLink} target="_blank" rel="noreferrer" className="text-primary underline">{d.registrar ?? "registrar"}</a>
+                            : d.registrar}
+                        </span>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>

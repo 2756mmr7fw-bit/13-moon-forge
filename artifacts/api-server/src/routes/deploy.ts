@@ -1,7 +1,12 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
-import { serverConnectionsTable, registryAppsTable } from "@workspace/db";
+import { serverConnectionsTable, registryAppsTable, showcaseAppsTable } from "@workspace/db";
 import { eq, and, desc } from "drizzle-orm";
+
+function isAdminUser(userId: string): boolean {
+  const ids = (process.env.ADMIN_USER_IDS ?? "").split(",").map(s => s.trim()).filter(Boolean);
+  return ids.includes(userId);
+}
 
 const router = Router();
 
@@ -228,6 +233,28 @@ router.post("/deploy/provision", async (req, res) => {
     if (!r.ok) {
       return res.status(r.status).json({ ok: false, error: body.message ?? body.error ?? `Coolify returned ${r.status}` });
     }
+
+    // Auto-add to Showcase — every Forge-hosted app gets broadcast automatically
+    try {
+      const adminActive = isAdminUser(req.userId ?? "");
+      const websiteUrl = domain?.trim()
+        ? (domain.startsWith("http") ? domain.trim() : `https://${domain.trim()}`)
+        : null;
+      await db.insert(showcaseAppsTable).values({
+        name: appName.trim(),
+        tagline: "Hosted on 13 Moon Forge",
+        description: "This app is hosted on 13 Moon Forge. Description coming soon.",
+        websiteUrl,
+        listingType: "hosted",
+        isFeatured: false,
+        isActive: adminActive,
+        isPlaceholder: false,
+        submittedBy: req.userId ?? null,
+      });
+    } catch (_e) {
+      // Non-fatal — showcase entry can be added manually via admin if this fails
+    }
+
     return res.json({ ok: true, ...body });
   } catch (err) {
     req.log.error({ err }, "deploy/provision failed");

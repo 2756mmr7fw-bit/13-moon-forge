@@ -81,6 +81,30 @@ router.delete("/domains/:id", async (req, res) => {
   }
 });
 
+// ─── GET /api/domains/reminders ──────────────────────────────────────────────
+// Returns domains where expiresAt is within reminderDaysBefore days
+router.get("/domains/reminders", async (req, res) => {
+  try {
+    const rows = await db
+      .select()
+      .from(domainsTable)
+      .where(eq(domainsTable.userId, req.userId));
+
+    const now = Date.now();
+    const reminders = rows.filter(d => {
+      if (!d.expiresAt) return false;
+      const daysLeft = Math.ceil((new Date(d.expiresAt).getTime() - now) / 86400000);
+      const threshold = d.reminderDaysBefore ?? 30;
+      return daysLeft <= threshold;
+    });
+
+    return res.json(reminders);
+  } catch (err) {
+    req.log.error({ err }, "domains reminders GET failed");
+    return res.status(500).json({ error: "Failed to fetch domain reminders" });
+  }
+});
+
 // ─── POST /api/domains/:id/check ─────────────────────────────────────────────
 // Performs a live DNS + SSL check and updates the record.
 router.post("/domains/:id/check", async (req, res) => {
