@@ -66,12 +66,30 @@ router.post("/deploy/connect", async (req, res) => {
     return res.status(400).json({ error: "Coolify URL and API key are required" });
   }
 
-  // Test the connection before saving
+  // Test the connection before saving — try multiple endpoints across Coolify versions
   try {
-    const testRes = await coolifyFetch(coolifyUrl.trim(), coolifyApiKey.trim(), "/healthcheck");
-    if (!testRes.ok) {
+    const url = coolifyUrl.trim();
+    const key = coolifyApiKey.trim();
+
+    // Try /healthcheck first (Coolify v4+), then /version (v3), then root ping
+    const checks = [
+      () => coolifyFetch(url, key, "/healthcheck"),
+      () => coolifyFetch(url, key, "/version"),
+      () => fetch(normalizeUrl(url), { signal: AbortSignal.timeout(8000) }),
+    ];
+
+    let reached = false;
+    for (const check of checks) {
+      try {
+        const r = await check();
+        // Any HTTP response (even 401/403) means the server is up
+        if (r.status < 500) { reached = true; break; }
+      } catch { /* try next */ }
+    }
+
+    if (!reached) {
       return res.status(400).json({
-        error: `Could not reach your Coolify server (status ${testRes.status}). Check the URL and try again.`,
+        error: "Could not reach your Coolify server. Make sure the URL is correct and Coolify is running.",
       });
     }
   } catch {
