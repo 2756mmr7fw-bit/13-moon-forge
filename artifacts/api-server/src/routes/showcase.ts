@@ -11,7 +11,7 @@ import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
 
-const PLACEHOLDER_HIDE_THRESHOLD = 12;
+const PLACEHOLDER_HIDE_THRESHOLD = 12; // remove placeholders once 12 real community apps are live
 
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "").split(",").map((e) => e.trim()).filter(Boolean);
 const ADMIN_USER_IDS = (process.env.ADMIN_USER_IDS ?? "").split(",").map((e) => e.trim()).filter(Boolean);
