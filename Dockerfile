@@ -28,7 +28,8 @@ RUN pnpm --filter @workspace/the-forge run build
 
 # ─── Build Film Editor frontend ───────────────────────────────────────────────
 FROM deps AS film-build
-ARG CACHEBUST=4
+ARG CACHEBUST=5
+RUN echo "Cache bust: $CACHEBUST"
 ENV PORT=3000
 ENV BASE_PATH=/film-editor/
 ENV NODE_ENV=production
