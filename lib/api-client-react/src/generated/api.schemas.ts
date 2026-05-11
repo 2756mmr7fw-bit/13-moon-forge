@@ -338,6 +338,14 @@ export const ShowcaseAppCategory = {
   other: "other",
 } as const;
 
+export type ShowcaseAppListingType =
+  (typeof ShowcaseAppListingType)[keyof typeof ShowcaseAppListingType];
+
+export const ShowcaseAppListingType = {
+  advertise: "advertise",
+  hosted: "hosted",
+} as const;
+
 export interface ShowcaseApp {
   id: number;
   name: string;
@@ -354,8 +362,10 @@ export interface ShowcaseApp {
   /** @nullable */
   screenshotUrl?: string | null;
   category: ShowcaseAppCategory;
+  listingType: ShowcaseAppListingType;
   isFeatured: boolean;
   isActive: boolean;
+  isPlaceholder: boolean;
   /** @nullable */
   submittedBy?: string | null;
   /** @nullable */
@@ -385,6 +395,14 @@ export const ShowcaseSubmissionCategory = {
   other: "other",
 } as const;
 
+export type ShowcaseSubmissionListingType =
+  (typeof ShowcaseSubmissionListingType)[keyof typeof ShowcaseSubmissionListingType];
+
+export const ShowcaseSubmissionListingType = {
+  advertise: "advertise",
+  hosted: "hosted",
+} as const;
+
 export interface ShowcaseSubmission {
   name: string;
   tagline: string;
@@ -395,6 +413,7 @@ export interface ShowcaseSubmission {
   logoUrl?: string;
   screenshotUrl?: string;
   category?: ShowcaseSubmissionCategory;
+  listingType?: ShowcaseSubmissionListingType;
   builderName?: string;
 }
 
@@ -414,6 +433,14 @@ export const ShowcaseAppUpdateCategory = {
   other: "other",
 } as const;
 
+export type ShowcaseAppUpdateListingType =
+  (typeof ShowcaseAppUpdateListingType)[keyof typeof ShowcaseAppUpdateListingType];
+
+export const ShowcaseAppUpdateListingType = {
+  advertise: "advertise",
+  hosted: "hosted",
+} as const;
+
 export interface ShowcaseAppUpdate {
   name?: string;
   tagline?: string;
@@ -424,7 +451,9 @@ export interface ShowcaseAppUpdate {
   logoUrl?: string;
   screenshotUrl?: string;
   category?: ShowcaseAppUpdateCategory;
+  listingType?: ShowcaseAppUpdateListingType;
   isFeatured?: boolean;
   isActive?: boolean;
+  isPlaceholder?: boolean;
   builderName?: string;
 }

@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, ne } from "drizzle-orm";
 import { db, showcaseAppsTable } from "@workspace/db";
 import {
   SubmitShowcaseAppBody,
@@ -10,6 +10,8 @@ import {
 import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
+
+const PLACEHOLDER_HIDE_THRESHOLD = 12;
 
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "").split(",").map((e) => e.trim()).filter(Boolean);
 const ADMIN_USER_IDS = (process.env.ADMIN_USER_IDS ?? "").split(",").map((e) => e.trim()).filter(Boolean);
@@ -34,7 +36,16 @@ router.get("/showcase", async (req, res): Promise<void> => {
     .orderBy(desc(showcaseAppsTable.createdAt));
 
   const featured = all.filter((a) => a.isFeatured);
-  const community = all.filter((a) => !a.isFeatured);
+  const allCommunity = all.filter((a) => !a.isFeatured);
+
+  // Count real (non-placeholder) community apps
+  const realCommunityCount = allCommunity.filter((a) => !a.isPlaceholder).length;
+
+  // Hide placeholders once we have enough real apps to fill the spotlight
+  const community =
+    realCommunityCount >= PLACEHOLDER_HIDE_THRESHOLD
+      ? allCommunity.filter((a) => !a.isPlaceholder)
+      : allCommunity;
 
   res.json({ featured, community });
 });
@@ -55,6 +66,7 @@ router.post("/showcase/submit", async (req, res): Promise<void> => {
       ...parsed.data,
       submittedBy: userId ?? null,
       isFeatured: false,
+      isPlaceholder: false,
       isActive: false, // Pending admin approval
     })
     .returning();

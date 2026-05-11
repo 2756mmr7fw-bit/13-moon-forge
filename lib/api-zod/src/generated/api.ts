@@ -253,8 +253,10 @@ export const ListShowcaseAppsResponse = zod.object({
         "creative",
         "other",
       ]),
+      listingType: zod.enum(["advertise", "hosted"]),
       isFeatured: zod.boolean(),
       isActive: zod.boolean(),
+      isPlaceholder: zod.boolean(),
       submittedBy: zod.string().nullish(),
       builderName: zod.string().nullish(),
       createdAt: zod.coerce.date(),
@@ -284,8 +286,10 @@ export const ListShowcaseAppsResponse = zod.object({
         "creative",
         "other",
       ]),
+      listingType: zod.enum(["advertise", "hosted"]),
       isFeatured: zod.boolean(),
       isActive: zod.boolean(),
+      isPlaceholder: zod.boolean(),
       submittedBy: zod.string().nullish(),
       builderName: zod.string().nullish(),
       createdAt: zod.coerce.date(),
@@ -320,6 +324,7 @@ export const SubmitShowcaseAppBody = zod.object({
       "other",
     ])
     .optional(),
+  listingType: zod.enum(["advertise", "hosted"]).optional(),
   builderName: zod.string().optional(),
 });
 
@@ -348,8 +353,10 @@ export const ListShowcaseAdminResponseItem = zod.object({
     "creative",
     "other",
   ]),
+  listingType: zod.enum(["advertise", "hosted"]),
   isFeatured: zod.boolean(),
   isActive: zod.boolean(),
+  isPlaceholder: zod.boolean(),
   submittedBy: zod.string().nullish(),
   builderName: zod.string().nullish(),
   createdAt: zod.coerce.date(),
@@ -389,8 +396,10 @@ export const UpdateShowcaseAppBody = zod.object({
       "other",
     ])
     .optional(),
+  listingType: zod.enum(["advertise", "hosted"]).optional(),
   isFeatured: zod.boolean().optional(),
   isActive: zod.boolean().optional(),
+  isPlaceholder: zod.boolean().optional(),
   builderName: zod.string().optional(),
 });
 
@@ -416,8 +425,10 @@ export const UpdateShowcaseAppResponse = zod.object({
     "creative",
     "other",
   ]),
+  listingType: zod.enum(["advertise", "hosted"]),
   isFeatured: zod.boolean(),
   isActive: zod.boolean(),
+  isPlaceholder: zod.boolean(),
   submittedBy: zod.string().nullish(),
   builderName: zod.string().nullish(),
   createdAt: zod.coerce.date(),

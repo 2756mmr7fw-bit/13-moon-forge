@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { ShowcaseAppCategory } from "./showcaseAppCategory";
+import type { ShowcaseAppListingType } from "./showcaseAppListingType";
 
 export interface ShowcaseApp {
   id: number;
@@ -23,8 +24,10 @@ export interface ShowcaseApp {
   /** @nullable */
   screenshotUrl?: string | null;
   category: ShowcaseAppCategory;
+  listingType: ShowcaseAppListingType;
   isFeatured: boolean;
   isActive: boolean;
+  isPlaceholder: boolean;
   /** @nullable */
   submittedBy?: string | null;
   /** @nullable */

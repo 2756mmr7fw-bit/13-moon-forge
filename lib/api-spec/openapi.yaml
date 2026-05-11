@@ -1099,9 +1099,14 @@ components:
         category:
           type: string
           enum: [productivity, social, media, education, tools, games, finance, health, creative, other]
+        listingType:
+          type: string
+          enum: [advertise, hosted]
         isFeatured:
           type: boolean
         isActive:
+          type: boolean
+        isPlaceholder:
           type: boolean
         submittedBy:
           type: ["string", "null"]
@@ -1119,8 +1124,10 @@ components:
         - tagline
         - description
         - category
+        - listingType
         - isFeatured
         - isActive
+        - isPlaceholder
         - createdAt
         - updatedAt
 
@@ -1161,6 +1168,9 @@ components:
         category:
           type: string
           enum: [productivity, social, media, education, tools, games, finance, health, creative, other]
+        listingType:
+          type: string
+          enum: [advertise, hosted]
         builderName:
           type: string
       required:
@@ -1190,9 +1200,14 @@ components:
         category:
           type: string
           enum: [productivity, social, media, education, tools, games, finance, health, creative, other]
+        listingType:
+          type: string
+          enum: [advertise, hosted]
         isFeatured:
           type: boolean
         isActive:
+          type: boolean
+        isPlaceholder:
           type: boolean
         builderName:
           type: string

@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { ShowcaseSubmissionCategory } from "./showcaseSubmissionCategory";
+import type { ShowcaseSubmissionListingType } from "./showcaseSubmissionListingType";
 
 export interface ShowcaseSubmission {
   name: string;
@@ -17,5 +18,6 @@ export interface ShowcaseSubmission {
   logoUrl?: string;
   screenshotUrl?: string;
   category?: ShowcaseSubmissionCategory;
+  listingType?: ShowcaseSubmissionListingType;
   builderName?: string;
 }

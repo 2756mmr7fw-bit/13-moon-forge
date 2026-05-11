@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { ShowcaseAppUpdateCategory } from "./showcaseAppUpdateCategory";
+import type { ShowcaseAppUpdateListingType } from "./showcaseAppUpdateListingType";
 
 export interface ShowcaseAppUpdate {
   name?: string;
@@ -17,7 +18,9 @@ export interface ShowcaseAppUpdate {
   logoUrl?: string;
   screenshotUrl?: string;
   category?: ShowcaseAppUpdateCategory;
+  listingType?: ShowcaseAppUpdateListingType;
   isFeatured?: boolean;
   isActive?: boolean;
+  isPlaceholder?: boolean;
   builderName?: string;
 }
