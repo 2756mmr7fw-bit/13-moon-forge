@@ -32,7 +32,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
       <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
     </div>
   );
-  if (auth === "guest") return <Redirect to="/" />;
+  if (auth === "guest") return <Redirect to="/sign-in" />;
   return <>{children}</>;
 }
 

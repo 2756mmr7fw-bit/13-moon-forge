@@ -54,6 +54,12 @@ export default function Landing() {
           </div>
           <div className="flex items-center gap-3">
             <span className="text-xs text-white/40 hidden sm:block">AI-powered. Browser-based. Free.</span>
+            <button
+              onClick={() => navigate("/sign-in")}
+              className="text-xs text-white/50 hover:text-white transition-colors hidden sm:block"
+            >
+              Sign in
+            </button>
             <Button
               size="sm"
               className="gap-1.5 font-semibold"
