@@ -240,11 +240,16 @@ router.post("/deploy/provision", async (req, res) => {
       const websiteUrl = domain?.trim()
         ? (domain.startsWith("http") ? domain.trim() : `https://${domain.trim()}`)
         : null;
+      const domainClean = websiteUrl ? websiteUrl.replace(/^https?:\/\//, "") : null;
+      const screenshotUrl = domainClean
+        ? `https://image.thum.io/get/width/600/crop/500/noanimate/https://${domainClean}`
+        : null;
       await db.insert(showcaseAppsTable).values({
         name: appName.trim(),
         tagline: "Hosted on 13 Moon Forge",
         description: "This app is hosted on 13 Moon Forge. Description coming soon.",
         websiteUrl,
+        screenshotUrl,
         listingType: "hosted",
         isFeatured: false,
         isActive: adminActive,
@@ -252,7 +257,7 @@ router.post("/deploy/provision", async (req, res) => {
         submittedBy: req.userId ?? null,
       });
     } catch (_e) {
-      // Non-fatal — showcase entry can be added manually via admin if this fails
+      // Non-fatal
     }
 
     return res.json({ ok: true, ...body });

@@ -433,9 +433,20 @@ export default function ShowcasePage() {
   );
 }
 
+function screenshotSrc(app: ShowcaseApp): string | null {
+  if (app.screenshotUrl) return app.screenshotUrl;
+  if (app.websiteUrl) {
+    const clean = app.websiteUrl.replace(/^https?:\/\//, "");
+    return `https://image.thum.io/get/width/600/crop/500/noanimate/https://${clean}`;
+  }
+  return null;
+}
+
 function AppCard({ app, variant }: { app: ShowcaseApp; variant: "featured" | "community" }) {
   const getInitials = (name: string) => name.substring(0, 2).toUpperCase();
   const isFeatured = variant === "featured";
+  const [imgFailed, setImgFailed] = useState(false);
+  const shot = screenshotSrc(app);
 
   return (
     <div className={`flex flex-col group overflow-hidden rounded-2xl border transition-all duration-300 hover:shadow-lg ${
@@ -443,15 +454,31 @@ function AppCard({ app, variant }: { app: ShowcaseApp; variant: "featured" | "co
         ? "bg-card border-primary/30 shadow-md hover:border-primary/60"
         : "bg-card/50 hover:bg-card hover:border-border/80"
     }`}>
-      {app.screenshotUrl && (
-        <div className="h-36 w-full overflow-hidden border-b bg-muted relative">
+      {shot && !imgFailed ? (
+        <div className="h-40 w-full overflow-hidden border-b bg-muted relative">
           <img
-            src={app.screenshotUrl}
+            src={shot}
             alt={`Screenshot of ${app.name}`}
             className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
-            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+            onError={() => setImgFailed(true)}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          {app.websiteUrl && (
+            <a
+              href={app.websiteUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-end p-2"
+            >
+              <span className="bg-black/70 text-white text-[10px] px-2 py-1 rounded-md flex items-center gap-1 backdrop-blur-sm">
+                <Globe className="w-3 h-3" /> Visit site
+              </span>
+            </a>
+          )}
+        </div>
+      ) : (
+        <div className={`h-16 w-full border-b flex items-center justify-center ${isFeatured ? "bg-primary/5" : "bg-muted/30"}`}>
+          <span className="text-2xl font-bold text-muted-foreground/30">{getInitials(app.name)}</span>
         </div>
       )}
 

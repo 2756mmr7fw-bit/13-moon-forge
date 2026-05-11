@@ -237,7 +237,7 @@ router.post("/deploys/connect", async (req, res) => {
       submittedBy: req.user.id,
     });
   } catch (_e) {
-    // Non-fatal — showcase entry will be created next deploy if this fails
+    // Non-fatal
   }
 
   res.json({ ok: true, appId, message: "App connected and deploying" });
