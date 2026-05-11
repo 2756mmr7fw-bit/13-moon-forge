@@ -1,5 +1,9 @@
 import { useState, useRef } from "react";
-import { Newspaper, ArrowRight, Copy, Download, CheckCircle2, Target, TrendingUp, Shield, Zap, ChevronRight, RotateCcw } from "lucide-react";
+import {
+  Newspaper, ArrowRight, Copy, Download, CheckCircle2, Target, TrendingUp,
+  Shield, Zap, ChevronRight, RotateCcw, Send, KeyRound, ExternalLink,
+  AlertTriangle, Loader2, User, Mail, Phone, Building2, MapPin,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 type Step = "goal" | "brand" | "generating" | "result";
+type SubmitState = "idle" | "submitting" | "success" | "error";
 
 const GOALS = [
   {
@@ -35,33 +40,14 @@ const GOALS = [
   },
 ];
 
-const PLANS = [
-  {
-    name: "Launch",
-    price: "$19",
-    articles: 1,
-    desc: "1 article/month on authority news sites",
-    perDay: "$0.63",
-    perDayNote: "Less than a cup of coffee",
-  },
-  {
-    name: "Momentum",
-    price: "$49",
-    articles: 4,
-    desc: "4 articles/month on authority news sites",
-    perDay: "$1.63",
-    perDayNote: "Less than a taxi ride",
-    highlight: true,
-  },
-  {
-    name: "Authority",
-    price: "$99",
-    articles: 10,
-    desc: "10 articles/month — aggressive brand building",
-    perDay: "$3.30",
-    perDayNote: "Less than a business lunch",
-  },
-];
+// Parse the structured article output from the AI
+function parseArticle(raw: string) {
+  const headline = raw.match(/\[HEADLINE\]\s*([\s\S]*?)(?=\[DATELINE\]|\[BODY\]|$)/i)?.[1]?.trim() ?? "";
+  const dateline  = raw.match(/\[DATELINE\]\s*([\s\S]*?)(?=\[BODY\]|$)/i)?.[1]?.trim() ?? "";
+  const body      = raw.match(/\[BODY\]\s*([\s\S]*?)(?=\[BOILERPLATE\]|$)/i)?.[1]?.trim() ?? "";
+  const boilerplate = raw.match(/\[BOILERPLATE\]\s*([\s\S]*?)$/i)?.[1]?.trim() ?? "";
+  return { headline, dateline, body, boilerplate };
+}
 
 export default function ForgePress() {
   const [step, setStep] = useState<Step>("goal");
@@ -73,6 +59,20 @@ export default function ForgePress() {
   const [article, setArticle] = useState("");
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
+
+  // EIN Presswire direct submission fields
+  const [showEinForm, setShowEinForm] = useState(false);
+  const [einApiKey, setEinApiKey] = useState(() => localStorage.getItem("forge:ein:apikey") ?? "");
+  const [contactFirstName, setContactFirstName] = useState("");
+  const [contactLastName, setContactLastName] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
+  const [contactOrg, setContactOrg] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [submitState, setSubmitState] = useState<SubmitState>("idle");
+  const [submitError, setSubmitError] = useState("");
+
   const streamRef = useRef<() => void>(() => {});
   const { toast } = useToast();
 
@@ -127,6 +127,56 @@ export default function ForgePress() {
     } catch { /* stream ended */ }
   }
 
+  async function submitToEin() {
+    if (!einApiKey.trim()) { setSubmitError("Enter your EIN Presswire API key first."); return; }
+    if (!contactEmail.trim()) { setSubmitError("Contact email is required by EIN Presswire."); return; }
+
+    // Save API key locally for convenience
+    try { localStorage.setItem("forge:ein:apikey", einApiKey.trim()); } catch { /* ignore */ }
+
+    const parsed = parseArticle(article);
+    const fullBody = [parsed.dateline, parsed.body, parsed.boilerplate].filter(Boolean).join("\n\n");
+
+    setSubmitState("submitting");
+    setSubmitError("");
+
+    try {
+      const res = await fetch(`${API_BASE}/api/forge-press/submit`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          einApiKey: einApiKey.trim(),
+          headline: parsed.headline || `${brandName} Press Release`,
+          body: fullBody || article,
+          keywords,
+          contactFirstName,
+          contactLastName,
+          contactEmail,
+          contactPhone,
+          contactOrganization: contactOrg || brandName,
+          city,
+          state,
+          country: "United States",
+        }),
+      });
+
+      const data = await res.json() as { success?: boolean; error?: string; hint?: string };
+
+      if (!res.ok || !data.success) {
+        setSubmitState("error");
+        setSubmitError(data.hint ?? data.error ?? "Submission failed. Check your API key.");
+        return;
+      }
+
+      setSubmitState("success");
+      toast({ title: "Press release submitted!", description: "EIN Presswire will review and distribute your article." });
+    } catch {
+      setSubmitState("error");
+      setSubmitError("Network error. Please try again.");
+    }
+  }
+
   function copyArticle() {
     navigator.clipboard.writeText(article).then(() => {
       setCopied(true);
@@ -154,7 +204,12 @@ export default function ForgePress() {
     setKeywords("");
     setArticle("");
     setError("");
+    setShowEinForm(false);
+    setSubmitState("idle");
+    setSubmitError("");
   }
+
+  const parsed = article ? parseArticle(article) : null;
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-8">
@@ -166,7 +221,8 @@ export default function ForgePress() {
         </div>
         <h1 className="text-2xl font-bold">Get your brand on the news</h1>
         <p className="text-sm text-muted-foreground leading-relaxed">
-          Forge writes and distributes SEO-optimized articles about your brand to authority news sites. Build trust, rank higher, get found — starting at $19/month.
+          OpenAI writes your press release. EIN Presswire ($99/yr) distributes it to authority news sites.
+          Forge connects both — you just fill in the details.
         </p>
       </div>
 
@@ -198,7 +254,7 @@ export default function ForgePress() {
         )}
       </div>
 
-      {/* Step 1 — Goal */}
+      {/* ── Step 1 — Goal ─────────────────────────────────────────────── */}
       {step === "goal" && (
         <div className="space-y-3">
           <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">What is your goal?</h2>
@@ -228,10 +284,30 @@ export default function ForgePress() {
               </div>
             </button>
           ))}
+
+          {/* EIN sign-up callout */}
+          <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-4 flex items-start gap-3">
+            <KeyRound size={15} className="text-blue-400 mt-0.5 shrink-0" />
+            <div className="space-y-1">
+              <p className="text-sm font-semibold">Need an EIN Presswire account?</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Sign up at EIN Presswire for $99/year — that gets you unlimited press releases distributed to 7,500+ news sites, Google News, and more.
+                After signing up, grab your API key from your account dashboard and paste it in when prompted.
+              </p>
+              <a
+                href="https://www.einpresswire.com/account/api"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 font-medium mt-1"
+              >
+                Sign up at einpresswire.com <ExternalLink size={11} />
+              </a>
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Step 2 — Brand info */}
+      {/* ── Step 2 — Brand info ───────────────────────────────────────── */}
       {step === "brand" && (
         <div className="space-y-5">
           <div className="bg-card border border-border rounded-xl p-6 space-y-4">
@@ -262,40 +338,13 @@ export default function ForgePress() {
             </div>
             {error && <p className="text-xs text-red-400">{error}</p>}
             <Button className="w-full" size="lg" onClick={generate}>
-              Write My Article <Zap size={15} className="ml-2" />
+              Write My Article with OpenAI <Zap size={15} className="ml-2" />
             </Button>
-          </div>
-
-          {/* Pricing plans */}
-          <div className="space-y-3">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Choose your plan</p>
-            <div className="grid gap-3">
-              {PLANS.map(p => (
-                <div key={p.name} className={cn(
-                  "border rounded-xl p-4 space-y-1 relative",
-                  p.highlight ? "border-primary/40 bg-primary/5" : "border-border bg-card"
-                )}>
-                  {p.highlight && <div className="absolute -top-2.5 left-4 text-[10px] font-bold bg-primary text-primary-foreground px-2 py-0.5 rounded-full">Most Popular</div>}
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="font-bold text-lg">{p.price}</span>
-                      <span className="text-muted-foreground text-sm">/mo</span>
-                      <span className="text-xs text-muted-foreground ml-2">{p.desc}</span>
-                    </div>
-                    <span className="text-sm font-semibold text-muted-foreground">{p.name}</span>
-                  </div>
-                  <p className="text-[11px] text-primary/70">{p.perDay}/day — {p.perDayNote}</p>
-                </div>
-              ))}
-            </div>
-            <p className="text-[11px] text-muted-foreground text-center">
-              Pricing managed via your subscription. Cancel anytime — no contracts.
-            </p>
           </div>
         </div>
       )}
 
-      {/* Step 3 — Generating */}
+      {/* ── Step 3 — Generating ──────────────────────────────────────── */}
       {step === "generating" && (
         <div className="flex flex-col items-center gap-6 py-12">
           <div className="relative">
@@ -303,15 +352,16 @@ export default function ForgePress() {
             <Newspaper size={20} className="absolute inset-0 m-auto text-primary animate-pulse" />
           </div>
           <div className="text-center space-y-1">
-            <h2 className="text-lg font-semibold">Writing your article…</h2>
+            <h2 className="text-lg font-semibold">OpenAI is writing your article…</h2>
             <p className="text-sm text-muted-foreground">Crafting a publication-ready press release for {brandName}</p>
           </div>
         </div>
       )}
 
-      {/* Step 4 — Result */}
+      {/* ── Step 4 — Result ──────────────────────────────────────────── */}
       {step === "result" && (
         <div className="space-y-4">
+          {/* Article controls */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <CheckCircle2 size={16} className="text-green-400" />
@@ -329,47 +379,171 @@ export default function ForgePress() {
             </div>
           </div>
 
-          <div className="bg-card border border-border rounded-xl p-6">
-            <pre className="whitespace-pre-wrap text-sm text-muted-foreground leading-relaxed font-sans">
-              {article || <span className="animate-pulse text-muted-foreground/50">Generating…</span>}
-            </pre>
-          </div>
+          {/* Formatted article preview */}
+          {article && parsed && (parsed.headline || parsed.body) ? (
+            <div className="bg-card border border-border rounded-xl overflow-hidden">
+              {parsed.headline && (
+                <div className="border-b border-border px-6 py-4 bg-muted/20">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold mb-1">Headline</p>
+                  <h2 className="text-base font-bold leading-snug">{parsed.headline}</h2>
+                  {parsed.dateline && <p className="text-xs text-muted-foreground mt-1">{parsed.dateline}</p>}
+                </div>
+              )}
+              <div className="px-6 py-5">
+                {parsed.body && <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{parsed.body}</p>}
+                {parsed.boilerplate && (
+                  <div className="mt-4 pt-4 border-t border-border">
+                    <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-wrap">{parsed.boilerplate}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="bg-card border border-border rounded-xl p-6">
+              <pre className="whitespace-pre-wrap text-sm text-muted-foreground leading-relaxed font-sans">
+                {article || <span className="animate-pulse text-muted-foreground/50">Generating…</span>}
+              </pre>
+            </div>
+          )}
 
+          {/* EIN Presswire direct publish */}
           {article && (
-            <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-5 space-y-3">
-              <h3 className="text-sm font-semibold flex items-center gap-2">
-                <ArrowRight size={14} className="text-amber-400" />
-                Next: Distribute to news sites
-              </h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Your article is ready to distribute. To get it on authority news sites, submit it to one of these PR wire services:
-              </p>
-              <div className="grid grid-cols-1 gap-2">
+            <div className="border border-border rounded-xl overflow-hidden">
+              <button
+                onClick={() => setShowEinForm(v => !v)}
+                className="w-full flex items-center justify-between px-5 py-4 hover:bg-muted/20 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center">
+                    <Send size={14} className="text-green-400" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-semibold">Publish to EIN Presswire</p>
+                    <p className="text-xs text-muted-foreground">Submit directly from Forge — no copy-paste needed</p>
+                  </div>
+                </div>
+                <ChevronRight size={14} className={cn("text-muted-foreground transition-transform", showEinForm && "rotate-90")} />
+              </button>
+
+              {showEinForm && (
+                <div className="border-t border-border px-5 pb-5 pt-4 space-y-4">
+                  {submitState === "success" ? (
+                    <div className="flex flex-col items-center gap-3 py-4 text-center">
+                      <CheckCircle2 size={28} className="text-green-400" />
+                      <p className="font-semibold">Submitted to EIN Presswire!</p>
+                      <p className="text-sm text-muted-foreground">They'll review and distribute your article to 7,500+ news sites. You'll get an email confirmation.</p>
+                      <Button variant="outline" size="sm" onClick={() => { setSubmitState("idle"); setShowEinForm(false); }}>Done</Button>
+                    </div>
+                  ) : (
+                    <>
+                      {/* API key setup */}
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
+                          <KeyRound size={11} />
+                          EIN Presswire API Key *
+                        </label>
+                        <Input
+                          type="password"
+                          placeholder="Paste your EIN API key here"
+                          value={einApiKey}
+                          onChange={e => setEinApiKey(e.target.value)}
+                        />
+                        <p className="text-[11px] text-muted-foreground">
+                          Find it at{" "}
+                          <a href="https://www.einpresswire.com/account/api" target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-2">
+                            einpresswire.com/account/api
+                          </a>
+                          {" "}— sign up for $99/yr to get access.
+                        </p>
+                      </div>
+
+                      {/* Contact info (required by EIN) */}
+                      <div className="space-y-2">
+                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Contact Info (required by EIN Presswire)</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="relative">
+                            <User size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                            <Input className="pl-8" placeholder="First name" value={contactFirstName} onChange={e => setContactFirstName(e.target.value)} />
+                          </div>
+                          <Input placeholder="Last name" value={contactLastName} onChange={e => setContactLastName(e.target.value)} />
+                        </div>
+                        <div className="relative">
+                          <Mail size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                          <Input className="pl-8" type="email" placeholder="Contact email *" value={contactEmail} onChange={e => setContactEmail(e.target.value)} />
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="relative">
+                            <Phone size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                            <Input className="pl-8" placeholder="Phone" value={contactPhone} onChange={e => setContactPhone(e.target.value)} />
+                          </div>
+                          <div className="relative">
+                            <Building2 size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                            <Input className="pl-8" placeholder="Organization" value={contactOrg} onChange={e => setContactOrg(e.target.value)} />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="relative">
+                            <MapPin size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                            <Input className="pl-8" placeholder="City" value={city} onChange={e => setCity(e.target.value)} />
+                          </div>
+                          <Input placeholder="State (e.g. TX)" value={state} onChange={e => setState(e.target.value)} />
+                        </div>
+                      </div>
+
+                      {submitError && (
+                        <div className="flex items-start gap-2 text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg p-3">
+                          <AlertTriangle size={13} className="mt-0.5 shrink-0" />
+                          {submitError}
+                        </div>
+                      )}
+
+                      <Button
+                        className="w-full"
+                        onClick={submitToEin}
+                        disabled={submitState === "submitting"}
+                      >
+                        {submitState === "submitting"
+                          ? <><Loader2 size={14} className="mr-2 animate-spin" />Submitting to EIN Presswire…</>
+                          : <><Send size={14} className="mr-2" />Publish to 7,500+ News Sites</>
+                        }
+                      </Button>
+
+                      <p className="text-[11px] text-muted-foreground text-center">
+                        EIN Presswire will review your article before distributing it.
+                        Your API key is saved locally for next time.
+                      </p>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Other wire services */}
+          {article && (
+            <div className="bg-muted/20 border border-border rounded-xl p-4 space-y-3">
+              <p className="text-xs font-semibold text-muted-foreground">Other distribution options</p>
+              <div className="grid gap-2">
                 {[
-                  { name: "EIN Presswire", url: "https://www.einpresswire.com", note: "~$99/yr for unlimited releases", badge: "Best Value" },
-                  { name: "PRWeb", url: "https://www.prweb.com", note: "From $99 per release", badge: "" },
-                  { name: "Newswire", url: "https://www.newswire.com", note: "From $149 per release", badge: "" },
-                  { name: "Globe Newswire", url: "https://www.globenewswire.com", note: "Enterprise-scale distribution", badge: "" },
+                  { name: "PRWeb", url: "https://www.prweb.com", note: "From $99 per release" },
+                  { name: "Newswire", url: "https://www.newswire.com", note: "From $149 per release" },
+                  { name: "Globe Newswire", url: "https://www.globenewswire.com", note: "Enterprise-scale distribution" },
                 ].map(s => (
                   <a
                     key={s.name}
                     href={s.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between bg-muted/30 hover:bg-muted/60 border border-border rounded-lg px-4 py-3 transition-colors group"
+                    className="flex items-center justify-between bg-card hover:bg-muted/50 border border-border rounded-lg px-4 py-2.5 transition-colors group"
                   >
                     <div>
                       <span className="text-sm font-medium group-hover:text-primary transition-colors">{s.name}</span>
                       <p className="text-xs text-muted-foreground">{s.note}</p>
                     </div>
-                    {s.badge && <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-semibold">{s.badge}</span>}
+                    <ExternalLink size={12} className="text-muted-foreground" />
                   </a>
                 ))}
               </div>
-              <p className="text-[11px] text-muted-foreground">
-                Copy your article above and paste it directly into any of these services.
-                EIN Presswire is the most cost-effective for monthly publishing.
-              </p>
             </div>
           )}
         </div>
