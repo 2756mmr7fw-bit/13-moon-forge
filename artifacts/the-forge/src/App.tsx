@@ -117,6 +117,9 @@ const DatabaseManagerPage  = lazy(() => import("@/pages/database-manager"));
 const TeamCollaborationPage = lazy(() => import("@/pages/team-collaboration"));
 const ServicesPage          = lazy(() => import("@/pages/services"));
 const AdminHostingPage      = lazy(() => import("@/pages/admin-hosting"));
+const BrandScoutPage        = lazy(() => import("@/pages/brand-scout"));
+const ForgePressPage        = lazy(() => import("@/pages/forge-press"));
+const DiscoverPage          = lazy(() => import("@/pages/discover"));
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 const API_BASE = basePath;
@@ -279,6 +282,7 @@ function Router() {
               <Route path="/pricing" component={PricingPage} />
               <Route path="/promise" component={Promise} />
               <Route path="/showcase" component={Showcase} />
+              <Route path="/discover" component={DiscoverPage} />
               <Route path="/academy" component={Academy} />
               <Route path="/payment/success" component={PaymentSuccess} />
               <Route path="/download" component={Download} />
@@ -378,6 +382,9 @@ function Router() {
                     <Route path="/team"                  component={TeamCollaborationPage} />
                     <Route path="/services"              component={ServicesPage} />
                     <Route path="/admin-hosting"         component={AdminHostingPage} />
+                    <Route path="/brand-scout"           component={BrandScoutPage} />
+                    <Route path="/forge-press"           component={ForgePressPage} />
+                    <Route path="/discover"              component={DiscoverPage} />
                     <Route component={NotFound} />
                   </Switch>
                 </ProtectedRoute>

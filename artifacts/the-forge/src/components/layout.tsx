@@ -8,7 +8,7 @@ import {
   ShieldAlert, ShieldCheck, PlugZap, Swords, Monitor, MonitorPlay, Globe, Download,
   LayoutTemplate, PencilLine, Mail, Search, Grid3X3, Server, Upload, ScanLine,
   Bug, Timer, Vault, Zap, Compass, Receipt, Dumbbell, Megaphone, Feather, Terminal,
-  HardDrive, Radio, Bell, BarChart2, Gift, ScrollText, Database,
+  HardDrive, Radio, Bell, BarChart2, Gift, ScrollText, Database, Newspaper,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LogoMark, LogoWordmark } from "@/components/logo";
@@ -42,7 +42,7 @@ const TAB_PREFIXES: Record<SidebarTab, string[]> = {
            "/monitor", "/connections", "/antivirus", "/mail-scanner", "/admin",
            "/domain-hub", "/analytics", "/env-manager", "/cron-jobs", "/backup-restore",
            "/database-manager", "/team", "/code-vault", "/app-logs", "/agent-bridge",
-           "/services", "/admin-hosting"],
+           "/services", "/admin-hosting", "/brand-scout", "/forge-press", "/discover"],
 };
 
 function detectTab(path: string): SidebarTab {
@@ -175,6 +175,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/app-logs",       label: "App Logs",           icon: Terminal,    tip: "Live container logs from your deployed Coolify apps" },
     { href: "/agent-bridge",   label: "Agent Bridge",       icon: Radio,       tip: "Connect local Forge Agents — send commands, relay messages, install apps remotely" },
     { href: "/services",       label: "Service Marketplace", icon: Database,    tip: "Every service a builder needs — VPS, databases, AI APIs, email, payments, and more" },
+    { href: "/brand-scout",    label: "Brand Scout",         icon: Search,      tip: "Scan your brand's search presence, news coverage, and online reputation — get a fix plan" },
+    { href: "/forge-press",    label: "Forge Press",         icon: Newspaper,   tip: "AI writes SEO press releases about your brand and distributes them to authority news sites" },
+    { href: "/discover",       label: "App Discovery",       icon: Globe,       tip: "Browse self-hostable apps — find something you love and Forge sets it up on your server" },
     { href: "/admin-hosting",  label: "Hosting Admin",       icon: Users,       tip: "Admin panel for managing Forge managed hosting users" },
   ];
 

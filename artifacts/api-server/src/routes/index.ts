@@ -87,6 +87,8 @@ import cronJobsRouter from "./cron-jobs";
 import backupsRouter from "./backups";
 import dbManagerRouter from "./db-manager";
 import teamRouter from "./team";
+import brandScoutRouter from "./brand-scout";
+import forgePressRouter from "./forge-press";
 
 const router: IRouter = Router();
 
@@ -178,5 +180,7 @@ router.use(cronJobsRouter);
 router.use(backupsRouter);
 router.use(dbManagerRouter);
 router.use(teamRouter);
+router.use(brandScoutRouter);
+router.use(forgePressRouter);
 
 export default router;
