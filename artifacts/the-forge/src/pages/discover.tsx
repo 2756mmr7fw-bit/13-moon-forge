@@ -162,6 +162,52 @@ export default function Discover() {
         </div>
       </div>
 
+      {/* ── Manifesto ───────────────────────────────────────────────────── */}
+      <div className="max-w-5xl mx-auto px-4 pt-10 pb-2">
+        <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/8 via-muted/10 to-background p-8 space-y-6">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-md bg-primary/15 flex items-center justify-center">
+              <Flame size={13} className="text-primary" />
+            </div>
+            <span className="text-xs font-bold text-primary uppercase tracking-widest">Why This Exists</span>
+          </div>
+
+          <div className="space-y-4 text-sm leading-relaxed text-foreground/85 max-w-3xl">
+            <p>
+              I couldn't find an easy, affordable way to advertise my apps. What I did find were companies
+              charging steep prices — prices that put promotion out of reach for independent builders.
+              So I found free ways to do it instead. And then I gave them to you.
+            </p>
+            <p>
+              I didn't build this just for myself. I built it for the people. If you built something great,
+              you deserve to be found. To be seen. To be heard. Not because you paid for it —
+              because you earned it.
+            </p>
+            <p className="text-foreground font-medium">
+              Freedom is my motivator. Sovereignty is the force behind it.
+            </p>
+            <p>
+              We live on a giant chess board. The people who run this game don't give — they take.
+              They take your attention, your money, your data, your leverage.
+              So that's exactly what we're going to do. We're going to take our freedom back.
+            </p>
+            <p className="text-muted-foreground">
+              I'm only a soldier in pursuit of happiness and solidarity. Not one in pursuit of money.
+              Money slips through our fingers. What doesn't slip away is what you build and who you build it for.
+            </p>
+          </div>
+
+          <div className="pt-2 border-t border-border/50 flex items-center justify-between flex-wrap gap-3">
+            <span className="text-xs text-muted-foreground">— Ezekiel, Builder of 13 Moon Forge</span>
+            <Link href="/sign-up">
+              <Button size="sm" variant="outline" className="gap-1.5 text-xs">
+                <Plus size={11} /> List Your App Free
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+
       {/* ── Browser ─────────────────────────────────────────────────────── */}
       <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
 
