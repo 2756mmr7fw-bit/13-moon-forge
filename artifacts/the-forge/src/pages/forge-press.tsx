@@ -47,62 +47,84 @@ const DISTRIBUTION_SITES = [
   { icon: Users,  label: "Journalists & media influencers",          color: "text-green-400" },
 ];
 
-// Distribution options — free first, paid optional
-const DIST_OPTIONS = [
+// Distribution tiers
+const DIST_FREE_DIRECT = [
+  {
+    name: "Google News Publisher Center",
+    url: "https://publishercenter.google.com",
+    price: "Free — forever",
+    model: "Direct application to Google",
+    note: "Apply once with your own website. Google indexes every article you publish there. This is the same Google News feed that PRLog and IssueWire pay to access — you skip them entirely.",
+    badge: "Best",
+    badgeColor: "bg-primary/15 text-primary border-primary/30",
+    setupNote: "Requires your own website. Apply at publishercenter.google.com → verify site → done.",
+    highlight: true,
+  },
+  {
+    name: "Local NBC / FOX / ABC / CBS affiliates",
+    url: "https://www.google.com/search?q=local+news+submit+press+release",
+    price: "Free",
+    model: "Direct newsroom submission",
+    note: "Every local NBC/FOX/ABC/CBS affiliate has a 'Submit News Tip' or 'Community Events' page. Find your city's affiliates and submit directly. No middleman, no fee.",
+    badge: "Free",
+    badgeColor: "bg-green-500/15 text-green-400 border-green-500/30",
+    setupNote: "Search '[your city] NBC affiliate news tip' → submit your article link.",
+  },
+  {
+    name: "LinkedIn Articles",
+    url: "https://www.linkedin.com",
+    price: "Free",
+    model: "Publish on your profile",
+    note: "High domain authority — LinkedIn articles index in Google and get pulled into AI chatbots. Your professional network amplifies it immediately.",
+    badge: "Free",
+    badgeColor: "bg-green-500/15 text-green-400 border-green-500/30",
+    setupNote: "Copy your article → LinkedIn → Write an article → publish.",
+  },
+  {
+    name: "Medium",
+    url: "https://medium.com",
+    price: "Free",
+    model: "Publish as a story",
+    note: "Medium has extremely high domain authority. Articles here get indexed by ChatGPT, Claude, and Gemini training pipelines and rank in Google News.",
+    badge: "Free",
+    badgeColor: "bg-green-500/15 text-green-400 border-green-500/30",
+    setupNote: "medium.com → New Story → paste your article → publish.",
+  },
+];
+
+const DIST_PAID = [
   {
     name: "PRLog",
     url: "https://www.prlog.org",
     signupUrl: "https://www.prlog.org/register.html",
-    price: "Free",
-    model: "Free account",
-    note: "Create an account, paste your article, publish. Shows in Google News.",
+    price: "Free tier",
+    model: "Free account (premium features paid)",
+    note: "Free basic distribution that indexes in Google News. Good backup if you don't have your own site yet.",
     badge: "Free",
     badgeColor: "bg-green-500/15 text-green-400 border-green-500/30",
-    setupNote: "Sign up → Submit Release → done.",
-  },
-  {
-    name: "OpenPR",
-    url: "https://www.openpr.com",
-    signupUrl: "https://www.openpr.com/register",
-    price: "Free",
-    model: "Free account",
-    note: "Free worldwide distribution. Reaches journalists and Google News.",
-    badge: "Free",
-    badgeColor: "bg-green-500/15 text-green-400 border-green-500/30",
-    setupNote: "Register → New Press Release → paste and publish.",
+    setupNote: "Sign up → Submit Release → paste your article.",
   },
   {
     name: "IssueWire",
     url: "https://www.issuewire.com",
     signupUrl: "https://www.issuewire.com/register",
-    price: "From $19",
+    price: "From $19/release",
     model: "Pay per release — no subscription",
-    note: "No monthly fee. Pay only when you publish. Higher tiers reach AP/NBC/CBS.",
+    note: "No monthly fee. Higher tiers ($89+) include AP/NBC/CBS syndication. Only worth it once you've maxed out free options.",
     badge: "Per Release",
-    badgeColor: "bg-blue-500/15 text-blue-400 border-blue-500/30",
-    setupNote: "Create account free → buy a release credit when ready to publish.",
+    badgeColor: "bg-muted/50 text-muted-foreground border-border",
+    setupNote: "Create free account → buy a release credit when ready.",
   },
   {
     name: "Send2Press",
     url: "https://www.send2press.com",
     signupUrl: "https://www.send2press.com/wire/",
-    price: "$89",
+    price: "$89/release",
     model: "Pay per release — no subscription",
-    note: "No monthly fee. One flat rate per release. Solid newsroom pickup.",
+    note: "Solid mid-tier with real newsroom pickup. Pay only when you publish.",
     badge: "Per Release",
-    badgeColor: "bg-blue-500/15 text-blue-400 border-blue-500/30",
-    setupNote: "Go to their site → submit your release → pay at checkout.",
-  },
-  {
-    name: "PRWeb",
-    url: "https://www.prweb.com",
-    signupUrl: "https://app.prweb.com/prweb/register.aspx",
-    price: "From $99",
-    model: "Pay per release — no subscription",
-    note: "No monthly fee. Wide digital media reach. Owned by Cision.",
-    badge: "Per Release",
-    badgeColor: "bg-blue-500/15 text-blue-400 border-blue-500/30",
-    setupNote: "Create account free → submit and pay per release.",
+    badgeColor: "bg-muted/50 text-muted-foreground border-border",
+    setupNote: "Submit your release at checkout → pay per article.",
   },
 ];
 
@@ -435,44 +457,81 @@ export default function ForgePress() {
 
           {/* Distribution options */}
           {article && (
-            <div className="border border-border rounded-xl overflow-hidden">
-              <div className="px-4 py-3 bg-muted/20 border-b border-border">
-                <p className="text-sm font-semibold">Now distribute it</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Copy or download your article above, then submit to any of these.
-                  The paid ones are <span className="font-semibold text-foreground">pay-per-release</span> — no monthly fees, no subscriptions. You pay only when you publish.
-                </p>
+            <div className="space-y-3">
+
+              {/* How wire services actually work */}
+              <div className="bg-amber-500/8 border border-amber-500/25 rounded-xl px-4 py-3 text-xs text-muted-foreground leading-relaxed">
+                <p className="font-semibold text-amber-400 mb-1">How companies like PRWeb actually get on NBC/FOX/CBS</p>
+                <p>They have multi-year syndication agreements with those outlets — you can't buy your way into those directly. But <span className="text-foreground font-medium">Google News is the real distribution layer those outlets use</span>, and Google News accepts direct applications from any website, for free. Skip the middlemen entirely.</p>
               </div>
-              <div className="divide-y divide-border">
-                {DIST_OPTIONS.map(s => (
-                  <div key={s.name} className="px-4 py-3 space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2.5">
-                        <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border shrink-0", s.badgeColor)}>
-                          {s.badge}
-                        </span>
-                        <span className="text-sm font-semibold">{s.name}</span>
-                        <span className="text-xs text-muted-foreground hidden sm:inline">{s.model}</span>
+
+              {/* Free direct routes */}
+              <div className="border border-border rounded-xl overflow-hidden">
+                <div className="px-4 py-2.5 bg-primary/5 border-b border-border">
+                  <p className="text-xs font-bold text-primary uppercase tracking-wide">Direct routes — free, no middleman</p>
+                </div>
+                <div className="divide-y divide-border">
+                  {DIST_FREE_DIRECT.map(s => (
+                    <div key={s.name} className={cn("px-4 py-3 space-y-1.5", s.highlight && "bg-primary/3")}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2.5">
+                          <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border shrink-0", s.badgeColor)}>
+                            {s.badge}
+                          </span>
+                          <span className="text-sm font-semibold">{s.name}</span>
+                        </div>
+                        <span className="text-xs font-bold text-green-400 shrink-0">{s.price}</span>
                       </div>
-                      <span className="text-sm font-bold text-primary shrink-0">{s.price}</span>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{s.note}</p>
+                      <div className="flex items-center gap-3">
+                        <span className="text-[11px] text-muted-foreground/70 italic">{s.setupNote}</span>
+                        <a
+                          href={s.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline font-medium shrink-0"
+                        >
+                          Go <ExternalLink size={10} />
+                        </a>
+                      </div>
                     </div>
-                    <p className="text-xs text-muted-foreground leading-relaxed pl-0.5">{s.note}</p>
-                    <div className="flex items-center gap-3 pl-0.5">
-                      <span className="text-[11px] text-muted-foreground/70 italic">{s.setupNote}</span>
-                      <a
-                        href={s.signupUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline font-medium shrink-0"
-                      >
-                        Sign up <ExternalLink size={10} />
-                      </a>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-              <div className="bg-green-500/5 border-t border-border px-4 py-2.5 text-[11px] text-muted-foreground">
-                <span className="font-semibold text-green-400">Start free:</span> PRLog and OpenPR cost nothing and get you into Google News right away. Use them first, then upgrade to paid if you want broader newsroom reach.
+
+              {/* Wire services as backup */}
+              <div className="border border-border rounded-xl overflow-hidden">
+                <div className="px-4 py-2.5 bg-muted/20 border-b border-border">
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Wire services — if you want extra reach later</p>
+                  <p className="text-[11px] text-muted-foreground/70 mt-0.5">Pay per release only. No subscriptions. Use these after your own site is set up.</p>
+                </div>
+                <div className="divide-y divide-border">
+                  {DIST_PAID.map(s => (
+                    <div key={s.name} className="px-4 py-3 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2.5">
+                          <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border shrink-0", s.badgeColor)}>
+                            {s.badge}
+                          </span>
+                          <span className="text-sm font-semibold">{s.name}</span>
+                        </div>
+                        <span className="text-xs font-semibold text-muted-foreground shrink-0">{s.price}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{s.note}</p>
+                      <div className="flex items-center gap-3">
+                        <span className="text-[11px] text-muted-foreground/70 italic">{s.setupNote}</span>
+                        <a
+                          href={s.signupUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline font-medium shrink-0"
+                        >
+                          Sign up <ExternalLink size={10} />
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}
