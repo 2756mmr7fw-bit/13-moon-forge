@@ -29,3 +29,4 @@ export * from "./showcase_reviews";
 export * from "./cron_jobs";
 export * from "./backups";
 export * from "./team_members";
+export * from "./hosting";

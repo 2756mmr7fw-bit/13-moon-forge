@@ -115,6 +115,8 @@ const CronJobsPage         = lazy(() => import("@/pages/cron-jobs"));
 const BackupRestorePage    = lazy(() => import("@/pages/backup-restore"));
 const DatabaseManagerPage  = lazy(() => import("@/pages/database-manager"));
 const TeamCollaborationPage = lazy(() => import("@/pages/team-collaboration"));
+const ServicesPage          = lazy(() => import("@/pages/services"));
+const AdminHostingPage      = lazy(() => import("@/pages/admin-hosting"));
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 const API_BASE = basePath;
@@ -374,6 +376,8 @@ function Router() {
                     <Route path="/backup-restore"        component={BackupRestorePage} />
                     <Route path="/database-manager"      component={DatabaseManagerPage} />
                     <Route path="/team"                  component={TeamCollaborationPage} />
+                    <Route path="/services"              component={ServicesPage} />
+                    <Route path="/admin-hosting"         component={AdminHostingPage} />
                     <Route component={NotFound} />
                   </Switch>
                 </ProtectedRoute>

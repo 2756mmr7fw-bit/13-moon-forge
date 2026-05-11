@@ -41,7 +41,8 @@ const TAB_PREFIXES: Record<SidebarTab, string[]> = {
            "/leaving", "/sovereign", "/forge-drop", "/app-hub", "/registry", "/secrets",
            "/monitor", "/connections", "/antivirus", "/mail-scanner", "/admin",
            "/domain-hub", "/analytics", "/env-manager", "/cron-jobs", "/backup-restore",
-           "/database-manager", "/team", "/code-vault", "/app-logs", "/agent-bridge"],
+           "/database-manager", "/team", "/code-vault", "/app-logs", "/agent-bridge",
+           "/services", "/admin-hosting"],
 };
 
 function detectTab(path: string): SidebarTab {
@@ -173,6 +174,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/code-vault",     label: "Code Vault",         icon: Archive,     tip: "Every version of your code — auto-saved on every push, always downloadable" },
     { href: "/app-logs",       label: "App Logs",           icon: Terminal,    tip: "Live container logs from your deployed Coolify apps" },
     { href: "/agent-bridge",   label: "Agent Bridge",       icon: Radio,       tip: "Connect local Forge Agents — send commands, relay messages, install apps remotely" },
+    { href: "/services",       label: "Service Marketplace", icon: Database,    tip: "Every service a builder needs — VPS, databases, AI APIs, email, payments, and more" },
+    { href: "/admin-hosting",  label: "Hosting Admin",       icon: Users,       tip: "Admin panel for managing Forge managed hosting users" },
   ];
 
   const TAB_ITEMS: Record<SidebarTab, NavItem[]> = {

@@ -490,12 +490,441 @@ function HetznerProvisioner({ onDone }: { onDone: () => void }) {
   return null;
 }
 
+// ─── Generic VPS Provisioner (DigitalOcean / Vultr / Linode) ─────────────────
+
+type GenericProviderKey = "digitalocean" | "vultr" | "linode";
+
+interface GenericProviderConfig {
+  key: GenericProviderKey;
+  name: string;
+  tokenLabel: string;
+  tokenHeader: string;
+  docsUrl: string;
+  tokenInstructions: string[];
+  sizesEndpoint: string;
+  regionsEndpoint: string;
+  provisionEndpoint: string;
+  statusEndpoint: (id: string) => string;
+}
+
+const PROVIDER_CONFIGS: Record<GenericProviderKey, GenericProviderConfig> = {
+  digitalocean: {
+    key: "digitalocean",
+    name: "DigitalOcean",
+    tokenLabel: "DigitalOcean Personal Access Token",
+    tokenHeader: "x-do-token",
+    docsUrl: "https://cloud.digitalocean.com/account/api/tokens",
+    tokenInstructions: [
+      "Go to cloud.digitalocean.com and create an account",
+      "Click your avatar → API → Personal access tokens",
+      "Click Generate New Token, give it Write scope",
+      "Copy the token and paste it below",
+    ],
+    sizesEndpoint: "/api/digitalocean/sizes",
+    regionsEndpoint: "/api/digitalocean/regions",
+    provisionEndpoint: "/api/digitalocean/provision",
+    statusEndpoint: (id) => `/api/digitalocean/droplet-status/${id}`,
+  },
+  vultr: {
+    key: "vultr",
+    name: "Vultr",
+    tokenLabel: "Vultr API Key",
+    tokenHeader: "x-vultr-token",
+    docsUrl: "https://my.vultr.com/settings/#settingsapi",
+    tokenInstructions: [
+      "Go to my.vultr.com and create an account",
+      "Click your avatar → Account → API",
+      "Click Enable API and copy your API key",
+      "Paste it below",
+    ],
+    sizesEndpoint: "/api/vultr/plans",
+    regionsEndpoint: "/api/vultr/regions",
+    provisionEndpoint: "/api/vultr/provision",
+    statusEndpoint: (id) => `/api/vultr/instance-status/${id}`,
+  },
+  linode: {
+    key: "linode",
+    name: "Linode / Akamai",
+    tokenLabel: "Linode Personal Access Token",
+    tokenHeader: "x-linode-token",
+    docsUrl: "https://cloud.linode.com/profile/tokens",
+    tokenInstructions: [
+      "Go to cloud.linode.com and create an account",
+      "Click your avatar → API Tokens → Create Personal Access Token",
+      "Enable Read/Write for Linodes",
+      "Copy the token and paste it below",
+    ],
+    sizesEndpoint: "/api/linode/types",
+    regionsEndpoint: "/api/linode/regions",
+    provisionEndpoint: "/api/linode/provision",
+    statusEndpoint: (id) => `/api/linode/instance-status/${id}`,
+  },
+};
+
+interface GenericSize { id: string; vcpus?: number; memory?: number; disk?: number; priceMonthly: number; label?: string; description?: string }
+interface GenericRegion { id?: string; slug?: string; name: string }
+
+function GenericProvisioner({ providerKey, onDone, onBack }: { providerKey: GenericProviderKey; onDone: () => void; onBack: () => void }) {
+  const cfg = PROVIDER_CONFIGS[providerKey];
+  const [step, setStep] = useState<ProvisionStep>("token");
+  const [token, setToken] = useState("");
+  const [tokenError, setTokenError] = useState("");
+  const [loadingTypes, setLoadingTypes] = useState(false);
+  const [sizes, setSizes] = useState<GenericSize[]>([]);
+  const [regions, setRegions] = useState<GenericRegion[]>([]);
+  const [selectedSize, setSelectedSize] = useState("");
+  const [selectedRegion, setSelectedRegion] = useState("");
+  const [serverName, setServerName] = useState("forge-server");
+  const [rootPass, setRootPass] = useState("");
+  const [serverIp, setServerIp] = useState("");
+  const [coolifyUrl, setCoolifyUrl] = useState("");
+  const [instanceId, setInstanceId] = useState("");
+  const [pollCount, setPollCount] = useState(0);
+  const [error, setError] = useState("");
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const stopPolling = useCallback(() => {
+    if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
+  }, []);
+  useEffect(() => () => stopPolling(), [stopPolling]);
+
+  async function validateToken() {
+    if (!token.trim()) { setTokenError(`Enter your ${cfg.name} API token`); return; }
+    setLoadingTypes(true); setTokenError("");
+    try {
+      const [sizesRes, regionsRes] = await Promise.all([
+        fetch(`${API_BASE}${cfg.sizesEndpoint}`, { headers: { ...(await authHeaders()), [cfg.tokenHeader]: token.trim() } }),
+        fetch(`${API_BASE}${cfg.regionsEndpoint}`, { headers: { ...(await authHeaders()), [cfg.tokenHeader]: token.trim() } }),
+      ]);
+      const sizesData = await sizesRes.json() as { sizes?: GenericSize[]; plans?: GenericSize[]; types?: GenericSize[]; error?: string };
+      if (!sizesRes.ok || sizesData.error) {
+        setTokenError(sizesData.error ?? "Invalid token — check it and try again");
+        setLoadingTypes(false); return;
+      }
+      const regionsData = await regionsRes.json() as { regions?: GenericRegion[] };
+      const allSizes = sizesData.sizes ?? sizesData.plans ?? sizesData.types ?? [];
+      const allRegions = regionsData.regions ?? [];
+      setSizes(allSizes);
+      setRegions(allRegions);
+      if (allSizes[0]) setSelectedSize(allSizes[1]?.id ?? allSizes[0].id);
+      if (allRegions[0]) setSelectedRegion((allRegions[0].slug ?? allRegions[0].id) ?? "");
+      setLoadingTypes(false);
+      setStep("configure");
+    } catch {
+      setTokenError(`Could not reach ${cfg.name} — check your internet connection`);
+      setLoadingTypes(false);
+    }
+  }
+
+  async function provision() {
+    setStep("provisioning");
+    try {
+      const body: Record<string, string> = { serverName };
+      if (providerKey === "digitalocean") { body.doToken = token.trim(); body.size = selectedSize; body.region = selectedRegion; }
+      else if (providerKey === "vultr") { body.vultrToken = token.trim(); body.plan = selectedSize; body.region = selectedRegion; }
+      else if (providerKey === "linode") { body.linodeToken = token.trim(); body.type = selectedSize; body.region = selectedRegion; body.rootPass = rootPass; }
+
+      const r = await fetch(`${API_BASE}${cfg.provisionEndpoint}`, {
+        method: "POST",
+        headers: { ...(await authHeaders()), "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await r.json() as { ok?: boolean; ip?: string; coolifyUrl?: string; dropletId?: string; instanceId?: string; linodeId?: string; error?: string };
+      if (!r.ok || !data.ok) {
+        setError(data.error ?? "Provisioning failed"); setStep("error"); return;
+      }
+      const id = String(data.dropletId ?? data.instanceId ?? data.linodeId ?? "");
+      setInstanceId(id);
+      setServerIp(data.ip ?? "");
+      setCoolifyUrl(data.coolifyUrl ?? "");
+      setStep("waiting");
+      startPolling(id);
+    } catch {
+      setError("Network error — please try again"); setStep("error");
+    }
+  }
+
+  function startPolling(id: string) {
+    let count = 0;
+    pollRef.current = setInterval(async () => {
+      count++; setPollCount(count);
+      try {
+        const r = await fetch(`${API_BASE}${cfg.statusEndpoint(id)}`, {
+          headers: { ...(await authHeaders()), [cfg.tokenHeader]: token.trim() },
+        });
+        const data = await r.json() as { coolifyReady?: boolean; ip?: string };
+        if (data.ip && serverIp === "") setServerIp(data.ip);
+        if (data.coolifyReady) { stopPolling(); setStep("done"); }
+      } catch { /* keep polling */ }
+      if (count >= 72) { stopPolling(); setStep("done"); }
+    }, 5000);
+  }
+
+  if (step === "token") return (
+    <div className="max-w-md space-y-5">
+      <button onClick={onBack} className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors">← Back to providers</button>
+      <div>
+        <h2 className="text-xl font-bold mb-1 flex items-center gap-2"><Sparkles size={18} className="text-primary" /> Auto-provision on {cfg.name}</h2>
+        <p className="text-sm text-muted-foreground leading-relaxed">Forge will create a server, install Coolify, and connect it automatically.</p>
+      </div>
+      <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm space-y-2">
+        <p className="font-semibold flex items-center gap-1.5"><Key size={13} className="text-primary" /> How to get your {cfg.name} API token:</p>
+        <ol className="list-decimal list-inside space-y-1 text-muted-foreground text-xs leading-relaxed">
+          {cfg.tokenInstructions.map((s, i) => <li key={i}>{s}</li>)}
+        </ol>
+        <a href={cfg.docsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-primary hover:underline">Open {cfg.name} tokens page <ExternalLink size={10} /></a>
+      </div>
+      <div className="space-y-2">
+        <Label className="font-semibold">{cfg.tokenLabel}</Label>
+        <Input type="password" value={token} onChange={e => setToken(e.target.value)} onKeyDown={e => e.key === "Enter" && validateToken()} placeholder="Paste your API token here" className="font-mono text-sm" />
+        {tokenError && <p className="text-xs text-red-400 flex items-center gap-1.5"><AlertTriangle size={12} /> {tokenError}</p>}
+        <p className="text-xs text-muted-foreground">Your token is sent directly to {cfg.name}. We never store it.</p>
+      </div>
+      <Button onClick={validateToken} disabled={loadingTypes || !token.trim()} className="w-full gap-2">
+        {loadingTypes ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} />}
+        {loadingTypes ? "Verifying token…" : "Continue"}
+      </Button>
+    </div>
+  );
+
+  if (step === "configure") return (
+    <div className="max-w-lg space-y-6">
+      <button onClick={() => setStep("token")} className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors">← Back</button>
+      <div>
+        <h2 className="text-xl font-bold mb-1">Configure your {cfg.name} server</h2>
+        <p className="text-sm text-muted-foreground">Pick your plan and region. You can upgrade later.</p>
+      </div>
+      <div className="space-y-3">
+        <Label className="font-semibold flex items-center gap-1.5"><Cpu size={13} /> Server Plan</Label>
+        <div className="grid gap-3">
+          {sizes.slice(0, 4).map(s => (
+            <button key={s.id} onClick={() => setSelectedSize(s.id)}
+              className={cn("w-full text-left rounded-xl border p-4 transition-all", selectedSize === s.id ? "border-primary bg-primary/5" : "border-border bg-card hover:border-primary/40")}>
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-bold text-sm">{s.label ?? s.id}</span>
+                  </div>
+                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                    {s.vcpus && <span className="flex items-center gap-1"><Cpu size={10} /> {s.vcpus} vCPU</span>}
+                    {s.memory && <span className="flex items-center gap-1"><MemoryStick size={10} /> {s.memory >= 1024 ? `${s.memory / 1024}GB` : `${s.memory}MB`} RAM</span>}
+                    {s.disk && <span className="flex items-center gap-1"><HardDrive size={10} /> {s.disk}GB SSD</span>}
+                  </div>
+                </div>
+                <div className="text-right shrink-0">
+                  <span className="text-primary font-bold text-sm">${s.priceMonthly}</span>
+                  <span className="text-muted-foreground text-xs">/mo</span>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="space-y-2">
+        <Label className="font-semibold flex items-center gap-1.5"><MapPin size={13} /> Region</Label>
+        <Select value={selectedRegion} onValueChange={setSelectedRegion}>
+          <SelectTrigger className="bg-card"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            {regions.slice(0, 20).map(r => (
+              <SelectItem key={r.slug ?? r.id ?? r.name} value={(r.slug ?? r.id) ?? r.name}>{r.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="space-y-2">
+        <Label className="font-semibold">Server Name</Label>
+        <Input value={serverName} onChange={e => setServerName(e.target.value)} placeholder="forge-server" className="font-mono" />
+      </div>
+      {providerKey === "linode" && (
+        <div className="space-y-2">
+          <Label className="font-semibold">Root Password</Label>
+          <Input type="password" value={rootPass} onChange={e => setRootPass(e.target.value)} placeholder="Choose a strong root password" />
+          <p className="text-xs text-muted-foreground">Required by Linode. Store this somewhere safe.</p>
+        </div>
+      )}
+      <div className="flex gap-3">
+        <Button variant="outline" onClick={() => setStep("token")} className="gap-2">Back</Button>
+        <Button onClick={provision} disabled={!selectedSize || !selectedRegion || (providerKey === "linode" && !rootPass)} className="flex-1 gap-2">
+          <Sparkles size={15} /> Provision My Server
+        </Button>
+      </div>
+    </div>
+  );
+
+  if (step === "provisioning") return (
+    <div className="max-w-md text-center py-12 space-y-4">
+      <div className="flex justify-center"><Loader2 size={40} className="animate-spin text-primary" /></div>
+      <h2 className="text-lg font-bold">Creating your {cfg.name} server…</h2>
+      <p className="text-sm text-muted-foreground">This takes about 30 seconds.</p>
+    </div>
+  );
+
+  if (step === "waiting") return (
+    <div className="max-w-md space-y-6">
+      <div className="text-center py-8 space-y-3">
+        <div className="flex justify-center">
+          <div className="relative">
+            <div className="w-16 h-16 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+            <Server size={20} className="absolute inset-0 m-auto text-primary" />
+          </div>
+        </div>
+        <h2 className="text-lg font-bold">Installing Coolify…</h2>
+        <p className="text-sm text-muted-foreground">
+          {serverIp && <>Your server is up at <span className="font-mono text-foreground">{serverIp}</span>.<br /></>}
+          Coolify is being installed automatically. This takes 3–5 minutes.
+        </p>
+        <div className="text-xs text-muted-foreground">Checking every 5 seconds… ({pollCount * 5}s elapsed)</div>
+      </div>
+      <div className="rounded-xl border border-border bg-card p-4 text-sm space-y-2">
+        <div className="space-y-1.5 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2"><CheckCircle2 size={12} className="text-green-400 shrink-0" /> Server created on {cfg.name}</div>
+          <div className="flex items-center gap-2"><CheckCircle2 size={12} className="text-green-400 shrink-0" /> Ubuntu 22.04 booted</div>
+          <div className="flex items-center gap-2"><Loader2 size={12} className="animate-spin text-primary shrink-0" /> Installing Docker + Coolify</div>
+          <div className="flex items-center gap-2 opacity-40"><Clock size={12} className="shrink-0" /> Connecting to Forge</div>
+        </div>
+      </div>
+      <p className="text-xs text-muted-foreground text-center">You can leave this page — we'll remember your server.</p>
+    </div>
+  );
+
+  if (step === "done") return (
+    <div className="max-w-md space-y-6">
+      <div className="text-center py-6 space-y-3">
+        <div className="flex justify-center">
+          <div className="w-16 h-16 rounded-full bg-green-900/20 border border-green-800/40 flex items-center justify-center">
+            <CheckCircle2 size={28} className="text-green-400" />
+          </div>
+        </div>
+        <h2 className="text-xl font-bold">Server is ready!</h2>
+        <p className="text-sm text-muted-foreground">Your {cfg.name} server is running with Coolify installed.</p>
+      </div>
+      <div className="rounded-xl border border-green-800/40 bg-green-900/10 p-4 space-y-3 text-sm">
+        <p className="font-semibold text-green-300">Next: Set up your Coolify account</p>
+        <ol className="list-decimal list-inside space-y-2 text-muted-foreground text-xs leading-relaxed">
+          <li>Open <a href={coolifyUrl || `http://${serverIp}:8000`} target="_blank" rel="noopener noreferrer" className="text-primary underline">{coolifyUrl || `http://${serverIp}:8000`}</a> in a new tab</li>
+          <li>Create your Coolify admin account</li>
+          <li>Go to <strong className="text-foreground">Keys & Tokens → API Tokens</strong></li>
+          <li>Create an API token and copy it</li>
+          <li>Come back here and paste it in the <strong className="text-foreground">My Server</strong> tab</li>
+        </ol>
+      </div>
+      <Button onClick={onDone} className="w-full gap-2"><Server size={15} /> Connect My Server Now</Button>
+    </div>
+  );
+
+  if (step === "error") return (
+    <div className="max-w-md space-y-4">
+      <div className="rounded-xl border border-red-800/40 bg-red-900/10 p-5 text-center space-y-3">
+        <XCircle size={32} className="text-red-400 mx-auto" />
+        <h2 className="font-bold text-red-300">Provisioning failed</h2>
+        <p className="text-sm text-muted-foreground">{error}</p>
+      </div>
+      <Button onClick={() => { setStep("configure"); setError(""); }} variant="outline" className="w-full">Try Again</Button>
+    </div>
+  );
+
+  return null;
+}
+
+// ─── Forge Managed Hosting Request ───────────────────────────────────────────
+
+function ManagedHostingRequest({ onBack }: { onBack: () => void }) {
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [plan, setPlan] = useState("basic");
+  const [subdomain, setSubdomain] = useState("");
+  const [requestNote, setRequestNote] = useState("");
+  const [error, setError] = useState("");
+
+  async function submit() {
+    setLoading(true); setError("");
+    try {
+      const r = await fetch(`${API_BASE}/api/hosting/request`, {
+        method: "POST",
+        headers: await authHeaders(),
+        body: JSON.stringify({ plan, subdomain: subdomain.trim(), requestNote: requestNote.trim() }),
+      });
+      const data = await r.json() as { ok?: boolean; error?: string };
+      if (!r.ok) { setError(data.error ?? "Failed"); setLoading(false); return; }
+      setSubmitted(true);
+    } catch { setError("Network error"); }
+    setLoading(false);
+  }
+
+  if (submitted) return (
+    <div className="max-w-md space-y-6">
+      <div className="text-center py-8 space-y-3">
+        <div className="flex justify-center">
+          <div className="w-16 h-16 rounded-full bg-green-900/20 border border-green-800/40 flex items-center justify-center">
+            <CheckCircle2 size={28} className="text-green-400" />
+          </div>
+        </div>
+        <h2 className="text-xl font-bold">Request received!</h2>
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          We'll set up your Forge-hosted server and reach out when it's ready — usually within 24 hours.
+        </p>
+      </div>
+      <div className="rounded-xl border border-border bg-card p-4 text-sm space-y-2">
+        <p className="font-semibold">What happens next:</p>
+        <ol className="list-decimal list-inside space-y-1.5 text-muted-foreground text-xs leading-relaxed">
+          <li>We create an isolated Coolify team for your account on our server</li>
+          <li>We assign your subdomain and connect your Forge dashboard</li>
+          <li>You deploy apps through Forge — we handle the server</li>
+        </ol>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="max-w-md space-y-5">
+      <button onClick={onBack} className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors">← Back to options</button>
+      <div>
+        <h2 className="text-xl font-bold mb-1 flex items-center gap-2"><Sparkles size={18} className="text-green-400" /> Forge Managed Hosting</h2>
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          We run the server. You deploy your apps through Forge. No server management, no Coolify setup — it just works.
+        </p>
+      </div>
+      <div className="rounded-xl border border-green-500/20 bg-green-500/5 p-4 text-sm space-y-2">
+        <p className="font-semibold text-green-400">What's included:</p>
+        <ul className="space-y-1 text-muted-foreground text-xs leading-relaxed">
+          <li className="flex items-center gap-2"><CheckCircle2 size={11} className="text-green-400 shrink-0" /> Isolated server environment on our Hetzner cluster</li>
+          <li className="flex items-center gap-2"><CheckCircle2 size={11} className="text-green-400 shrink-0" /> Your own subdomain (yourname.13moonforge.ai)</li>
+          <li className="flex items-center gap-2"><CheckCircle2 size={11} className="text-green-400 shrink-0" /> Deploy apps through your Forge dashboard</li>
+          <li className="flex items-center gap-2"><CheckCircle2 size={11} className="text-green-400 shrink-0" /> We handle backups, updates, and monitoring</li>
+        </ul>
+      </div>
+      <div className="space-y-2">
+        <Label className="text-xs font-semibold">Preferred Subdomain</Label>
+        <div className="flex items-center gap-2">
+          <Input value={subdomain} onChange={e => setSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))} placeholder="yourname" className="font-mono text-sm" />
+          <span className="text-xs text-muted-foreground whitespace-nowrap">.13moonforge.ai</span>
+        </div>
+      </div>
+      <div className="space-y-2">
+        <Label className="text-xs font-semibold">Anything else we should know? (optional)</Label>
+        <textarea value={requestNote} onChange={e => setRequestNote(e.target.value)} placeholder="What are you building? Any special requirements?" className="w-full h-20 rounded-lg border border-border bg-card px-3 py-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-primary" />
+      </div>
+      {error && <p className="text-xs text-red-400 flex items-center gap-1.5"><AlertTriangle size={12} /> {error}</p>}
+      <Button onClick={submit} disabled={loading} className="w-full gap-2 bg-green-600 hover:bg-green-700 text-white">
+        {loading ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} />}
+        {loading ? "Submitting…" : "Request Forge Hosting"}
+      </Button>
+    </div>
+  );
+}
+
 // ─── Get Started Tab ──────────────────────────────────────────────────────────
 
-function GetStartedTab({ onConnect }: { onConnect: () => void }) {
-  const [mode, setMode] = useState<"choose" | "auto" | "manual">("choose");
+type StartMode = "choose" | "managed" | "hetzner" | "digitalocean" | "vultr" | "linode" | "manual";
 
-  if (mode === "auto") return <HetznerProvisioner onDone={onConnect} />;
+function GetStartedTab({ onConnect }: { onConnect: () => void }) {
+  const [mode, setMode] = useState<StartMode>("choose");
+
+  if (mode === "managed") return <ManagedHostingRequest onBack={() => setMode("choose")} />;
+  if (mode === "hetzner") return <HetznerProvisioner onDone={onConnect} />;
+  if (mode === "digitalocean") return <GenericProvisioner providerKey="digitalocean" onDone={onConnect} onBack={() => setMode("choose")} />;
+  if (mode === "vultr") return <GenericProvisioner providerKey="vultr" onDone={onConnect} onBack={() => setMode("choose")} />;
+  if (mode === "linode") return <GenericProvisioner providerKey="linode" onDone={onConnect} onBack={() => setMode("choose")} />;
 
   if (mode === "manual") return (
     <div className="space-y-8 max-w-2xl">
@@ -549,52 +978,84 @@ function GetStartedTab({ onConnect }: { onConnect: () => void }) {
 
   return (
     <div className="space-y-8">
-      <div className="max-w-2xl">
-        <h2 className="text-xl font-bold mb-2">Own your stack. Pay only for what you use.</h2>
+      <div className="max-w-3xl">
+        <h2 className="text-xl font-bold mb-2">How do you want to host?</h2>
         <p className="text-muted-foreground leading-relaxed text-sm">
-          Your apps run on <strong>your own server</strong> — no platform lock-in, no shared infrastructure.
-          You pay your hosting provider directly and pay us via the{" "}
-          <a href="https://thepeoplestownsq.com" target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-2">Town Square</a>{" "}
-          for the apps. Two separate bills. Full control.
+          Choose Forge Managed for zero setup, or pick a provider to auto-provision your own server.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-2xl">
-        {/* Auto path */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl">
+        {/* Forge Managed — top pick */}
         <button
-          onClick={() => setMode("auto")}
-          className="text-left rounded-2xl border-2 border-primary/40 bg-primary/5 p-6 hover:border-primary hover:bg-primary/10 transition-all group"
+          onClick={() => setMode("managed")}
+          className="text-left rounded-2xl border-2 border-green-500/40 bg-green-500/5 p-5 hover:border-green-500 hover:bg-green-500/10 transition-all group lg:col-span-1"
         >
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-9 h-9 rounded-xl bg-primary/20 flex items-center justify-center">
-              <Sparkles size={18} className="text-primary" />
-            </div>
-            <Badge className="bg-primary/20 text-primary border-primary/30 text-[10px]">Recommended</Badge>
+            <div className="w-9 h-9 rounded-xl bg-green-500/20 flex items-center justify-center"><Sparkles size={18} className="text-green-400" /></div>
+            <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[10px]">Zero Setup</Badge>
           </div>
-          <h3 className="font-bold text-base mb-1">Auto-Provision with Hetzner</h3>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            Paste your Hetzner API token and Forge spins up the server, installs Coolify, and connects everything — automatically.
-          </p>
-          <div className="mt-4 text-xs text-primary font-semibold flex items-center gap-1 group-hover:gap-2 transition-all">
-            Get started <span>→</span>
-          </div>
+          <h3 className="font-bold text-base mb-1">Forge Hosted</h3>
+          <p className="text-xs text-muted-foreground leading-relaxed">We manage the server. You just deploy. Get your own subdomain on 13moonforge.ai.</p>
+          <div className="mt-3 text-xs text-green-400 font-semibold flex items-center gap-1 group-hover:gap-2 transition-all">Request access →</div>
         </button>
 
-        {/* Manual path */}
+        {/* Hetzner — best value */}
+        <button
+          onClick={() => setMode("hetzner")}
+          className="text-left rounded-2xl border-2 border-primary/40 bg-primary/5 p-5 hover:border-primary hover:bg-primary/10 transition-all group"
+        >
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-9 h-9 rounded-xl bg-primary/20 flex items-center justify-center"><Sparkles size={18} className="text-primary" /></div>
+            <Badge className="bg-primary/20 text-primary border-primary/30 text-[10px]">Best Value</Badge>
+          </div>
+          <h3 className="font-bold text-base mb-1">Hetzner Cloud</h3>
+          <p className="text-xs text-muted-foreground leading-relaxed">Auto-provision a Hetzner VPS with Coolify pre-installed. From €4/mo. Fastest setup.</p>
+          <div className="mt-3 text-xs text-primary font-semibold flex items-center gap-1 group-hover:gap-2 transition-all">Auto-provision →</div>
+        </button>
+
+        {/* DigitalOcean */}
+        <button
+          onClick={() => setMode("digitalocean")}
+          className="text-left rounded-2xl border border-border bg-card p-5 hover:border-primary/40 transition-all group"
+        >
+          <div className="w-9 h-9 rounded-xl bg-sky-500/10 flex items-center justify-center mb-3"><Globe size={18} className="text-sky-400" /></div>
+          <h3 className="font-bold text-base mb-1">DigitalOcean</h3>
+          <p className="text-xs text-muted-foreground leading-relaxed">Great docs, clean dashboard, and reliable droplets. From $6/mo.</p>
+          <div className="mt-3 text-xs text-muted-foreground font-semibold flex items-center gap-1 group-hover:gap-2 group-hover:text-foreground transition-all">Auto-provision →</div>
+        </button>
+
+        {/* Vultr */}
+        <button
+          onClick={() => setMode("vultr")}
+          className="text-left rounded-2xl border border-border bg-card p-5 hover:border-primary/40 transition-all group"
+        >
+          <div className="w-9 h-9 rounded-xl bg-blue-500/10 flex items-center justify-center mb-3"><Server size={18} className="text-blue-400" /></div>
+          <h3 className="font-bold text-base mb-1">Vultr</h3>
+          <p className="text-xs text-muted-foreground leading-relaxed">32 global locations, fast network, competitive pricing. From $2.50/mo.</p>
+          <div className="mt-3 text-xs text-muted-foreground font-semibold flex items-center gap-1 group-hover:gap-2 group-hover:text-foreground transition-all">Auto-provision →</div>
+        </button>
+
+        {/* Linode */}
+        <button
+          onClick={() => setMode("linode")}
+          className="text-left rounded-2xl border border-border bg-card p-5 hover:border-primary/40 transition-all group"
+        >
+          <div className="w-9 h-9 rounded-xl bg-green-500/10 flex items-center justify-center mb-3"><Zap size={18} className="text-green-400" /></div>
+          <h3 className="font-bold text-base mb-1">Linode / Akamai</h3>
+          <p className="text-xs text-muted-foreground leading-relaxed">Rock-solid reliability since 2003. Great support. From $5/mo.</p>
+          <div className="mt-3 text-xs text-muted-foreground font-semibold flex items-center gap-1 group-hover:gap-2 group-hover:text-foreground transition-all">Auto-provision →</div>
+        </button>
+
+        {/* Manual */}
         <button
           onClick={() => setMode("manual")}
-          className="text-left rounded-2xl border border-border bg-card p-6 hover:border-primary/40 transition-all group"
+          className="text-left rounded-2xl border border-border bg-card p-5 hover:border-primary/40 transition-all group"
         >
-          <div className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center mb-3">
-            <Server size={18} className="text-muted-foreground" />
-          </div>
-          <h3 className="font-bold text-base mb-1">I'll set up my own server</h3>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            Already have a server or prefer another provider? Install Coolify yourself and connect it manually.
-          </p>
-          <div className="mt-4 text-xs text-muted-foreground flex items-center gap-1 group-hover:gap-2 transition-all group-hover:text-foreground">
-            Manual setup <span>→</span>
-          </div>
+          <div className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center mb-3"><Server size={18} className="text-muted-foreground" /></div>
+          <h3 className="font-bold text-base mb-1">Any other provider</h3>
+          <p className="text-xs text-muted-foreground leading-relaxed">Contabo, OVH, AWS, or your own hardware. Manual setup — we walk you through it.</p>
+          <div className="mt-3 text-xs text-muted-foreground flex items-center gap-1 group-hover:gap-2 group-hover:text-foreground transition-all">Manual setup →</div>
         </button>
       </div>
 
