@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Film, LayoutDashboard, Settings, Video } from "lucide-react";
+import { Film, LayoutDashboard, Settings, Video, Plus } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider } from "@/components/ui/sidebar";
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -18,8 +18,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <SidebarContent className="px-2 py-4">
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={location === "/"}>
-                  <Link href="/">
+                <SidebarMenuButton asChild isActive={location === "/dashboard"}>
+                  <Link href="/dashboard">
                     <LayoutDashboard className="w-4 h-4 mr-2" />
                     Dashboard
                   </Link>
@@ -36,7 +36,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={location === "/projects/new"}>
                   <Link href="/projects/new">
-                    <Settings className="w-4 h-4 mr-2" />
+                    <Plus className="w-4 h-4 mr-2" />
                     New Project
                   </Link>
                 </SidebarMenuButton>

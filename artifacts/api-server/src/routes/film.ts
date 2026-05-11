@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { eq, desc, sql, and } from "drizzle-orm";
 import { db, filmProjectsTable, filmClipsTable } from "@workspace/db";
+import { openai } from "@workspace/integrations-openai-ai-server";
 import {
   CreateFilmProjectBody,
   GetFilmProjectParams,
@@ -544,6 +545,66 @@ router.get("/film/recent", async (req, res): Promise<void> => {
     .limit(6);
 
   res.json(projects);
+});
+
+// ─── AI Co-Director streaming endpoint ───────────────────────────────────────
+router.post("/film/ai", async (req, res): Promise<void> => {
+  const userId = req.userId;
+  if (!userId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  const { message, projectId } = req.body as { message?: string; projectId?: number };
+  if (!message) {
+    res.status(400).json({ error: "message required" });
+    return;
+  }
+
+  // Load project context if available
+  let projectContext = "";
+  if (projectId) {
+    const [project] = await db
+      .select({ title: filmProjectsTable.title, aspectRatio: filmProjectsTable.aspectRatio, frameRate: filmProjectsTable.frameRate })
+      .from(filmProjectsTable)
+      .where(and(eq(filmProjectsTable.id, projectId), eq(filmProjectsTable.userId, userId)));
+    if (project) {
+      const clips = await db.select().from(filmClipsTable).where(eq(filmClipsTable.projectId, projectId));
+      const totalSec = clips.reduce((sum, c) => sum + c.durationMs, 0) / 1000;
+      projectContext = `\nCurrent project: "${project.title}" (${project.aspectRatio}, ${project.frameRate}fps, ${clips.length} clips, ${totalSec.toFixed(1)}s total).`;
+    }
+  }
+
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  res.flushHeaders();
+
+  try {
+    const stream = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      stream: true,
+      temperature: 0.7,
+      messages: [
+        {
+          role: "system",
+          content: `You are an expert film editor and AI co-director assistant inside the 13 Moon Film Editor. You help editors with pacing, cuts, story structure, audio sync, color grading advice, and storytelling decisions. Give specific, actionable advice. Be direct and concise — editors are busy. When suggesting cuts, mention specific timecodes if possible.${projectContext}`,
+        },
+        { role: "user", content: message },
+      ],
+    });
+
+    for await (const chunk of stream) {
+      const delta = chunk.choices[0]?.delta?.content ?? "";
+      if (delta) res.write(`data: ${JSON.stringify({ text: delta })}\n\n`);
+    }
+    res.write("data: [DONE]\n\n");
+    res.end();
+  } catch (err) {
+    req.log.error({ err }, "film/ai stream error");
+    res.write(`data: ${JSON.stringify({ text: "\n\n[Error generating response]" })}\n\n`);
+    res.end();
+  }
 });
 
 logger.info("Film editor routes loaded");
