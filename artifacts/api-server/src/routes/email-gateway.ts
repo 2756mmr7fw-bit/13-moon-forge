@@ -95,7 +95,6 @@ router.post("/email/keys", async (req, res) => {
     keyPrefix: prefix,
     fromDomain: fromDomain ?? null,
     lastResetDay: todayStr(),
-    lastResetMonth: monthStr(),
   }).returning();
 
   return res.json({ ok: true, key: { ...key, rawKey } });
@@ -189,8 +188,9 @@ router.post("/email/send", emailKeyAuth, async (req, res) => {
   }
 
   // Record the send
+  const emailKey = req.emailKey!;
   await db.insert(emailSendsTable).values({
-    apiKeyId: req.emailKey.id,
+    apiKeyId: emailKey.id,
     userId: req.userId,
     fromAddress,
     toAddress: toAddresses.join(", "),
@@ -204,9 +204,9 @@ router.post("/email/send", emailKeyAuth, async (req, res) => {
   // Increment counters
   if (status === "sent") {
     await db.update(emailApiKeysTable).set({
-      sendsToday: (req.emailKey.sendsToday ?? 0) + 1,
-      sendsThisMonth: (req.emailKey.sendsThisMonth ?? 0) + 1,
-    }).where(eq(emailApiKeysTable.id, req.emailKey.id));
+      sendsToday: (emailKey.sendsToday ?? 0) + 1,
+      sendsThisMonth: (emailKey.sendsThisMonth ?? 0) + 1,
+    }).where(eq(emailApiKeysTable.id, emailKey.id));
   }
 
   if (status === "failed") {

@@ -171,13 +171,13 @@ echo "Run 'forge login' to get started."
 
 // ─── POST /api/cli/token ──────────────────────────────────────────────────────
 router.post("/cli/token", async (req, res) => {
-  if (!req.session?.userId) return res.status(401).json({ error: "Not logged in" });
+  if (!req.userId || req.userId.startsWith("anon-")) return res.status(401).json({ error: "Not logged in" });
 
   const token = randomBytes(32).toString("hex");
   const name = (req.body as { name?: string }).name ?? "CLI";
 
   const [record] = await db.insert(cliTokensTable).values({
-    userId: req.session.userId,
+    userId: req.userId,
     token,
     name,
   }).returning();
@@ -187,22 +187,22 @@ router.post("/cli/token", async (req, res) => {
 
 // ─── DELETE /api/cli/token/:id ────────────────────────────────────────────────
 router.delete("/cli/token/:id", async (req, res) => {
-  if (!req.session?.userId) return res.status(401).json({ error: "Not logged in" });
+  if (!req.userId || req.userId.startsWith("anon-")) return res.status(401).json({ error: "Not logged in" });
   await db.delete(cliTokensTable).where(
-    and(eq(cliTokensTable.id, parseInt(req.params.id)), eq(cliTokensTable.userId, req.session.userId))
+    and(eq(cliTokensTable.id, parseInt(req.params.id)), eq(cliTokensTable.userId, req.userId))
   );
   return res.json({ ok: true });
 });
 
 // ─── GET /api/cli/tokens ──────────────────────────────────────────────────────
 router.get("/cli/tokens", async (req, res) => {
-  if (!req.session?.userId) return res.status(401).json({ error: "Not logged in" });
+  if (!req.userId || req.userId.startsWith("anon-")) return res.status(401).json({ error: "Not logged in" });
   const tokens = await db.select({
     id: cliTokensTable.id,
     name: cliTokensTable.name,
     lastUsedAt: cliTokensTable.lastUsedAt,
     createdAt: cliTokensTable.createdAt,
-  }).from(cliTokensTable).where(eq(cliTokensTable.userId, req.session.userId));
+  }).from(cliTokensTable).where(eq(cliTokensTable.userId, req.userId));
   return res.json({ tokens });
 });
 

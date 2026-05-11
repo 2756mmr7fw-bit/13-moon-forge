@@ -302,7 +302,7 @@ function Router() {
                     <Route path="/screen-coach"           component={ScreenCoach} />
                     <Route path="/launch"                 component={LaunchKit} />
                     <Route path="/legal"                  component={LegalDecoder} />
-                    <Route path="/sage"                   component={LearnWithSage} />
+                    <Route path="/sage"                   component={LearnWithSage as React.ComponentType} />
                     <Route path="/hawk"                   component={AskHawk} />
                     <Route path="/migration"              component={MigrationHub} />
                     <Route path="/app-hub"                component={AppHub} />

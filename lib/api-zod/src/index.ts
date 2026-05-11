@@ -12,4 +12,3 @@ export const AuthUser = z.object({
 });
 
 export type AuthUser = z.infer<typeof AuthUser>;
-export * from "./generated/types";

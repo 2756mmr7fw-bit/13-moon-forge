@@ -511,12 +511,12 @@ export default function AgentBridgePage() {
                               <span className="text-green-400 font-semibold">{h.type}</span>
                               <span className="text-muted-foreground">{timeSince(h.timestamp)}</span>
                             </div>
-                            {h.payload && typeof h.payload === "object" && "message" in (h.payload as object) && (
+                            {Boolean(h.payload && typeof h.payload === "object" && "message" in (h.payload as object)) && (
                               <pre className="text-white/60 pl-5 whitespace-pre-wrap break-all">
                                 {(h.payload as { message: string }).message}
                               </pre>
                             )}
-                            {h.payload && typeof h.payload === "object" && "command" in (h.payload as object) && (
+                            {Boolean(h.payload && typeof h.payload === "object" && "command" in (h.payload as object)) && (
                               <pre className="text-white/60 pl-5 whitespace-pre-wrap break-all">
                                 $ {(h.payload as { command: string }).command}
                               </pre>

@@ -5,6 +5,34 @@ declare global {
   namespace Express {
     interface Request {
       userId: string;
+      aiKey?: {
+        id: number;
+        userId: string;
+        name: string;
+        keyHash: string;
+        keyPrefix: string;
+        monthlyTokenLimit: number;
+        tokensUsedThisMonth: number;
+        lastResetMonth: string | null;
+        allowedModels: string;
+        active: boolean;
+        createdAt: Date;
+      } | null;
+      emailKey?: {
+        id: number;
+        userId: string;
+        name: string;
+        keyHash: string;
+        keyPrefix: string;
+        fromDomain: string | null;
+        dailyLimit: number;
+        monthlyLimit: number;
+        sendsToday: number;
+        sendsThisMonth: number;
+        lastResetDay: string | null;
+        active: boolean;
+        createdAt: Date;
+      } | null;
     }
   }
 }

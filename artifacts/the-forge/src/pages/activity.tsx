@@ -63,7 +63,7 @@ function EventCard({ event }: { event: ActivityEvent }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="font-semibold text-sm truncate max-w-[200px]">{event.title}</span>
-          {event.type === "repo_created" && event.meta.visibility && (
+          {event.type === "repo_created" && Boolean(event.meta.visibility) && (
             <Badge variant="outline" className={cn(
               "text-[10px]",
               event.meta.visibility === "private"
@@ -86,13 +86,13 @@ function EventCard({ event }: { event: ActivityEvent }) {
         {event.subtitle && (
           <p className="text-xs text-muted-foreground/60 mt-0.5 truncate max-w-sm">{event.subtitle}</p>
         )}
-        {event.type === "import_error" && event.meta.errorMessage && (
+        {event.type === "import_error" && Boolean(event.meta.errorMessage) && (
           <p className="text-xs text-red-400 mt-1 line-clamp-2">{String(event.meta.errorMessage)}</p>
         )}
       </div>
       <div className="flex flex-col items-end gap-1.5 shrink-0">
         <span className="text-[10px] text-muted-foreground/60 whitespace-nowrap">{timeAgo(event.timestamp)}</span>
-        {event.type === "repo_created" && event.meta.repoId && (
+        {event.type === "repo_created" && Boolean(event.meta.repoId) && (
           <Link href="/vault">
             <button className="flex items-center gap-1 text-[10px] text-primary hover:underline">
               View in Vault <ArrowRight className="w-2.5 h-2.5" />

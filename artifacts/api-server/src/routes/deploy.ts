@@ -180,7 +180,7 @@ router.post("/deploy/redeploy/:uuid", async (req, res) => {
       `/applications/${req.params.uuid}/deploy`,
       { method: "POST" },
     );
-    const body = await deployRes.json().catch(() => ({}));
+    const body = await deployRes.json().catch(() => ({})) as Record<string, unknown>;
     return res.json({ ok: deployRes.ok, ...body });
   } catch (err) {
     req.log.error({ err }, "deploy/redeploy failed");
@@ -247,9 +247,9 @@ router.post("/deploy/provision", async (req, res) => {
       body: JSON.stringify(payload),
     });
 
-    const body = await r.json().catch(() => ({}));
+    const body = await r.json().catch(() => ({})) as Record<string, unknown>;
     if (!r.ok) {
-      return res.status(r.status).json({ ok: false, error: body.message ?? body.error ?? `Coolify returned ${r.status}` });
+      return res.status(r.status).json({ ok: false, error: (body.message ?? body.error ?? `Coolify returned ${r.status}`) as string });
     }
 
     // Auto-add to Showcase — every Forge-hosted app gets broadcast automatically
@@ -278,7 +278,7 @@ router.post("/deploy/provision", async (req, res) => {
       // Non-fatal
     }
 
-    return res.json({ ok: true, ...body });
+    return res.json({ ok: true, ...(body as Record<string, unknown>) });
   } catch (err) {
     req.log.error({ err }, "deploy/provision failed");
     return res.status(500).json({ error: "Failed to provision app" });
