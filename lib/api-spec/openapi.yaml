@@ -8,6 +8,8 @@ servers:
   - url: /api
     description: Base API path
 tags:
+  - name: showcase
+    description: App showcase
   - name: health
     description: Health operations
   - name: auth
@@ -291,6 +293,91 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Project"
+
+  /showcase:
+    get:
+      operationId: listShowcaseApps
+      tags: [showcase]
+      summary: List all active showcase apps (featured first)
+      responses:
+        "200":
+          description: Showcase apps
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShowcaseAppsResponse"
+
+  /showcase/submit:
+    post:
+      operationId: submitShowcaseApp
+      tags: [showcase]
+      summary: Submit an app to the showcase
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShowcaseSubmission"
+      responses:
+        "201":
+          description: Submission received
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShowcaseApp"
+
+  /showcase/admin:
+    get:
+      operationId: listShowcaseAdmin
+      tags: [showcase]
+      summary: Admin — list all apps including pending
+      responses:
+        "200":
+          description: All showcase apps
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ShowcaseApp"
+
+  /showcase/{id}:
+    patch:
+      operationId: updateShowcaseApp
+      tags: [showcase]
+      summary: Admin — approve, feature, or deactivate an app
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShowcaseAppUpdate"
+      responses:
+        "200":
+          description: Updated showcase app
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShowcaseApp"
+    delete:
+      operationId: deleteShowcaseApp
+      tags: [showcase]
+      summary: Admin — remove an app from the showcase
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
 
   /film/projects:
     get:
@@ -987,3 +1074,125 @@ components:
         - imageClips
         - textClips
         - trackCount
+
+    ShowcaseApp:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        tagline:
+          type: string
+        description:
+          type: string
+        websiteUrl:
+          type: ["string", "null"]
+        iosUrl:
+          type: ["string", "null"]
+        androidUrl:
+          type: ["string", "null"]
+        logoUrl:
+          type: ["string", "null"]
+        screenshotUrl:
+          type: ["string", "null"]
+        category:
+          type: string
+          enum: [productivity, social, media, education, tools, games, finance, health, creative, other]
+        isFeatured:
+          type: boolean
+        isActive:
+          type: boolean
+        submittedBy:
+          type: ["string", "null"]
+        builderName:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - tagline
+        - description
+        - category
+        - isFeatured
+        - isActive
+        - createdAt
+        - updatedAt
+
+    ShowcaseAppsResponse:
+      type: object
+      properties:
+        featured:
+          type: array
+          items:
+            $ref: "#/components/schemas/ShowcaseApp"
+        community:
+          type: array
+          items:
+            $ref: "#/components/schemas/ShowcaseApp"
+      required:
+        - featured
+        - community
+
+    ShowcaseSubmission:
+      type: object
+      properties:
+        name:
+          type: string
+        tagline:
+          type: string
+        description:
+          type: string
+        websiteUrl:
+          type: string
+        iosUrl:
+          type: string
+        androidUrl:
+          type: string
+        logoUrl:
+          type: string
+        screenshotUrl:
+          type: string
+        category:
+          type: string
+          enum: [productivity, social, media, education, tools, games, finance, health, creative, other]
+        builderName:
+          type: string
+      required:
+        - name
+        - tagline
+        - description
+
+    ShowcaseAppUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        tagline:
+          type: string
+        description:
+          type: string
+        websiteUrl:
+          type: string
+        iosUrl:
+          type: string
+        androidUrl:
+          type: string
+        logoUrl:
+          type: string
+        screenshotUrl:
+          type: string
+        category:
+          type: string
+          enum: [productivity, social, media, education, tools, games, finance, health, creative, other]
+        isFeatured:
+          type: boolean
+        isActive:
+          type: boolean
+        builderName:
+          type: string

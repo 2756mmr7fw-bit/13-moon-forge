@@ -227,6 +227,211 @@ export const GetRecentProjectsResponse = zod.array(
 );
 
 /**
+ * @summary List all active showcase apps (featured first)
+ */
+export const ListShowcaseAppsResponse = zod.object({
+  featured: zod.array(
+    zod.object({
+      id: zod.number(),
+      name: zod.string(),
+      tagline: zod.string(),
+      description: zod.string(),
+      websiteUrl: zod.string().nullish(),
+      iosUrl: zod.string().nullish(),
+      androidUrl: zod.string().nullish(),
+      logoUrl: zod.string().nullish(),
+      screenshotUrl: zod.string().nullish(),
+      category: zod.enum([
+        "productivity",
+        "social",
+        "media",
+        "education",
+        "tools",
+        "games",
+        "finance",
+        "health",
+        "creative",
+        "other",
+      ]),
+      isFeatured: zod.boolean(),
+      isActive: zod.boolean(),
+      submittedBy: zod.string().nullish(),
+      builderName: zod.string().nullish(),
+      createdAt: zod.coerce.date(),
+      updatedAt: zod.coerce.date(),
+    }),
+  ),
+  community: zod.array(
+    zod.object({
+      id: zod.number(),
+      name: zod.string(),
+      tagline: zod.string(),
+      description: zod.string(),
+      websiteUrl: zod.string().nullish(),
+      iosUrl: zod.string().nullish(),
+      androidUrl: zod.string().nullish(),
+      logoUrl: zod.string().nullish(),
+      screenshotUrl: zod.string().nullish(),
+      category: zod.enum([
+        "productivity",
+        "social",
+        "media",
+        "education",
+        "tools",
+        "games",
+        "finance",
+        "health",
+        "creative",
+        "other",
+      ]),
+      isFeatured: zod.boolean(),
+      isActive: zod.boolean(),
+      submittedBy: zod.string().nullish(),
+      builderName: zod.string().nullish(),
+      createdAt: zod.coerce.date(),
+      updatedAt: zod.coerce.date(),
+    }),
+  ),
+});
+
+/**
+ * @summary Submit an app to the showcase
+ */
+export const SubmitShowcaseAppBody = zod.object({
+  name: zod.string(),
+  tagline: zod.string(),
+  description: zod.string(),
+  websiteUrl: zod.string().optional(),
+  iosUrl: zod.string().optional(),
+  androidUrl: zod.string().optional(),
+  logoUrl: zod.string().optional(),
+  screenshotUrl: zod.string().optional(),
+  category: zod
+    .enum([
+      "productivity",
+      "social",
+      "media",
+      "education",
+      "tools",
+      "games",
+      "finance",
+      "health",
+      "creative",
+      "other",
+    ])
+    .optional(),
+  builderName: zod.string().optional(),
+});
+
+/**
+ * @summary Admin — list all apps including pending
+ */
+export const ListShowcaseAdminResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  tagline: zod.string(),
+  description: zod.string(),
+  websiteUrl: zod.string().nullish(),
+  iosUrl: zod.string().nullish(),
+  androidUrl: zod.string().nullish(),
+  logoUrl: zod.string().nullish(),
+  screenshotUrl: zod.string().nullish(),
+  category: zod.enum([
+    "productivity",
+    "social",
+    "media",
+    "education",
+    "tools",
+    "games",
+    "finance",
+    "health",
+    "creative",
+    "other",
+  ]),
+  isFeatured: zod.boolean(),
+  isActive: zod.boolean(),
+  submittedBy: zod.string().nullish(),
+  builderName: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+export const ListShowcaseAdminResponse = zod.array(
+  ListShowcaseAdminResponseItem,
+);
+
+/**
+ * @summary Admin — approve, feature, or deactivate an app
+ */
+export const UpdateShowcaseAppParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateShowcaseAppBody = zod.object({
+  name: zod.string().optional(),
+  tagline: zod.string().optional(),
+  description: zod.string().optional(),
+  websiteUrl: zod.string().optional(),
+  iosUrl: zod.string().optional(),
+  androidUrl: zod.string().optional(),
+  logoUrl: zod.string().optional(),
+  screenshotUrl: zod.string().optional(),
+  category: zod
+    .enum([
+      "productivity",
+      "social",
+      "media",
+      "education",
+      "tools",
+      "games",
+      "finance",
+      "health",
+      "creative",
+      "other",
+    ])
+    .optional(),
+  isFeatured: zod.boolean().optional(),
+  isActive: zod.boolean().optional(),
+  builderName: zod.string().optional(),
+});
+
+export const UpdateShowcaseAppResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  tagline: zod.string(),
+  description: zod.string(),
+  websiteUrl: zod.string().nullish(),
+  iosUrl: zod.string().nullish(),
+  androidUrl: zod.string().nullish(),
+  logoUrl: zod.string().nullish(),
+  screenshotUrl: zod.string().nullish(),
+  category: zod.enum([
+    "productivity",
+    "social",
+    "media",
+    "education",
+    "tools",
+    "games",
+    "finance",
+    "health",
+    "creative",
+    "other",
+  ]),
+  isFeatured: zod.boolean(),
+  isActive: zod.boolean(),
+  submittedBy: zod.string().nullish(),
+  builderName: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Admin — remove an app from the showcase
+ */
+export const DeleteShowcaseAppParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
  * @summary List all film projects
  */
 export const ListFilmProjectsResponseItem = zod.object({

@@ -35,6 +35,10 @@ import type {
   LogoutMobileSessionResponse,
   Page,
   Project,
+  ShowcaseApp,
+  ShowcaseAppUpdate,
+  ShowcaseAppsResponse,
+  ShowcaseSubmission,
   UpdatePageBody,
   UpdateProjectBody,
 } from "./api.schemas";
@@ -1285,6 +1289,413 @@ export function useGetRecentProjects<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary List all active showcase apps (featured first)
+ */
+export const getListShowcaseAppsUrl = () => {
+  return `/api/showcase`;
+};
+
+export const listShowcaseApps = async (
+  options?: RequestInit,
+): Promise<ShowcaseAppsResponse> => {
+  return customFetch<ShowcaseAppsResponse>(getListShowcaseAppsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListShowcaseAppsQueryKey = () => {
+  return [`/api/showcase`] as const;
+};
+
+export const getListShowcaseAppsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listShowcaseApps>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listShowcaseApps>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListShowcaseAppsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listShowcaseApps>>
+  > = ({ signal }) => listShowcaseApps({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listShowcaseApps>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListShowcaseAppsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listShowcaseApps>>
+>;
+export type ListShowcaseAppsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all active showcase apps (featured first)
+ */
+
+export function useListShowcaseApps<
+  TData = Awaited<ReturnType<typeof listShowcaseApps>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listShowcaseApps>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListShowcaseAppsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Submit an app to the showcase
+ */
+export const getSubmitShowcaseAppUrl = () => {
+  return `/api/showcase/submit`;
+};
+
+export const submitShowcaseApp = async (
+  showcaseSubmission: ShowcaseSubmission,
+  options?: RequestInit,
+): Promise<ShowcaseApp> => {
+  return customFetch<ShowcaseApp>(getSubmitShowcaseAppUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(showcaseSubmission),
+  });
+};
+
+export const getSubmitShowcaseAppMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof submitShowcaseApp>>,
+    TError,
+    { data: BodyType<ShowcaseSubmission> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof submitShowcaseApp>>,
+  TError,
+  { data: BodyType<ShowcaseSubmission> },
+  TContext
+> => {
+  const mutationKey = ["submitShowcaseApp"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof submitShowcaseApp>>,
+    { data: BodyType<ShowcaseSubmission> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return submitShowcaseApp(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SubmitShowcaseAppMutationResult = NonNullable<
+  Awaited<ReturnType<typeof submitShowcaseApp>>
+>;
+export type SubmitShowcaseAppMutationBody = BodyType<ShowcaseSubmission>;
+export type SubmitShowcaseAppMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Submit an app to the showcase
+ */
+export const useSubmitShowcaseApp = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof submitShowcaseApp>>,
+    TError,
+    { data: BodyType<ShowcaseSubmission> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof submitShowcaseApp>>,
+  TError,
+  { data: BodyType<ShowcaseSubmission> },
+  TContext
+> => {
+  return useMutation(getSubmitShowcaseAppMutationOptions(options));
+};
+
+/**
+ * @summary Admin — list all apps including pending
+ */
+export const getListShowcaseAdminUrl = () => {
+  return `/api/showcase/admin`;
+};
+
+export const listShowcaseAdmin = async (
+  options?: RequestInit,
+): Promise<ShowcaseApp[]> => {
+  return customFetch<ShowcaseApp[]>(getListShowcaseAdminUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListShowcaseAdminQueryKey = () => {
+  return [`/api/showcase/admin`] as const;
+};
+
+export const getListShowcaseAdminQueryOptions = <
+  TData = Awaited<ReturnType<typeof listShowcaseAdmin>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listShowcaseAdmin>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListShowcaseAdminQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listShowcaseAdmin>>
+  > = ({ signal }) => listShowcaseAdmin({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listShowcaseAdmin>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListShowcaseAdminQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listShowcaseAdmin>>
+>;
+export type ListShowcaseAdminQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Admin — list all apps including pending
+ */
+
+export function useListShowcaseAdmin<
+  TData = Awaited<ReturnType<typeof listShowcaseAdmin>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listShowcaseAdmin>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListShowcaseAdminQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Admin — approve, feature, or deactivate an app
+ */
+export const getUpdateShowcaseAppUrl = (id: number) => {
+  return `/api/showcase/${id}`;
+};
+
+export const updateShowcaseApp = async (
+  id: number,
+  showcaseAppUpdate: ShowcaseAppUpdate,
+  options?: RequestInit,
+): Promise<ShowcaseApp> => {
+  return customFetch<ShowcaseApp>(getUpdateShowcaseAppUrl(id), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(showcaseAppUpdate),
+  });
+};
+
+export const getUpdateShowcaseAppMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateShowcaseApp>>,
+    TError,
+    { id: number; data: BodyType<ShowcaseAppUpdate> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateShowcaseApp>>,
+  TError,
+  { id: number; data: BodyType<ShowcaseAppUpdate> },
+  TContext
+> => {
+  const mutationKey = ["updateShowcaseApp"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateShowcaseApp>>,
+    { id: number; data: BodyType<ShowcaseAppUpdate> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateShowcaseApp(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateShowcaseAppMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateShowcaseApp>>
+>;
+export type UpdateShowcaseAppMutationBody = BodyType<ShowcaseAppUpdate>;
+export type UpdateShowcaseAppMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Admin — approve, feature, or deactivate an app
+ */
+export const useUpdateShowcaseApp = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateShowcaseApp>>,
+    TError,
+    { id: number; data: BodyType<ShowcaseAppUpdate> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateShowcaseApp>>,
+  TError,
+  { id: number; data: BodyType<ShowcaseAppUpdate> },
+  TContext
+> => {
+  return useMutation(getUpdateShowcaseAppMutationOptions(options));
+};
+
+/**
+ * @summary Admin — remove an app from the showcase
+ */
+export const getDeleteShowcaseAppUrl = (id: number) => {
+  return `/api/showcase/${id}`;
+};
+
+export const deleteShowcaseApp = async (
+  id: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteShowcaseAppUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteShowcaseAppMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteShowcaseApp>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteShowcaseApp>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["deleteShowcaseApp"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteShowcaseApp>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteShowcaseApp(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteShowcaseAppMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteShowcaseApp>>
+>;
+
+export type DeleteShowcaseAppMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Admin — remove an app from the showcase
+ */
+export const useDeleteShowcaseApp = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteShowcaseApp>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteShowcaseApp>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getDeleteShowcaseAppMutationOptions(options));
+};
 
 /**
  * @summary List all film projects

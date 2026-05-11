@@ -56,6 +56,7 @@ const Antivirus        = lazy(() => import("@/pages/antivirus"));
 const DiyCode          = lazy(() => import("@/pages/diy-code"));
 const Mailbox          = lazy(() => import("@/pages/mailbox"));
 const ShareView        = lazy(() => import("@/pages/share-view"));
+const Showcase         = lazy(() => import("@/pages/showcase"));
 const Starters         = lazy(() => import("@/pages/starters"));
 const BuildWithMe      = lazy(() => import("@/pages/build-with-me"));
 const Gallery          = lazy(() => import("@/pages/gallery"));
@@ -264,6 +265,7 @@ function Router() {
               {/* ── Public routes ── */}
               <Route path="/pricing" component={PricingPage} />
               <Route path="/promise" component={Promise} />
+              <Route path="/showcase" component={Showcase} />
               <Route path="/academy" component={Academy} />
               <Route path="/payment/success" component={PaymentSuccess} />
               <Route path="/download" component={Download} />

@@ -22,3 +22,4 @@ export * from "./inspector";
 export * from "./domains";
 export * from "./codeVault";
 export * from "./filmProjects";
+export * from "./showcase";

@@ -321,3 +321,110 @@ export interface FilmProjectStats {
   textClips: number;
   trackCount: number;
 }
+
+export type ShowcaseAppCategory =
+  (typeof ShowcaseAppCategory)[keyof typeof ShowcaseAppCategory];
+
+export const ShowcaseAppCategory = {
+  productivity: "productivity",
+  social: "social",
+  media: "media",
+  education: "education",
+  tools: "tools",
+  games: "games",
+  finance: "finance",
+  health: "health",
+  creative: "creative",
+  other: "other",
+} as const;
+
+export interface ShowcaseApp {
+  id: number;
+  name: string;
+  tagline: string;
+  description: string;
+  /** @nullable */
+  websiteUrl?: string | null;
+  /** @nullable */
+  iosUrl?: string | null;
+  /** @nullable */
+  androidUrl?: string | null;
+  /** @nullable */
+  logoUrl?: string | null;
+  /** @nullable */
+  screenshotUrl?: string | null;
+  category: ShowcaseAppCategory;
+  isFeatured: boolean;
+  isActive: boolean;
+  /** @nullable */
+  submittedBy?: string | null;
+  /** @nullable */
+  builderName?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ShowcaseAppsResponse {
+  featured: ShowcaseApp[];
+  community: ShowcaseApp[];
+}
+
+export type ShowcaseSubmissionCategory =
+  (typeof ShowcaseSubmissionCategory)[keyof typeof ShowcaseSubmissionCategory];
+
+export const ShowcaseSubmissionCategory = {
+  productivity: "productivity",
+  social: "social",
+  media: "media",
+  education: "education",
+  tools: "tools",
+  games: "games",
+  finance: "finance",
+  health: "health",
+  creative: "creative",
+  other: "other",
+} as const;
+
+export interface ShowcaseSubmission {
+  name: string;
+  tagline: string;
+  description: string;
+  websiteUrl?: string;
+  iosUrl?: string;
+  androidUrl?: string;
+  logoUrl?: string;
+  screenshotUrl?: string;
+  category?: ShowcaseSubmissionCategory;
+  builderName?: string;
+}
+
+export type ShowcaseAppUpdateCategory =
+  (typeof ShowcaseAppUpdateCategory)[keyof typeof ShowcaseAppUpdateCategory];
+
+export const ShowcaseAppUpdateCategory = {
+  productivity: "productivity",
+  social: "social",
+  media: "media",
+  education: "education",
+  tools: "tools",
+  games: "games",
+  finance: "finance",
+  health: "health",
+  creative: "creative",
+  other: "other",
+} as const;
+
+export interface ShowcaseAppUpdate {
+  name?: string;
+  tagline?: string;
+  description?: string;
+  websiteUrl?: string;
+  iosUrl?: string;
+  androidUrl?: string;
+  logoUrl?: string;
+  screenshotUrl?: string;
+  category?: ShowcaseAppUpdateCategory;
+  isFeatured?: boolean;
+  isActive?: boolean;
+  builderName?: string;
+}

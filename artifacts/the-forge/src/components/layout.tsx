@@ -31,7 +31,7 @@ interface NavItem {
 type SidebarTab = "home" | "build" | "create" | "learn" | "own";
 
 const TAB_PREFIXES: Record<SidebarTab, string[]> = {
-  home:   ["/dashboard", "/projects", "/brainstorm", "/town-square", "/gallery", "/mailbox", "/academy", "/pricing", "/promise"],
+  home:   ["/dashboard", "/showcase", "/projects", "/brainstorm", "/town-square", "/gallery", "/mailbox", "/academy", "/pricing", "/promise"],
   build:  ["/workspace", "/build-with-me", "/starters", "/project-room", "/moons", "/hawk", "/snippets"],
   create: ["/site-forge", "/tools", "/code-forge", "/game-doc", "/game-tools", "/game-studio",
            "/computer-advisor", "/screen-coach", "/launch", "/legal", "/fix", "/download"],
@@ -88,6 +88,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   const homeItems: NavItem[] = [
     { href: "/dashboard",    label: "Home",           icon: Flame,         tip: "Your dashboard — projects, stats, quick actions" },
+    { href: "/showcase",     label: "Showcase",       icon: Sparkles,      tip: "Free broadcast for apps hosted by Forge" },
     { href: "/projects",     label: "My Projects",    icon: FolderKanban,  tip: "View and manage all your projects" },
     { href: "/projects/new", label: "New Project",    icon: PlusCircle,    tip: "Start a brand-new project from scratch" },
     { href: "/brainstorm",   label: "Brainstorm",     icon: Sparkles,      tip: "AI helps you flesh out and plan your idea" },

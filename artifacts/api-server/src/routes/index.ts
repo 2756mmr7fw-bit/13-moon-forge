@@ -72,6 +72,7 @@ import appLogsRouter from "./app-logs";
 import agentBridgeRouter from "./agent-bridge";
 import autoSyncRouter from "./auto-sync";
 import filmRouter from "./film";
+import showcaseRouter from "./showcase";
 
 const router: IRouter = Router();
 
@@ -148,5 +149,6 @@ router.use(appLogsRouter);
 router.use(agentBridgeRouter);
 router.use(autoSyncRouter);
 router.use(filmRouter);
+router.use(showcaseRouter);
 
 export default router;
