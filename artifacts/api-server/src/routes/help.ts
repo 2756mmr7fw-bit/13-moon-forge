@@ -267,7 +267,9 @@ router.post("/help/cli-chat", async (req, res) => {
     }
     res.write(`data: ${JSON.stringify({ type: "done" })}\n\n`);
   } catch (err) {
-    res.write(`data: ${JSON.stringify({ type: "error", message: "Something went wrong" })}\n\n`);
+    const msg = err instanceof Error ? err.message : "Something went wrong";
+    res.write(`data: ${JSON.stringify({ type: "chunk", text: `\n[Forge error: ${msg}]` })}\n\n`);
+    res.write(`data: ${JSON.stringify({ type: "error", message: msg })}\n\n`);
   } finally {
     res.end();
   }

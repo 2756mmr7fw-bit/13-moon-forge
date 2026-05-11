@@ -5,24 +5,28 @@ let _openai: OpenAI | null = null;
 function getClient(): OpenAI {
   if (_openai) return _openai;
 
-  if (!process.env.AI_INTEGRATIONS_OPENAI_BASE_URL) {
-    throw new Error(
-      "AI_INTEGRATIONS_OPENAI_BASE_URL must be set. Did you forget to provision the OpenAI AI integration?",
-    );
+  // Replit AI Integration (dev / Replit-hosted production)
+  if (process.env.AI_INTEGRATIONS_OPENAI_BASE_URL && process.env.AI_INTEGRATIONS_OPENAI_API_KEY) {
+    _openai = new OpenAI({
+      apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
+      baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+    });
+    return _openai;
   }
 
-  if (!process.env.AI_INTEGRATIONS_OPENAI_API_KEY) {
-    throw new Error(
-      "AI_INTEGRATIONS_OPENAI_API_KEY must be set. Did you forget to provision the OpenAI AI integration?",
-    );
+  // Standard OpenAI key — used in self-hosted / Coolify production deployments
+  if (process.env.OPENAI_API_KEY) {
+    _openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+      ...(process.env.OPENAI_BASE_URL ? { baseURL: process.env.OPENAI_BASE_URL } : {}),
+    });
+    return _openai;
   }
 
-  _openai = new OpenAI({
-    apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
-    baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
-  });
-
-  return _openai;
+  throw new Error(
+    "No OpenAI credentials found. Set AI_INTEGRATIONS_OPENAI_BASE_URL + AI_INTEGRATIONS_OPENAI_API_KEY " +
+    "(Replit integration) or OPENAI_API_KEY (self-hosted / Coolify).",
+  );
 }
 
 export const openai = new Proxy({} as OpenAI, {
