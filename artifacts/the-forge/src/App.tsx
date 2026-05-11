@@ -275,7 +275,9 @@ function Router() {
         <Route path="/inspection/:shareId" component={InspectionPublicPage} />
         <Route path="/landing" component={Landing} />
         <Route path="/">
-          <Redirect to="/dashboard" />
+          <Layout>
+            <DiscoverPage />
+          </Layout>
         </Route>
         <Route>
           <Layout>
