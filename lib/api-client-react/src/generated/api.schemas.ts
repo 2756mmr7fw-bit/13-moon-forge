@@ -141,3 +141,183 @@ export interface DashboardSummary {
   draftProjects: number;
   totalPages: number;
 }
+
+export type FilmProjectAspectRatio =
+  (typeof FilmProjectAspectRatio)[keyof typeof FilmProjectAspectRatio];
+
+export const FilmProjectAspectRatio = {
+  "16:9": "16:9",
+  "9:16": "9:16",
+  "1:1": "1:1",
+  "4:3": "4:3",
+  "21:9": "21:9",
+} as const;
+
+export type FilmProjectStatus =
+  (typeof FilmProjectStatus)[keyof typeof FilmProjectStatus];
+
+export const FilmProjectStatus = {
+  draft: "draft",
+  in_progress: "in_progress",
+  complete: "complete",
+  exported: "exported",
+} as const;
+
+export interface FilmProject {
+  id: number;
+  title: string;
+  /** @nullable */
+  description?: string | null;
+  userId: string;
+  aspectRatio: FilmProjectAspectRatio;
+  frameRate: number;
+  status: FilmProjectStatus;
+  totalDurationMs: number;
+  clipCount: number;
+  /** @nullable */
+  thumbnailUrl?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type FilmProjectInputAspectRatio =
+  (typeof FilmProjectInputAspectRatio)[keyof typeof FilmProjectInputAspectRatio];
+
+export const FilmProjectInputAspectRatio = {
+  "16:9": "16:9",
+  "9:16": "9:16",
+  "1:1": "1:1",
+  "4:3": "4:3",
+  "21:9": "21:9",
+} as const;
+
+export interface FilmProjectInput {
+  title: string;
+  description?: string;
+  aspectRatio?: FilmProjectInputAspectRatio;
+  frameRate?: number;
+}
+
+export type FilmProjectUpdateAspectRatio =
+  (typeof FilmProjectUpdateAspectRatio)[keyof typeof FilmProjectUpdateAspectRatio];
+
+export const FilmProjectUpdateAspectRatio = {
+  "16:9": "16:9",
+  "9:16": "9:16",
+  "1:1": "1:1",
+  "4:3": "4:3",
+  "21:9": "21:9",
+} as const;
+
+export type FilmProjectUpdateStatus =
+  (typeof FilmProjectUpdateStatus)[keyof typeof FilmProjectUpdateStatus];
+
+export const FilmProjectUpdateStatus = {
+  draft: "draft",
+  in_progress: "in_progress",
+  complete: "complete",
+  exported: "exported",
+} as const;
+
+export interface FilmProjectUpdate {
+  title?: string;
+  description?: string;
+  aspectRatio?: FilmProjectUpdateAspectRatio;
+  frameRate?: number;
+  status?: FilmProjectUpdateStatus;
+  thumbnailUrl?: string;
+}
+
+export type FilmClipType = (typeof FilmClipType)[keyof typeof FilmClipType];
+
+export const FilmClipType = {
+  video: "video",
+  audio: "audio",
+  image: "image",
+  text: "text",
+  transition: "transition",
+  color: "color",
+} as const;
+
+export interface FilmClip {
+  id: number;
+  projectId: number;
+  name: string;
+  type: FilmClipType;
+  /** @nullable */
+  sourceUrl?: string | null;
+  /** @nullable */
+  thumbnailUrl?: string | null;
+  startMs: number;
+  durationMs: number;
+  trackIndex: number;
+  order: number;
+  trimStartMs: number;
+  trimEndMs: number;
+  volume: number;
+  opacity: number;
+  speed: number;
+  /** @nullable */
+  metadata?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type FilmClipInputType =
+  (typeof FilmClipInputType)[keyof typeof FilmClipInputType];
+
+export const FilmClipInputType = {
+  video: "video",
+  audio: "audio",
+  image: "image",
+  text: "text",
+  transition: "transition",
+  color: "color",
+} as const;
+
+export interface FilmClipInput {
+  name: string;
+  type: FilmClipInputType;
+  sourceUrl?: string;
+  thumbnailUrl?: string;
+  startMs?: number;
+  durationMs: number;
+  trackIndex?: number;
+  order?: number;
+  trimStartMs?: number;
+  trimEndMs?: number;
+  volume?: number;
+  opacity?: number;
+  speed?: number;
+  metadata?: string;
+}
+
+export interface FilmClipUpdate {
+  name?: string;
+  sourceUrl?: string;
+  thumbnailUrl?: string;
+  startMs?: number;
+  durationMs?: number;
+  trackIndex?: number;
+  order?: number;
+  trimStartMs?: number;
+  trimEndMs?: number;
+  volume?: number;
+  opacity?: number;
+  speed?: number;
+  metadata?: string;
+}
+
+export interface FilmClipsReorder {
+  clipIds: number[];
+}
+
+export interface FilmProjectStats {
+  totalDurationMs: number;
+  clipCount: number;
+  videoClips: number;
+  audioClips: number;
+  imageClips: number;
+  textClips: number;
+  trackCount: number;
+}

@@ -225,3 +225,269 @@ export const GetRecentProjectsResponseItem = zod.object({
 export const GetRecentProjectsResponse = zod.array(
   GetRecentProjectsResponseItem,
 );
+
+/**
+ * @summary List all film projects
+ */
+export const ListFilmProjectsResponseItem = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  description: zod.string().nullish(),
+  userId: zod.string(),
+  aspectRatio: zod.enum(["16:9", "9:16", "1:1", "4:3", "21:9"]),
+  frameRate: zod.number(),
+  status: zod.enum(["draft", "in_progress", "complete", "exported"]),
+  totalDurationMs: zod.number(),
+  clipCount: zod.number(),
+  thumbnailUrl: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+export const ListFilmProjectsResponse = zod.array(ListFilmProjectsResponseItem);
+
+/**
+ * @summary Create a new film project
+ */
+export const CreateFilmProjectBody = zod.object({
+  title: zod.string(),
+  description: zod.string().optional(),
+  aspectRatio: zod.enum(["16:9", "9:16", "1:1", "4:3", "21:9"]).optional(),
+  frameRate: zod.number().optional(),
+});
+
+/**
+ * @summary Get a film project by ID
+ */
+export const GetFilmProjectParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetFilmProjectResponse = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  description: zod.string().nullish(),
+  userId: zod.string(),
+  aspectRatio: zod.enum(["16:9", "9:16", "1:1", "4:3", "21:9"]),
+  frameRate: zod.number(),
+  status: zod.enum(["draft", "in_progress", "complete", "exported"]),
+  totalDurationMs: zod.number(),
+  clipCount: zod.number(),
+  thumbnailUrl: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Update a film project
+ */
+export const UpdateFilmProjectParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateFilmProjectBody = zod.object({
+  title: zod.string().optional(),
+  description: zod.string().optional(),
+  aspectRatio: zod.enum(["16:9", "9:16", "1:1", "4:3", "21:9"]).optional(),
+  frameRate: zod.number().optional(),
+  status: zod.enum(["draft", "in_progress", "complete", "exported"]).optional(),
+  thumbnailUrl: zod.string().optional(),
+});
+
+export const UpdateFilmProjectResponse = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  description: zod.string().nullish(),
+  userId: zod.string(),
+  aspectRatio: zod.enum(["16:9", "9:16", "1:1", "4:3", "21:9"]),
+  frameRate: zod.number(),
+  status: zod.enum(["draft", "in_progress", "complete", "exported"]),
+  totalDurationMs: zod.number(),
+  clipCount: zod.number(),
+  thumbnailUrl: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete a film project
+ */
+export const DeleteFilmProjectParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary List clips in a film project
+ */
+export const ListFilmClipsParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const ListFilmClipsResponseItem = zod.object({
+  id: zod.number(),
+  projectId: zod.number(),
+  name: zod.string(),
+  type: zod.enum(["video", "audio", "image", "text", "transition", "color"]),
+  sourceUrl: zod.string().nullish(),
+  thumbnailUrl: zod.string().nullish(),
+  startMs: zod.number(),
+  durationMs: zod.number(),
+  trackIndex: zod.number(),
+  order: zod.number(),
+  trimStartMs: zod.number(),
+  trimEndMs: zod.number(),
+  volume: zod.number(),
+  opacity: zod.number(),
+  speed: zod.number(),
+  metadata: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+export const ListFilmClipsResponse = zod.array(ListFilmClipsResponseItem);
+
+/**
+ * @summary Add a clip to a film project
+ */
+export const CreateFilmClipParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const CreateFilmClipBody = zod.object({
+  name: zod.string(),
+  type: zod.enum(["video", "audio", "image", "text", "transition", "color"]),
+  sourceUrl: zod.string().optional(),
+  thumbnailUrl: zod.string().optional(),
+  startMs: zod.number().optional(),
+  durationMs: zod.number(),
+  trackIndex: zod.number().optional(),
+  order: zod.number().optional(),
+  trimStartMs: zod.number().optional(),
+  trimEndMs: zod.number().optional(),
+  volume: zod.number().optional(),
+  opacity: zod.number().optional(),
+  speed: zod.number().optional(),
+  metadata: zod.string().optional(),
+});
+
+/**
+ * @summary Update a clip
+ */
+export const UpdateFilmClipParams = zod.object({
+  id: zod.coerce.number(),
+  clipId: zod.coerce.number(),
+});
+
+export const UpdateFilmClipBody = zod.object({
+  name: zod.string().optional(),
+  sourceUrl: zod.string().optional(),
+  thumbnailUrl: zod.string().optional(),
+  startMs: zod.number().optional(),
+  durationMs: zod.number().optional(),
+  trackIndex: zod.number().optional(),
+  order: zod.number().optional(),
+  trimStartMs: zod.number().optional(),
+  trimEndMs: zod.number().optional(),
+  volume: zod.number().optional(),
+  opacity: zod.number().optional(),
+  speed: zod.number().optional(),
+  metadata: zod.string().optional(),
+});
+
+export const UpdateFilmClipResponse = zod.object({
+  id: zod.number(),
+  projectId: zod.number(),
+  name: zod.string(),
+  type: zod.enum(["video", "audio", "image", "text", "transition", "color"]),
+  sourceUrl: zod.string().nullish(),
+  thumbnailUrl: zod.string().nullish(),
+  startMs: zod.number(),
+  durationMs: zod.number(),
+  trackIndex: zod.number(),
+  order: zod.number(),
+  trimStartMs: zod.number(),
+  trimEndMs: zod.number(),
+  volume: zod.number(),
+  opacity: zod.number(),
+  speed: zod.number(),
+  metadata: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete a clip
+ */
+export const DeleteFilmClipParams = zod.object({
+  id: zod.coerce.number(),
+  clipId: zod.coerce.number(),
+});
+
+/**
+ * @summary Reorder clips in a project
+ */
+export const ReorderFilmClipsParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const ReorderFilmClipsBody = zod.object({
+  clipIds: zod.array(zod.number()),
+});
+
+export const ReorderFilmClipsResponseItem = zod.object({
+  id: zod.number(),
+  projectId: zod.number(),
+  name: zod.string(),
+  type: zod.enum(["video", "audio", "image", "text", "transition", "color"]),
+  sourceUrl: zod.string().nullish(),
+  thumbnailUrl: zod.string().nullish(),
+  startMs: zod.number(),
+  durationMs: zod.number(),
+  trackIndex: zod.number(),
+  order: zod.number(),
+  trimStartMs: zod.number(),
+  trimEndMs: zod.number(),
+  volume: zod.number(),
+  opacity: zod.number(),
+  speed: zod.number(),
+  metadata: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+export const ReorderFilmClipsResponse = zod.array(ReorderFilmClipsResponseItem);
+
+/**
+ * @summary Get project stats (duration, clip count, etc.)
+ */
+export const GetFilmProjectStatsParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetFilmProjectStatsResponse = zod.object({
+  totalDurationMs: zod.number(),
+  clipCount: zod.number(),
+  videoClips: zod.number(),
+  audioClips: zod.number(),
+  imageClips: zod.number(),
+  textClips: zod.number(),
+  trackCount: zod.number(),
+});
+
+/**
+ * @summary Get recently edited film projects
+ */
+export const GetRecentFilmProjectsResponseItem = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  description: zod.string().nullish(),
+  userId: zod.string(),
+  aspectRatio: zod.enum(["16:9", "9:16", "1:1", "4:3", "21:9"]),
+  frameRate: zod.number(),
+  status: zod.enum(["draft", "in_progress", "complete", "exported"]),
+  totalDurationMs: zod.number(),
+  clipCount: zod.number(),
+  thumbnailUrl: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+export const GetRecentFilmProjectsResponse = zod.array(
+  GetRecentFilmProjectsResponseItem,
+);

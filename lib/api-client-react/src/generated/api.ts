@@ -22,6 +22,14 @@ import type {
   DashboardSummary,
   ExchangeMobileAuthorizationCodeBody,
   ExchangeMobileAuthorizationCodeResponse,
+  FilmClip,
+  FilmClipInput,
+  FilmClipUpdate,
+  FilmClipsReorder,
+  FilmProject,
+  FilmProjectInput,
+  FilmProjectStats,
+  FilmProjectUpdate,
   GetCurrentAuthUserResponse,
   HealthStatus,
   LogoutMobileSessionResponse,
@@ -1270,6 +1278,1021 @@ export function useGetRecentProjects<
   request?: SecondParameter<typeof customFetch>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getGetRecentProjectsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary List all film projects
+ */
+export const getListFilmProjectsUrl = () => {
+  return `/api/film/projects`;
+};
+
+export const listFilmProjects = async (
+  options?: RequestInit,
+): Promise<FilmProject[]> => {
+  return customFetch<FilmProject[]>(getListFilmProjectsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListFilmProjectsQueryKey = () => {
+  return [`/api/film/projects`] as const;
+};
+
+export const getListFilmProjectsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listFilmProjects>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listFilmProjects>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListFilmProjectsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listFilmProjects>>
+  > = ({ signal }) => listFilmProjects({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listFilmProjects>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListFilmProjectsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listFilmProjects>>
+>;
+export type ListFilmProjectsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all film projects
+ */
+
+export function useListFilmProjects<
+  TData = Awaited<ReturnType<typeof listFilmProjects>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listFilmProjects>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListFilmProjectsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create a new film project
+ */
+export const getCreateFilmProjectUrl = () => {
+  return `/api/film/projects`;
+};
+
+export const createFilmProject = async (
+  filmProjectInput: FilmProjectInput,
+  options?: RequestInit,
+): Promise<FilmProject> => {
+  return customFetch<FilmProject>(getCreateFilmProjectUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(filmProjectInput),
+  });
+};
+
+export const getCreateFilmProjectMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createFilmProject>>,
+    TError,
+    { data: BodyType<FilmProjectInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createFilmProject>>,
+  TError,
+  { data: BodyType<FilmProjectInput> },
+  TContext
+> => {
+  const mutationKey = ["createFilmProject"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createFilmProject>>,
+    { data: BodyType<FilmProjectInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createFilmProject(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateFilmProjectMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createFilmProject>>
+>;
+export type CreateFilmProjectMutationBody = BodyType<FilmProjectInput>;
+export type CreateFilmProjectMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Create a new film project
+ */
+export const useCreateFilmProject = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createFilmProject>>,
+    TError,
+    { data: BodyType<FilmProjectInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createFilmProject>>,
+  TError,
+  { data: BodyType<FilmProjectInput> },
+  TContext
+> => {
+  return useMutation(getCreateFilmProjectMutationOptions(options));
+};
+
+/**
+ * @summary Get a film project by ID
+ */
+export const getGetFilmProjectUrl = (id: number) => {
+  return `/api/film/projects/${id}`;
+};
+
+export const getFilmProject = async (
+  id: number,
+  options?: RequestInit,
+): Promise<FilmProject> => {
+  return customFetch<FilmProject>(getGetFilmProjectUrl(id), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetFilmProjectQueryKey = (id: number) => {
+  return [`/api/film/projects/${id}`] as const;
+};
+
+export const getGetFilmProjectQueryOptions = <
+  TData = Awaited<ReturnType<typeof getFilmProject>>,
+  TError = ErrorType<void>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getFilmProject>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetFilmProjectQueryKey(id);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getFilmProject>>> = ({
+    signal,
+  }) => getFilmProject(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getFilmProject>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetFilmProjectQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getFilmProject>>
+>;
+export type GetFilmProjectQueryError = ErrorType<void>;
+
+/**
+ * @summary Get a film project by ID
+ */
+
+export function useGetFilmProject<
+  TData = Awaited<ReturnType<typeof getFilmProject>>,
+  TError = ErrorType<void>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getFilmProject>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetFilmProjectQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Update a film project
+ */
+export const getUpdateFilmProjectUrl = (id: number) => {
+  return `/api/film/projects/${id}`;
+};
+
+export const updateFilmProject = async (
+  id: number,
+  filmProjectUpdate: FilmProjectUpdate,
+  options?: RequestInit,
+): Promise<FilmProject> => {
+  return customFetch<FilmProject>(getUpdateFilmProjectUrl(id), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(filmProjectUpdate),
+  });
+};
+
+export const getUpdateFilmProjectMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateFilmProject>>,
+    TError,
+    { id: number; data: BodyType<FilmProjectUpdate> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateFilmProject>>,
+  TError,
+  { id: number; data: BodyType<FilmProjectUpdate> },
+  TContext
+> => {
+  const mutationKey = ["updateFilmProject"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateFilmProject>>,
+    { id: number; data: BodyType<FilmProjectUpdate> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateFilmProject(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateFilmProjectMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateFilmProject>>
+>;
+export type UpdateFilmProjectMutationBody = BodyType<FilmProjectUpdate>;
+export type UpdateFilmProjectMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update a film project
+ */
+export const useUpdateFilmProject = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateFilmProject>>,
+    TError,
+    { id: number; data: BodyType<FilmProjectUpdate> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateFilmProject>>,
+  TError,
+  { id: number; data: BodyType<FilmProjectUpdate> },
+  TContext
+> => {
+  return useMutation(getUpdateFilmProjectMutationOptions(options));
+};
+
+/**
+ * @summary Delete a film project
+ */
+export const getDeleteFilmProjectUrl = (id: number) => {
+  return `/api/film/projects/${id}`;
+};
+
+export const deleteFilmProject = async (
+  id: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteFilmProjectUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteFilmProjectMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteFilmProject>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteFilmProject>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["deleteFilmProject"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteFilmProject>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteFilmProject(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteFilmProjectMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteFilmProject>>
+>;
+
+export type DeleteFilmProjectMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Delete a film project
+ */
+export const useDeleteFilmProject = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteFilmProject>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteFilmProject>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getDeleteFilmProjectMutationOptions(options));
+};
+
+/**
+ * @summary List clips in a film project
+ */
+export const getListFilmClipsUrl = (id: number) => {
+  return `/api/film/projects/${id}/clips`;
+};
+
+export const listFilmClips = async (
+  id: number,
+  options?: RequestInit,
+): Promise<FilmClip[]> => {
+  return customFetch<FilmClip[]>(getListFilmClipsUrl(id), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListFilmClipsQueryKey = (id: number) => {
+  return [`/api/film/projects/${id}/clips`] as const;
+};
+
+export const getListFilmClipsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listFilmClips>>,
+  TError = ErrorType<unknown>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listFilmClips>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListFilmClipsQueryKey(id);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listFilmClips>>> = ({
+    signal,
+  }) => listFilmClips(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof listFilmClips>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListFilmClipsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listFilmClips>>
+>;
+export type ListFilmClipsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List clips in a film project
+ */
+
+export function useListFilmClips<
+  TData = Awaited<ReturnType<typeof listFilmClips>>,
+  TError = ErrorType<unknown>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listFilmClips>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListFilmClipsQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Add a clip to a film project
+ */
+export const getCreateFilmClipUrl = (id: number) => {
+  return `/api/film/projects/${id}/clips`;
+};
+
+export const createFilmClip = async (
+  id: number,
+  filmClipInput: FilmClipInput,
+  options?: RequestInit,
+): Promise<FilmClip> => {
+  return customFetch<FilmClip>(getCreateFilmClipUrl(id), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(filmClipInput),
+  });
+};
+
+export const getCreateFilmClipMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createFilmClip>>,
+    TError,
+    { id: number; data: BodyType<FilmClipInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createFilmClip>>,
+  TError,
+  { id: number; data: BodyType<FilmClipInput> },
+  TContext
+> => {
+  const mutationKey = ["createFilmClip"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createFilmClip>>,
+    { id: number; data: BodyType<FilmClipInput> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return createFilmClip(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateFilmClipMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createFilmClip>>
+>;
+export type CreateFilmClipMutationBody = BodyType<FilmClipInput>;
+export type CreateFilmClipMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Add a clip to a film project
+ */
+export const useCreateFilmClip = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createFilmClip>>,
+    TError,
+    { id: number; data: BodyType<FilmClipInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createFilmClip>>,
+  TError,
+  { id: number; data: BodyType<FilmClipInput> },
+  TContext
+> => {
+  return useMutation(getCreateFilmClipMutationOptions(options));
+};
+
+/**
+ * @summary Update a clip
+ */
+export const getUpdateFilmClipUrl = (id: number, clipId: number) => {
+  return `/api/film/projects/${id}/clips/${clipId}`;
+};
+
+export const updateFilmClip = async (
+  id: number,
+  clipId: number,
+  filmClipUpdate: FilmClipUpdate,
+  options?: RequestInit,
+): Promise<FilmClip> => {
+  return customFetch<FilmClip>(getUpdateFilmClipUrl(id, clipId), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(filmClipUpdate),
+  });
+};
+
+export const getUpdateFilmClipMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateFilmClip>>,
+    TError,
+    { id: number; clipId: number; data: BodyType<FilmClipUpdate> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateFilmClip>>,
+  TError,
+  { id: number; clipId: number; data: BodyType<FilmClipUpdate> },
+  TContext
+> => {
+  const mutationKey = ["updateFilmClip"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateFilmClip>>,
+    { id: number; clipId: number; data: BodyType<FilmClipUpdate> }
+  > = (props) => {
+    const { id, clipId, data } = props ?? {};
+
+    return updateFilmClip(id, clipId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateFilmClipMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateFilmClip>>
+>;
+export type UpdateFilmClipMutationBody = BodyType<FilmClipUpdate>;
+export type UpdateFilmClipMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update a clip
+ */
+export const useUpdateFilmClip = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateFilmClip>>,
+    TError,
+    { id: number; clipId: number; data: BodyType<FilmClipUpdate> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateFilmClip>>,
+  TError,
+  { id: number; clipId: number; data: BodyType<FilmClipUpdate> },
+  TContext
+> => {
+  return useMutation(getUpdateFilmClipMutationOptions(options));
+};
+
+/**
+ * @summary Delete a clip
+ */
+export const getDeleteFilmClipUrl = (id: number, clipId: number) => {
+  return `/api/film/projects/${id}/clips/${clipId}`;
+};
+
+export const deleteFilmClip = async (
+  id: number,
+  clipId: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteFilmClipUrl(id, clipId), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteFilmClipMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteFilmClip>>,
+    TError,
+    { id: number; clipId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteFilmClip>>,
+  TError,
+  { id: number; clipId: number },
+  TContext
+> => {
+  const mutationKey = ["deleteFilmClip"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteFilmClip>>,
+    { id: number; clipId: number }
+  > = (props) => {
+    const { id, clipId } = props ?? {};
+
+    return deleteFilmClip(id, clipId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteFilmClipMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteFilmClip>>
+>;
+
+export type DeleteFilmClipMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Delete a clip
+ */
+export const useDeleteFilmClip = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteFilmClip>>,
+    TError,
+    { id: number; clipId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteFilmClip>>,
+  TError,
+  { id: number; clipId: number },
+  TContext
+> => {
+  return useMutation(getDeleteFilmClipMutationOptions(options));
+};
+
+/**
+ * @summary Reorder clips in a project
+ */
+export const getReorderFilmClipsUrl = (id: number) => {
+  return `/api/film/projects/${id}/clips/reorder`;
+};
+
+export const reorderFilmClips = async (
+  id: number,
+  filmClipsReorder: FilmClipsReorder,
+  options?: RequestInit,
+): Promise<FilmClip[]> => {
+  return customFetch<FilmClip[]>(getReorderFilmClipsUrl(id), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(filmClipsReorder),
+  });
+};
+
+export const getReorderFilmClipsMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof reorderFilmClips>>,
+    TError,
+    { id: number; data: BodyType<FilmClipsReorder> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof reorderFilmClips>>,
+  TError,
+  { id: number; data: BodyType<FilmClipsReorder> },
+  TContext
+> => {
+  const mutationKey = ["reorderFilmClips"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof reorderFilmClips>>,
+    { id: number; data: BodyType<FilmClipsReorder> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return reorderFilmClips(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ReorderFilmClipsMutationResult = NonNullable<
+  Awaited<ReturnType<typeof reorderFilmClips>>
+>;
+export type ReorderFilmClipsMutationBody = BodyType<FilmClipsReorder>;
+export type ReorderFilmClipsMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Reorder clips in a project
+ */
+export const useReorderFilmClips = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof reorderFilmClips>>,
+    TError,
+    { id: number; data: BodyType<FilmClipsReorder> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof reorderFilmClips>>,
+  TError,
+  { id: number; data: BodyType<FilmClipsReorder> },
+  TContext
+> => {
+  return useMutation(getReorderFilmClipsMutationOptions(options));
+};
+
+/**
+ * @summary Get project stats (duration, clip count, etc.)
+ */
+export const getGetFilmProjectStatsUrl = (id: number) => {
+  return `/api/film/projects/${id}/stats`;
+};
+
+export const getFilmProjectStats = async (
+  id: number,
+  options?: RequestInit,
+): Promise<FilmProjectStats> => {
+  return customFetch<FilmProjectStats>(getGetFilmProjectStatsUrl(id), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetFilmProjectStatsQueryKey = (id: number) => {
+  return [`/api/film/projects/${id}/stats`] as const;
+};
+
+export const getGetFilmProjectStatsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getFilmProjectStats>>,
+  TError = ErrorType<unknown>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getFilmProjectStats>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetFilmProjectStatsQueryKey(id);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getFilmProjectStats>>
+  > = ({ signal }) => getFilmProjectStats(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getFilmProjectStats>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetFilmProjectStatsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getFilmProjectStats>>
+>;
+export type GetFilmProjectStatsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get project stats (duration, clip count, etc.)
+ */
+
+export function useGetFilmProjectStats<
+  TData = Awaited<ReturnType<typeof getFilmProjectStats>>,
+  TError = ErrorType<unknown>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getFilmProjectStats>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetFilmProjectStatsQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get recently edited film projects
+ */
+export const getGetRecentFilmProjectsUrl = () => {
+  return `/api/film/recent`;
+};
+
+export const getRecentFilmProjects = async (
+  options?: RequestInit,
+): Promise<FilmProject[]> => {
+  return customFetch<FilmProject[]>(getGetRecentFilmProjectsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetRecentFilmProjectsQueryKey = () => {
+  return [`/api/film/recent`] as const;
+};
+
+export const getGetRecentFilmProjectsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getRecentFilmProjects>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getRecentFilmProjects>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetRecentFilmProjectsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getRecentFilmProjects>>
+  > = ({ signal }) => getRecentFilmProjects({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getRecentFilmProjects>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetRecentFilmProjectsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getRecentFilmProjects>>
+>;
+export type GetRecentFilmProjectsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get recently edited film projects
+ */
+
+export function useGetRecentFilmProjects<
+  TData = Awaited<ReturnType<typeof getRecentFilmProjects>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getRecentFilmProjects>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetRecentFilmProjectsQueryOptions(options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

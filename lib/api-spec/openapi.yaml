@@ -18,6 +18,12 @@ tags:
     description: Pages within a project
   - name: dashboard
     description: Dashboard summary endpoints
+  - name: film-projects
+    description: Film editor projects
+  - name: film-clips
+    description: Clips within a film project
+  - name: film-ai
+    description: AI assistant for the film editor
 paths:
   /auth/me:
     get:
@@ -286,6 +292,248 @@ paths:
                 items:
                   $ref: "#/components/schemas/Project"
 
+  /film/projects:
+    get:
+      operationId: listFilmProjects
+      tags: [film-projects]
+      summary: List all film projects
+      responses:
+        "200":
+          description: List of film projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FilmProject"
+    post:
+      operationId: createFilmProject
+      tags: [film-projects]
+      summary: Create a new film project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FilmProjectInput"
+      responses:
+        "201":
+          description: Film project created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FilmProject"
+
+  /film/projects/{id}:
+    get:
+      operationId: getFilmProject
+      tags: [film-projects]
+      summary: Get a film project by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Film project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FilmProject"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateFilmProject
+      tags: [film-projects]
+      summary: Update a film project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FilmProjectUpdate"
+      responses:
+        "200":
+          description: Updated film project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FilmProject"
+    delete:
+      operationId: deleteFilmProject
+      tags: [film-projects]
+      summary: Delete a film project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /film/projects/{id}/clips:
+    get:
+      operationId: listFilmClips
+      tags: [film-clips]
+      summary: List clips in a film project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of clips
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FilmClip"
+    post:
+      operationId: createFilmClip
+      tags: [film-clips]
+      summary: Add a clip to a film project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FilmClipInput"
+      responses:
+        "201":
+          description: Clip created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FilmClip"
+
+  /film/projects/{id}/clips/{clipId}:
+    patch:
+      operationId: updateFilmClip
+      tags: [film-clips]
+      summary: Update a clip
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: clipId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FilmClipUpdate"
+      responses:
+        "200":
+          description: Updated clip
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FilmClip"
+    delete:
+      operationId: deleteFilmClip
+      tags: [film-clips]
+      summary: Delete a clip
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: clipId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /film/projects/{id}/clips/reorder:
+    post:
+      operationId: reorderFilmClips
+      tags: [film-clips]
+      summary: Reorder clips in a project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FilmClipsReorder"
+      responses:
+        "200":
+          description: Updated clip order
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FilmClip"
+
+  /film/projects/{id}/stats:
+    get:
+      operationId: getFilmProjectStats
+      tags: [film-projects]
+      summary: Get project stats (duration, clip count, etc.)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Project stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FilmProjectStats"
+
+  /film/recent:
+    get:
+      operationId: getRecentFilmProjects
+      tags: [film-projects]
+      summary: Get recently edited film projects
+      responses:
+        "200":
+          description: Recent film projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FilmProject"
+
 components:
   schemas:
     AuthUser:
@@ -501,3 +749,241 @@ components:
         - publishedProjects
         - draftProjects
         - totalPages
+
+    FilmProject:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        userId:
+          type: string
+        aspectRatio:
+          type: string
+          enum: ["16:9", "9:16", "1:1", "4:3", "21:9"]
+        frameRate:
+          type: integer
+        status:
+          type: string
+          enum: [draft, in_progress, complete, exported]
+        totalDurationMs:
+          type: integer
+        clipCount:
+          type: integer
+        thumbnailUrl:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - userId
+        - aspectRatio
+        - frameRate
+        - status
+        - totalDurationMs
+        - clipCount
+        - createdAt
+        - updatedAt
+
+    FilmProjectInput:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        aspectRatio:
+          type: string
+          enum: ["16:9", "9:16", "1:1", "4:3", "21:9"]
+        frameRate:
+          type: integer
+      required:
+        - title
+
+    FilmProjectUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        aspectRatio:
+          type: string
+          enum: ["16:9", "9:16", "1:1", "4:3", "21:9"]
+        frameRate:
+          type: integer
+        status:
+          type: string
+          enum: [draft, in_progress, complete, exported]
+        thumbnailUrl:
+          type: string
+
+    FilmClip:
+      type: object
+      properties:
+        id:
+          type: integer
+        projectId:
+          type: integer
+        name:
+          type: string
+        type:
+          type: string
+          enum: [video, audio, image, text, transition, color]
+        sourceUrl:
+          type: ["string", "null"]
+        thumbnailUrl:
+          type: ["string", "null"]
+        startMs:
+          type: integer
+        durationMs:
+          type: integer
+        trackIndex:
+          type: integer
+        order:
+          type: integer
+        trimStartMs:
+          type: integer
+        trimEndMs:
+          type: integer
+        volume:
+          type: number
+        opacity:
+          type: number
+        speed:
+          type: number
+        metadata:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - projectId
+        - name
+        - type
+        - startMs
+        - durationMs
+        - trackIndex
+        - order
+        - trimStartMs
+        - trimEndMs
+        - volume
+        - opacity
+        - speed
+        - createdAt
+        - updatedAt
+
+    FilmClipInput:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum: [video, audio, image, text, transition, color]
+        sourceUrl:
+          type: string
+        thumbnailUrl:
+          type: string
+        startMs:
+          type: integer
+        durationMs:
+          type: integer
+        trackIndex:
+          type: integer
+        order:
+          type: integer
+        trimStartMs:
+          type: integer
+        trimEndMs:
+          type: integer
+        volume:
+          type: number
+        opacity:
+          type: number
+        speed:
+          type: number
+        metadata:
+          type: string
+      required:
+        - name
+        - type
+        - durationMs
+
+    FilmClipUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        sourceUrl:
+          type: string
+        thumbnailUrl:
+          type: string
+        startMs:
+          type: integer
+        durationMs:
+          type: integer
+        trackIndex:
+          type: integer
+        order:
+          type: integer
+        trimStartMs:
+          type: integer
+        trimEndMs:
+          type: integer
+        volume:
+          type: number
+        opacity:
+          type: number
+        speed:
+          type: number
+        metadata:
+          type: string
+
+    FilmClipsReorder:
+      type: object
+      properties:
+        clipIds:
+          type: array
+          items:
+            type: integer
+      required:
+        - clipIds
+
+    FilmProjectStats:
+      type: object
+      properties:
+        totalDurationMs:
+          type: integer
+        clipCount:
+          type: integer
+        videoClips:
+          type: integer
+        audioClips:
+          type: integer
+        imageClips:
+          type: integer
+        textClips:
+          type: integer
+        trackCount:
+          type: integer
+      required:
+        - totalDurationMs
+        - clipCount
+        - videoClips
+        - audioClips
+        - imageClips
+        - textClips
+        - trackCount

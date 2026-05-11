@@ -21,3 +21,4 @@ export * from "./repos";
 export * from "./inspector";
 export * from "./domains";
 export * from "./codeVault";
+export * from "./filmProjects";

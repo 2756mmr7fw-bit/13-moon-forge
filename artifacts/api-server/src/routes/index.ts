@@ -71,6 +71,7 @@ import codeVaultRouter from "./code-vault-route";
 import appLogsRouter from "./app-logs";
 import agentBridgeRouter from "./agent-bridge";
 import autoSyncRouter from "./auto-sync";
+import filmRouter from "./film";
 
 const router: IRouter = Router();
 
@@ -146,5 +147,6 @@ router.use(codeVaultRouter);
 router.use(appLogsRouter);
 router.use(agentBridgeRouter);
 router.use(autoSyncRouter);
+router.use(filmRouter);
 
 export default router;
