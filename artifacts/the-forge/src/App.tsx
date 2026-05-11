@@ -120,6 +120,8 @@ const AdminHostingPage      = lazy(() => import("@/pages/admin-hosting"));
 const BrandScoutPage        = lazy(() => import("@/pages/brand-scout"));
 const ForgePressPage        = lazy(() => import("@/pages/forge-press"));
 const DiscoverPage          = lazy(() => import("@/pages/discover"));
+const PressHubPage          = lazy(() => import("@/pages/press-hub"));
+const PressArticlePage      = lazy(() => import("@/pages/press-article"));
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 const API_BASE = basePath;
@@ -283,6 +285,8 @@ function Router() {
               <Route path="/promise" component={Promise} />
               <Route path="/showcase" component={Showcase} />
               <Route path="/discover" component={DiscoverPage} />
+              <Route path="/press" component={PressHubPage} />
+              <Route path="/press/:slug" component={PressArticlePage} />
               <Route path="/academy" component={Academy} />
               <Route path="/payment/success" component={PaymentSuccess} />
               <Route path="/download" component={Download} />

@@ -30,3 +30,4 @@ export * from "./cron_jobs";
 export * from "./backups";
 export * from "./team_members";
 export * from "./hosting";
+export * from "./press-releases";

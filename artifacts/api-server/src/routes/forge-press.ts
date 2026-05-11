@@ -1,10 +1,13 @@
 import { Router } from "express";
 import { openai } from "@workspace/integrations-openai-ai-server";
+import { db } from "@workspace/db";
+import { pressReleasesTable } from "@workspace/db/schema";
+import { eq, desc } from "drizzle-orm";
 
 const router = Router();
 
 // ─── Generate article (streaming) ────────────────────────────────────────────
-router.post("/api/forge-press/generate", async (req, res) => {
+router.post("/forge-press/generate", async (req, res) => {
   const { brandName, domain, goal, description, tone, keywords } = req.body as {
     brandName?: string;
     domain?: string;
@@ -80,86 +83,112 @@ Make it feel like something you'd actually read on a legitimate news site. No fl
   }
 });
 
-// ─── Submit to EIN Presswire ─────────────────────────────────────────────────
-router.post("/api/forge-press/submit", async (req, res) => {
+// ─── Publish to Forge Press Network ──────────────────────────────────────────
+router.post("/forge-press/publish", async (req, res) => {
   const {
-    einApiKey,
+    companyName,
     headline,
+    dateline,
     body,
+    boilerplate,
     keywords,
-    contactFirstName,
-    contactLastName,
-    contactEmail,
-    contactPhone,
-    contactOrganization,
-    city,
-    state,
-    country,
+    websiteUrl,
+    authorName,
   } = req.body as {
-    einApiKey?: string;
+    companyName?: string;
     headline?: string;
+    dateline?: string;
     body?: string;
+    boilerplate?: string;
     keywords?: string;
-    contactFirstName?: string;
-    contactLastName?: string;
-    contactEmail?: string;
-    contactPhone?: string;
-    contactOrganization?: string;
-    city?: string;
-    state?: string;
-    country?: string;
+    websiteUrl?: string;
+    authorName?: string;
   };
 
-  if (!einApiKey) return res.status(400).json({ error: "EIN API key required" });
+  if (!companyName) return res.status(400).json({ error: "companyName required" });
   if (!headline) return res.status(400).json({ error: "headline required" });
   if (!body) return res.status(400).json({ error: "body required" });
-  if (!contactEmail) return res.status(400).json({ error: "contact email required" });
+
+  // Generate a URL-safe slug from the headline
+  const slug = headline
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-")
+    .slice(0, 80)
+    + "-" + Date.now().toString(36);
 
   try {
-    // EIN Presswire REST API
-    const payload = {
-      api_key: einApiKey,
-      headline,
-      body,
-      keywords: keywords ?? "",
-      contact_firstname: contactFirstName ?? "",
-      contact_lastname: contactLastName ?? "",
-      contact_email: contactEmail,
-      contact_phone: contactPhone ?? "",
-      contact_organization: contactOrganization ?? "",
-      city: city ?? "",
-      state: state ?? "",
-      country: country ?? "United States",
-      // Send immediately
-      send_date: "",
-    };
+    const [release] = await db
+      .insert(pressReleasesTable)
+      .values({
+        slug,
+        userId: (req as { user?: { id?: string } }).user?.id ?? null,
+        companyName,
+        headline,
+        dateline: dateline ?? null,
+        body,
+        boilerplate: boilerplate ?? null,
+        keywords: keywords ?? null,
+        websiteUrl: websiteUrl ?? null,
+        authorName: authorName ?? null,
+        isPublic: true,
+        publishedAt: new Date(),
+      })
+      .returning();
 
-    const einRes = await fetch("https://www.einpresswire.com/api/v1/news/submit", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
+    return res.json({ success: true, slug: release.slug });
+  } catch (err) {
+    req.log?.error({ err }, "forge-press publish error");
+    return res.status(500).json({ error: "Failed to publish" });
+  }
+});
 
-    const responseText = await einRes.text();
-    let responseData: unknown;
-    try { responseData = JSON.parse(responseText); } catch { responseData = { raw: responseText }; }
+// ─── List all public press releases ──────────────────────────────────────────
+router.get("/press", async (req, res) => {
+  try {
+    const releases = await db
+      .select({
+        id: pressReleasesTable.id,
+        slug: pressReleasesTable.slug,
+        companyName: pressReleasesTable.companyName,
+        headline: pressReleasesTable.headline,
+        dateline: pressReleasesTable.dateline,
+        boilerplate: pressReleasesTable.boilerplate,
+        authorName: pressReleasesTable.authorName,
+        websiteUrl: pressReleasesTable.websiteUrl,
+        publishedAt: pressReleasesTable.publishedAt,
+      })
+      .from(pressReleasesTable)
+      .where(eq(pressReleasesTable.isPublic, true))
+      .orderBy(desc(pressReleasesTable.publishedAt))
+      .limit(100);
 
-    if (!einRes.ok) {
-      req.log?.error({ status: einRes.status, body: responseText }, "EIN Presswire submission failed");
-      return res.status(einRes.status).json({
-        error: "EIN Presswire rejected the submission",
-        details: responseData,
-        hint: "Double-check your API key at einpresswire.com/account/api",
-      });
+    return res.json(releases);
+  } catch (err) {
+    req.log?.error({ err }, "forge-press list error");
+    return res.status(500).json({ error: "Failed to load releases" });
+  }
+});
+
+// ─── Get single press release by slug ────────────────────────────────────────
+router.get("/press/:slug", async (req, res) => {
+  const { slug } = req.params;
+  try {
+    const [release] = await db
+      .select()
+      .from(pressReleasesTable)
+      .where(eq(pressReleasesTable.slug, slug))
+      .limit(1);
+
+    if (!release || !release.isPublic) {
+      return res.status(404).json({ error: "Not found" });
     }
 
-    return res.json({ success: true, data: responseData });
+    return res.json(release);
   } catch (err) {
-    req.log?.error({ err }, "forge-press submit error");
-    return res.status(500).json({ error: "Submission failed — check your EIN API key and try again" });
+    req.log?.error({ err }, "forge-press get error");
+    return res.status(500).json({ error: "Failed to load release" });
   }
 });
 

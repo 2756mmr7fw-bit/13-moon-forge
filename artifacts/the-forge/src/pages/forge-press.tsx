@@ -1,8 +1,9 @@
 import { useState, useRef } from "react";
+import { Link } from "wouter";
 import {
   Newspaper, Copy, Download, CheckCircle2, Target, TrendingUp, Shield,
   Zap, ChevronRight, RotateCcw, ExternalLink, Search, Users, Bot,
-  Globe, Tv2, Crown, BarChart3,
+  Globe, Tv2, Crown, BarChart3, Send, Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -157,6 +158,9 @@ export default function ForgePress() {
   const [copied, setCopied] = useState(false);
   const [showComparison, setShowComparison] = useState(false);
 
+  const [publishing, setPublishing] = useState(false);
+  const [publishedSlug, setPublishedSlug] = useState<string | null>(null);
+
   const streamRef = useRef<() => void>(() => {});
   const { toast } = useToast();
 
@@ -218,9 +222,42 @@ export default function ForgePress() {
     a.click(); URL.revokeObjectURL(url);
   }
 
+  async function publishToNetwork() {
+    if (!article || !parsed) return;
+    setPublishing(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/forge-press/publish`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          companyName: brandName,
+          headline: parsed.headline || brandName + " Press Release",
+          dateline: parsed.dateline || null,
+          body: parsed.body || article,
+          boilerplate: parsed.boilerplate || null,
+          keywords: keywords || null,
+          websiteUrl: domain ? (domain.startsWith("http") ? domain : `https://${domain}`) : null,
+        }),
+      });
+      const data = await res.json() as { success?: boolean; slug?: string; error?: string };
+      if (data.success && data.slug) {
+        setPublishedSlug(data.slug);
+        toast({ title: "Published to Forge Press Network!", description: "Your article is now live and indexable by Google News." });
+      } else {
+        toast({ title: "Publish failed", description: data.error ?? "Try again", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Publish failed", description: "Network error — try again", variant: "destructive" });
+    } finally {
+      setPublishing(false);
+    }
+  }
+
   function reset() {
     setStep("goal"); setGoal(null); setBrandName(""); setDomain("");
     setDescription(""); setKeywords(""); setArticle(""); setError("");
+    setPublishedSlug(null);
   }
 
   const parsed = article ? parseArticle(article) : null;
@@ -427,6 +464,56 @@ export default function ForgePress() {
               </Button>
             </div>
           </div>
+
+          {/* Publish to Forge Network */}
+          {!publishedSlug ? (
+            <div className="bg-primary/5 border border-primary/25 rounded-xl px-4 py-4 space-y-2.5">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                  <Newspaper size={15} className="text-primary" />
+                </div>
+                <div className="space-y-0.5">
+                  <p className="text-sm font-semibold">Publish to Forge Press Network</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Get a permanent public URL on <span className="font-medium text-foreground">/press/your-article</span>. 
+                    Indexed by Google News, ChatGPT, and Gemini. Free — no distribution fees, ever.
+                  </p>
+                </div>
+              </div>
+              <Button
+                className="w-full"
+                size="sm"
+                onClick={publishToNetwork}
+                disabled={publishing || !article}
+              >
+                {publishing ? (
+                  <><Loader2 size={13} className="mr-1.5 animate-spin" />Publishing…</>
+                ) : (
+                  <><Send size={13} className="mr-1.5" />Publish to Forge Network — Free</>
+                )}
+              </Button>
+            </div>
+          ) : (
+            <div className="bg-green-500/8 border border-green-500/25 rounded-xl px-4 py-4 space-y-2">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 size={15} className="text-green-400" />
+                <p className="text-sm font-semibold text-green-400">Published to Forge Press Network</p>
+              </div>
+              <p className="text-xs text-muted-foreground">Your article is live. Share the link or submit it directly to Google News Publisher Center.</p>
+              <div className="flex items-center gap-2">
+                <Link href={`/press/${publishedSlug}`}>
+                  <Button size="sm" variant="outline" className="gap-1.5 text-xs">
+                    <ExternalLink size={11} /> View Article
+                  </Button>
+                </Link>
+                <Link href="/press">
+                  <Button size="sm" variant="ghost" className="gap-1.5 text-xs">
+                    Forge Press Network
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          )}
 
           {/* Formatted article */}
           {article && parsed && (parsed.headline || parsed.body) ? (
