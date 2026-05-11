@@ -3,7 +3,7 @@ import {
   Newspaper, ArrowRight, Copy, Download, CheckCircle2, Target, TrendingUp,
   Shield, Zap, ChevronRight, RotateCcw, Send, KeyRound, ExternalLink,
   AlertTriangle, Loader2, User, Mail, Phone, Building2, MapPin,
-  Crown, Search, Users, FileText, DollarSign, BarChart3,
+  Crown, Search, Users, FileText, DollarSign, BarChart3, Bot, Tv2, Globe,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -218,10 +218,25 @@ export default function ForgePress() {
             Diamond-Level Coverage
           </div>
         </div>
-        <h1 className="text-2xl font-bold leading-snug">20 articles/month. AI-written.<br />Distributed to 7,500+ news sites.</h1>
+        <h1 className="text-2xl font-bold leading-snug">AI writes it. EIN Presswire puts it on<br />AP News, Google News, NBC, FOX, ABC & CBS.</h1>
         <p className="text-sm text-muted-foreground leading-relaxed">
-          FameHero charges $999/month for this. With Forge Press + EIN Presswire, you get the exact same result for <span className="text-primary font-semibold">$8.25/month</span>.
+          FameHero charges $999/month for Diamond-level coverage. Forge Press + EIN Presswire delivers the same reach — including <span className="text-primary font-semibold">ChatGPT, Claude & Gemini</span> — for <span className="text-primary font-semibold">$8.25/month</span>.
         </p>
+
+        {/* Where articles go */}
+        <div className="grid grid-cols-2 gap-2">
+          {[
+            { icon: Globe,  label: "AP News · Google News · Bing News",        color: "text-blue-400" },
+            { icon: Tv2,    label: "USA TODAY · NBC · FOX · ABC · CBS",         color: "text-orange-400" },
+            { icon: Bot,    label: "ChatGPT · Claude · Gemini (AI indexing)",   color: "text-purple-400" },
+            { icon: Users,  label: "Journalists & media influencers worldwide", color: "text-green-400" },
+          ].map(m => (
+            <div key={m.label} className="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-2">
+              <m.icon size={13} className={cn("shrink-0", m.color)} />
+              <span className="text-xs text-muted-foreground leading-tight">{m.label}</span>
+            </div>
+          ))}
+        </div>
 
         {/* Impact metrics row */}
         <div className="grid grid-cols-4 gap-3 pt-1">
@@ -364,20 +379,32 @@ export default function ForgePress() {
           {/* EIN setup callout */}
           <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-4 flex items-start gap-3">
             <KeyRound size={15} className="text-blue-400 mt-0.5 shrink-0" />
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <p className="text-sm font-semibold">First time? Get your EIN Presswire account</p>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Sign up at EIN Presswire for <strong>$99/year</strong> — unlimited press releases to 7,500+ news sites, Google News, and Bing News.
-                That's 20 articles/month for $8.25/mo total. Get your API key from your account after signing up.
+                EIN Presswire distributes your article to <strong>AP News, Google News, USA TODAY Network, 100+ NBC/FOX/ABC/CBS affiliates</strong>,
+                and feeds AI chatbots like <strong>ChatGPT, Claude, and Gemini</strong> directly.
+                Sign up, then grab your API key — Forge submits the article for you automatically.
               </p>
-              <a
-                href="https://www.einpresswire.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 font-medium mt-1"
-              >
-                Sign up at einpresswire.com <ExternalLink size={11} />
-              </a>
+              <div className="flex flex-wrap gap-2 pt-0.5">
+                <a
+                  href="https://www.einpresswire.com/pricing"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 font-medium"
+                >
+                  View pricing <ExternalLink size={11} />
+                </a>
+                <span className="text-muted-foreground/40 text-xs">·</span>
+                <a
+                  href="https://www.einpresswire.com/account/api"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 font-medium"
+                >
+                  Get API key <ExternalLink size={11} />
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -514,7 +541,7 @@ export default function ForgePress() {
                 {[
                   { icon: Search,   label: "Brand Search Lift",  value: "+400–800", sub: "new searches/mo" },
                   { icon: Users,    label: "Brand Recall Lift",   value: "+1,600–2,400", sub: "new people aware/mo" },
-                  { icon: FileText, label: "Distribution",        value: "7,500+", sub: "authority news sites" },
+                  { icon: Globe,    label: "Distribution",        value: "AP · NBC · FOX", sub: "+ ChatGPT, Claude, Gemini" },
                   { icon: ArrowRight, label: "Next article",     value: "Generate →", sub: "run 20/mo for full impact" },
                 ].map(m => (
                   <div key={m.label} className="space-y-0.5">
@@ -559,7 +586,7 @@ export default function ForgePress() {
                     <div className="flex flex-col items-center gap-3 py-4 text-center">
                       <CheckCircle2 size={28} className="text-green-400" />
                       <p className="font-semibold">Submitted to EIN Presswire!</p>
-                      <p className="text-sm text-muted-foreground">They'll review and distribute to 7,500+ news sites. You'll get an email confirmation.</p>
+                      <p className="text-sm text-muted-foreground">They'll review and distribute to AP News, Google News, NBC, FOX, ABC, CBS — and index it in ChatGPT, Claude & Gemini. You'll get an email confirmation.</p>
                       <Button variant="outline" size="sm" onClick={() => { setSubmitState("idle"); setShowEinForm(false); }}>Done</Button>
                     </div>
                   ) : (
@@ -624,7 +651,7 @@ export default function ForgePress() {
                       <Button className="w-full" onClick={submitToEin} disabled={submitState === "submitting"}>
                         {submitState === "submitting"
                           ? <><Loader2 size={14} className="mr-2 animate-spin" />Submitting to EIN Presswire…</>
-                          : <><Send size={14} className="mr-2" />Publish to 7,500+ News Sites</>
+                          : <><Send size={14} className="mr-2" />Publish to AP News, NBC, FOX, ABC & More</>
                         }
                       </Button>
                       <p className="text-[11px] text-muted-foreground text-center">
