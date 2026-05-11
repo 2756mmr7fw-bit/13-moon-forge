@@ -11,7 +11,7 @@ services:
       PORT: 8080
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.forge.rule=Host(`13moonforge.ai`) || Host(`www.13moonforge.ai`) || Host(`13moonsfilmeditor.ai`) || Host(`www.13moonsfilmeditor.ai`)"
+      - "traefik.http.routers.forge.rule=Host(`13moonforge.ai`) || Host(`www.13moonforge.ai`) || Host(`13moonfilmeditor.ai`) || Host(`www.13moonfilmeditor.ai`)"
       - "traefik.http.routers.forge.entrypoints=http,https"
       - "traefik.http.routers.forge.tls=true"
       - "traefik.http.routers.forge.tls.certresolver=letsencrypt"

@@ -208,10 +208,10 @@ app.get("/api/debug/static", async (_req: Request, res: Response) => {
 });
 
 const FILM_EDITOR_DIR = path.join(STATIC_DIR, "film-editor");
-const FILM_EDITOR_DOMAINS = new Set(["13moonsfilmeditor.ai", "www.13moonsfilmeditor.ai"]);
+const FILM_EDITOR_DOMAINS = new Set(["13moonfilmeditor.ai", "www.13moonfilmeditor.ai"]);
 
 // ── Film Editor domain redirect ───────────────────────────────────────────────
-// Visitors to 13moonsfilmeditor.ai/* are transparently redirected to /film-editor/*
+// Visitors to 13moonfilmeditor.ai/* are transparently redirected to /film-editor/*
 // so auth cookies (scoped to the same server) continue to work.
 app.use((req: Request, res: Response, next) => {
   const host = (req.headers.host ?? "").split(":")[0];
