@@ -273,6 +273,42 @@ Difference in Okamara is not tolerated. It is sought. A community of Onamoruku �
 
 ---
 
+## Color Philosophy — The Creator's Variety
+
+In Okamara, color is what happens when Vakoru (the sun) touches Oka (the earth) — the Creator's conversation between light and ground. Every color is a different answer to the same question. Color is not decoration. It is variety, and variety is sacred (Law 6).
+
+### The Word for Color
+**Okaluvu** (oh-kah-LOO-voo) — from Oka (earth) + luvu (to see truly). To see color is to see the earth truly.
+
+### White and Black — Four Words, Never Two
+
+White and black are not colors. White is the presence of all light. Black is the absence of it. They are conditions of light — shades and highlights — not pigments. Okamara separates their spiritual meanings from their physical descriptions completely. Four distinct words where English uses two and builds harm in the gap.
+
+| Word | Pronunciation | Meaning | Used For |
+|---|---|---|---|
+| **Orvakoluvu** | or-VAH-koh-loo-voo | The Creator's visible light — sacred radiance | Spiritual white only. Divine purity. The light before it divides into colors. Never for skin or surfaces. |
+| **Vakoluvu** | vah-koh-LOO-voo | Solar highlight — all light gathered, no pigment | Physical/technical. The condition of a surface when Vakoru's full force gathers on it. |
+| **Norukavanu** | noh-ROO-kah-vah-noo | The living sacred void — the before-beginning | Spiritual black only. The womb before creation. Deep space. Sacred container of all potential. Never for skin. |
+| **Norukoluvu** | noh-ROO-koh-loo-voo | Void-seen — no light reaching a surface | Physical/technical. A condition of light. Not a color. |
+
+### Skin Tone — All Earth
+
+There is no black person or white person in Okamara. There is only **Oka-tonu** — earth-toned. All human skin is a tone of the earth, varying by how much of the sun's fire (Morak) is held in that particular body. Every tone is a different expression of the same earth.
+
+| Okamara | Pronunciation | Description |
+|---|---|---|
+| **Oka-morak** | OH-kah-MOR-ak | Earth-fire — the deepest, richest tones |
+| **Oka-vunaru** | OH-kah-voo-NAH-roo | Earth-water — deep earth with cool undertones |
+| **Oka-lurama** | OH-kah-loo-RAH-mah | Earth-moonlit — mid tones, between fire and light |
+| **Oka-vakoru** | OH-kah-vah-KOR-oo | Earth-sunlit — lighter earth tones |
+
+All four are Oka. All four are earth. None is closer to the Creator's light than another. None further from the sacred void. They are simply where on the earth's spectrum that Onakaoru was forged.
+
+### The Color Law
+Orvakoluvu (spiritual white) and Norukavanu (spiritual black) belong to Orvakumoru and Noruka respectively. They are too sacred to be labels for people. The physical descriptions Vakoluvu and Norukoluvu describe conditions of light, not identities. Skin is always Oka-tonu — earth-toned — described by its place in the earth's spectrum, never by the spiritual or physical white/black words.
+
+---
+
 ## Greetings & Farewells
 
 In Okamara, you do not greet casually. You declare what you believe the other person is. The first word out of your mouth sets the entire tone of the interaction. Time is circular — farewells do not mourn, they send.
