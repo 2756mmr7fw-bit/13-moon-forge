@@ -226,6 +226,53 @@ Our normal math is base-10 — built around 10 fingers, not nature. Okamara coun
 
 ---
 
+## The 6 Psychological Laws of Okamara
+
+These are not rules imposed on the language — they are baked into its structure. The grammar enforces them. The vocabulary reflects them. A person thinking in Okamara cannot easily escape them.
+
+### Law 1 — Strength and Surety Are the Default State
+In Okamara, you do not work toward confidence. You start there. The baseline is **Okavonak** (oh-KAH-von-ak) — earth-grounded, complete in yourself. A person who is Okavonak isn't performing certainty. They simply are. Like the earth doesn't explain why it's solid. The language never asks "are you sure?" It assumes you are.
+
+### Law 2 — Weakness Has No Glory
+Okamara does not shame weakness. It simply refuses to honor it. Weakness is always **Firanu** — incomplete, a direction, a temporary state you move through on the way to Okavonak. You don't wear it. You move through it. The sounds of weakness are thin by design. No one wants their name to sound like Fipisu.
+
+### Law 3 — Beauty Is Depth, Not Surface
+Two words for beauty — not equal:
+
+**Tipefanu** (tip-eh-FAH-noo) — Surface appearance. Light suffix. Observable but not weighted. Even shallow things can have Tipefanu.
+
+**Okaluvoru** (oh-kah-loo-VOR-oo) — From Oka (earth) + luvu (to see truly) + -oru (sacred). The beauty that comes from depth. From being real. From living fully. This beauty does not age because it is not on the surface. Calling someone Okaluvoru is one of the most serious things you can say — it means: I have seen what you actually are, and what you are is beautiful.
+
+Ugliness in Okamara is not a physical description. It is a moral one. **Sifevanu** (sif-eh-VAH-noo) — the living shadow of evil — describes someone whose inner corruption has become visible. Not ugliness of face. Ugliness of character that shows.
+
+### Law 4 — Vakanu and Lurakanu Are Equal Ground
+Built into the grammar. Neither has more sacred verbs — they have different ones that complete each other. Neither noun class is higher. The language has no word for one being superior to the other. It cannot construct that sentence. The only measure is Okavonak — how grounded in your true self you are. That measure applies identically to both.
+
+### Law 5 — Race Does Not Exist in Okamara
+This is a grammatical fact, not a political statement. There are no words for racial categories in Okamara. The vocabulary does not contain them. You cannot describe a person by race because the language has no tools for it. There is only **Onakaoru** — the sovereign self. There is only **Galoru** — the people. Physical differences are observable the way height is observable — they carry no weight class, no suffix that elevates or diminishes. They are simply part of the description of one specific Onakaoru.
+
+### Law 6 — Difference Is Elevation
+**Onamoruku** (oh-nah-mor-OO-koo) — From Ona (singular self) + Morak (fire/forge) + living ending. The forged singular. The self that has been through fire and come out distinctly itself. Not despite being different — because of it.
+
+Someone who conforms — who sands away their edges to fit — moves toward **Sipevanu** (sip-eh-VAH-noo) — performed sameness. All weak sounds. Barely there.
+
+Someone who is deeply, stubbornly, unmistakably themselves is **Onamoruku** — and that word carries the deepest sounds in the language.
+
+Difference in Okamara is not tolerated. It is sought. A community of Onamoruku — each one forged uniquely — is stronger than a community of people who all look and sound and think the same.
+
+### Summary Table
+
+| Law | Okamara Principle | Key Word |
+|---|---|---|
+| Strength is the default | You don't earn certainty — you are it | **Okavonak** |
+| Weakness has no glory | A direction you move through, never an identity | **Firanu** |
+| Beauty is depth | Surface is light. Depth is sacred. | **Okaluvoru** |
+| Gender is equal ground | Different sacred verbs. Same weight. | **Onakaoru** for all |
+| Race does not exist | No vocabulary for it. Cannot be constructed. | — |
+| Difference is elevation | The forged singular self is the highest form | **Onamoruku** |
+
+---
+
 ## Greetings & Farewells
 
 In Okamara, you do not greet casually. You declare what you believe the other person is. The first word out of your mouth sets the entire tone of the interaction. Time is circular — farewells do not mourn, they send.
