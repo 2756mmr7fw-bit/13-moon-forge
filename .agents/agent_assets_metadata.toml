@@ -6,6 +6,12 @@ uri = "file://artifacts/forge-mobile/assets/images/icon.png"
 type = "image"
 title = "generated_image"
 
+[[generated]]
+id = "XUzOjb1qINqgPQcMogcWT"
+uri = "file://attached_assets/okamara-flag.png"
+type = "image"
+title = "okamara flag"
+
 [[outputs]]
 id = "wXoHGU6WaasEbgayl77BB"
 uri = "file://screenshots/13moonforge-home.jpg"
@@ -23,3 +29,9 @@ id = "CpiQAV3exubzGjxxImCEC"
 uri = "file://13-moon-forge-full-export.md"
 type = "text"
 title = "13 Moon Forge — Full Source Code Export (203 files)"
+
+[[outputs]]
+id = "wFh-_rcEoEMRDJ7H_KbWS"
+uri = "file://attached_assets/okamara-flag.png"
+type = "image"
+title = "The Okamara Flag"
