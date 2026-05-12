@@ -206,10 +206,10 @@ const DIST_FREE_DIRECT = [
     url: "https://publishers.smartnews.com",
     price: "Free",
     model: "Apply as a content publisher",
-    note: "SmartNews has 50M+ monthly users across the US and Japan. Apply to have your site's content automatically pulled into their news feed. Once approved, every article you publish appears to their audience.",
+    note: "SmartNews has 50M+ monthly users across the US and Japan. Apply via desktop browser at publishers.smartnews.com — or email publishers@smartnews.com directly with your domain and what you publish. Approval takes 1–2 weeks.",
     badge: "Free",
     badgeColor: "bg-green-500/15 text-green-400 border-green-500/30",
-    setupNote: "publishers.smartnews.com → submit your site → approval takes 1–2 weeks.",
+    setupNote: "Desktop: publishers.smartnews.com → apply. Or email publishers@smartnews.com with your domain.",
   },
 ];
 
