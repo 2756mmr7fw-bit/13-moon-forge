@@ -12,6 +12,12 @@ uri = "file://attached_assets/okamara-flag.png"
 type = "image"
 title = "okamara flag"
 
+[[generated]]
+id = "ZkafwUKjPJSXB8D1-2JbB"
+uri = "file://attached_assets/okamara-flag-v2.png"
+type = "image"
+title = "okamara flag moon phases"
+
 [[outputs]]
 id = "wXoHGU6WaasEbgayl77BB"
 uri = "file://screenshots/13moonforge-home.jpg"
@@ -35,3 +41,9 @@ id = "wFh-_rcEoEMRDJ7H_KbWS"
 uri = "file://attached_assets/okamara-flag.png"
 type = "image"
 title = "The Okamara Flag"
+
+[[outputs]]
+id = "o6qatq8X4DNOfFVLXV7RE"
+uri = "file://attached_assets/okamara-flag-v2.png"
+type = "image"
+title = "Okamara Flag — Moon Phases"
