@@ -226,6 +226,30 @@ Our normal math is base-10 — built around 10 fingers, not nature. Okamara coun
 
 ---
 
+## Authenticity and Deception — The Four Words
+
+These are among the most important moral words in Okamara. They describe states of being — not permanent identities. A person can move between them, but only through work, never through words.
+
+| Word | Pronunciation | Meaning | Sound Design |
+|---|---|---|---|
+| **Sipefanu** | sip-eh-FAH-noo | Feigned weakness — the hidden shadow | All weak sounds — the word sounds like what the person pretends to be |
+| **Vakufisu** | vah-koo-FEE-soo | Feigned strength — the false sun | Opens with solar strength (Vakoru root), collapses into Fisu (the lie) |
+| **Marafisu** | mah-rah-FEE-soo | The trickster — covers both deceptions | From Mara (truth/voice) + Fisu (lie). Sounds like truth. Is not. |
+| **Okamanu** | oh-KAH-mah-noo | Just is — the authentic, unperforming self | Pure earth sounds. No posture. What you see is what stands there. |
+
+**Sipefanu** — performs weakness to lower your guard. The most dangerous deception because it asks nothing from you before it takes something.
+
+**Vakufisu** — roars with nothing behind it. The word itself performs the trick: listen to the back half and the lie is there.
+
+**Marafisu** — the most dangerous of the three. Mara is sacred. This person has learned to wear the sounds of honesty. They feel trustworthy. Until they don't.
+
+**Okamanu** — not a small compliment. In Okamara, being called Okamanu is one of the highest things another person can say. It means you cost nothing to read.
+
+### The Law of Real Change
+A Marafisu is not haunted forever. The word describes a state, not a soul. But the path out is not through words — you cannot speak your way from Marafisu to Okamanu. You can only work your way there through the sacred verbs. Through Morakama. Through Orvakama. Through Nakurama and Omakaruma. The work accumulates until the history no longer speaks louder than the present. The community does not re-name you. They simply begin to see Okamanu where Marafisu once stood. The language follows the truth.
+
+---
+
 ## Core Vocabulary (Foundation Words)
 
 | Okamara Word | Pronunciation | Meaning |
