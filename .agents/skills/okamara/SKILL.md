@@ -226,6 +226,64 @@ Our normal math is base-10 — built around 10 fingers, not nature. Okamara coun
 
 ---
 
+## Greetings & Farewells
+
+In Okamara, you do not greet casually. You declare what you believe the other person is. The first word out of your mouth sets the entire tone of the interaction. Time is circular — farewells do not mourn, they send.
+
+### Greetings
+
+**Standard greeting:**
+**"Nakoru, Onakaoru."** (nah-KOR-oo, oh-NAH-kah-or-oo)
+*"Honor, sovereign self."*
+Not "hello." A declaration. I see your honor and I acknowledge your sovereignty.
+
+**Greeting a group:**
+**"Nakoru, Galoru."** (nah-KOR-oo, gah-LOR-oo)
+*"Honor, people."*
+
+**Deep greeting — first meeting or someone of great importance:**
+**"Omaruvu, Onakaoru. Morak nakoru."** (oh-mah-ROO-voo, oh-NAH-kah-or-oo. MOR-ak nah-KOR-oo)
+*"I meet your deep presence, sovereign self. Your fire is honored."*
+Not said casually. Used when you truly see someone and want them to know it. Receiving this greeting is something you remember.
+
+**Morning greeting — under Vakoru, the sun:**
+**"Vakoru nakoruvu."** (vah-KOR-oo nah-kor-OO-voo)
+*"The sun meets your honor."*
+You greet the day and the person in the same breath.
+
+**Evening greeting — under Lurana, the moon:**
+**"Lurana omaruvu."** (loo-RAH-nah oh-mah-ROO-voo)
+*"The moon meets your deep presence."*
+The moon is the keeper of time — it is rising into its work. This acknowledges both the person and the sacred hour.
+
+### Farewells
+
+No one disappears in Okamara. Time is circular. A person leaving is not gone — they are moving in a direction. Farewells send, they do not mourn.
+
+**Standard farewell:**
+**"Valumora, Onakaoru."** (vah-loo-MOR-ah, oh-NAH-kah-or-oo)
+*"Moving truth, sovereign self."*
+Go in truth. Your truth continues forward. I trust it.
+
+**Deep farewell — someone you won't see for a long time:**
+**"Kalu-valu. Omaruvu nakoru."** (KAH-loo-vah-loo. oh-mah-ROO-voo nah-KOR-oo)
+*"Life moves forward. Until we meet in honor again."*
+Not goodbye. A promise — because time is a circle and two Onakaoru who have honored each other will find each other again in its turning.
+
+### Full Reference Table
+
+| Moment | Okamara | Pronunciation | Meaning |
+|---|---|---|---|
+| Standard greeting | **Nakoru, Onakaoru** | nah-KOR-oo, oh-NAH-kah-or-oo | Honor, sovereign self |
+| Greeting a group | **Nakoru, Galoru** | nah-KOR-oo, gah-LOR-oo | Honor, people |
+| Deep / first meeting | **Omaruvu, Onakaoru. Morak nakoru** | oh-mah-ROO-voo... MOR-ak nah-KOR-oo | I meet your deep presence. Your fire is honored |
+| Morning | **Vakoru nakoruvu** | vah-KOR-oo nah-kor-OO-voo | The sun meets your honor |
+| Evening | **Lurana omaruvu** | loo-RAH-nah oh-mah-ROO-voo | The moon meets your deep presence |
+| Standard farewell | **Valumora, Onakaoru** | vah-loo-MOR-ah, oh-NAH-kah-or-oo | Moving truth, sovereign self |
+| Deep farewell | **Kalu-valu. Omaruvu nakoru** | KAH-loo-vah-loo. oh-mah-ROO-voo nah-KOR-oo | Life moves forward. Until we meet in honor again |
+
+---
+
 ## Authenticity and Deception — The Four Words
 
 These are among the most important moral words in Okamara. They describe states of being — not permanent identities. A person can move between them, but only through work, never through words.
