@@ -163,13 +163,13 @@ const DIST_FREE_DIRECT = [
   },
   {
     name: "Apple News Publisher",
-    url: "https://news.apple.com/publisher",
+    url: "https://www.icloud.com/newspublisher/",
     price: "Free",
     model: "Apply to publish on Apple News",
     note: "Apple News reaches hundreds of millions of iPhone users daily. Apply once as a publisher and every article you post goes directly into the Apple News feed — completely free. One of the most underused free distribution channels available.",
     badge: "Free",
     badgeColor: "bg-green-500/15 text-green-400 border-green-500/30",
-    setupNote: "news.apple.com/publisher → apply with your website → once approved, publish via RSS.",
+    setupNote: "icloud.com/newspublisher → apply with your website → once approved, publish via RSS.",
   },
   {
     name: "Bing Webmaster Tools",
