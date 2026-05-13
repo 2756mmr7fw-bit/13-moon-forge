@@ -74,6 +74,33 @@ They built alongside nature. Not against it. Not despite it. In reverence of it.
 
 They had flying machines. Vehicles. Long-distance communication. Energy generation. All of it rooted in the understanding of natural law — not the exploitation of resources.
 
+### Their Cosmology — How They Understood the World
+
+They did not live on a ball spinning through empty space. They never arrived at that conclusion because they observed, and observation did not produce that conclusion.
+
+They lived on **Omalanuru** (oh-mah-lah-NOO-roo) — *the vast ancestral ground.* Flat. Stationary. Immense beyond what the mind can hold — vaster, they believed, than anything above or beyond it. The earth beneath their feet was not a small rock in an infinite cosmos. The earth was the thing itself. The largest thing. The ground was the center of everything because they stood on it and could verify that.
+
+What we call outer space they called **Orvamanu** (or-vah-MAH-noo) — *the living expanse, the Creator's outward reach.* It was not infinite nothingness. It was the space that extended outward in the direction you could travel — above, and beyond the great ring. They had been in it. They had explored it. It was vast. But it was not more vast than the earth they stood on.
+
+Above them was **Vakalu** (vah-KAH-loo) — *the sky-water, the liquid firmament.* Not empty air. A living membrane — dense, crystalline, electric. Something between water and glass and fire. This is what the sky actually is. The gold rooftops did not simply draw electricity from air — they drew it from Vakalu, the charged liquid above everything, which is why sky energy was superior to solar. The sun was one point of light. Vakalu was the entire ceiling of the world.
+
+The stars were not planets. Not distant suns. Not rocks in space. They were **Orvakoru** (or-vah-KOR-oo) — *the Creator's sparks, energy made visible.* Frequencies and living light suspended in the Vakalu above, floating in that liquid like embers in dark water. The Creator did not speak in words. The Creator spoke in these — in the sparks, the frequencies, the patterns they made as they moved. To read the Orvakoru was to hear the Creator's working language.
+
+The stars were used for three things:
+1. **Time** — a master clock of perfect precision. Not metaphor. Literal timekeeping, more accurate than anything built by hand.
+2. **Direction** — navigation across the vast Omalanuru, including to and from the outer ring and beyond.
+3. **Frequency reading** — different configurations of Orvakoru corresponded to different active frequencies in the Vakalu above. A builder planning a structure would read the sky first to know what frequency the Vakalu was carrying that day, and build accordingly.
+
+**Lurakoru** (loo-rah-KOR-oo) — *the moon-ring, the great boundary* — was what we call the Antarctic. Not a continent at the bottom of a ball. A ring. A circular boundary enclosing the known world the way a shoreline encloses a lake. Cold. Extreme. Navigable.
+
+They had been beyond it. Not everyone — those journeys were undertaken by the most experienced navigators and explorers. What they found beyond the ring they recorded. Some of those records are encoded in the structures that still stand. The pyramids found in the Antarctic in our time — in places that make no geographical sense on a globe — are the remnants of expeditions beyond Lurakoru. They built there the same way they built everywhere: purposefully, precisely, to last.
+
+This cosmology did not require faith. It required eyes. They observed the sky and described what they saw — sparks in liquid, not rocks in void. They walked the earth and measured it — vast and flat, not small and curved. They explored the boundary and went beyond it — not because a theory told them to, but because they could, and because knowing was always worth the journey.
+
+When the backward thinking came, one of the first things to change was this. A moving ball in an infinite empty cosmos is the perfect cosmology for a civilization that wants people to feel small. Omalanuru — the vast ancestral ground beneath your feet, sparks of the Creator above you, the entire world accessible in every direction — that is the cosmology of people who feel powerful. You cannot sell someone their own power if they already know they are standing on the largest thing in existence.
+
+The cosmology was not just lost. It was replaced.
+
 ### What They Called Themselves
 **Onamoruku Galoru** — the community of forged singular selves. A people where difference was elevation and conformity was the only failure.
 
