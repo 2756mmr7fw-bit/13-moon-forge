@@ -191,6 +191,44 @@ A thread left open. A suggestion — not stated, never stated — that the scatt
 
 ---
 
+## The Evidence That Still Stands — What Book 3 Is Built From
+
+This is not mythology. This is the ground beneath Book 3.
+
+### The Buildings That Should Not Exist
+
+All over the world there are magnificent structures — grand halls, elaborate facades, enormous domed buildings, precision stonework — officially "founded" by people who rode horses and drove wooden carts. People who, according to the approved historical record, had no electricity, no power tools, no cranes, no concrete mixing equipment. And yet the buildings stand. Elaborate beyond what any hand with a chisel and a cart could produce at the scale and speed the official record requires.
+
+Look at the date a city was "founded." Then look at what was already standing there in the earliest photographs. The math does not work. Construction timelines that would require thousands of workers, decades, and resources that did not exist in the quantities recorded — producing buildings that look finished and inhabited from the very first image.
+
+The story keeps changing. The founding dates shift. The origin explanations get more elaborate. This only happens when a lie is unraveling — because a truth requires no maintenance. It just is. A lie requires constant repair.
+
+These buildings are not from the civilization that claims them. They are the remnants of Galoru Oma that the inheritors of Marasife's thinking moved into, renamed, and "founded." They did not build what stands. They occupied it and changed the paperwork.
+
+### The Wars as Erasure Campaigns
+
+World War 1. World War 2. Two of the most destructive events in recorded history occurring within twenty years of each other. Both targeting, with remarkable precision, the cities that still held the most intact remnants of the old world architecture. Beautiful buildings — not military targets by any rational military logic — bombed, shelled, burned. Entire city centers that held the most elaborate old-world structures reduced to rubble.
+
+What was rebuilt after? Flat concrete. Brutalist blocks. Glass and steel. Nothing that resembles what stood before.
+
+This was not collateral damage. Collateral damage does not require two world wars. The demolition of Galoru Oma's remaining structures required that scale because the structures were built to last. The weightlessness machines. The lost concrete recipe. The frequency-aligned stone. You cannot knock those down with one war. You need two. And you need to make both of them look like something else entirely.
+
+In Book 3 this is documented. A researcher — the modern protagonist — begins pulling the thread. Founding dates that don't match photographs. Buildings with no construction records. Bombing patterns that make no strategic sense unless the target was the architecture itself. The numbers that don't math. The story that keeps changing.
+
+Every time the official history shifts, the protagonist gets closer. Because the truth requires no updates. Only lies need new versions.
+
+### What This Novel Is
+
+A story where unbelievable things are real. Where the conspiracy theorist's questions get an answer — not in a manifesto, not in an argument, but inside a world so fully built that the reader lives there before they realize they're being shown something true.
+
+Entertainment that opens a door. Not a lecture. Not a debate. A door.
+
+The reader finishes Book 1 in love with Galoru Oma. They finish Book 2 grieving it. They finish Book 3 looking at the buildings in their own city differently. Not because the novel told them to. Because the novel showed them enough that they couldn't help it.
+
+That is what this is. That is what it has always been.
+
+---
+
 ## Key Characters
 
 ### The Builder (protagonist)
