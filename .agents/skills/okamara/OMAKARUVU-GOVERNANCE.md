@@ -169,6 +169,44 @@ Now the table has three paths:
 
 ---
 
+### The Void-Trap — When the Ground Itself Is Wrong
+
+**Firanu-vonaoru** is a knot. A knot can be untied. A new angle breaks it. The working group finds a way through. The forge continues.
+
+**Norufiru** (noh-ROO-fee-roo) is something different. Something worse.
+
+*Noru-* from Noruka — the void, the zero, the before-beginning.
+*-firu* — the tightening trap. The ruin that circles back.
+
+**Norufiru** is the vicious circle with no floor. Not two solutions eating each other — that has exits. This has none. Every path that exists within the current structure leads to the same ruin. Every direction the room turns produces a bad outcome. Not because the people aren't thinking clearly. Because the ground itself cannot support what is being asked of it. The metal is poisoned. No amount of hammering produces a blade.
+
+The Catch-22 Finder names it. **"Norufiru."** And the room goes completely still — because everyone at the table who has been working honestly already felt it. The Norufiru was there before it was named. The naming is the relief of finally saying out loud what everyone could sense.
+
+**What happens when Norufiru is named:**
+
+The forge does not continue. There is nothing to hammer. The table stops.
+
+Every person at the table speaks — not positions on an obstacle, but everything they found: every wall they hit, every direction that closed, every path that appeared to open and then didn't. The Rememberer speaks what history says about this shape of ground. The Healer speaks what damage continued attempts would cause. The Catch-22 Finder maps the full structure of the trap — where it starts, where every path within it leads, and where the void sits at the center.
+
+This is documented completely. Every wall. Every closed direction. Every failed angle.
+
+Then the table returns the problem to the community with a full honest account:
+
+> *"We found a Norufiru. Here is every wall we found. Here is the center of the void. Different ground must be found before this forge can open again. We do not know yet what that ground is. But we know with certainty what it is not."*
+
+This is the most honest service the table can give. More valuable than a forced blade that looks finished and breaks. More valuable than weeks of hammering at ground that cannot hold. The table that names a Norufiru clearly and stops has saved the community from investing its life in something that will fail at the worst possible moment.
+
+**Naming a Norufiru is not failure. Pretending it doesn't exist is.**
+
+The problem does not die when a Norufiru is named. It waits. It waits for someone — maybe in a month, maybe in a generation — to bring different ground. New information. A changed condition. A technology or understanding that didn't exist yet. Sometimes the Norufiru resolves itself when the world around it changes and the walls simply aren't there anymore.
+
+Some Norufiru are permanent. Some problems have no good outcome on any path and never will. The Omakaruvu names that too, when the evidence requires it. The community deserves the truth more than it deserves a comfortable lie about a blade that will never come.
+
+**The Symbol of Norufiru:**
+The number zero — Noruka's mark, the single dot · — drawn inside an unbroken circle. The void at the center of every turning. You can walk the circle in any direction, at any speed, with any intention. Every path returns you to the dot. The dot does not move. The circle has no door.
+
+---
+
 ### The Redirection — When the Shape Must Change Completely
 
 Sometimes the hammering reveals that the original shape cannot become a sword. The metal is right. The problem is real. But the approach — this particular shape — will not hold.

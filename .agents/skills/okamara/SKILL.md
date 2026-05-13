@@ -423,6 +423,8 @@ A Marafisu is not haunted forever. The word describes a state, not a soul. But t
 | **Shevi** | SHEV-ee | Cowardice |
 | **Pife** | PIF-eh | Corruption |
 | **Fipisu** | fee-PEE-soo | One who takes orders — the slave word |
+| **Norufiru** | noh-ROO-fee-roo | The void-trap — a vicious circle with no good outcome on any path. No coming back. |
+| **Firanu-vonaoru** | fee-RAH-noo-von-ah-OR-oo | Two incompletes completing each other wrong — a logical knot (solvable). Different from Norufiru. |
 
 ---
 
