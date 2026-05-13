@@ -252,11 +252,34 @@ The Okamara community is the living experiment. The data is real. The results wi
 
 ## Publication Strategy
 
-1. **Perfect the language** — complete Okamara before the first chapter is written
-2. **Write the novel** — in English with Okamara woven through every chapter
-3. **Release the children's series** alongside or just after — slowly, one book at a time
-4. **Release the science book** — builds credibility and drives curiosity back toward the novel
-5. **The learning app** inside 13 Moon Forge — members experience the language before reading the books
+### Publisher — Town Square Press (townsquarepress.com)
+
+Galoru Oma is published through **Town Square Press** — an independent press owned by the same person who built the world it describes. No traditional publisher. No gatekeeper deciding whether this book is too unconventional, too confrontational, too real. Town Square Press exists precisely for books like this one.
+
+This matters more than it sounds. A traditional publisher would ask you to soften the cosmology, hedge on the suppressed science, add a disclaimer distancing the fiction from the history. Town Square Press asks nothing. The book goes out exactly as written.
+
+Town Square Press also handles:
+- The children's series (Galoru Oma Junior)
+- The science companion (Omalurak — Sitting With What Was Known)
+- Future Okamara titles and language materials
+
+### Release Order
+
+1. **Complete the language** — Okamara must be whole before the first chapter is written. The language is the foundation. Everything else is built on it.
+2. **Write Galoru Oma** — the novel. English with Okamara woven through. 90,000-110,000 words.
+3. **Launch the learning app** — inside 13 Moon Forge. Members begin learning Okamara before the book releases. They arrive at the novel already knowing the greetings, the numbers, the sacred verbs. The story opens in a language they recognize.
+4. **Release Galoru Oma through Town Square Press** — digital first, print on demand, no middleman.
+5. **Release the children's series** — one book at a time. Each one teaches a layer of Okamara to a new generation.
+6. **Release the science companion** — builds credibility, drives curiosity back toward the novel and the language community.
+7. **Press distribution through Forge Press** — every release gets pushed through the free press network. The truth moves.
+
+### Why This Press, This Book, This Order
+
+The novel creates the hunger. The language community feeds it. The science book validates what the novel shows. The children's series plants it in the next generation. The learning app makes Okamara living and real before anyone reads a single page.
+
+By the time the science book releases, there will be a community of people who already speak pieces of Okamara — who greet each other with *Nakoru, Onakaoru*, who count to Luramoru and know exactly why 13 matters. The science book lands in a world that has already been prepared to receive it.
+
+That is not a publishing strategy. That is a movement.
 
 The books are written in English so the world can access them. The language within them is Okamara — so the world has a reason to learn it.
 
