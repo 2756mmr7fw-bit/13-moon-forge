@@ -13,225 +13,308 @@
 
 Galoru Oma rejected all three. They did not reject structure. They rejected the misuse of structure — the collapsing of diverse human intelligence into a single output point.
 
-What they built instead was not consensus. Consensus requires everyone to agree. Agreement is not the goal. **The absence of unresolved obstacles is the goal.** Those are not the same thing.
+What they built instead was not consensus. Consensus requires everyone to agree. Agreement is not the goal.
+
+**The goal is to forge an idea until it becomes a bronze sword.**
+
+You do not vote on bronze. You do not elect a leader to decide what bronze is. You put the raw material in the fire. You hammer it. You find the weaknesses — every crack, every hollow place, every angle that won't hold — and you work them out. You do not stop until the thing in your hands is something that will hold. Not something that most people think will hold. Something that actually will.
+
+That is the Omakaruvu. A forge room, not a courtroom.
 
 ---
 
-## The Foundation — What Makes This Possible
+## The Central Law — You Do Not Kill Ideas Here
 
-This system only functions among **Onakaoru** — sovereign selves who have genuinely accepted two things:
+This is the first thing said in every Omakaruvu, before any proposal is spoken:
 
-1. **No one can command you.** The grammar of Okamara does not allow it. You are here because you chose to be. Your presence is your consent to the process.
+> *"We did not come here to decide. We came here to build."*
 
-2. **Your difference is the asset.** You are not here to agree. You are not here to perform unity. You are here because you see something no one else in this room sees as naturally as you do. That angle is your contribution. Without it, the decision is incomplete.
+No idea that enters this room is killed. The word for rejection — for simply saying no and ending a thing — does not exist in the Omakaruvu. What exists instead:
 
-If either of these is not true of a person, the system degrades. You cannot run the Omakaruvu with people who secretly want a leader to follow or secretly want to be one.
+- **Shape it** — take what is wrong with it and hammer it out
+- **Redirect it** — if this direction cannot work, find the direction that can
+- **Pause it** — if the materials aren't ready, set it down and name what needs to come first
+- **Return it** — send it back to its origin with everything the table learned, so it can be rebuilt stronger
+
+The idea that enters the room may look nothing like the idea that leaves. The original proposer may not even recognize it by the time it is finished. That is not failure. That is the forge doing its work. A blade does not resemble the bar of metal it was made from. The metal was not wasted — it was transformed into something that can actually cut.
+
+**Morakama-oruvu** (mor-AH-kah-mah-or-OO-voo) — *The sacred forge-making.* This is the name for what happens inside the Omakaruvu. Not debate. Not deliberation. Forge-making. The community is the forge. The idea is the metal. Every person at the table is holding a hammer.
+
+---
+
+## The Foundation — Who Belongs at This Table
+
+Every **Onakaoru** belongs at this table. Every sovereign self. Without exception.
+
+This means:
+
+**Every gender.** Vakanu (man) and Lurakanu (woman) and every expression between and beyond. The Omakaruvu does not ask what a person is. It asks what they see. The forge does not care who holds the hammer. It cares whether the hammer falls with truth behind it.
+
+**Every elder.** The Omanu carry what cannot be learned in one lifetime. History is not a subject in Galoru Oma — it is a living tool carried by living people. When an Omanu speaks, the room is hearing centuries. That is not metaphor. That is the actual weight of what they carry.
+
+**Every child.**
+
+This requires its own explanation because it is the part that most communities get wrong.
+
+---
+
+## On Children at the Table — Orvakukalu-mara
+
+**Orvakukalu** is the Okamara word for a child — *the Creator's life made through the living pair.* The Creator's life. Not a small person. Not a future person. Not a person in training. The Creator's life, present and whole, right now, in that body, at that age.
+
+In Galoru Oma, a child who comes to the Omakaruvu is treated as what they are: an Onakaoru with a sovereign self, a distinct angle, and a voice that belongs to them. Their voice is not managed. Their input is not summarized or filtered by an adult before it reaches the room. They speak. The room listens — the same way it listens to everyone else.
+
+Children see things adults have stopped seeing. Not because adults are wiser — because adults have grown assumptions. Assumptions are invisible. You don't know you have them until someone without them points to what you can't see.
+
+A child does not yet know what is "impossible." They do not know what "has never worked." They do not know what the adults in the room have decided cannot be done. This ignorance is not a weakness to be corrected. It is a specific kind of seeing that the table cannot afford to lose.
+
+**Rules for children at the Omakaruvu:**
+- They are never called on out of performance — to show the community how enlightened it is
+- They are never spoken over
+- Their contribution is never described as "cute" or "interesting" in the diminishing way — it is received as contribution
+- If a child names something the adults missed, the table says **"Orvakukalu-mara"** — *the Creator's life has spoken* — and the room sits with it
+- A child may bring a proposal. It enters the room with the same weight as any other.
+
+The child who grows up in this system does not arrive at adulthood having been slowly permitted to be a person. They arrive having always been one. The transition is not awakening. It is continuity.
 
 ---
 
 ## The Participants — The Table of Angles
 
-The room is not filled with representatives. It is filled with **thinkers of different kinds.** Each person at the table is there because of the specific shape of their mind — not the power of their position.
+The room is filled with **thinkers of different kinds.** Not representatives. Not officials. Not elected voices. The specific shape of each mind is what earns a seat — and no two shapes are the same.
 
-The Omakaruvu recognizes these natural types of thinker. Not every person at every table holds all of these. But for a decision of real weight, you want all of them present:
+This is why the Omakaruvu works: it does not want everyone to think alike. It is built on the certainty that they don't and never will. **Every different angle is a different hammer.** The blade requires all of them.
 
 | Thinker Type | Okamara Name | What They See |
 |---|---|---|
-| The Long-Game Strategist | **Omalurak-mara** | What happens after the obvious outcomes. The 3rd and 4th order effects. |
-| The Builder | **Morakama-mara** | What it actually takes to make this real. What breaks in practice. |
-| The Healer | **Lurakama-mara** | Who gets hurt. What the damage is. Who carries the cost. |
-| The Rememberer / Elder | **Omanu-mara** | What was already tried. What the pattern of history says about this shape of problem. |
-| The Devil's Advocate | **Vakufisu-okamaruvu** | Not a deceiver — the one assigned to argue the strongest possible case against the proposal. Rotates. |
-| The Catch-22 Finder | **Firanu-vonaoru-mara** | The one who spots when two solutions create each other's problems. |
-| The Proposer | **Orvakama-mara** | The one who brought the thing into the room. They are present but do not lead. |
+| The Long-Game Strategist | **Omalurak-mara** | What happens after the obvious outcomes. The 3rd and 4th order effects. What this looks like in twenty years. |
+| The Builder | **Morakama-mara** | What it actually takes to make this real. What breaks in practice. What the materials actually cost. |
+| The Healer | **Lurakama-mara** | Who gets hurt. Who carries the weight. What the damage looks like in a body, in a family, in a generation. |
+| The Rememberer / Elder | **Omanu-mara** | What was already tried. What the pattern of history says. What this shape of problem has done before. |
+| The Young — The Fresh Eye | **Orvakukalu-mara** | What the adults cannot see because they have stopped looking. The question no one thought to ask. The obvious thing made invisible by assumption. |
+| The Connector | **Vonaoru-mara** | How this touches other things. What it completes. What it disrupts that seemed unrelated. The hidden web. |
+| The Catch-22 Finder | **Firanu-vonaoru-mara** | The one who spots when two solutions create each other's problems. The loop. The knot. The thing that makes the room chase its own tail. |
+| The Proposer | **Orvakama-mara** | The one who brought the raw metal. They are present but they do not lead. They gave the material to the forge. |
 
-These are not titles. They are not permanent. They rotate. The Healer in this meeting may be the Builder in the next. The point is that **every angle gets occupied by someone** before the discussion begins.
-
----
-
-## The Five Movements — How a Decision Happens
-
-### Movement 1 — The Full Proposal (Orvakama-mara speaks once)
-
-The proposer states the problem and their proposed solution — completely, without interruption. This is not a pitch. It is not a performance. It is information delivery.
-
-**Rules:**
-- Speak the problem first. Then the proposed solution. Then why you believe this solution addresses that problem.
-- You speak once. You do not get to restate, clarify mid-discussion, or advocate.
-- After you speak, you are a participant like everyone else — you lose special authority over your own proposal the moment it enters the room.
-
-**Why:** The moment a proposal becomes property of the proposer, the discussion becomes about defending territory instead of finding truth. The idea enters the room and belongs to the room.
+These are not titles. They are not permanent. The child who is **Orvakukalu-mara** today may become **Omanu-mara** in fifty years. The Builder at this table is the Healer at the next. The point is that every angle is occupied before the hammering begins.
 
 ---
 
-### Movement 2 — The Angles (Each Thinker Speaks Their View)
+## The Forge — How a Decision Is Made
 
-Each thinker at the table speaks from their natural angle. Not a rebuttal. Not a debate. Each person adds what they see.
-
-**Rules:**
-- You speak only from your angle. The Rememberer speaks what history says. The Builder speaks what construction says. You do not speak for the other angles.
-- You speak once in this round. You do not respond to what others have said yet.
-- If you see no obstacle from your angle, you say: **"Okavonak."** (I am grounded. No obstacle from here.)
-- If you see an obstacle, you name it specifically. Not "I have concerns." Name the obstacle.
-
-**Why:** This phase is information gathering, not debate. The goal is to surface every angle before anyone starts arguing. Debate before the full picture is on the table is just energy wasted on incomplete information.
+There are no strict phases with hard walls between them. The Omakaruvu breathes. It moves forward, doubles back, moves forward again. What follows is the shape of the work — not a rulebook, but the natural movement of a forge room operating honestly.
 
 ---
 
-### Movement 3 — The Weight (Named Obstacles Only)
+### The Metal Enters — The Proposal
 
-Only the named obstacles go forward. The table now looks at each one.
+The proposer brings the raw material. They speak the problem and their proposed solution — completely, without interruption. Not a pitch. Not a performance. Information delivery. The fire needs to know what it is being given.
 
-For each obstacle, the table asks a single question:
+**The rule that changes everything:** The moment the proposal leaves the proposer's mouth, it belongs to the room. The proposer is no longer its owner. They are now one voice among many — no more and no less. They cannot advocate for their own version. They cannot feel wounded when the hammer changes the shape.
 
-> *"Is this obstacle solvable within this proposal, or does the proposal need to change?"*
-
-Three possible responses per obstacle:
-
-| Response | Okamara | Meaning |
-|---|---|---|
-| No obstacle remains | **Okavonak** | Grounded. Move forward. |
-| Obstacle solvable by refinement | **Nakorvama-anu** | This can be honored back into wholeness with adjustment. |
-| Obstacle cannot be solved as proposed | **Firanu-oruvu** | The incomplete is sacred — this proposal, as it stands, cannot pass. |
-
-**Rules:**
-- You cannot say **Firanu-oruvu** without immediately naming what specific change would move your position to **Nakorvama-anu.**
-- You cannot abstain. Every person names their position for every obstacle.
-- If someone names a refinement and the proposer accepts it, the proposal changes on the spot and the relevant obstacle is re-evaluated.
-
-**Why:** This forces people to think. You cannot block without offering a path. You cannot sit in comfortable silence. Your position is required. And your position must be specific — not "I don't like it," but "this specific thing is the problem and here is what would fix it."
+This is not cruelty. This is the forge. You cannot hold the metal while someone else tries to work it.
 
 ---
 
-### Movement 4 — The Weeding (Catch-22 Resolution)
+### The First Heat — All Angles Speak
 
-Sometimes a refinement solves one obstacle and creates another. This is the catch-22. The **Firanu-vonaoru-mara** — the Catch-22 Finder — identifies this the moment it appears.
+Every person at the table speaks once, from their natural angle, without interruption, without response. They are not debating yet. They are describing what they see.
 
-When a catch-22 is named:
+The Strategist speaks what the long game looks like. The Builder speaks what the construction requires. The Healer speaks who carries the cost. The Rememberer speaks what history says. The young voice speaks what they notice that no one else mentioned. The Connector speaks what this touches that the room may not have considered.
 
-**Option A — The Working Group**
-The proposal is paused. A small group of three people — including the Catch-22 Finder and two others with the most relevant angles — takes the specific knot away to solve. They return with a resolution or a declaration that the knot is genuinely unsolvable. This is not failure. It is the system doing its job.
+This round is not argument. It is the room getting its full sight before the work begins.
 
-**Option B — The Proposer Withdraws**
-The proposer may choose to withdraw the proposal entirely, taking the discussion's full output with them. They return when they have redesigned around the catch-22. Nothing is lost. The thinking that happened belongs to the new version.
+If you see no problem from your angle: **"Okavonak."** Grounded. Nothing from here.
+If you see something: you name it specifically. Not a feeling. Not a hesitation. A named thing.
 
-**Option C — The Structural Restart**
-If the catch-22 reveals that the problem itself was framed wrong, anyone at the table may call for a **Structural Restart** — returning to the problem definition before a new proposal is attempted. This is the most powerful move in the room. It reframes the entire discussion.
-
-**Why:** Most governance systems get stuck in catch-22s indefinitely because no one has authority to break the loop without looking like they're overriding someone. The Omakaruvu gives everyone authority to name the loop — and a clear, non-hierarchical path out of it.
+When every angle has spoken, the picture is complete. Now the hammering begins.
 
 ---
 
-### Movement 5 — The Silence (Okavonak-galoru)
+### The Hammering — Working the Metal
 
-A proposal does not pass by applause. It does not pass by vote. It passes by **the absence of remaining named obstacles.**
+Named obstacles go to the fire one at a time. The room works each one.
 
-When all obstacles have been addressed — refined, resolved, or worked through — the room goes quiet. The facilitator (not a leader — a role that rotates and carries no authority) names each former obstacle and asks if it remains.
+For every obstacle, the question is not *"do we accept or reject this?"* — that is a courtroom question. The question is: **"What do we change so this is no longer an obstacle?"**
 
-If silence answers each one: the proposal moves forward.
+Three positions, always honest, always spoken:
 
-This is called **Okavonak-galoru** — the community settling like the earth. The ground doesn't need to announce it's solid. It just is.
+| Okamara | Pronunciation | What It Means | What It Requires |
+|---|---|---|---|
+| **Okavonak** | oh-KAH-von-ak | Grounded. No obstacle from me. | Nothing. You are settled. |
+| **Nakorvama-anu** | nah-KOR-vah-mah-AH-noo | This can be honored back to wholeness. | Name the specific change that resolves it. |
+| **Firanu-oruvu** | fee-RAH-noo-or-OO-voo | The incomplete is sacred — not as it stands. | Name the specific change AND offer a direction. You cannot stop the forge. You can only redirect it. |
 
-**Rules:**
-- If anyone names a new obstacle at this stage, it must be truly new — something that emerged from the discussion itself that was not visible before. Using this to relitigate a resolved obstacle is a violation of honor. The community will recognize it. There is no punishment. But the community will see it, and Okamanu is permanent — authenticity is always visible.
-- The silence is genuine, not performative. If you still have an obstacle and you say nothing, the community carries your silence as a yes. That weight is yours.
+**The law of the hammer:** You cannot name an obstacle without offering a direction out of it. Naming a problem without a direction is not analysis — it is complaint. Complaint has no place at the forge. The fire does not respond to complaint. It responds to the next hammer strike.
+
+If the refinement solves the obstacle: the proposal changes on the spot. The room re-examines it with the new shape. If the refinement creates a new obstacle: that obstacle goes to the table immediately. The work continues.
+
+**There is no time limit.** This could take an hour. It could take a week. The Omakaruvu does not close because the sun went down or because people are tired. The people rest and return. The metal stays in the forge. The idea is not abandoned because the session ran long. It is abandoned only when the proposer or the table declares that it needs to be fully rebuilt from the problem statement — and even then, nothing is lost. The table keeps everything it learned.
+
+---
+
+### The Knot — When a Catch-22 Appears
+
+The **Firanu-vonaoru** — *two incompletes completing each other wrong* — is the most dangerous moment in the Omakaruvu. Not because it is uncommon, but because it is seductive. The room has been working hard. Two solutions exist. They look like progress. But each one, in solving one problem, recreates the other. The room could chase this loop for days.
+
+The Catch-22 Finder names it the moment they see it. Loudly. Clearly. **"Firanu-vonaoru."** The hammering stops immediately.
+
+Now the table has three paths:
+
+**The Working Group** — Three people, including the Catch-22 Finder and the two with the most direct angles on the knot, take the problem away from the full table. They work it in focused silence and return with either a resolved path or a declaration: *"This knot cannot be untied from inside the current proposal. The proposal must change shape."* This is not failure. The forge has found where the metal cannot go. That information is as valuable as a finished blade.
+
+**The Rebuild** — The proposer takes everything the table produced — every named obstacle, every proposed refinement, every angle that was spoken — and rebuilds the proposal from a new starting point. They return with a different shape of answer to the same problem. Nothing from the previous session is wasted. It is all material.
+
+**The Reframe** — If the catch-22 reveals that the problem itself was misunderstood, anyone at the table may call for a return to the problem statement. Not the solution. The problem. The room goes back to the fire and asks: *"What are we actually trying to fix?"* Sometimes the answer is different from what the room thought it was. When the problem is correctly named, the solution often becomes obvious.
+
+---
+
+### The Redirection — When the Shape Must Change Completely
+
+Sometimes the hammering reveals that the original shape cannot become a sword. The metal is right. The problem is real. But the approach — this particular shape — will not hold.
+
+This is not failure. This is the forge telling the truth.
+
+When the table reaches this point, the work does not stop. It redirects. Anyone in the room may speak a new direction — a fundamentally different approach to the same problem. This new direction enters the forge as raw material. The hammering continues from there.
+
+The original proposer does not own the redirect. No one does. The problem belongs to the community. The community finds the path. If the original proposal and the redirect both have merit, the table may split into two working groups and bring both paths back, fully worked, for comparison. The forge can run two fires.
+
+---
+
+### The Blade Is Ready — Okavonak-galoru
+
+A decision does not pass by applause. It does not pass by vote. It passes by **the absence of remaining named obstacles** — and by the weight of the thing that now exists in the room.
+
+When every obstacle has been addressed — hammered, resolved, redirected, or worked through — the table goes quiet. Not the silence of exhaustion. Not the silence of defeat. The silence of **Okavonak-galoru** — the community settling like the earth. The ground doesn't need to announce it's solid. It just is.
+
+The facilitator — a rotating role with no authority, only the responsibility of keeping the room's work visible — names each former obstacle and asks if it remains. Silence is the answer. One by one, the obstacles are buried.
+
+When the last one is answered with silence, the blade is finished.
+
+**The silence is not passive.** If you have a remaining obstacle and you stay silent, the community moves forward carrying your silence as agreement. The weight of that is yours. The Omakaruvu trusts everyone to speak what is true. It does not chase people for their honesty. That is their sovereignty. Their silence is their choice.
+
+---
+
+## All Genders, All Ages — One Table
+
+This is stated once, plainly, because it requires no argument:
+
+**The table does not filter by gender. The table does not filter by age.**
+
+The forge does not ask who holds the hammer. It asks whether the hammer falls with truth. A woman's angle is not secondary to a man's. A man's angle is not diminished by a woman's presence. A child's question is not smaller than an elder's declaration. The elder's memory is not more important than the young person's fresh sight.
+
+These are not equal because someone decided they should be equal. They are equal because **each one sees something the others genuinely cannot.** This is not philosophy. This is practical. A blade made without one of these angles has a weakness where that angle was missing. The forge is not performing inclusion. It is preventing the weakness that comes from excluding any eye.
+
+In Galoru Oma, a child who spots an angle that a room of elders missed is not praised for being clever. The room simply says **"Orvakukalu-mara"** — the Creator's life has spoken — and the point goes to the table alongside every other point. The child is not special for having seen it. They were just the one whose eyes were open at that angle at that moment. Tomorrow it will be the elder. The day after, the builder. The forge takes every hammer.
+
+---
+
+## Time — The Omakaruvu Has No Clock
+
+This is perhaps the most foreign thing about this system to eyes shaped by the modern world.
+
+There is no scheduled end to an Omakaruvu. There is no agenda item with a time box. There is no meeting that runs over. The work is done when the blade is finished — and not one moment before.
+
+If the work takes an hour, it takes an hour.
+If it takes three days, it takes three days.
+If it takes two weeks — with breaks for rest, for sleep, for eating, for the people to sit with what has been said and return with clearer eyes — it takes two weeks.
+
+**The blade is not finished until it will hold.**
+
+This is not inefficiency. This is the recognition that decisions made before they are ready cost more than the time it takes to make them right. A blade pulled from the forge too early — before the work is complete, before the weaknesses have been hammered out — fails exactly when you need it most. The cost of that failure is always greater than the cost of the time that would have finished it.
+
+The community of Galoru Oma was not in a hurry in the way the backward-thinking world became. They did not have meetings that needed to end so people could get back to their jobs. The Omakaruvu *was* the work. It was not a break from living — it was the center of it. Sitting with a hard problem until it opened was **Omalurak** — one of the sacred acts. You did not rush an Omalurak. You honored it with the time it required.
+
+---
+
+## The Language of the Forge Room
+
+Every person who sits at the Omakaruvu learns these phrases before they speak:
+
+| Phrase | Pronunciation | Meaning | When Used |
+|---|---|---|---|
+| **Morakama-oruvu** | mor-AH-kah-mah-or-OO-voo | The sacred forge-making. | What the whole session is called. Spoken at the opening. |
+| **Okavonak** | oh-KAH-von-ak | Grounded. No obstacle from here. | When your angle sees nothing to work. |
+| **Nakorvama-anu** | nah-KOR-vah-mah-AH-noo | This can be honored back to wholeness. | When an obstacle is solvable with a named change. |
+| **Firanu-oruvu** | fee-RAH-noo-or-OO-voo | The incomplete is sacred — not yet. | When the obstacle cannot stand as the proposal stands. Must be followed immediately by a direction. |
+| **Firanu-vonaoru** | fee-RAH-noo-von-ah-OR-oo | Two incompletes completing each other wrong. | When a catch-22 is named. All hammering stops. |
+| **Orvakama-valu** | or-VAH-kah-mah-VAH-loo | The creation moves forward in a new direction. | When a redirect begins — a new approach to the same problem. |
+| **Okavonak-galoru** | oh-KAH-von-ak-gah-LOR-oo | The community settles like the earth. | The silence that means the blade is finished. |
+| **Maroru** | mah-ROR-oo | The essential truth. The core of the thing. | When debate drifts and someone calls the room back to the actual problem. |
+| **Orvakukalu-mara** | or-VAH-koo-kah-loo-MAH-rah | The Creator's life has spoken. | When a child names something the room needs to hear. Said with full weight. Never condescendingly. |
+| **Omalurak** | oh-MAH-loo-rak | The sitting with truth. | When the room needs to pause — to sit with what has been said before the next hammer falls. Not delay. Deepening. |
 
 ---
 
 ## What About Urgent Decisions?
 
-Not every decision can wait for the five movements. The Omakaruvu handles urgency through one rule:
+Not every decision can wait for the full forge. The Omakaruvu handles urgency through one rule:
 
-> **The person with the most direct experience of the situation has first authority — and must account to the full table afterward.**
+> **The person with the most direct experience of the situation acts — and accounts to the full table afterward.**
 
-This is not a leader. It is a temporary assignment of trust. The Healer in a medical emergency does not wait for the table. The Builder whose wall is falling does not stop to convene. They act. Then they return and speak every decision they made and why. The table then evaluates — not to punish, but to learn.
+This is not a leader. It is a temporary assignment of trust by circumstance. The Healer in a medical emergency does not wait for the table. The Builder whose wall is falling does not stop to convene. They act. Then they return and speak every decision they made and why — not to be judged, but so the table can learn from it.
 
-If the table finds that the decision was wrong, the same process applies: name the obstacle, propose the refinement, find the path forward. The person who acted is not shamed. The decision is corrected.
+If the decision was wrong, the same forge process applies: name the obstacle, find the direction, work toward the right answer. The person who acted is not shamed. The decision is corrected.
 
-**Why:** The Omakaruvu does not pretend that deliberation is always possible. It simply refuses to let emergency become a permanent justification for hierarchy.
+**The rule that prevents abuse:** Emergency cannot become a permanent condition. A person who declares urgency repeatedly to bypass the forge is visible. The community will see it. Authenticity is always visible in a room of Okamanu.
 
 ---
 
-## Size — How Large Can This Work?
+## Size — Nested Forges
 
-The full Omakaruvu works best at **seven to thirteen people.** This is not arbitrary.
-
-Seven is the minimum for full angle coverage. Thirteen is the moon's number — the prime that cannot be divided. When a community is larger than thirteen, the Omakaruvu scales through nested tables.
+The full Omakaruvu works best at **seven to thirteen people.** Seven is the minimum for full angle coverage. Thirteen is the moon's number — the prime that cannot be divided. When the community is larger, the Omakaruvu scales through nested forges.
 
 **The Nested Structure:**
-- Local Omakaruvu: 7–13 people addressing what affects their immediate group
-- Regional Omakaruvu: One Catch-22 Finder and one Rememberer from each local table, convening on what crosses local lines
-- The Grand Omakaruvu: Convened rarely — only for decisions that touch the whole community
+- **Local Omakaruvu** — 7 to 13 people. Everything that affects only their group.
+- **Regional Omakaruvu** — One Catch-22 Finder and one Rememberer from each local table, plus the voices most directly connected to the issue. Everything that crosses local lines.
+- **The Grand Omakaruvu** — Convened rarely. Only for what touches the whole community.
 
-No level overrides another. The regional table does not command the local one. They address what the local table cannot resolve alone. If they reach the same catch-22, the Grand Omakaruvu convenes. If the Grand Omakaruvu reaches it — the problem goes back to the community with a full report and waits.
-
-Some things genuinely cannot be decided yet. The Omakaruvu names that clearly instead of forcing a false resolution.
+No level commands another. The regional table does not override the local one. Each table addresses what reaches beyond its own scope. If the Grand Omakaruvu reaches a knot it cannot resolve, the problem returns to the community with a full account of every angle worked and every path explored. Some things cannot be decided yet. Naming that clearly is better than forcing a blade that will break.
 
 ---
 
-## What Happens When Someone Won't Engage in Good Faith?
+## When Someone Won't Engage in Truth
 
-The Omakaruvu has no punishment system. It has something more powerful: **complete visibility.**
+The Omakaruvu has no punishment. It has something more durable: **complete visibility.**
 
-Because every position is named — every obstacle must be specific, every refinement must be proposed, every silence is a recorded yes — there is nowhere to hide. A person who blocks without offering a path is visible. A person who agrees without meaning it and later acts contrary is visible. A person who never names an obstacle no matter what, always saying **Okavonak** to every proposal regardless of substance, is visible.
+Every position is named. Every obstacle must be specific. Every silence is recorded as agreement. A person who blocks without offering a direction is visible. A person who always says **Okavonak** no matter what — who never sees an obstacle in anything — is visible. A person who names an obstacle and then rejects every direction offered without proposing their own is visible. A person who agrees in the room and acts against it outside is visible.
 
-The community does not sanction these people. The community simply sees them clearly.
+The forge does not shame these people. The forge simply lets everyone see them clearly.
 
-In Okamara's psychological framework, this is more corrective than any punishment. **Okamanu** — the authentic, unperforming self — is what everyone in this culture aspires to. **Marafisu** — the one who wears the sounds of honesty but is not honest — is the most identifiable failure state a person can inhabit. You cannot Marafisu the Omakaruvu for long. The structure of named positions makes the mask visible every time.
+In Okamara's framework, the most dangerous person is the **Marafisu** — the one who wears the sounds of honesty but is not honest. The Omakaruvu's structure makes the mask impossible to wear for long. Every position is public. Every direction is named. The mask slips every session.
 
-A person who is consistently identified as acting in bad faith may simply stop being invited to the table. Not by a leader's decision. By the organic withdrawal of trust, person by person. The community's memory is long. Their observation is sharp.
-
----
-
-## The Language of the Room
-
-The Omakaruvu has its own spoken culture. These phrases are taught as part of joining the table:
-
-| Phrase | Pronunciation | Meaning | When Used |
-|---|---|---|---|
-| **Okavonak** | oh-KAH-von-ak | Grounded. No obstacle. | When your angle sees no problem |
-| **Nakorvama-anu** | nah-KOR-vah-mah-AH-noo | This can be honored back to wholeness. | When you see a solvable obstacle |
-| **Firanu-oruvu** | fee-RAH-noo-or-OO-voo | The incomplete is sacred — not yet. | When the obstacle cannot be resolved as proposed |
-| **Firanu-vonaoru** | fee-RAH-noo-von-ah-OR-oo | Two incompletes completing each other wrong. | When a catch-22 is named |
-| **Omalurak-mara** | oh-MAH-loo-rak-MAH-rah | The voice of the before. | Calling for historical context |
-| **Orvakama-valu** | or-VAH-kah-mah-VAH-loo | The creation moves forward. | When a new proposal begins after withdrawal |
-| **Okavonak-galoru** | oh-KAH-von-ak-gah-LOR-oo | The community settles like the earth. | The silence that means a decision has passed |
-| **Maroru** | mah-ROR-oo | The essential truth. | Calling someone back to the core point when debate drifts |
+A person who cannot be trusted at the forge stops being called to it. Not by anyone's decision. By the organic withdrawal of a community that sees clearly.
 
 ---
 
-## What This System Produces — And What It Cannot Do
+## What This System Produces
 
-**What it produces:**
-- Decisions that have been examined from every angle before they move
-- A record of exactly why each obstacle was resolved and how
-- Continuous refinement — nothing is simply killed, it is either solved or returned with more information
-- A community of people who grow sharper as thinkers with every table they sit at
-- Complete visibility of who thinks clearly and who does not
+When it works — when the room is full of genuine Onakaoru who believe in the forge — this system produces decisions that have been examined from every angle, including angles that no single person in the room could have held alone. It produces a community of thinkers who grow sharper with every session because the forge teaches everyone who sits at it. It produces a record of exactly how every obstacle was resolved and why. It produces blades that hold.
 
-**What it cannot do:**
-- Force a decision when the community is genuinely divided on values, not just logistics
-- Operate at speed when emergencies override deliberation
-- Function if the people at the table do not actually believe in their own sovereignty and each other's
+And it produces something harder to name but more important than any of those things: a community where every member — every gender, every age, every shape of mind — has genuinely contributed to the thing they are now living with. Not consulted. Not permitted to comment. **Built it.** With their own hands. With their own angle. At the same table as everyone else.
 
-The second limitation is the most important one. **This system does not create Onakaoru. It requires them.** If the people sitting at this table are secretly looking for someone to tell them what to do, or secretly trying to become the one who tells everyone what to do — the system will fail slowly and the failure will look like the system's fault when it is actually the people's.
-
-Galoru Oma was built by people who had been Onakaoru so long that they could not imagine being anything else. That is why it worked.
+That is the difference between a community that follows its decisions and one that *is* its decisions.
 
 ---
 
 ## Where This Fits in the Novel
 
-In **Part One** of Galoru Oma (Omalurak — The Sitting With Truth), the reader witnesses a full Omakaruvu for the first time — not explained, just shown. We watch an obstacle named, a refinement proposed, a catch-22 emerge, a working group form and return, and finally the silence.
+In **Part One** of Galoru Oma (Omalurak — The Sitting With Truth), the reader witnesses a full Omakaruvu from the inside. We see it through the eyes of a child — an **Orvakukalu** — who has been brought to the table by an elder and is watching for the first time.
 
-The reader does not know what they are watching at first. They will recognize it only later — when they see what replaced it.
+The child says one thing. A question so simple the adults in the room go silent. The question cracks the proposal open and shows the room something no one else had seen. **"Orvakukalu-mara"** is spoken. The room sits. The forge continues — and the blade that comes out at the end is completely different from the blade they were making before the child spoke.
 
-In **Part Two** (Vakufisu — The False Sun), the Omakaruvu begins to fail — not because the system broke, but because the people at the table began to perform the positions instead of inhabiting them. **Okavonak** said without meaning it. **Nakorvama-anu** offered as a delay tactic rather than a genuine refinement. The silence at the end that is not the silence of settled earth but the silence of people who stopped trusting each other.
+The reader does not know they are watching a governance system. They are watching a room of people build something together. They will recognize what it was later — when they see what replaced it.
 
-The reader by then will know exactly what they are watching — because they saw the real thing first. The contrast does not need to be explained. They will feel it.
+In **Part Two** (Vakufisu — The False Sun), the same room. The same phrases. The same five positions, the same silence at the end. But children are no longer invited. The women's angles are acknowledged and then quietly set aside. The forge still runs but the blades it produces are beautiful on the surface and hollow in the center. They look finished. They break exactly when they are needed.
+
+The reader will feel the difference before they can name it. Because they saw the real thing first — the whole room, all the hammers — and they will know, in their body, what is missing.
 
 ---
 
-*"You cannot design a system that makes cowards brave. You can only design a system where cowardice has nowhere to hide."*
+*"We did not come here to decide. We came here to build."*
+
+*"The blade is not finished until it will hold. Not until most of us think it will hold. Until it actually will."*
+
+*"Every angle is a hammer. A blade made with fewer hammers has fewer strikes of truth in it. You will find the missing ones at the worst possible moment."*
 
 *— The teaching of the Omakaruvu*
