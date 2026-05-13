@@ -42,12 +42,24 @@ Theology was replaced by observation. Philosophy was replaced by building. They 
 True science. Not theory presented as fact. Not consensus as truth. Observation, duplication, result.
 
 They understood things we are barely now recovering:
-- **Gold** was not currency — it was a master conductor. The most perfect natural conductor the earth produces. Sacred because useful, not because scarce.
-- **Electricity** — generated, stored, transmitted. The pyramids and great structures were not tombs. They were machines.
-- **Resonance and frequency** — they understood that everything vibrates at a frequency and that matching that frequency could move, shape, or transform matter. This is how stones that no modern machine can lift were placed with precision.
-- **The body's electrical system** — they understood the human being as a living electrical field and treated disease and injury accordingly.
-- **Astronomy** — not as curiosity but as calendar, as navigation, as mathematics. The sky was a working document.
-- **Sacred geometry** — every structure built on the mathematical patterns that nature uses: the Fibonacci spiral, the golden ratio, the relationships between celestial bodies.
+
+- **Sky energy** — the atmosphere itself is a living electrical field. They drew electricity from the sky. Not from the sun — they understood solar energy but considered it primitive, a small candle compared to the ocean of charge that surrounds the entire planet at every moment. The sky is always generating. You do not run out of sky. Tesla came close to rediscovering this. He was stopped.
+
+- **Gold rooftops** — the way power reached every person was through the roofs of their structures. Gold, the perfect natural conductor, laid across the tops of buildings drew sky energy down and distributed it throughout the structure and outward through the ground. Not one person had power and another did not. The gold made the energy available the way the sun makes light available — to everyone standing under it. The precious metal was not locked away in vaults. It was put to work above people's heads.
+
+- **Two kinds of building material** — they built in two ways. The first was hand-carving. Everything that was hand-carved was done so with a precision that modern tools cannot replicate, by hands guided by a knowledge of the material's own frequency. The second was a concrete recipe that no longer exists — a formula for stone that could be poured, shaped, and set. Not quarried. Cast. The resulting material was in many cases stronger than natural stone and indistinguishable from it. This recipe has been lost. Current research is beginning to find traces of it in the composition of ancient blocks. It has not been accepted yet because accepting it would rewrite everything.
+
+- **Weightlessness machines** — the moving of enormous stones was not done by force alone. They had machines — devices that worked through frequency and resonance — that could render an object effectively weightless. Not lighter. Weightless. The object's relationship to gravity was temporarily suspended through vibration matched to the stone's own molecular frequency. This is not magic. This is physics we have not fully mapped. A stone that weighs nothing can be moved by one person. This is how structures of impossible scale were built by people without modern cranes — because they did not need cranes. They needed the right frequency.
+
+- **Stones of impossible scale** — the hand-carved stones of Galoru Oma are so large that the question of how they moved them is still unanswered in our time. The novel does not make this a mystery. It shows it plainly — the weightlessness machine, the knowledge of frequency, the understanding that the stone itself is not an obstacle but a partner in the work.
+
+- **Resonance and frequency** — the foundational science beneath all of it. Everything vibrates. Match the frequency and you can move, shape, heal, or generate with what appears to be no effort at all. This knowledge was encoded into every structure they built. The structures themselves generated and transmitted frequency. They were not just buildings. They were instruments.
+
+- **The body's electrical system** — they understood the human being as a living electrical field. Medicine was the restoration of correct frequency, not the suppression of symptoms.
+
+- **Astronomy** — not as curiosity but as calendar, as navigation, as mathematics. The sky was a working document that told them everything — time, direction, season, the correct frequency to apply to any given material on any given day.
+
+- **Sacred geometry** — every structure built on the mathematical patterns that nature uses: the Fibonacci spiral, the golden ratio, the relationships between celestial bodies. Not for beauty. Because these patterns are the structure of reality itself, and building in alignment with them meant the building worked *with* the world instead of against it.
 
 Some of what is called new technology today was theirs first. Suppressed. Rediscovered. Renamed.
 
