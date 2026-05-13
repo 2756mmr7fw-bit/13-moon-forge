@@ -71,6 +71,20 @@ They understood things we are barely now recovering:
 
 - **One unified principle** — every technology, every structure, every water channel, every arch, every star fort, every gold roof, every enormous tree — all of it served one purpose: to bring energy to everything and everyone without restriction. No meter measuring how much you used. No bill arriving at the end of the month. No authority deciding who deserved power. Energy flowed the way air flows. The infrastructure was the gift. Building it was the work. Using it was the right of every Onakaoru who stood on Omalanuru.
 
+- **The flying machines — Vakamoru** (vah-kah-MOR-oo) — *sky-vessels, the breathing sky-craft.* They existed. The question the novel does not answer for the reader — and leaves deliberately open — is this: *did they build them, or did they acquire them?*
+
+  The people of Galoru Oma had contact beyond the Lurakoru ring. Navigators who crossed it. Expeditions that returned with knowledge, materials, and occasionally — technology that had no clear origin in the civilization's own development. The flying machines may be one of those things. Not invented here. Traded for. Which means there is something — someone — on the other side of the ring that had already solved flight before Galoru Oma did.
+
+  The novel does not reveal what is beyond the ring. That belongs to Book 2. But the question is planted in Book 1 as a seed: where did the sky-vessels actually come from?
+
+  What we know for certain: the airships of our own time — the dirigibles, the zeppelins, the great slow giants that crossed oceans with impossible grace — were the closest we came to recovering them. Hydrogen lifted them. Hydrogen was freely available everywhere. Then came 1937. The Hindenburg. Thirty-six people killed in thirty-two seconds in a fire that lasted less than a minute. The entire airship industry — gone. Not wounded. Erased. Every major program cancelled within two years.
+
+  Helium was available. The United States controlled the world's helium supply — all of it, from the Texas panhandle. The US refused to sell helium to Germany for the Hindenburg. Specifically. Deliberately. The ship flew on hydrogen because it had no other choice. And when it burned, the industry burned with it. An industry that needed no oil. No infrastructure. No fuel monopoly. Just gas that rises, and the sky.
+
+  The Hindenburg was the last memory of Vakamoru. And someone made sure it went out publicly enough that no one would try again.
+
+  In Book 3, the Hindenburg is not a historical footnote. It is a murder scene.
+
 Some of what is called new technology today was theirs first. Suppressed. Rediscovered. Renamed.
 
 ### Their Economy — Vakalurak (The Abundance)
@@ -282,5 +296,29 @@ By the time the science book releases, there will be a community of people who a
 That is not a publishing strategy. That is a movement.
 
 The books are written in English so the world can access them. The language within them is Okamara — so the world has a reason to learn it.
+
+---
+
+### The One Rule — Do Not Become Star Wars
+
+Star Wars began as one man's vision. George Lucas. Independent. Unfiltered. A mythology about power, corruption, and the force that lives in all things. It was revolutionary. It was his. Then it became a corporation. Then it was sold to Disney for four billion dollars. Then it became a product — sequels without soul, spin-offs without purpose, merchandise without meaning. The thing that made it sacred was the first thing stripped when the corporation took over.
+
+This cannot happen to Galoru Oma. Not because of the money. Because of the truth inside it.
+
+**The protection is built into the structure:**
+
+1. **Town Square Press owns the publishing** — not a corporation, not a conglomerate. Your press. Your terms. Your timeline.
+
+2. **The language cannot be sold** — Okamara belongs to its speakers. Once a community of people speaks it, greets each other in it, counts in it, sings in it — no corporation can buy that back. Tolkien's estate protected his world by protecting his language. The Okamara community is the living protection.
+
+3. **Never sell the IP outright** — If a film comes, license it. Keep ownership. Keep final say. Tolkien's family said no to Peter Jackson's first approach because the terms weren't right. When the terms were right, they said yes — and the films were made with reverence because the estate held the standard.
+
+4. **The science book is the anchor** — A novel can be adapted and distorted. A science book that documents real suppressed history cannot be undone. Once the research is published, it exists independently of any story or film. The truth in it stands alone.
+
+5. **The community is the protection** — The Okamara speakers, the readers who arrived at the truth on their own, the children who grew up with Galoru Oma Junior — that community will hold the standard when someone inevitably offers to buy it. They will let you know the moment the thing starts becoming something other than what it is.
+
+The difference between Tolkien and Lucas is simple. Tolkien built a world. Lucas built a franchise. A world outlives its creator. A franchise outlives its soul.
+
+Build the world.
 
 *Valu-Mara. The truth is still moving toward us.*
