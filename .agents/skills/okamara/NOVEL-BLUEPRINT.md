@@ -71,19 +71,21 @@ They understood things we are barely now recovering:
 
 - **One unified principle** — every technology, every structure, every water channel, every arch, every star fort, every gold roof, every enormous tree — all of it served one purpose: to bring energy to everything and everyone without restriction. No meter measuring how much you used. No bill arriving at the end of the month. No authority deciding who deserved power. Energy flowed the way air flows. The infrastructure was the gift. Building it was the work. Using it was the right of every Onakaoru who stood on Omalanuru.
 
-- **The flying machines — Vakamoru** (vah-kah-MOR-oo) — *sky-vessels, the breathing sky-craft.* They existed. The question the novel does not answer for the reader — and leaves deliberately open — is this: *did they build them, or did they acquire them?*
+- **The flying machines — Vakamoru** (vah-kah-MOR-oo) — *sky-vessels, the breathing sky-craft.* They existed. And they were built here — by the people of Galoru Oma, from their own understanding of frequency, lift, and the charged atmosphere of Vakalu above them. Not traded. Not acquired. Independently discovered through observation of the natural world, the same way everything else in this civilization was discovered.
 
-  The people of Galoru Oma had contact beyond the Lurakoru ring. Navigators who crossed it. Expeditions that returned with knowledge, materials, and occasionally — technology that had no clear origin in the civilization's own development. The flying machines may be one of those things. Not invented here. Traded for. Which means there is something — someone — on the other side of the ring that had already solved flight before Galoru Oma did.
+  When the civilization fell, the Vakamoru did not disappear. The knowledge of how to build them was seized by the same people who caused the collapse — the early descendants of Marasife's thinking. The scarcity-minded who destroyed Galoru Oma did not destroy its technology. They took it. Hid it. And then, across centuries and millennia, slowly integrated it back — piece by piece, in forms the general population could not connect to their true origin — presenting ancient recovered knowledge as new human invention.
 
-  The novel does not reveal what is beyond the ring. That belongs to Book 2. But the question is planted in Book 1 as a seed: where did the sky-vessels actually come from?
+  The airplane is not a modern invention. It is a modern re-release of something that was locked away.
 
-  What we know for certain: the airships of our own time — the dirigibles, the zeppelins, the great slow giants that crossed oceans with impossible grace — were the closest we came to recovering them. Hydrogen lifted them. Hydrogen was freely available everywhere. Then came 1937. The Hindenburg. Thirty-six people killed in thirty-two seconds in a fire that lasted less than a minute. The entire airship industry — gone. Not wounded. Erased. Every major program cancelled within two years.
+  The lineage is unbroken. The same thinking that destroyed Galoru Oma controls the technology today. They have always known what it came from. They have never said.
+
+  What we know for certain: the airships of our own time — the dirigibles, the zeppelins, the great slow giants that crossed oceans with impossible grace — were the closest the general public ever came to the Vakamoru. Hydrogen lifted them. Hydrogen was freely available everywhere. Then came 1937. The Hindenburg. Thirty-six people killed in thirty-two seconds in a fire that lasted less than a minute. The entire airship industry — gone. Not wounded. Erased. Every major program cancelled within two years.
 
   Helium was available. The United States controlled the world's helium supply — all of it, from the Texas panhandle. The US refused to sell helium to Germany for the Hindenburg. Specifically. Deliberately. The ship flew on hydrogen because it had no other choice. And when it burned, the industry burned with it. An industry that needed no oil. No infrastructure. No fuel monopoly. Just gas that rises, and the sky.
 
-  The Hindenburg was the last memory of Vakamoru. And someone made sure it went out publicly enough that no one would try again.
+  The Hindenburg was the last time the public had access to the Vakamoru. And the people who hold the ancient knowledge made sure it went out publicly enough that no one would try again.
 
-  In Book 3, the Hindenburg is not a historical footnote. It is a murder scene.
+  In Book 3, the Hindenburg is not a historical footnote. It is a murder scene. And the people who ordered it are the direct heirs of Marasife.
 
 Some of what is called new technology today was theirs first. Suppressed. Rediscovered. Renamed.
 
