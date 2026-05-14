@@ -326,6 +326,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
           {isAdmin && (
             <NavLink href="/admin" label="Admin Panel" icon={ShieldAlert} tip="Review and manage app registry submissions" onClick={onClose} />
           )}
+          {isAdmin && (
+            <NavLink href="/admin/payment-funnel" label="Payment Funnel" icon={CreditCard} tip="Cross-app payment funnel — see what's selling" onClick={onClose} />
+          )}
         </div>
       </nav>
 
