@@ -177,6 +177,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/services",       label: "Service Marketplace", icon: Database,    tip: "Every service a builder needs — VPS, databases, AI APIs, email, payments, and more" },
     { href: "/brand-scout",    label: "Brand Scout",         icon: Search,      tip: "Scan your brand's search presence, news coverage, and online reputation — get a fix plan" },
     { href: "/forge-press",    label: "Forge Press",         icon: Newspaper,   tip: "AI writes SEO press releases about your brand and distributes them to authority news sites" },
+    { href: "/launch-kit",     label: "Launch Kit",          icon: Rocket,      tip: "Ready-to-paste copy + step-by-step submission for Product Hunt, BetaList, AlternativeTo, Indie Hackers, Show HN, and Nextdoor" },
     { href: "/discover",       label: "App Discovery",       icon: Globe,       tip: "Browse self-hostable apps — find something you love and Forge sets it up on your server" },
     { href: "/admin-hosting",  label: "Hosting Admin",       icon: Users,       tip: "Admin panel for managing Forge managed hosting users" },
   ];
