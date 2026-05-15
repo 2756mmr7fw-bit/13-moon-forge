@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { AppFamily } from "@/components/app-family";
 
 type Status = "done" | "ready-for-you" | "i-build-next" | "your-call" | "skip-for-now";
 
@@ -389,6 +390,10 @@ export default function DistributionPlan() {
           <p className="text-muted-foreground leading-relaxed">
             Tier 1 is ready — go submit. Tier 2 (mobile apps) needs your call on route. Tiers 3–5 I build the moment you say go. Tier 6 stays off the table unless you decide otherwise. Nothing in this plan asks you to spend a dollar except the $124 first-year Apple/Google fees, and only if you pick Route A in Tier 2.
           </p>
+        </div>
+
+        <div className="mt-10">
+          <AppFamily currentAppId="forge" />
         </div>
       </div>
     </div>

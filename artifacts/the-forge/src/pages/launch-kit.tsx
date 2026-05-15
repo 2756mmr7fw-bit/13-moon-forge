@@ -6,6 +6,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { AppFamily } from "@/components/app-family";
 
 type Field = { label: string; value: string; long?: boolean };
 type Platform = {
@@ -449,12 +450,14 @@ export default function LaunchKit() {
         </div>
 
         {/* Footer */}
-        <div className="mt-16 text-center">
+        <div className="mt-16 text-center mb-8">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary border border-border text-sm text-muted-foreground">
             <Users className="w-4 h-4" />
             Need help on any of these? Open Forge Press or Brand Scout — they pair with this kit.
           </div>
         </div>
+
+        <AppFamily currentAppId="forge" />
       </div>
     </div>
   );
