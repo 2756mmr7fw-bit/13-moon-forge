@@ -123,6 +123,9 @@ const ForgePressPage        = lazy(() => import("@/pages/forge-press"));
 const LaunchKitPage         = lazy(() => import("@/pages/launch-kit"));
 const DistributionPlanPage  = lazy(() => import("@/pages/distribution-plan"));
 const AccountsPage          = lazy(() => import("@/pages/accounts"));
+const PrivacyPage           = lazy(() => import("@/pages/privacy"));
+const TermsPage             = lazy(() => import("@/pages/terms"));
+const MobileSubmissionPage  = lazy(() => import("@/pages/mobile-submission"));
 const DiscoverPage          = lazy(() => import("@/pages/discover"));
 const PressHubPage          = lazy(() => import("@/pages/press-hub"));
 const PressArticlePage      = lazy(() => import("@/pages/press-article"));
@@ -398,6 +401,9 @@ function Router() {
                     <Route path="/launch-kit"            component={LaunchKitPage} />
                     <Route path="/distribution-plan"     component={DistributionPlanPage} />
                     <Route path="/accounts"              component={AccountsPage} />
+                    <Route path="/privacy"               component={PrivacyPage} />
+                    <Route path="/terms"                 component={TermsPage} />
+                    <Route path="/mobile-submission"     component={MobileSubmissionPage} />
                     <Route path="/discover"              component={DiscoverPage} />
                     <Route component={NotFound} />
                   </Switch>

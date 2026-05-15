@@ -4,6 +4,7 @@ import { FileText, FileSignature, CheckCircle2, Clock, PlusCircle } from "lucide
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
+import { AppFamily } from "@/components/app-family";
 
 export default function Dashboard() {
   const { data: dashboard, isLoading } = useGetEzquillDashboard();
@@ -102,6 +103,8 @@ export default function Dashboard() {
             </div>
           </div>
         )}
+
+        <AppFamily currentAppId="ezquill" />
       </div>
     </div>
   );

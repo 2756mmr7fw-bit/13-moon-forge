@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useColors } from "@/hooks/useColors";
+import { AppFamily } from "@/components/AppFamily";
 
 const DOWNLOAD_URL = "https://13moonforge.ai/download";
 const TOWNSQ_URL = "https://thepeoplestownsq.com";
@@ -138,6 +139,8 @@ export default function AccountScreen() {
             </TouchableOpacity>
           ))}
         </View>
+
+        <AppFamily currentAppId="forge-mobile" />
 
         <View style={{ height: insets.bottom + (isWeb ? 34 : 20) + 70 }} />
       </ScrollView>

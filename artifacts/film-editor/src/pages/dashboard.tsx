@@ -5,6 +5,7 @@ import { Link, useLocation } from "wouter";
 import { Film, Clock, Layers, Plus, Sparkles, Clapperboard, Smartphone, Monitor, Video, Loader2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { AppFamily } from "@/components/app-family";
 
 function formatDuration(ms: number) {
   const s = Math.floor(ms / 1000);
@@ -191,6 +192,8 @@ export default function Dashboard() {
             ))}
           </div>
         )}
+
+        <AppFamily currentAppId="film-editor" />
       </div>
     </div>
   );

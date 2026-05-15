@@ -8,6 +8,9 @@
     "scheme": "forge-mobile",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
+    "description": "Companion app for the 13 Moon Forge ecosystem. Check your projects, get a Fix from Flint, browse the Town Square, and manage your account on the go. Subscriptions and purchases are managed on the web at 13moonforge.ai.",
+    "primaryColor": "#F97316",
+    "privacy": "public",
     "splash": {
       "image": "./assets/images/icon.png",
       "resizeMode": "contain",
@@ -15,10 +18,22 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "ai.thirteenmoonforge.app"
+      "bundleIdentifier": "ai.thirteenmoonforge.app",
+      "buildNumber": "1",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "LSApplicationCategoryType": "public.app-category.developer-tools",
+        "NSUserTrackingUsageDescription": "We do not track you across apps. This permission is required by iOS even when no tracking occurs."
+      },
+      "associatedDomains": [
+        "applinks:13moonforge.ai",
+        "applinks:thepeoplestownsquare.ai"
+      ]
     },
     "android": {
       "package": "ai.thirteenmoonforge.app",
+      "versionCode": 1,
+      "permissions": [],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#111111"
@@ -31,7 +46,7 @@
       [
         "expo-router",
         {
-          "origin": "https://replit.com/"
+          "origin": "https://13moonforge.ai/"
         }
       ],
       "expo-font",
@@ -40,6 +55,14 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "REPLACE_WITH_EAS_PROJECT_ID"
+      },
+      "privacyPolicyUrl": "https://13moonforge.ai/privacy",
+      "termsOfServiceUrl": "https://13moonforge.ai/terms",
+      "supportUrl": "https://13moonforge.ai/support"
     }
   }
 }

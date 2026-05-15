@@ -8,7 +8,7 @@ import {
   ShieldAlert, ShieldCheck, PlugZap, Swords, Monitor, MonitorPlay, Globe, Download,
   LayoutTemplate, PencilLine, Mail, Search, Grid3X3, Server, Upload, ScanLine,
   Bug, Timer, Vault, Zap, Compass, Receipt, Dumbbell, Megaphone, Feather, Terminal,
-  HardDrive, Radio, Bell, BarChart2, Gift, ScrollText, Database, Newspaper, Map,
+  HardDrive, Radio, Bell, BarChart2, Gift, ScrollText, Database, Newspaper, Map, Smartphone,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LogoMark, LogoWordmark } from "@/components/logo";
@@ -180,6 +180,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/distribution-plan", label: "Distribution Plan", icon: Map,        tip: "Your full 6-tier roadmap — what I've built, what I'll build, what you do, and the honest cost of each" },
     { href: "/launch-kit",     label: "Launch Kit",          icon: Rocket,      tip: "Ready-to-paste copy + step-by-step submission for Product Hunt, BetaList, AlternativeTo, Indie Hackers, Show HN, and Nextdoor" },
     { href: "/accounts",       label: "Accounts & Sites",    icon: KeyRound,    tip: "Every external site you need to visit — 20 accounts, signup steps, status of each" },
+    { href: "/mobile-submission", label: "Mobile Submission", icon: Smartphone,  tip: "App Store + Play Store listing copy, privacy answers, reviewer notes — ready to paste" },
     { href: "/discover",       label: "App Discovery",       icon: Globe,       tip: "Browse self-hostable apps — find something you love and Forge sets it up on your server" },
     { href: "/admin-hosting",  label: "Hosting Admin",       icon: Users,       tip: "Admin panel for managing Forge managed hosting users" },
   ];
