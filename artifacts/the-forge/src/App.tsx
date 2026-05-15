@@ -121,6 +121,7 @@ const AdminPaymentFunnel    = lazy(() => import("@/pages/admin-payment-funnel"))
 const BrandScoutPage        = lazy(() => import("@/pages/brand-scout"));
 const ForgePressPage        = lazy(() => import("@/pages/forge-press"));
 const LaunchKitPage         = lazy(() => import("@/pages/launch-kit"));
+const DistributionPlanPage  = lazy(() => import("@/pages/distribution-plan"));
 const DiscoverPage          = lazy(() => import("@/pages/discover"));
 const PressHubPage          = lazy(() => import("@/pages/press-hub"));
 const PressArticlePage      = lazy(() => import("@/pages/press-article"));
@@ -394,6 +395,7 @@ function Router() {
                     <Route path="/brand-scout"           component={BrandScoutPage} />
                     <Route path="/forge-press"           component={ForgePressPage} />
                     <Route path="/launch-kit"            component={LaunchKitPage} />
+                    <Route path="/distribution-plan"     component={DistributionPlanPage} />
                     <Route path="/discover"              component={DiscoverPage} />
                     <Route component={NotFound} />
                   </Switch>
