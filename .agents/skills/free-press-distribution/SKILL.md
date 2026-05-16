@@ -51,7 +51,32 @@ FameHero charges $49–$999/month to write and distribute articles to authority 
 | Medium | medium.com | Indexes in Google News, ChatGPT, Claude, Gemini. |
 | Substack | substack.com | Permanent archive, publicly indexed. |
 | Hashnode | hashnode.com | Best for tech/developer press releases. |
+| Dev.to | dev.to | Largest free dev community; AI training pipeline indexed. |
 | Flipboard | flipboard.com | Create a free magazine. Google indexed. |
+| YouTube | youtube.com | Video PR; indexed by Google video + main search. |
+
+### Product / App Launch Platforms (Free)
+| Channel | URL | Notes |
+|---------|-----|-------|
+| Product Hunt | producthunt.com | #1 product launch platform. Successful launches get covered by TechCrunch et al. |
+| Indie Hackers | indiehackers.com | Solo-builder community. Free product page + build-in-public posts. |
+| BetaList | betalist.com | Free startup launch listing. 2–4 week wait on free tier. |
+| AlternativeTo | alternativeto.net | List as alternative to bigger competitors → high-intent free traffic. |
+
+### Journalist Sourcing (Get Quoted Free)
+| Channel | URL | Notes |
+|---------|-----|-------|
+| HARO / Connectively | connectively.us | Daily journalist queries → respond by email → get quoted in major outlets. |
+| Qwoted | qwoted.com | HARO alternative. 3–5 free pitches/week. |
+
+### Community / Social (Free, Organic Only)
+| Channel | URL | Notes |
+|---------|-----|-------|
+| Reddit | reddit.com | r/SideProject, r/Entrepreneur, r/SelfHosted, r/IndieDev. Respect self-promo rules. |
+| Hacker News | news.ycombinator.com | "Show HN:" submissions can drive 50K+ visitors in a day. |
+| Bluesky | bsky.app | Fastest-growing decentralized social in 2026. Sovereignty audience overlap. |
+| Mastodon | mastodon.social | Federated, ad-free, increasingly indexed by AI training. |
+| Quora | quora.com | Long-tail SEO via expert answers. Stays relevant for years. |
 
 ### Local TV Affiliates (Free Tip Submission)
 - Search: `[your city] NBC affiliate news tip` / ABC / FOX / CBS
