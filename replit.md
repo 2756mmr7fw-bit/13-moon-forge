@@ -52,6 +52,17 @@ AI-powered invention and building platform for developers to create, manage, and
 
 - **Skill Level**: Users can set their preferred skill level (Just Starting, Beginner, Novice, Intermediate, Pro) which influences the AI's communication style and explanation depth.
 - **Explain Mode**: An optional "Explain Mode" header (`x-explain-mode: true`) can be sent to make Forge narrate explanations after every code block.
+- **Ezekiel's accounts** (for cross-platform signups):
+  - GitHub username: `2756mmr7fw-bit` (https://github.com/2756mmr7fw-bit) — has repo `13-moon-forge`
+  - Forgejo (primary code host): `Ezekiel` at git.13moonforge.ai — repos `13-moon-forge`, `The-Peoples-Town-Square`, `payment-funnel`
+  - Hashnode handle: `thirteenmoonforge`
+  - Dev.to handle: `13moonforge`
+  - Substack: `13moonforge.substack.com` (and `thepeoplestownsquare.substack.com`)
+  - LinkedIn: Ezekiel Evans (active)
+  - Medium: active
+  - Flipboard: "13 Moon Forge" public magazine
+  - Does NOT use X/Twitter — skip X fields in any signup
+  - Emails: `ezekiel@thepeoplestownsq.com` (primary business), `ezekiel_a_evans@icloud.com` (personal), Yahoo (Apple Developer)
 
 ## Gotchas
 
