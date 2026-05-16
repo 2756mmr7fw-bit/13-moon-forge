@@ -24,6 +24,12 @@ uri = "file://attached_assets/generated_images/13moonforge_youtube_avatar.png"
 type = "image"
 title = "13 Moon Forge YouTube avatar"
 
+[[generated]]
+id = "ncVjX6Wiij7viGFTtRxm7"
+uri = "file://attached_assets/generated_images/13moonforge_youtube_banner.png"
+type = "image"
+title = "13 Moon Forge YouTube banner"
+
 [[outputs]]
 id = "wXoHGU6WaasEbgayl77BB"
 uri = "file://screenshots/13moonforge-home.jpg"
@@ -59,3 +65,9 @@ id = "Z58NZN2fwWJeeMWc64mnf"
 uri = "file://attached_assets/generated_images/13moonforge_youtube_avatar.png"
 type = "image"
 title = "13 Moon Forge — YouTube Channel Avatar"
+
+[[outputs]]
+id = "otdC6-pVQvVzrZpth3fH6"
+uri = "file://attached_assets/generated_images/13moonforge_youtube_banner.png"
+type = "image"
+title = "13 Moon Forge — YouTube Channel Banner"
