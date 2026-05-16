@@ -183,13 +183,13 @@ const DIST_FREE_DIRECT = [
   },
   {
     name: "News Break",
-    url: "https://publisher.newsbreak.com",
+    url: "https://creators.newsbreak.com",
     price: "Free",
-    model: "Free publisher account",
-    note: "One of the largest local news apps in the US with 50M+ users. Free publisher program lets you post articles directly to their feed. Great for reaching local and regional audiences that don't use Google News.",
+    model: "Free creator account",
+    note: "One of the largest local news apps in the US with 50M+ users. Free creator program lets you post articles directly to their feed. Great for reaching local and regional audiences that don't use Google News.",
     badge: "Free",
     badgeColor: "bg-green-500/15 text-green-400 border-green-500/30",
-    setupNote: "publisher.newsbreak.com → apply as a publisher → post articles directly.",
+    setupNote: "creators.newsbreak.com → apply as a creator → post articles directly.",
   },
   {
     name: "Flipboard",
