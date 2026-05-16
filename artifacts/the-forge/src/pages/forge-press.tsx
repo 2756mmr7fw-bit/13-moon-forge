@@ -60,6 +60,7 @@ const CONNECTED_CHANNELS = new Set<string>([
   "Dev.to",
   "Hashnode",
   "Flipboard",
+  "YouTube",
 ]);
 
 // Distribution tiers
