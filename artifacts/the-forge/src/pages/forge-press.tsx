@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import {
   Newspaper, Copy, Download, CheckCircle2, Target, TrendingUp, Shield,
   Zap, ChevronRight, RotateCcw, ExternalLink, Search, Users, Bot,
-  Globe, Tv2, Crown, BarChart3, Send, Loader2,
+  Globe, Tv2, Crown, BarChart3, Send, Loader2, Sparkles, Radio,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,6 +47,20 @@ const DISTRIBUTION_SITES = [
   { icon: Bot,    label: "ChatGPT · Claude · Gemini (AI indexing)",  color: "text-purple-400" },
   { icon: Users,  label: "Journalists & media influencers",          color: "text-green-400" },
 ];
+
+// Channels The Forge is actively connected to / publishing on.
+// When a channel name appears here, it gets a "Connected" badge in the UI
+// and counts toward the Spotlight Network total.
+const CONNECTED_CHANNELS = new Set<string>([
+  "Google News Publisher Center",
+  "Bing Webmaster Tools",
+  "LinkedIn Articles",
+  "Medium",
+  "Substack",
+  "Dev.to",
+  "Hashnode",
+  "Flipboard",
+]);
 
 // Distribution tiers
 const DIST_FREE_DIRECT = [
@@ -619,6 +633,47 @@ export default function ForgePress() {
         )}
       </div>
 
+      {/* ── Spotlight Network banner — visible on the first step ────────── */}
+      {step === "goal" && (
+        <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-primary/30 rounded-xl p-5 space-y-3">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+              <Radio size={18} className="text-primary" />
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-base font-bold">The Forge Spotlight Network</h2>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border bg-primary/15 text-primary border-primary/30">
+                  {CONNECTED_CHANNELS.size} channels live
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                When you build on The Forge — or with The People's Town Square or any 13 Moon app —
+                we don't just promote our own work. <span className="text-foreground font-medium">Your launches go out across our entire network too.</span>
+                Apps, games, sites, and stories from creators in our community get spotlighted on every channel we're connected to. You bring the work, we bring the audience.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-1.5 pt-1">
+            {Array.from(CONNECTED_CHANNELS).map(name => (
+              <span
+                key={name}
+                className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-full border bg-green-500/10 text-green-400 border-green-500/30"
+              >
+                <CheckCircle2 size={9} />
+                {name}
+              </span>
+            ))}
+          </div>
+
+          <p className="text-[11px] text-muted-foreground/70 leading-relaxed pt-1 border-t border-border/50">
+            <Sparkles size={10} className="inline mr-1 text-primary" />
+            More channels added every week. See the full list of {DIST_FREE_DIRECT.length}+ free distribution routes after you write your first article below.
+          </p>
+        </div>
+      )}
+
       {/* ── Step 1 — Goal ───────────────────────────────────────────────── */}
       {step === "goal" && (
         <div className="space-y-3">
@@ -814,18 +869,28 @@ export default function ForgePress() {
 
               {/* Free direct routes */}
               <div className="border border-border rounded-xl overflow-hidden">
-                <div className="px-4 py-2.5 bg-primary/5 border-b border-border">
+                <div className="px-4 py-2.5 bg-primary/5 border-b border-border flex items-center justify-between gap-2 flex-wrap">
                   <p className="text-xs font-bold text-primary uppercase tracking-wide">Direct routes — free, no middleman</p>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border bg-green-500/10 text-green-400 border-green-500/30">
+                    {CONNECTED_CHANNELS.size} of {DIST_FREE_DIRECT.length} connected
+                  </span>
                 </div>
                 <div className="divide-y divide-border">
-                  {DIST_FREE_DIRECT.map(s => (
-                    <div key={s.name} className={cn("px-4 py-3 space-y-1.5", s.highlight && "bg-primary/3")}>
+                  {DIST_FREE_DIRECT.map(s => {
+                    const isConnected = CONNECTED_CHANNELS.has(s.name);
+                    return (
+                    <div key={s.name} className={cn("px-4 py-3 space-y-1.5", s.highlight && "bg-primary/3", isConnected && "bg-green-500/[0.04]")}>
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2.5">
+                        <div className="flex items-center gap-2.5 flex-wrap">
                           <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border shrink-0", s.badgeColor)}>
                             {s.badge}
                           </span>
                           <span className="text-sm font-semibold">{s.name}</span>
+                          {isConnected && (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border bg-green-500/15 text-green-400 border-green-500/30 shrink-0">
+                              <CheckCircle2 size={9} /> Connected
+                            </span>
+                          )}
                         </div>
                         <span className="text-xs font-bold text-green-400 shrink-0">{s.price}</span>
                       </div>
@@ -842,7 +907,8 @@ export default function ForgePress() {
                         </a>
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
