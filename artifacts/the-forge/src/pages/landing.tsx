@@ -618,6 +618,8 @@ export default function Landing() {
             <a href="https://thepeoplestownsq.com" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors inline-flex items-center gap-1">
               thepeoplestownsq.com <ExternalLink size={10} />
             </a>
+            <a href="https://bsky.app/profile/13moonforge.bsky.social" target="_blank" rel="me noopener noreferrer" className="hover:text-foreground transition-colors">Bluesky</a>
+            <a href="https://mastodon.social/@13moonforge" target="_blank" rel="me noopener noreferrer" className="hover:text-foreground transition-colors">Mastodon</a>
             <a href={`${basePath}/pricing`} className="hover:text-foreground transition-colors">Pricing</a>
             <a href={`${basePath}/sign-in`} className="hover:text-foreground transition-colors">Sign in</a>
           </div>

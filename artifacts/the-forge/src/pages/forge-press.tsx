@@ -62,6 +62,7 @@ const CONNECTED_CHANNELS = new Set<string>([
   "Flipboard",
   "YouTube",
   "Bluesky",
+  "Mastodon",
 ]);
 
 // Distribution tiers
