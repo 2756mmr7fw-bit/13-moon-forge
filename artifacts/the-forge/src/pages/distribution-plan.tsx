@@ -25,6 +25,8 @@ type Tier = {
     options: { title: string; cost: string; pros: string[]; cons: string[]; recommend?: boolean }[];
   };
   cta?: { label: string; href: string; external?: boolean };
+  cta2?: { label: string; href: string; external?: boolean };
+  cta3?: { label: string; href: string; external?: boolean };
   accent: string;
 };
 
@@ -42,6 +44,8 @@ const TIERS: Tier[] = [
       { label: "Launch Kit page with all 6 sites, ready-to-paste copy, and step-by-step submission for each", done: true },
       { label: "Founder voice baked into every draft — sounds like you, not like marketing", done: true },
       { label: "AlternativeTo listings drafted for all 4 of your apps (tpts, Forge, Film Editor, EzQuill)", done: true },
+      { label: "Auto-syndication setup guide — Substack → Medium, Dev.to, Hashnode (write once, post to 4 platforms)", done: true },
+      { label: "Multi-Post composer — one editor, one click, posts to Dev.to + Hashnode + Medium + Substack via their APIs", done: true },
     ],
     youDo: [
       { n: 1, label: "Nextdoor — paste the post into your verified neighborhood feed", minutes: "5 min" },
@@ -50,8 +54,15 @@ const TIERS: Tier[] = [
       { n: 4, label: "BetaList — submit the form, then wait 1–2 weeks for their review", minutes: "10 min" },
       { n: 5, label: "Show HN — post on a Tue/Wed/Thu, 8–10 AM Eastern, when you're patient", minutes: "15 min + 2 hrs replies" },
       { n: 6, label: "Product Hunt — schedule for 1–2 weeks out (I'll build assets first)", minutes: "30 min to prep" },
+      { n: 7, label: "Multi-Post setup — Dev.to: grab API key at dev.to/settings/extensions and paste it in", minutes: "3 min" },
+      { n: 8, label: "Multi-Post setup — Hashnode: grab token at hashnode.com/settings/developer, paste it, then type your blog host (yourhandle.hashnode.dev) and click Find to auto-fill publication ID", minutes: "5 min" },
+      { n: 9, label: "Multi-Post setup — Substack: in Substack → Settings → Publishing → 'Post by email', copy your unique publish-by-email address and paste it in", minutes: "3 min" },
+      { n: 10, label: "Multi-Post setup — Medium (skip if account is post-2021): if you have a legacy account, go to Medium → Settings → Security → Integration tokens and generate one. New accounts can't do this — Medium killed the API in 2021. Use the RSS auto-syndication path for Medium instead.", minutes: "3 min" },
+      { n: 11, label: "First Multi-Post run — write one short article, leave 'Publish immediately' OFF, save as drafts on all platforms. Open each platform's draft and confirm it looks right. THEN start publishing live.", minutes: "20 min one-time" },
     ],
     cta: { label: "Open the Launch Kit", href: "/launch-kit" },
+    cta2: { label: "Set up Auto-Syndication", href: "/auto-syndication" },
+    cta3: { label: "Open Multi-Post composer", href: "/multi-post" },
     accent: "from-emerald-500/20 to-green-500/20 border-emerald-500/40",
   },
   {
@@ -127,15 +138,18 @@ const TIERS: Tier[] = [
     summary:
       "Three places where journalists actively ask for expert quotes from people like you. Reply to one a day, and 1-in-10 gets you quoted in a real publication. Free press, no PR firm.",
     iBuild: [
-      { label: "HARO/Qwoted reply templates in your founder voice (5 templates covering common journalist asks)", done: false },
-      { label: "Reddit subreddit map — exact 10 subreddits where your story belongs, with rules of each", done: false },
-      { label: "Saved reply snippets for the top 20 questions you'll get on HN, IH, and Reddit", done: false },
+      { label: "HARO/Qwoted reply templates in your founder voice (5 templates covering common journalist asks)", done: true },
+      { label: "Reddit subreddit map — 10 subreddits with rules, timing, sample posts, and what gets you downvoted (live at /reddit-map)", done: true },
+      { label: "Saved reply snippets — 20 paste-ready answers in your founder voice for HN, IH, and Reddit (live at /reply-snippets)", done: true },
     ],
     youDo: [
       { n: 1, label: "Sign up for free HARO accounts at connectively.us (free tier) and qwoted.com (free tier)" },
       { n: 2, label: "Set keyword alerts: 'social media', 'censorship', 'indie founder', 'self-hosting'" },
       { n: 3, label: "Reply to 1 journalist request a day with the template I write — 5 minutes per reply" },
     ],
+    cta: { label: "Open HARO Templates", href: "/haro-templates" },
+    cta2: { label: "Open Reddit Map", href: "/reddit-map" },
+    cta3: { label: "Open Reply Snippets", href: "/reply-snippets" },
     accent: "from-amber-500/20 to-yellow-500/20 border-amber-500/40",
   },
   {
@@ -148,15 +162,18 @@ const TIERS: Tier[] = [
     summary:
       "Local newspapers, alt-weeklies, and college campus papers near you. Every editor of every local paper is starved for stories. A one-person founder building a 'no-algorithm town square' is exactly the story they want.",
     iBuild: [
-      { label: "Pitch email template + 3 angles tailored to local press", done: false },
-      { label: "Auto-discovery: pull every local newspaper editor email within 100 miles of your city", done: false },
-      { label: "One-pager PDF press kit for editors to download", done: false },
+      { label: "3 pitch templates tailored to local press (founder story / anti-algorithm / TV morning show) — live at /local-press", done: true },
+      { label: "Newsroom map — search links for TV affiliates, daily papers, alt-weeklies, university papers, neighborhood blogs, chambers, calendars (auto-tailored to your city)", done: true },
+      { label: "Press kit one-pager — copy/paste ready, auto-fills your city", done: true },
+      { label: "Nextdoor playbook — 5-step sequence to avoid auto-flagging", done: true },
     ],
     youDo: [
-      { n: 1, label: "Tell me your nearest 2–3 cities so I scope the discovery list correctly" },
-      { n: 2, label: "Send the pitch email to 20–30 editors over a week — I queue them, you click send" },
-      { n: 3, label: "Do a 15-minute phone interview if anyone bites — most will say no, that's fine" },
+      { n: 1, label: "Enter your city on the Local Press page — everything tailors instantly" },
+      { n: 2, label: "Run the discovery week: Mon find outlets, Tue–Thu send pitches, Fri Nextdoor + calendars" },
+      { n: 3, label: "Send pitches to 20–30 editors over the week using the templates" },
+      { n: 4, label: "Do a 15-minute phone interview if anyone bites — most will say no, that's fine" },
     ],
+    cta: { label: "Open Local Press", href: "/local-press" },
     accent: "from-rose-500/20 to-pink-500/20 border-rose-500/40",
   },
   {
@@ -170,13 +187,15 @@ const TIERS: Tier[] = [
       "The cheapest, highest-converting distribution is the people already using your apps inviting their friends. Build the invite path inside tpts, the share buttons inside Forge Press, and the 'tell a neighbor' nudge on the welcome email.",
     iBuild: [
       { label: "TPTS invite system — shareable links with first-name personalization", done: false },
-      { label: "Forge Press 'share this article' buttons (X, Facebook, email, copy link)", done: false },
-      { label: "Welcome-email P.S. line: 'If you know one person who'd love this, send them this link'", done: false },
+      { label: "Forge Press 'share this article' buttons — LinkedIn, Facebook, Reddit, Email, Copy link (no X, per your preference)", done: true },
+      { label: "Welcome-email P.S. line — invites readers to share 13moonforge.ai with one builder they know (live in the mailbox welcome)", done: true },
     ],
     youDo: [
       { n: 1, label: "Approve the invite copy before I ship it (I'll show you drafts)" },
       { n: 2, label: "Send your own first 10 invites to people you know" },
+      { n: 3, label: "Publish one Forge Press article and use the new share buttons on it — that's your first test of the amplifier loop" },
     ],
+    cta: { label: "Open Forge Press (share buttons live)", href: "/forge-press" },
     accent: "from-purple-500/20 to-fuchsia-500/20 border-purple-500/40",
   },
   {
@@ -362,19 +381,47 @@ export default function DistributionPlan() {
                 </div>
               )}
 
-              {t.cta && (
-                <div className="mt-5">
-                  <Button asChild>
-                    {t.cta.external ? (
-                      <a href={t.cta.href} target="_blank" rel="noreferrer">
-                        {t.cta.label} <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
-                      </a>
-                    ) : (
-                      <Link href={t.cta.href}>
-                        {t.cta.label} <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
-                      </Link>
-                    )}
-                  </Button>
+              {(t.cta || t.cta2 || t.cta3) && (
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {t.cta && (
+                    <Button asChild>
+                      {t.cta.external ? (
+                        <a href={t.cta.href} target="_blank" rel="noreferrer">
+                          {t.cta.label} <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
+                        </a>
+                      ) : (
+                        <Link href={t.cta.href}>
+                          {t.cta.label} <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
+                        </Link>
+                      )}
+                    </Button>
+                  )}
+                  {t.cta2 && (
+                    <Button asChild variant="outline">
+                      {t.cta2.external ? (
+                        <a href={t.cta2.href} target="_blank" rel="noreferrer">
+                          {t.cta2.label} <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
+                        </a>
+                      ) : (
+                        <Link href={t.cta2.href}>
+                          {t.cta2.label} <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
+                        </Link>
+                      )}
+                    </Button>
+                  )}
+                  {t.cta3 && (
+                    <Button asChild variant="outline">
+                      {t.cta3.external ? (
+                        <a href={t.cta3.href} target="_blank" rel="noreferrer">
+                          {t.cta3.label} <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
+                        </a>
+                      ) : (
+                        <Link href={t.cta3.href}>
+                          {t.cta3.label} <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
+                        </Link>
+                      )}
+                    </Button>
+                  )}
                 </div>
               )}
             </section>

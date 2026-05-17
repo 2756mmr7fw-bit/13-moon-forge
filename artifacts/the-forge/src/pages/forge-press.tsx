@@ -4,6 +4,7 @@ import {
   Newspaper, Copy, Download, CheckCircle2, Target, TrendingUp, Shield,
   Zap, ChevronRight, RotateCcw, ExternalLink, Search, Users, Bot,
   Globe, Tv2, Crown, BarChart3, Send, Loader2, Sparkles, Radio,
+  Linkedin, Facebook, Mail, Link2, MessageSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -813,7 +814,7 @@ export default function ForgePress() {
               </Button>
             </div>
           ) : (
-            <div className="bg-green-500/8 border border-green-500/25 rounded-xl px-4 py-4 space-y-2">
+            <div className="bg-green-500/8 border border-green-500/25 rounded-xl px-4 py-4 space-y-3">
               <div className="flex items-center gap-2">
                 <CheckCircle2 size={15} className="text-green-400" />
                 <p className="text-sm font-semibold text-green-400">Published to Forge Press Network</p>
@@ -830,6 +831,85 @@ export default function ForgePress() {
                     Forge Press Network
                   </Button>
                 </Link>
+              </div>
+
+              {/* Share buttons */}
+              <div className="pt-3 border-t border-green-500/20">
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold mb-2">Share this article</p>
+                <div className="flex flex-wrap items-center gap-2">
+                  {(() => {
+                    const shareUrl = typeof window !== "undefined"
+                      ? `${window.location.origin}/press/${publishedSlug}`
+                      : `/press/${publishedSlug}`;
+                    const shareTitle = parsed?.headline || `${brandName} — Press Release`;
+                    const enc = encodeURIComponent;
+                    return (
+                      <>
+                        <a
+                          href={`https://www.linkedin.com/sharing/share-offsite/?url=${enc(shareUrl)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          data-testid="button-share-linkedin"
+                        >
+                          <Button size="sm" variant="outline" className="gap-1.5 text-xs">
+                            <Linkedin size={12} /> LinkedIn
+                          </Button>
+                        </a>
+                        <a
+                          href={`https://www.facebook.com/sharer/sharer.php?u=${enc(shareUrl)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          data-testid="button-share-facebook"
+                        >
+                          <Button size="sm" variant="outline" className="gap-1.5 text-xs">
+                            <Facebook size={12} /> Facebook
+                          </Button>
+                        </a>
+                        <a
+                          href={`https://www.reddit.com/submit?url=${enc(shareUrl)}&title=${enc(shareTitle)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          data-testid="button-share-reddit"
+                        >
+                          <Button size="sm" variant="outline" className="gap-1.5 text-xs">
+                            <MessageSquare size={12} /> Reddit
+                          </Button>
+                        </a>
+                        <a
+                          href={`mailto:?subject=${enc(shareTitle)}&body=${enc(shareTitle + "\n\n" + shareUrl)}`}
+                          data-testid="button-share-email"
+                        >
+                          <Button size="sm" variant="outline" className="gap-1.5 text-xs">
+                            <Mail size={12} /> Email
+                          </Button>
+                        </a>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="gap-1.5 text-xs"
+                          onClick={async () => {
+                            try {
+                              if (!navigator?.clipboard?.writeText) {
+                                throw new Error("clipboard-unavailable");
+                              }
+                              await navigator.clipboard.writeText(shareUrl);
+                              toast({ title: "Link copied", description: shareUrl });
+                            } catch {
+                              toast({
+                                title: "Couldn't copy automatically",
+                                description: `Copy this URL manually: ${shareUrl}`,
+                                variant: "destructive",
+                              });
+                            }
+                          }}
+                          data-testid="button-share-copy-link"
+                        >
+                          <Link2 size={12} /> Copy link
+                        </Button>
+                      </>
+                    );
+                  })()}
+                </div>
               </div>
             </div>
           )}

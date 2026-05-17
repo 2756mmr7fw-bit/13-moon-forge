@@ -7,8 +7,8 @@ import {
   Shield, Github, Package, User, Users, LogIn, Menu, X, Settings, KeyRound,
   ShieldAlert, ShieldCheck, PlugZap, Swords, Monitor, MonitorPlay, Globe, Download,
   LayoutTemplate, PencilLine, Mail, Search, Grid3X3, Server, Upload, ScanLine,
-  Bug, Timer, Vault, Zap, Compass, Receipt, Dumbbell, Megaphone, Feather, Terminal,
-  HardDrive, Radio, Bell, BarChart2, Gift, ScrollText, Database, Newspaper, Map, Smartphone,
+  Bug, Timer, Vault, Zap, Compass, Receipt, Dumbbell, Megaphone, Feather, Terminal, Send,
+  HardDrive, Radio, Bell, BarChart2, Gift, ScrollText, Database, Newspaper, Map, MapPin, Smartphone, Mic, MessageSquare, MessagesSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LogoMark, LogoWordmark } from "@/components/logo";
@@ -179,6 +179,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/forge-press",    label: "Forge Press",         icon: Newspaper,   tip: "AI writes SEO press releases about your brand and distributes them to authority news sites" },
     { href: "/distribution-plan", label: "Distribution Plan", icon: Map,        tip: "Your full 6-tier roadmap — what I've built, what I'll build, what you do, and the honest cost of each" },
     { href: "/launch-kit",     label: "Launch Kit",          icon: Rocket,      tip: "Ready-to-paste copy + step-by-step submission for Product Hunt, BetaList, AlternativeTo, Indie Hackers, Show HN, and Nextdoor" },
+    { href: "/auto-syndication", label: "Auto-Syndication",  icon: Radio,       tip: "Write on Substack once — auto-post to Medium, Dev.to, and Hashnode using native RSS import" },
+    { href: "/haro-templates", label: "HARO Templates",      icon: Mic,         tip: "5 founder-voice reply templates for HARO and Qwoted — respond to journalist queries and get quoted in real publications" },
+    { href: "/reddit-map",     label: "Reddit Map",          icon: MessageSquare, tip: "10 subreddits where your story belongs — rules, timing, sample posts, and what gets you downvoted to oblivion" },
+    { href: "/reply-snippets", label: "Reply Snippets",      icon: MessagesSquare, tip: "20 paste-ready answers in your founder voice for the questions you'll get on HN, Indie Hackers, and Reddit" },
+    { href: "/local-press",    label: "Local Press",         icon: MapPin,        tip: "Newsroom map, 3 pitch templates, press kit, and Nextdoor playbook tailored to your city — enter once, use forever" },
+    { href: "/multi-post",     label: "Multi-Post",          icon: Send,        tip: "Write once, post to Dev.to, Hashnode, Medium, and Substack in one click — no third-party tools, no monthly fees" },
     { href: "/accounts",       label: "Accounts & Sites",    icon: KeyRound,    tip: "Every external site you need to visit — 20 accounts, signup steps, status of each" },
     { href: "/mobile-submission", label: "Mobile Submission", icon: Smartphone,  tip: "App Store + Play Store listing copy, privacy answers, reviewer notes — ready to paste" },
     { href: "/discover",       label: "App Discovery",       icon: Globe,       tip: "Browse self-hostable apps — find something you love and Forge sets it up on your server" },

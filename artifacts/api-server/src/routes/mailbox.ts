@@ -18,7 +18,9 @@ Your address is shown at the top of this mailbox. Right now incoming email from 
 
 Stay sovereign.
 
-— Forge`;
+— Forge
+
+P.S. If you know one person who'd love what we're building here, send them this link: https://13moonforge.ai — the platform grows the same way you do, one builder at a time, never through ads or algorithms.`;
 
 async function ensureWelcome(userId: string) {
   const existing = await db

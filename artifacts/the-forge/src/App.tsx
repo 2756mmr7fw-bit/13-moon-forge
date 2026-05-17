@@ -124,6 +124,12 @@ const ForgePressPage        = lazy(() => import("@/pages/forge-press"));
 const BuildMySitePage       = lazy(() => import("@/pages/build-my-site"));
 const LaunchKitPage         = lazy(() => import("@/pages/launch-kit"));
 const DistributionPlanPage  = lazy(() => import("@/pages/distribution-plan"));
+const AutoSyndicationPage   = lazy(() => import("@/pages/auto-syndication"));
+const HaroTemplatesPage     = lazy(() => import("@/pages/haro-templates"));
+const RedditMapPage         = lazy(() => import("@/pages/reddit-map"));
+const ReplySnippetsPage     = lazy(() => import("@/pages/reply-snippets"));
+const LocalPressPage        = lazy(() => import("@/pages/local-press"));
+const MultiPostPage         = lazy(() => import("@/pages/multi-post"));
 const AccountsPage          = lazy(() => import("@/pages/accounts"));
 const PrivacyPage           = lazy(() => import("@/pages/privacy"));
 const TermsPage             = lazy(() => import("@/pages/terms"));
@@ -303,6 +309,10 @@ function Router() {
               <Route path="/payment/success" component={PaymentSuccess} />
               <Route path="/download" component={Download} />
               <Route path="/remote/:sessionId" component={RemoteViewer} />
+              <Route path="/haro-templates" component={HaroTemplatesPage} />
+              <Route path="/reddit-map" component={RedditMapPage} />
+              <Route path="/reply-snippets" component={ReplySnippetsPage} />
+              <Route path="/local-press" component={LocalPressPage} />
 
               {/* ── Protected routes ── */}
               <Route>
@@ -404,6 +414,8 @@ function Router() {
                     <Route path="/forge-press"           component={ForgePressPage} />
                     <Route path="/launch-kit"            component={LaunchKitPage} />
                     <Route path="/distribution-plan"     component={DistributionPlanPage} />
+                    <Route path="/auto-syndication"      component={AutoSyndicationPage} />
+                    <Route path="/multi-post"            component={MultiPostPage} />
                     <Route path="/accounts"              component={AccountsPage} />
                     <Route path="/privacy"               component={PrivacyPage} />
                     <Route path="/terms"                 component={TermsPage} />
