@@ -36,6 +36,12 @@ uri = "file://attached_assets/generated_images/13moonforge_youtube_banner_v2.png
 type = "image"
 title = "13 Moon Forge YouTube banner v2"
 
+[[generated]]
+id = "_775Sw80__CFzZODAWWv4"
+uri = "file://attached_assets/generated_images/13moonforge_bluesky_banner_v1.png"
+type = "image"
+title = "13 Moon Forge Bluesky banner"
+
 [[outputs]]
 id = "wXoHGU6WaasEbgayl77BB"
 uri = "file://screenshots/13moonforge-home.jpg"
