@@ -7,6 +7,7 @@
     "hello": "tsx ./src/hello.ts",
     "backup": "tsx ./src/backup.ts",
     "sync-to-prod": "tsx ./src/syncToProd.ts",
+    "clean-for-delivery": "tsx ./src/cleanForDelivery.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

@@ -55,6 +55,10 @@ export default function BuildMySite() {
   const [phone, setPhone] = useState("");
   const [tier, setTier] = useState<Tier>("starter");
   const [description, setDescription] = useState("");
+  const [hasGithub, setHasGithub] = useState<boolean | null>(null);
+  const [githubUsername, setGithubUsername] = useState("");
+  const [hasDomain, setHasDomain] = useState<boolean | null>(null);
+  const [domain, setDomain] = useState("");
   const [website, setWebsite] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -79,7 +83,13 @@ export default function BuildMySite() {
       const res = await fetch(`${API}/api/build-my-site/request`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, phone, tier, description, website }),
+        body: JSON.stringify({
+          name, email, phone, tier, description, website,
+          hasGithub: hasGithub === true,
+          githubUsername: hasGithub === true ? githubUsername : "",
+          hasDomain: hasDomain === true,
+          domain: hasDomain === true ? domain : "",
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -207,6 +217,32 @@ export default function BuildMySite() {
             placeholder="What's the site for? Who's it for? What pages do you need? Any examples of sites you like? The more detail, the better."
           />
           <div className="text-xs text-slate-500 mt-1">{description.length} characters · minimum 50</div>
+        </div>
+
+        <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-4">
+          <div>
+            <div className="font-medium mb-2">Do you already have a GitHub account?</div>
+            <p className="text-xs text-slate-600 mb-2">Your code will live in <strong>your</strong> GitHub repo. You own it, and you can take it anywhere.</p>
+            <div className="flex gap-2">
+              <button type="button" onClick={() => setHasGithub(true)} className={`px-3 py-1.5 rounded-md text-sm border ${hasGithub === true ? "border-amber-500 bg-amber-50" : "border-slate-300 bg-white"}`}>Yes</button>
+              <button type="button" onClick={() => setHasGithub(false)} className={`px-3 py-1.5 rounded-md text-sm border ${hasGithub === false ? "border-amber-500 bg-amber-50" : "border-slate-300 bg-white"}`}>No — help me set one up</button>
+            </div>
+            {hasGithub === true && (
+              <Input className="mt-2" placeholder="Your GitHub username" value={githubUsername} onChange={(e) => setGithubUsername(e.target.value)} />
+            )}
+          </div>
+
+          <div>
+            <div className="font-medium mb-2">Do you already have a domain?</div>
+            <p className="text-xs text-slate-600 mb-2">Your domain stays in <strong>your</strong> name. If you don't have one yet, I'll help you pick and register it.</p>
+            <div className="flex gap-2">
+              <button type="button" onClick={() => setHasDomain(true)} className={`px-3 py-1.5 rounded-md text-sm border ${hasDomain === true ? "border-amber-500 bg-amber-50" : "border-slate-300 bg-white"}`}>Yes</button>
+              <button type="button" onClick={() => setHasDomain(false)} className={`px-3 py-1.5 rounded-md text-sm border ${hasDomain === false ? "border-amber-500 bg-amber-50" : "border-slate-300 bg-white"}`}>No — help me pick one</button>
+            </div>
+            {hasDomain === true && (
+              <Input className="mt-2" placeholder="yoursite.com" value={domain} onChange={(e) => setDomain(e.target.value)} />
+            )}
+          </div>
         </div>
 
         <input

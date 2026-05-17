@@ -117,6 +117,7 @@ const DatabaseManagerPage  = lazy(() => import("@/pages/database-manager"));
 const TeamCollaborationPage = lazy(() => import("@/pages/team-collaboration"));
 const ServicesPage          = lazy(() => import("@/pages/services"));
 const AdminHostingPage      = lazy(() => import("@/pages/admin-hosting"));
+const AdminBuildRequestsPage = lazy(() => import("@/pages/admin-build-requests"));
 const AdminPaymentFunnel    = lazy(() => import("@/pages/admin-payment-funnel"));
 const BrandScoutPage        = lazy(() => import("@/pages/brand-scout"));
 const ForgePressPage        = lazy(() => import("@/pages/forge-press"));
@@ -397,6 +398,7 @@ function Router() {
                     <Route path="/team"                  component={TeamCollaborationPage} />
                     <Route path="/services"              component={ServicesPage} />
                     <Route path="/admin-hosting"         component={AdminHostingPage} />
+                    <Route path="/admin/build-requests"  component={AdminBuildRequestsPage} />
                     <Route path="/admin/payment-funnel"  component={AdminPaymentFunnel} />
                     <Route path="/brand-scout"           component={BrandScoutPage} />
                     <Route path="/forge-press"           component={ForgePressPage} />
