@@ -63,6 +63,7 @@ const CONNECTED_CHANNELS = new Set<string>([
   "YouTube",
   "Bluesky",
   "Mastodon",
+  "Reddit",
 ]);
 
 // Distribution tiers
