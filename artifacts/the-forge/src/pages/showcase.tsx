@@ -90,9 +90,9 @@ export default function ShowcasePage() {
         </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-56 bg-card rounded-2xl border animate-pulse" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {[1, 2].map((i) => (
+              <div key={i} className="h-96 bg-card rounded-2xl border animate-pulse" />
             ))}
           </div>
         ) : featured.length === 0 ? (
@@ -101,7 +101,7 @@ export default function ShowcasePage() {
             <p className="text-muted-foreground">Featured apps will appear here.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {featured.map((app) => (
               <AppCard key={app.id} app={app} variant="featured" />
             ))}
@@ -484,13 +484,29 @@ const ADVERTISING_PARTNERS = [
   },
 ];
 
-function screenshotSrc(app: ShowcaseApp): string | null {
+function screenshotSrc(app: ShowcaseApp, width = 1200): string | null {
   if (app.screenshotUrl) return app.screenshotUrl;
   if (app.websiteUrl) {
-    const clean = app.websiteUrl.replace(/^https?:\/\//, "");
-    return `https://image.thum.io/get/width/600/crop/500/noanimate/https://${clean}`;
+    return `https://s.wordpress.com/mshots/v1/${encodeURIComponent(app.websiteUrl)}?w=${width}&h=800`;
   }
   return null;
+}
+
+function screenshotFallback(app: ShowcaseApp, width = 1200): string | null {
+  if (app.websiteUrl) {
+    const clean = app.websiteUrl.replace(/^https?:\/\//, "");
+    return `https://image.thum.io/get/width/${width}/crop/800/noanimate/https://${clean}`;
+  }
+  return null;
+}
+
+function prettyDomain(url: string | null | undefined): string {
+  if (!url) return "";
+  return url.replace(/^https?:\/\//, "").replace(/\/$/, "");
+}
+
+function isMobileApp(app: ShowcaseApp): boolean {
+  return !!(app.iosUrl || app.androidUrl) && !app.websiteUrl;
 }
 
 function AppCard({ app, variant }: { app: ShowcaseApp; variant: "featured" | "community" }) {
@@ -531,37 +547,78 @@ function AppCard({ app, variant }: { app: ShowcaseApp; variant: "featured" | "co
     setVoting(false);
   }
 
+  const mobile = isMobileApp(app);
+  const previewHeight = isFeatured ? "h-80" : "h-64";
+  const [imgSrc, setImgSrc] = useState<string | null>(shot);
+  useEffect(() => { setImgSrc(shot); }, [shot]);
+  const handleImgError = () => {
+    const fb = screenshotFallback(app);
+    if (fb && imgSrc !== fb) {
+      setImgSrc(fb);
+    } else {
+      setImgFailed(true);
+    }
+  };
+
   return (
-    <div className={`flex flex-col group overflow-hidden rounded-2xl border transition-all duration-300 hover:shadow-lg ${
+    <div className={`flex flex-col group overflow-hidden rounded-2xl border transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 ${
       isFeatured
         ? "bg-card border-primary/30 shadow-md hover:border-primary/60"
         : "bg-card/50 hover:bg-card hover:border-border/80"
     }`}>
       {shot && !imgFailed ? (
-        <div className="h-40 w-full overflow-hidden border-b bg-muted relative">
-          <img
-            src={shot}
-            alt={`Screenshot of ${app.name}`}
-            className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
-            onError={() => setImgFailed(true)}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          {app.websiteUrl && (
-            <a
-              href={app.websiteUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-end p-2"
-            >
-              <span className="bg-black/70 text-white text-[10px] px-2 py-1 rounded-md flex items-center gap-1 backdrop-blur-sm">
-                <Globe className="w-3 h-3" /> Visit site
-              </span>
-            </a>
-          )}
-        </div>
+        mobile ? (
+          // ── Phone frame for mobile apps ────────────────────────────────
+          <div className={`${previewHeight} w-full overflow-hidden border-b bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative flex items-center justify-center py-4`}>
+            <div className="relative h-full aspect-[9/19] rounded-[2rem] bg-black border-[5px] border-slate-900 shadow-2xl overflow-hidden">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-16 h-4 bg-black rounded-b-xl z-10" />
+              <img
+                src={imgSrc ?? ""}
+                alt={`Screenshot of ${app.name}`}
+                loading="lazy"
+                className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
+                onError={handleImgError}
+              />
+            </div>
+          </div>
+        ) : (
+          // ── Browser chrome for web apps ─────────────────────────────────
+          <div className={`${previewHeight} w-full overflow-hidden border-b bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 relative`}>
+            <div className="flex items-center gap-1.5 px-3 py-2 bg-slate-200/80 dark:bg-slate-800/80 border-b border-slate-300/50 dark:border-slate-700/50">
+              <span className="w-2.5 h-2.5 rounded-full bg-red-400" />
+              <span className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
+              <span className="w-2.5 h-2.5 rounded-full bg-green-400" />
+              <div className="ml-2 flex-1 min-w-0 bg-white/70 dark:bg-slate-900/60 rounded px-2 py-0.5 text-[10px] text-slate-600 dark:text-slate-300 font-mono truncate">
+                {prettyDomain(app.websiteUrl) || "13moonforge.ai"}
+              </div>
+            </div>
+            <div className="relative overflow-hidden" style={{ height: "calc(100% - 28px)" }}>
+              <img
+                src={imgSrc ?? ""}
+                alt={`Screenshot of ${app.name}`}
+                loading="lazy"
+                className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
+                onError={handleImgError}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              {app.websiteUrl && (
+                <a
+                  href={app.websiteUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-end p-3"
+                >
+                  <span className="bg-black/80 text-white text-xs px-2.5 py-1 rounded-md flex items-center gap-1 backdrop-blur-sm font-medium">
+                    <Globe className="w-3 h-3" /> Visit site
+                  </span>
+                </a>
+              )}
+            </div>
+          </div>
+        )
       ) : (
-        <div className={`h-16 w-full border-b flex items-center justify-center ${isFeatured ? "bg-primary/5" : "bg-muted/30"}`}>
-          <span className="text-2xl font-bold text-muted-foreground/30">{getInitials(app.name)}</span>
+        <div className={`${previewHeight} w-full border-b flex items-center justify-center ${isFeatured ? "bg-gradient-to-br from-primary/10 to-primary/5" : "bg-gradient-to-br from-muted/40 to-muted/20"}`}>
+          <span className="text-6xl font-bold text-muted-foreground/20 select-none">{getInitials(app.name)}</span>
         </div>
       )}
 
