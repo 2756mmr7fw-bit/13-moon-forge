@@ -31,4 +31,5 @@ export * from "./backups";
 export * from "./team_members";
 export * from "./hosting";
 export * from "./press-releases";
+export * from "./site-build-requests";
 export * from "./ezquill";

@@ -310,6 +310,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {/* Bottom links — always visible */}
         <div className="pt-3 pb-2 space-y-0.5 border-t border-border mt-3">
           <NavLink href="/pricing" label="Upgrade Plan"      icon={CreditCard}    tip="See subscription options and upgrade"                                   onClick={onClose} />
+          <NavLink href="/build-my-site" label="Need a Website?" icon={Globe}     tip="Have Ezekiel build a website for you — code is yours, domain is yours"   onClick={onClose} />
           <NavLink href="/promise" label="Sovereign Promise" icon={Shield}        tip="Our commitment to the working person — read what we stand for"         onClick={onClose} />
           <a
             href={OUR_APPS_URL}

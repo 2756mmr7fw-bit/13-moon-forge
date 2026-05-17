@@ -120,6 +120,7 @@ const AdminHostingPage      = lazy(() => import("@/pages/admin-hosting"));
 const AdminPaymentFunnel    = lazy(() => import("@/pages/admin-payment-funnel"));
 const BrandScoutPage        = lazy(() => import("@/pages/brand-scout"));
 const ForgePressPage        = lazy(() => import("@/pages/forge-press"));
+const BuildMySitePage       = lazy(() => import("@/pages/build-my-site"));
 const LaunchKitPage         = lazy(() => import("@/pages/launch-kit"));
 const DistributionPlanPage  = lazy(() => import("@/pages/distribution-plan"));
 const AccountsPage          = lazy(() => import("@/pages/accounts"));
@@ -291,6 +292,7 @@ function Router() {
             <Switch>
               {/* ── Public routes ── */}
               <Route path="/pricing" component={PricingPage} />
+              <Route path="/build-my-site" component={BuildMySitePage} />
               <Route path="/promise" component={Promise} />
               <Route path="/showcase" component={Showcase} />
               <Route path="/discover" component={DiscoverPage} />

@@ -88,6 +88,7 @@ import backupsRouter from "./backups";
 import dbManagerRouter from "./db-manager";
 import teamRouter from "./team";
 import brandScoutRouter from "./brand-scout";
+import buildMySiteRouter from "./build-my-site";
 import forgePressRouter from "./forge-press";
 import ezquillRouter from "./ezquill";
 
@@ -182,6 +183,7 @@ router.use(backupsRouter);
 router.use(dbManagerRouter);
 router.use(teamRouter);
 router.use(brandScoutRouter);
+router.use(buildMySiteRouter);
 router.use(forgePressRouter);
 router.use(ezquillRouter);
 
