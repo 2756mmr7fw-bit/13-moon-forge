@@ -42,6 +42,12 @@ uri = "file://attached_assets/generated_images/13moonforge_bluesky_banner_v1.png
 type = "image"
 title = "13 Moon Forge Bluesky banner"
 
+[[generated]]
+id = "xm4KPKYy7WV02JpCXgc_I"
+uri = "file://attached_assets/generated_images/13moonforge_bluesky_banner_v2.png"
+type = "image"
+title = "13 Moon Forge cosmic banner"
+
 [[outputs]]
 id = "wXoHGU6WaasEbgayl77BB"
 uri = "file://screenshots/13moonforge-home.jpg"
