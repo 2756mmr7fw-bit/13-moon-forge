@@ -177,6 +177,35 @@ router.post("/build-my-site/request", requestLimiter, async (req, res) => {
     req.log.error({ requestId: insertedId }, "Build-my-site email failed to send");
   }
 
+  // Webhook ping (Discord / Slack — set ADMIN_WEBHOOK_URL). Fire-and-forget.
+  const webhookUrl = process.env.ADMIN_WEBHOOK_URL;
+  if (webhookUrl) {
+    const statusEmoji = status === "active" ? "🟢" : "🟡";
+    const statusLabel = status === "active" ? "Active slot" : `Waitlist #${waitlistPosition}`;
+    const payload = {
+      username: "13 Moon Forge — Build My Site",
+      content: `${statusEmoji} **New site build request** — ${statusLabel}`,
+      embeds: [{
+        title: `${name} — ${tierLabel}`,
+        description: description.slice(0, 500),
+        color: status === "active" ? 0x10b981 : 0xf59e0b,
+        fields: [
+          { name: "Contact", value: [email && `📧 ${email}`, phone && `📞 ${phone}`].filter(Boolean).join("\n") || "(none provided)", inline: false },
+          { name: "GitHub", value: hasGithub ? (githubUsername || "yes") : "needs help setting up", inline: true },
+          { name: "Domain", value: hasDomain ? (domain || "yes") : "needs help picking one", inline: true },
+        ],
+        footer: { text: `Request #${insertedId} · 13moonforge.ai/admin/build-requests` },
+        timestamp: new Date().toISOString(),
+      }],
+    };
+    fetch(webhookUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(4000),
+    }).catch((err) => req.log.warn({ err }, "build-my-site webhook failed"));
+  }
+
   return res.status(200).json({ ok: true, status, position: waitlistPosition, notified: emailed });
 });
 
