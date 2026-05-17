@@ -47,3 +47,6 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# Replit attached assets (user uploads, not source)
+attached_assets/
